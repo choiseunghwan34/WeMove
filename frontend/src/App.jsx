@@ -1,4 +1,5 @@
-﻿import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import Footer from "./components/Footer";
 import Header from "./components/Header";
 import AdminPage from "./pages/AdminPage";
 import HomePage from "./pages/HomePage";
@@ -17,7 +18,7 @@ function LayoutRoutes() {
   return (
     <>
       <Header />
-      <main className="container">
+      <main className="app-main">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/meetings" element={<MeetingListPage />} />
@@ -31,6 +32,7 @@ function LayoutRoutes() {
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
+      <Footer />
     </>
   );
 }
@@ -44,5 +46,3 @@ export default function App() {
     </Routes>
   );
 }
-
-
