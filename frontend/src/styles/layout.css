@@ -1,3 +1,9 @@
-﻿.header{background:#fff;border-bottom:1px solid #e5e7eb}.inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;justify-content:space-between}.header nav{display:flex;gap:14px}.list-layout{display:grid;grid-template-columns:240px 1fr 280px;gap:14px}.meeting-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:12px;padding:14px;margin-bottom:10px}
-
-
+.header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);border-bottom:1px solid #e5e7eb;backdrop-filter:blur(12px)}
+.inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:24px}
+.logo{display:inline-flex;align-items:center;color:#15171a;font-size:22px;font-weight:900;letter-spacing:-.02em;text-decoration:none}
+.header nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.header nav a{display:inline-flex;align-items:center;height:38px;padding:0 12px;border-radius:11px;color:#566172;text-decoration:none;font-size:14px;font-weight:800}
+.header nav a:hover{background:#eef4ff;color:#2563eb}
+.list-layout{display:grid;grid-template-columns:240px 1fr 280px;gap:14px}
+.meeting-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:12px;padding:14px;margin-bottom:10px}
+@media (max-width:720px){.inner{align-items:flex-start;flex-direction:column}.header nav{gap:6px}.header nav a{height:34px;padding:0 10px}}
