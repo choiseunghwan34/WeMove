@@ -26,7 +26,6 @@ function LayoutRoutes() {
           <Route path="/meetings/new" element={<MeetingCreatePage />} />
           <Route path="/meetings/:meetingId/edit" element={<MeetingEditPage />} />
           <Route path="/meetings/:meetingId/manage" element={<MeetingManagePage />} />
-          <Route path="/signup" element={<SignupPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/meetings/:meetingId/reviews" element={<ReviewPage />} />
           <Route path="/admin" element={<AdminPage />} />
@@ -41,6 +40,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
       <Route path="/demo" element={<SiteDemoPage />} />
       <Route path="*" element={<LayoutRoutes />} />
     </Routes>

@@ -44,25 +44,49 @@ export default function HomePage() {
           </div>
         </div>
 
-        <aside className={styles.phonePreview}>
-          <div className={styles.mapPreview}><i /><i /><i /></div>
-          {recruitingMeetings.slice(0, 3).map((meeting) => (
-            <Link key={meeting.id} className={styles.phoneItem} to={`/meetings/${meeting.id}`}>
-              <b>{meeting.code}</b>
-              <span>
+        <aside className={styles.heroShowcase}>
+          <div className={styles.heroVisualCard}>
+            <div className={styles.heroVisualCopy}>
+              <span>이번 주 추천</span>
+              <strong>파주 야간 러닝 크루</strong>
+              <small>야당역 · 20:00 · 초보 환영</small>
+            </div>
+          </div>
+          <div className={styles.heroMiniGrid}>
+            {recruitingMeetings.slice(0, 2).map((meeting) => (
+              <Link key={meeting.id} className={styles.heroMiniCard} to={`/meetings/${meeting.id}`}>
+                <b>{meeting.sport}</b>
                 <strong>{meeting.title}</strong>
-                <small>{meeting.displayDate} {meeting.time} · {meeting.current}/{meeting.max}명</small>
-              </span>
-            </Link>
-          ))}
+                <small>{meeting.place} · {meeting.displayDate} {meeting.time}</small>
+              </Link>
+            ))}
+          </div>
         </aside>
+      </section>
+
+      <section className={styles.highlightBand}>
+        <article>
+          <span>내 주변 모임</span>
+          <strong>지역 기반 탐색</strong>
+          <p>집 근처, 회사 근처, 자주 가는 동네 기준으로 모임을 찾을 수 있습니다.</p>
+        </article>
+        <article>
+          <span>운영 편의</span>
+          <strong>신청자 승인 관리</strong>
+          <p>모임장은 참가 신청, 승인, 거절, 모집 완료 처리를 한 화면에서 관리합니다.</p>
+        </article>
+        <article>
+          <span>참여 경험</span>
+          <strong>후기와 매너 중심</strong>
+          <p>참여자 후기를 통해 분위기를 미리 확인하고 더 안심하고 신청할 수 있습니다.</p>
+        </article>
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHead}>
           <div>
             <h2>인기 운동 카테고리</h2>
-            <p>내 주변에서 자주 열리는 운동 종목을 빠르게 둘러보세요.</p>
+            <p>지금 가장 활발하게 열리는 운동 종목을 빠르게 둘러보세요.</p>
           </div>
           <Link to="/meetings">전체 보기</Link>
         </div>

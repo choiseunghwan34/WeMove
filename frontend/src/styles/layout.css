@@ -1,16 +1,16 @@
-.header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);border-bottom:1px solid #e8ecf2;backdrop-filter:blur(14px)}
+.header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);border-bottom:1px solid #e8ecf2;backdrop-filter:blur(18px)}
 .inner{max-width:1320px;margin:0 auto;padding:14px 24px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px}
 .logo{display:inline-flex;align-items:center;color:#15171a;font-size:22px;font-weight:900;letter-spacing:-.03em;text-decoration:none}
 .main-nav{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
-.main-nav a{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:12px;color:#5f6b7b;text-decoration:none;font-size:14px;font-weight:800;transition:background .18s ease,color .18s ease}
-.main-nav a:hover{background:#eef4ff;color:#2563eb}
+.main-nav a{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:12px;color:#5f6b7b;text-decoration:none;font-size:14px;font-weight:800;transition:background .18s ease,color .18s ease,transform .18s ease}
+.main-nav a:hover{background:#eef4ff;color:#2563eb;transform:translateY(-1px)}
 .header-actions{display:flex;align-items:center;gap:8px}
 .header-actions a{height:42px;padding:0 16px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:14px;font-weight:900;white-space:nowrap;transition:all .18s ease}
 .header-login{border:1px solid #dce3ee;background:#fff;color:#334155}
 .header-login:hover{border-color:#bfd0e8;background:#f8fbff;color:#1e3a8a}
 .header-signup{border:1px solid #2563eb;background:#2563eb;color:#fff;box-shadow:0 12px 24px rgba(37,99,235,.2)}
 .header-signup:hover{background:#1d4ed8;border-color:#1d4ed8;transform:translateY(-1px)}
-.footer{border-top:1px solid #e8ecf2;background:#fff}
+.footer{border-top:1px solid #e8ecf2;background:rgba(255,255,255,.88);backdrop-filter:blur(14px)}
 .footer-inner{max-width:1320px;margin:0 auto;padding:28px 24px 34px;display:flex;justify-content:space-between;gap:28px;align-items:flex-start}
 .footer-brand{display:inline-flex;margin-bottom:10px;color:#15171a;font-size:18px;font-weight:900;letter-spacing:-.03em}
 .footer-copy{max-width:480px;margin:0;color:#6b7280;line-height:1.7;font-size:14px}

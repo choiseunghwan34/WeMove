@@ -18,16 +18,35 @@ export default function LoginPage() {
       <div className={styles.layout}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>WeMove</Link>
-          <h1>동네에서 같이 하는 운동 습관</h1>
+          <span className={styles.eyebrow}>LOCAL FITNESS COMMUNITY</span>
+          <h1>동네 운동이 더 자연스럽게 이어지는 방식</h1>
           <p>
-            러닝, 헬스, 풋살, 배드민턴까지. 가까운 사람들과 자연스럽게 운동을 이어갈 수 있는
-            모임을 만나보세요.
+            러닝, 헬스, 풋살, 배드민턴까지. 가까운 사람들과 함께 운동 루틴을 만들고,
+            모임을 찾고, 참여하고, 관리할 수 있는 지역 기반 운동 플랫폼입니다.
           </p>
+
+          <div className={styles.metrics}>
+            <article>
+              <strong>328+</strong>
+              <span>활성 모임</span>
+            </article>
+            <article>
+              <strong>8.9K</strong>
+              <span>누적 참여</span>
+            </article>
+            <article>
+              <strong>4.8</strong>
+              <span>평균 만족도</span>
+            </article>
+          </div>
         </section>
 
         <form className={styles.card} onSubmit={handleSubmit}>
-          <h2>오늘은 누구와 같이 움직여볼까요?</h2>
-          <p>로그인하고 내 주변 운동 모임을 바로 확인해보세요.</p>
+          <div className={styles.cardHead}>
+            <span className={styles.cardKicker}>로그인</span>
+            <h2>오늘은 누구와 같이 움직여볼까요?</h2>
+            <p>로그인하고 내 주변 운동 모임을 바로 확인해보세요.</p>
+          </div>
 
           <label>
             <span>아이디 또는 이메일</span>
