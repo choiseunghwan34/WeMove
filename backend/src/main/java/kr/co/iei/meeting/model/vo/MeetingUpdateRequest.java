@@ -1,0 +1,1 @@
+﻿package kr.co.iei.meeting.model.vo; import lombok.Data; import java.time.*; @Data public class MeetingUpdateRequest { private String title; private String content; private String placeName; private String address; private LocalDate meetingDate; private LocalTime startTime; private Integer maxMembers; private String status; }

@@ -1,0 +1,1 @@
+﻿package kr.co.iei.participant.model.vo; import lombok.Data; @Data public class ParticipantResponse { private Long participantId; private Long meetingId; private Long userId; private String nickname; private String status; }

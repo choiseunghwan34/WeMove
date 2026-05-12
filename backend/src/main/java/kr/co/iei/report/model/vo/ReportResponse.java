@@ -1,0 +1,1 @@
+﻿package kr.co.iei.report.model.vo; import lombok.Data; import java.time.LocalDateTime; @Data public class ReportResponse { private Long reportId; private Long reporterId; private String reason; private String status; private LocalDateTime createdAt; }

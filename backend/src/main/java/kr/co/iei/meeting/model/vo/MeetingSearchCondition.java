@@ -1,0 +1,1 @@
+﻿package kr.co.iei.meeting.model.vo; import lombok.Data; @Data public class MeetingSearchCondition { private Long sportId; private Long regionId; private String status; private String keyword; private String sort; }

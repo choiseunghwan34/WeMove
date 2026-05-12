@@ -1,0 +1,1 @@
+﻿package kr.co.iei.comment.model.vo; import lombok.Data; import java.time.LocalDateTime; @Data public class CommentResponse { private Long commentId; private Long writerId; private String nickname; private String content; private LocalDateTime createdAt; private Boolean isDeleted; }

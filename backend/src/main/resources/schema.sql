@@ -1,0 +1,115 @@
+DROP TABLE IF EXISTS reports;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS meeting_participants;
+DROP TABLE IF EXISTS meetings;
+DROP TABLE IF EXISTS user_sports;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS sports;
+DROP TABLE IF EXISTS regions;
+
+CREATE TABLE users (
+  user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  login_id VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  nickname VARCHAR(50) UNIQUE NOT NULL,
+  phone VARCHAR(20),
+  profile_image VARCHAR(500),
+  region_id BIGINT,
+  role ENUM('USER', 'ADMIN') DEFAULT 'USER',
+  status ENUM('ACTIVE', 'SUSPENDED', 'DELETED') DEFAULT 'ACTIVE',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sports (
+  sport_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  category VARCHAR(50),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_sports (
+  user_sport_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  sport_id BIGINT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_user_sports (user_id, sport_id)
+);
+
+CREATE TABLE regions (
+  region_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  sido VARCHAR(50) NOT NULL,
+  sigungu VARCHAR(50) NOT NULL,
+  dong VARCHAR(50)
+);
+
+CREATE TABLE meetings (
+  meeting_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  host_user_id BIGINT NOT NULL,
+  sport_id BIGINT NOT NULL,
+  region_id BIGINT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  content TEXT NOT NULL,
+  place_name VARCHAR(100),
+  address VARCHAR(255),
+  latitude DECIMAL(10,7),
+  longitude DECIMAL(10,7),
+  meeting_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  max_members INT NOT NULL,
+  meeting_type ENUM('ONE_TIME', 'REGULAR') DEFAULT 'ONE_TIME',
+  repeat_type ENUM('NONE', 'WEEKLY', 'BIWEEKLY', 'MONTHLY') DEFAULT 'NONE',
+  status ENUM('RECRUITING', 'CLOSED', 'COMPLETED', 'CANCELLED') DEFAULT 'RECRUITING',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at DATETIME NULL
+);
+
+CREATE TABLE meeting_participants (
+  participant_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  meeting_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
+  status ENUM('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED') DEFAULT 'PENDING',
+  message TEXT,
+  applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  approved_at DATETIME NULL,
+  cancelled_at DATETIME NULL,
+  UNIQUE KEY uk_meeting_participants (meeting_id, user_id)
+);
+
+CREATE TABLE reviews (
+  review_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  meeting_id BIGINT NOT NULL,
+  writer_id BIGINT NOT NULL,
+  rating INT NOT NULL,
+  content TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_reviews (meeting_id, writer_id)
+);
+
+CREATE TABLE comments (
+  comment_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  meeting_id BIGINT NOT NULL,
+  writer_id BIGINT NOT NULL,
+  parent_comment_id BIGINT NULL,
+  content TEXT NOT NULL,
+  is_deleted BOOLEAN DEFAULT FALSE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE reports (
+  report_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  reporter_id BIGINT NOT NULL,
+  meeting_id BIGINT NULL,
+  target_user_id BIGINT NULL,
+  reason VARCHAR(100) NOT NULL,
+  content TEXT,
+  status ENUM('PENDING', 'RESOLVED', 'REJECTED') DEFAULT 'PENDING',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  processed_at DATETIME NULL
+);

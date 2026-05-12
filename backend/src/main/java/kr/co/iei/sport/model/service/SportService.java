@@ -1,0 +1,1 @@
+﻿package kr.co.iei.sport.model.service; import kr.co.iei.sport.model.vo.*; import java.util.List; public interface SportService { List<Sport> getSports(); void createSport(SportRequest req); void updateSport(Long sportId, SportRequest req);} 

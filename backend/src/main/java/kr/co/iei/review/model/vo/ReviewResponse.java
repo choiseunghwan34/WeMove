@@ -1,0 +1,1 @@
+﻿package kr.co.iei.review.model.vo; import lombok.Data; import java.time.LocalDateTime; @Data public class ReviewResponse { private Long reviewId; private Long writerId; private String nickname; private Integer rating; private String content; private LocalDateTime createdAt; }
