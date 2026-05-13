@@ -26,8 +26,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR",
-  "Segoe UI", sans-serif;
+  font-family: "Gowun Batang Local", "Gowun Batang", "Pretendard Variable",
+    "Pretendard", "Noto Sans KR", "Segoe UI", serif;
   background: var(--bg);
   color: var(--text);
   letter-spacing: -0.018em;
