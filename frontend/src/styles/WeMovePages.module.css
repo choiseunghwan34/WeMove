@@ -479,8 +479,8 @@
   box-shadow:0 20px 50px rgba(15,23,42,.05);
 }
 .dashboardHeader{
-  position:sticky;
-  top:18px;
+  position:relative;
+  top:auto;
   z-index:20;
   grid-template-columns:auto minmax(420px,1fr) auto;
   padding:16px 18px 16px 20px;
@@ -922,7 +922,13 @@
 }
 @media (max-width:720px){
   .dashboardPage{width:min(100%,calc(100% - 20px));padding-top:16px}
-  .dashboardHeader{top:12px;grid-template-columns:1fr;gap:12px;padding:14px}
+  .dashboardHeader{
+    position:sticky;
+    top:12px;
+    grid-template-columns:1fr;
+    gap:12px;
+    padding:14px;
+  }
   .dashboardShell{gap:16px;margin-top:16px}
   .dashboardHeroContent h1{font-size:42px}
   .dashboardPageIntro h1{font-size:34px}
