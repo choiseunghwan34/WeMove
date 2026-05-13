@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { meetings } from "../data/demoData";
+import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/WeMovePages.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
@@ -16,10 +17,17 @@ export default function MeetingDetailPage() {
   const isClosed = meeting.status === "CLOSED";
 
   return (
-    <div className={cx("page", "narrow")}>
+    <div className={styles.page}>
       <div className={styles.detailLayout}>
         <main className={styles.detailMain}>
           <section className={styles.detailHero}>
+            <div className={styles.detailHeroImageWrap}>
+              <img
+                src={meetingImages[meeting.id]}
+                alt={meeting.title}
+                className={styles.detailHeroImage}
+              />
+            </div>
             <div className={styles.detailCover}>
               <div className={styles.detailBadges}>
                 <span className={styles.badge}>{meeting.sport}</span>
