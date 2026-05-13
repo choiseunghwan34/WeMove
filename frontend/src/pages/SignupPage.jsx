@@ -1,9 +1,18 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import bg1 from "../assets/image/bg1.jpg";
+import bg2 from "../assets/image/bg2.jpg";
 import { regions, sports } from "../data/demoData";
 import styles from "../styles/SignupPage.module.css";
 
+const authBackgrounds = [bg1, bg2];
+
 export default function SignupPage() {
   const navigate = useNavigate();
+  const backgroundImage = useMemo(
+    () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
+    []
+  );
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -11,7 +20,10 @@ export default function SignupPage() {
   };
 
   return (
-    <main className={styles.page}>
+    <main
+      className={styles.page}
+      style={{ "--auth-bg-image": `url(${backgroundImage})` }}
+    >
       <div className={`${styles.layout} ${styles.signupLayout}`}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>WeMove</Link>

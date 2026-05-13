@@ -1,8 +1,17 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import bg1 from "../assets/image/bg1.jpg";
+import bg2 from "../assets/image/bg2.jpg";
 import styles from "../styles/LoginPage.module.css";
+
+const authBackgrounds = [bg1, bg2];
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const backgroundImage = useMemo(
+    () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
+    []
+  );
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -14,7 +23,10 @@ export default function LoginPage() {
   };
 
   return (
-    <main className={styles.page}>
+    <main
+      className={styles.page}
+      style={{ "--auth-bg-image": `url(${backgroundImage})` }}
+    >
       <div className={styles.layout}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>WeMove</Link>

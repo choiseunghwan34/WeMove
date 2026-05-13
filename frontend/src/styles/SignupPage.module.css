@@ -6,10 +6,11 @@
   align-items:center;
   justify-content:center;
   color:#fff;
+  background-color:#08172f;
   background:
     radial-gradient(circle at 18% 18%,rgba(92,174,255,.18),transparent 20%),
-    linear-gradient(125deg,rgba(4,10,22,.92),rgba(8,24,52,.7),rgba(8,28,66,.88)),
-    url("https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=2200&q=80") center/cover no-repeat;
+    linear-gradient(125deg,rgba(4,10,22,.88),rgba(8,38,84,.62),rgba(8,28,66,.84)),
+    var(--auth-bg-image) center/cover no-repeat;
   overflow:hidden;
 }
 .page::before,
