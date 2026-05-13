@@ -1,4 +1,4 @@
-* {
+﻿* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -26,7 +26,7 @@
 }
 
 body {
-  font-family: "Gowun Batang Local", "Gowun Batang", "Pretendard Variable",
+  font-family: "Pretendard Local", "Pretendard Variable",
     "Pretendard", "Noto Sans KR", "Segoe UI", serif;
   background: var(--bg);
   color: var(--text);
@@ -1860,3 +1860,5 @@ textarea {
     width: min(100% - 32px, 520px);
   }
 }
+
+

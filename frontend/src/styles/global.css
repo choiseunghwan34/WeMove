@@ -1,21 +1,90 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap");
-
-@font-face{
-  font-family:"Ownglyph Positive";
-  src:url("../assets/fonts/온글잎 긍정.ttf") format("truetype");
+﻿@font-face{
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-Light.otf") format("opentype");
   font-display:swap;
+  font-weight:300;
 }
 
 @font-face{
-  font-family:"Gowun Batang Local";
-  src:url("../assets/fonts/GowunBatang-Regular.ttf") format("truetype");
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-Regular.otf") format("opentype");
   font-display:swap;
+  font-weight:400;
+}
+
+@font-face{
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-Medium.otf") format("opentype");
+  font-display:swap;
+  font-weight:500;
+}
+
+@font-face{
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-SemiBold.otf") format("opentype");
+  font-display:swap;
+  font-weight:600;
+}
+
+@font-face{
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-Bold.otf") format("opentype");
+  font-display:swap;
+  font-weight:700;
+}
+
+@font-face{
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-ExtraBold.otf") format("opentype");
+  font-display:swap;
+  font-weight:800;
+}
+
+@font-face{
+  font-family:"Pretendard Local";
+  src:url("../assets/fonts/Pretendard/Pretendard-Black.otf") format("opentype");
+  font-display:swap;
+  font-weight:900;
 }
 
 :root{
-  --font-display:"Ownglyph Positive","Manrope","Pretendard Variable","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
-  --font-body:"Gowun Batang Local","Gowun Batang","Pretendard Variable","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",serif;
-  --font-ui:"Manrope","Pretendard Variable","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  --font-display:"Pretendard Local","Pretendard Variable","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  --font-body:"Pretendard Local","Pretendard Variable","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  --font-ui:"Pretendard Local","Pretendard Variable","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  --weight-body:400;
+  --weight-body-strong:500;
+  --weight-label:600;
+  --weight-title:700;
+  --weight-display:800;
+  --weight-button:700;
+  --tracking-tight:-.04em;
+  --tracking-title:-.03em;
+  --tracking-body:-.01em;
+  --font-hero:clamp(2.65rem,4.7vw,4.35rem);
+  --font-page-title:clamp(2rem,3vw,3rem);
+  --font-section-title:clamp(1.55rem,2vw,2.15rem);
+  --font-card-title:clamp(1.12rem,1.35vw,1.55rem);
+  --font-panel-title:clamp(1rem,1.05vw,1.22rem);
+  --font-home-hero:clamp(3rem,5vw,4.6rem);
+  --font-home-section:clamp(1.75rem,2.2vw,2.35rem);
+  --font-list-title:clamp(1.85rem,2.45vw,2.6rem);
+  --font-list-section:clamp(1.25rem,1.55vw,1.65rem);
+  --font-detail-title:clamp(2rem,2.65vw,2.85rem);
+  --font-detail-section:clamp(1.18rem,1.45vw,1.55rem);
+  --font-body-lg:1rem;
+  --font-body:0.94rem;
+  --font-meta:0.8rem;
+  --font-micro:0.75rem;
+  --control-height-sm:36px;
+  --control-height-md:40px;
+  --control-height-lg:46px;
+  --control-height-xl:50px;
+  --control-radius-pill:999px;
+  --control-radius-md:12px;
+  --control-radius-lg:16px;
+  --control-padding-sm:0 14px;
+  --control-padding-md:0 16px;
+  --control-padding-lg:0 18px;
   --color-bg:#f3f7fd;
   --color-bg-soft:#f8fbff;
   --color-surface:rgba(255,255,255,.78);
@@ -46,8 +115,9 @@ body{
   margin:0;
   color:var(--color-text);
   font-family:var(--font-body);
-  font-weight:400;
+  font-weight:var(--weight-body);
   line-height:1.6;
+  letter-spacing:var(--tracking-body);
   background:
     radial-gradient(circle at 14% 16%,rgba(115,171,255,.12),transparent 24%),
     radial-gradient(circle at 86% 10%,rgba(33,97,219,.08),transparent 18%),
@@ -82,6 +152,7 @@ body::after{
 #root{min-height:100vh}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font:inherit}
+strong,b{font-weight:var(--weight-body-strong)}
 button{cursor:pointer}
 img{max-width:100%;display:block}
 .container{max-width:1280px;margin:0 auto;padding:24px}
@@ -98,7 +169,9 @@ img{max-width:100%;display:block}
   color:#fff;
   border:none;
   border-radius:14px;
-  padding:12px 16px;
+  padding:12px 18px;
+  font-weight:var(--weight-button);
+  letter-spacing:var(--tracking-body);
   box-shadow:0 16px 34px rgba(23,105,255,.22);
 }
 .badge{
@@ -117,3 +190,7 @@ img{max-width:100%;display:block}
 }
 
 .home-main{padding:0 0 24px;min-height:100vh}
+
+@media (min-width:1200px){
+  html{font-size:95%}
+}
