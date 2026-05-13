@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { regions, sports } from "../data/demoData";
-import styles from "../styles/LoginPage.module.css";
+import styles from "../styles/SignupPage.module.css";
 
 export default function SignupPage() {
   const navigate = useNavigate();
