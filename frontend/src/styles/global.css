@@ -114,3 +114,5 @@ img{max-width:100%;display:block}
   .container{padding:16px}
   .app-main{padding:24px 0 64px}
 }
+
+.home-main{padding:0 0 24px;min-height:100vh}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import DashboardShell from "../components/DashboardShell";
 import { meetings } from "../data/demoData";
 import styles from "../styles/WeMovePages.module.css";
 
@@ -6,14 +7,35 @@ const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(
 
 export default function MyPage() {
   return (
-    <div className={styles.page}>
-      <div className={styles.pageTitle}>
-        <div>
-          <h1>마이페이지</h1>
-          <p>내 프로필과 내가 만든 모임, 신청한 모임, 후기 작성 가능한 모임을 한 번에 확인합니다.</p>
-        </div>
-      </div>
-
+    <DashboardShell
+      active="마이페이지"
+      title="마이페이지"
+      description="프로필과 활동 지표, 내가 만든 모임을 한 화면에서 관리할 수 있어요."
+      aside={
+        <>
+          <section className={styles.dashboardPanel}>
+            <div className={styles.dashboardPanelHead}>
+              <h3>프로필 요약</h3>
+            </div>
+            <div className={styles.dashboardSimpleList}>
+              <div><span>활동 지역</span><strong>경기 파주시</strong></div>
+              <div><span>관심 운동</span><strong>러닝, 풋살, 등산</strong></div>
+              <div><span>매너점수</span><strong>4.8 / 5.0</strong></div>
+            </div>
+          </section>
+          <section className={styles.dashboardPanel}>
+            <div className={styles.dashboardPanelHead}>
+              <h3>바로가기</h3>
+            </div>
+            <div className={styles.dashboardQuickLinks}>
+              <Link to="/meetings/new">모임 만들기</Link>
+              <Link to="/activity">내 활동 보기</Link>
+              <Link to="/meetings">모임 찾기</Link>
+            </div>
+          </section>
+        </>
+      }
+    >
       <section className={styles.profileCard}>
         <div className={styles.profileLeft}>
           <div className={styles.profileAvatar} />
@@ -25,7 +47,7 @@ export default function MyPage() {
         <button type="button">프로필 수정</button>
       </section>
 
-      <section className={styles.statGrid}>
+      <section className={styles.dashboardStatGrid}>
         <article><span>내가 만든 모임</span><strong>4</strong></article>
         <article><span>신청한 모임</span><strong>3</strong></article>
         <article><span>참여 완료</span><strong>12</strong></article>
@@ -59,6 +81,6 @@ export default function MyPage() {
           ))}
         </div>
       </section>
-    </div>
+    </DashboardShell>
   );
 }

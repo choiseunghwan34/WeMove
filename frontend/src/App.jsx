@@ -1,7 +1,8 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import AdminPage from "./pages/AdminPage";
+import ActivityPage from "./pages/ActivityPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import MeetingCreatePage from "./pages/MeetingCreatePage";
@@ -15,10 +16,19 @@ import SignupPage from "./pages/SignupPage";
 import SiteDemoPage from "./pages/SiteDemoPage";
 
 function LayoutRoutes() {
+  const location = useLocation();
+  const { pathname } = location;
+  const isDashboardRoute = (
+    pathname === "/"
+    || pathname === "/meetings"
+    || pathname === "/activity"
+    || pathname === "/mypage"
+  );
+
   return (
     <>
-      <Header />
-      <main className="app-main">
+      {!isDashboardRoute && <Header />}
+      <main className={isDashboardRoute ? "app-main home-main" : "app-main"}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/meetings" element={<MeetingListPage />} />
@@ -26,12 +36,13 @@ function LayoutRoutes() {
           <Route path="/meetings/new" element={<MeetingCreatePage />} />
           <Route path="/meetings/:meetingId/edit" element={<MeetingEditPage />} />
           <Route path="/meetings/:meetingId/manage" element={<MeetingManagePage />} />
+          <Route path="/activity" element={<ActivityPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/meetings/:meetingId/reviews" element={<ReviewPage />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
-      <Footer />
+      {!isDashboardRoute && <Footer />}
     </>
   );
 }
