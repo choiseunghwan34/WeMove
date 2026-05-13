@@ -2075,3 +2075,481 @@
 .detailPanel h3{
   letter-spacing:0;
 }
+
+/* Premium brand polish */
+.dashboardPage,
+.page{
+  color:#111827;
+}
+
+.dashboardPage{
+  width:min(100%,calc(100% - 56px));
+  padding:22px 0 36px;
+}
+
+.dashboardPage::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(37,99,235,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,235,.035) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.7),transparent 78%);
+}
+
+.dashboardHeader{
+  min-height:74px;
+  padding:14px 18px;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:26px;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(22px) saturate(140%);
+  box-shadow:0 18px 50px rgba(18,32,59,.09),inset 0 1px 0 rgba(255,255,255,.92);
+}
+
+.dashboardLogo span,
+.logo::before{
+  border-radius:14px;
+  background:linear-gradient(145deg,#1d4ed8,#3b82f6 58%,#60a5fa);
+  box-shadow:0 14px 30px rgba(37,99,235,.28);
+}
+
+.dashboardLogo strong,
+.logo{
+  font-weight:900;
+  letter-spacing:-.045em;
+}
+
+.dashboardSearch{
+  height:50px;
+  border:1px solid rgba(37,99,235,.12);
+  border-radius:18px;
+  background:rgba(248,251,255,.92);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.86);
+}
+
+.dashboardSearch:focus-within{
+  border-color:rgba(37,99,235,.36);
+  box-shadow:0 0 0 5px rgba(37,99,235,.1),inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.dashboardShell{
+  grid-template-columns:220px minmax(0,1fr) 300px;
+  gap:20px;
+  margin-top:18px;
+}
+
+.dashboardSidebar,
+.dashboardAside{
+  top:104px;
+}
+
+.dashboardSidebar,
+.dashboardPanel,
+.dashboardInterestCard,
+.dashboardSummaryCard,
+.dashboardCategoryStrip,
+.dashboardMeetingCard,
+.dashboardCompactCard,
+.filterPanel,
+.tabsPanel,
+.listCard,
+.profileCard,
+.detailHero,
+.detailSection,
+.detailPanel,
+.softPanel,
+.formIntro,
+.formCard,
+.participantCard,
+.reviewCard,
+.statGrid article,
+.tableCard,
+.rightbar section,
+.sidebar{
+  border:1px solid rgba(255,255,255,.76);
+  border-radius:26px;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(18px) saturate(130%);
+  box-shadow:0 18px 46px rgba(18,32,59,.08),inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.dashboardSidebar{
+  padding:14px;
+}
+
+.dashboardNav{
+  gap:6px;
+}
+
+.dashboardNavItem,
+.dashboardNavItemActive,
+.dashboardFilterButton,
+.dashboardFilterButtonActive,
+.dashboardQuickLinks a,
+.tabButton,
+.pageTabs button,
+.dashboardPills button{
+  border-radius:16px;
+  transition:transform .18s ease,border-color .18s ease,background-color .18s ease,color .18s ease,box-shadow .18s ease;
+}
+
+.dashboardNavItem{
+  color:#52657d;
+}
+
+.dashboardNavItemActive,
+.dashboardFilterButtonActive,
+.tabButtonActive{
+  border-color:rgba(37,99,235,.16);
+  background:linear-gradient(135deg,#edf5ff,#f7fbff);
+  color:#1747b8;
+  box-shadow:inset 0 0 0 1px rgba(37,99,235,.06);
+}
+
+.dashboardNavItem:hover,
+.dashboardFilterButton:hover,
+.dashboardQuickLinks a:hover,
+.tabButton:hover{
+  transform:translateY(-1px);
+  border-color:rgba(37,99,235,.18);
+  background:#f7fbff;
+  color:#1747b8;
+}
+
+.dashboardLoginButton,
+.dashboardSignupButton,
+.dashboardMeetingActions button,
+.dashboardMeetingActions a,
+.dashboardHeroButton,
+.primaryButton,
+.secondaryButton,
+.formActions a,
+.formActions button,
+.profileCard button,
+.tableHead button,
+.tableCard td button,
+.participantActions button,
+.myList aside a,
+.listCard aside button,
+.ratingButton{
+  border-radius:14px;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease;
+}
+
+.dashboardSignupButton,
+.dashboardHeroButton,
+.dashboardMeetingActions a,
+.primaryButton,
+.formActions button,
+.profileCard button,
+.participantActions button:last-child,
+.listCard aside button,
+.notice a{
+  border-color:transparent;
+  background:linear-gradient(135deg,#1d4ed8,#2563eb 52%,#3b82f6);
+  color:#fff;
+  box-shadow:0 14px 28px rgba(37,99,235,.22);
+}
+
+.dashboardSignupButton:hover,
+.dashboardHeroButton:hover,
+.dashboardMeetingActions a:hover,
+.primaryButton:hover,
+.formActions button:hover,
+.listCard aside button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 18px 36px rgba(37,99,235,.28);
+}
+
+.dashboardLoginButton,
+.secondaryButton,
+.formActions a,
+.participantActions button:first-child,
+.myList aside a,
+.tableHead button,
+.tableCard td button{
+  border-color:rgba(18,32,59,.1);
+  background:rgba(255,255,255,.86);
+  color:#334155;
+}
+
+.dashboardHeroCard{
+  min-height:300px;
+  padding:34px;
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 16% 18%,rgba(96,165,250,.26),transparent 28%),
+    linear-gradient(105deg,rgba(8,23,52,.92) 0%,rgba(20,66,137,.72) 48%,rgba(37,99,235,.28) 100%),
+    url("https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1600&q=85") center/cover no-repeat;
+  box-shadow:0 26px 70px rgba(20,66,137,.2);
+  overflow:hidden;
+}
+
+.dashboardHeroCard::before{
+  content:"";
+  position:absolute;
+  inset:18px 18px auto auto;
+  width:112px;
+  height:112px;
+  border-radius:28px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  transform:rotate(8deg);
+}
+
+.dashboardHeroCard::after{
+  display:block;
+  content:"";
+  position:absolute;
+  inset:auto -40px -64px auto;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background:rgba(255,255,255,.1);
+  pointer-events:none;
+}
+
+.dashboardHeroContent h1{
+  max-width:13ch;
+  color:#fff;
+  text-shadow:0 22px 52px rgba(0,0,0,.22);
+}
+
+.dashboardHeroContent p{
+  color:rgba(255,255,255,.84);
+}
+
+.dashboardHeroFilters{
+  max-width:860px;
+  margin-top:24px;
+  padding:8px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:22px;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:blur(14px);
+}
+
+.dashboardHeroFilters label{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  background:rgba(255,255,255,.94);
+}
+
+.dashboardCategoryStrip{
+  padding:12px;
+  gap:8px;
+}
+
+.dashboardCategoryItem{
+  min-height:82px;
+  border-radius:20px;
+}
+
+.dashboardCategoryItem i,
+.dashboardSummaryGrid i,
+.dashboardActivityItem i,
+.dashboardInterestList i{
+  border-radius:14px;
+  background:linear-gradient(145deg,#eaf2ff,#f8fbff);
+  color:#1d4ed8;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.dashboardSectionHead h2,
+.dashboardPageIntro h1,
+.pageTitle h1,
+.notice h1,
+.detailCover h1{
+  letter-spacing:-.045em;
+}
+
+.dashboardMeetingCard,
+.listCard,
+.dashboardCompactCard,
+.myList article{
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+
+.dashboardMeetingCard:hover,
+.listCard:hover,
+.dashboardCompactCard:hover,
+.myList article:hover{
+  transform:translateY(-3px);
+  border-color:rgba(37,99,235,.24);
+  box-shadow:0 24px 60px rgba(18,32,59,.12);
+}
+
+.dashboardMeetingImage,
+.listCardImage,
+.dashboardMiniImage,
+.reviewPreviewImage{
+  border-radius:20px;
+  box-shadow:0 16px 36px rgba(18,32,59,.12);
+}
+
+.badge,
+.dashboardMeetingBadges span,
+.reviewScore,
+.kicker,
+.sectionKicker{
+  border:1px solid rgba(37,99,235,.12);
+  background:linear-gradient(135deg,#eff6ff,#f8fbff);
+  color:#1747b8;
+}
+
+.success{
+  border-color:rgba(18,128,92,.16);
+  background:linear-gradient(135deg,#ecfdf3,#f7fffb);
+  color:#12805c;
+}
+
+.warning{
+  border-color:rgba(183,110,0,.18);
+  background:linear-gradient(135deg,#fffaeb,#fffdf7);
+  color:#b76e00;
+}
+
+.notice{
+  position:relative;
+  overflow:hidden;
+  padding:32px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(96,165,250,.28),transparent 26%),
+    linear-gradient(135deg,#0f274a,#1747b8 58%,#2563eb);
+  box-shadow:0 24px 64px rgba(37,99,235,.18);
+}
+
+.notice::after{
+  content:"";
+  position:absolute;
+  right:-54px;
+  bottom:-72px;
+  width:240px;
+  height:240px;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+}
+
+.notice h1,
+.notice p{
+  color:#fff;
+}
+
+.notice p{
+  opacity:.82;
+}
+
+.filterRow select,
+.filterRow input,
+.formCard input,
+.formCard select,
+.formCard textarea,
+.reviewTextarea,
+.uploadInput{
+  border-color:rgba(18,32,59,.1);
+  border-radius:16px;
+  background:rgba(255,255,255,.9);
+}
+
+.filterRow select:focus,
+.filterRow input:focus,
+.formCard input:focus,
+.formCard select:focus,
+.formCard textarea:focus,
+.reviewTextarea:focus{
+  border-color:rgba(37,99,235,.38);
+  box-shadow:0 0 0 5px rgba(37,99,235,.1);
+}
+
+.detailCover{
+  border-radius:26px 26px 0 0;
+  background:
+    radial-gradient(circle at 94% 14%,rgba(37,99,235,.12),transparent 26%),
+    linear-gradient(160deg,#ffffff,#f4f8ff 72%,#eaf2ff);
+}
+
+.detailSummary article,
+.sideInfo p,
+.dashboardSimpleList p,
+.dashboardScheduleItem,
+.dashboardRankItem,
+.dashboardActivityItem{
+  border-radius:16px;
+}
+
+@media (min-width:1200px){
+  .dashboardShell{
+    grid-template-columns:224px minmax(0,1fr) 300px;
+  }
+
+  .dashboardHeroCard{
+    min-height:286px;
+  }
+
+  .dashboardPanel,
+  .dashboardSummaryCard,
+  .filterPanel,
+  .tabsPanel,
+  .profileCard{
+    padding:18px;
+  }
+
+  .dashboardMeetingCard,
+  .listCard{
+    padding:16px;
+  }
+}
+
+@media (max-width:1080px){
+  .dashboardPage{
+    width:min(100%,calc(100% - 28px));
+  }
+
+  .dashboardShell{
+    grid-template-columns:1fr;
+  }
+
+  .dashboardSidebar,
+  .dashboardAside{
+    position:static;
+  }
+}
+
+@media (max-width:720px){
+  .dashboardPage{
+    width:min(100%,calc(100% - 20px));
+    padding:12px 0 28px;
+  }
+
+  .dashboardHeader,
+  .dashboardHeroCard,
+  .dashboardSidebar,
+  .dashboardPanel,
+  .dashboardInterestCard,
+  .dashboardSummaryCard,
+  .dashboardCategoryStrip,
+  .dashboardMeetingCard,
+  .dashboardCompactCard,
+  .filterPanel,
+  .tabsPanel,
+  .listCard,
+  .profileCard,
+  .detailHero,
+  .detailSection,
+  .detailPanel,
+  .softPanel,
+  .formIntro,
+  .formCard{
+    border-radius:22px;
+  }
+
+  .dashboardHeroCard{
+    padding:24px;
+  }
+}

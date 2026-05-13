@@ -97,12 +97,12 @@
 .card{
   width:100%;
   min-width:0;
-  padding:36px;
-  border:1px solid rgba(255,255,255,.24);
-  border-radius:34px;
-  background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(255,255,255,.38));
-  backdrop-filter:blur(24px);
-  box-shadow:0 32px 90px rgba(0,0,0,.24);
+  padding:40px;
+  border:1px solid rgba(255,255,255,.52);
+  border-radius:30px;
+  background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.74));
+  backdrop-filter:blur(26px) saturate(130%);
+  box-shadow:0 32px 90px rgba(3,12,31,.28),inset 0 1px 0 rgba(255,255,255,.68);
 }
 .signupCard{padding:38px 36px 34px}
 .cardHead{margin-bottom:24px}
