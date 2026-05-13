@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
+import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
+import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/WeMovePages.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
@@ -132,7 +134,9 @@ export default function MeetingListPage() {
       <section className={styles.meetingList}>
         {filteredMeetings.map((meeting) => (
           <Link key={meeting.id} className={styles.listCard} to={`/meetings/${meeting.id}`}>
-            <div>
+            <div className={styles.listCardBody}>
+              <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.listCardImage} />
+              <div className={styles.listCardContent}>
               <div className={styles.listTags}>
                 <span className={styles.badge}>{meeting.sport}</span>
                 <span className={cx("badge", meeting.status === "CLOSED" ? "warning" : "success")}>
@@ -142,13 +146,14 @@ export default function MeetingListPage() {
               <h3>{meeting.title}</h3>
               <p>{meeting.desc}</p>
               <div className={styles.listMeta}>
-                <span>{meeting.region}</span>
-                <span>{meeting.place}</span>
-                <span>{meeting.current}/{meeting.max}명</span>
+                <span><UiIcon name="location" className={styles.dashboardMetaIcon} />{meeting.region}</span>
+                <span><UiIcon name="calendar" className={styles.dashboardMetaIcon} />{meeting.place}</span>
+                <span><UiIcon name="user" className={styles.dashboardMetaIcon} />{meeting.current}/{meeting.max}명</span>
               </div>
               <div className={styles.host}>
-                <i />
+                <i><UiIcon name="user" className={styles.dashboardHostIcon} /></i>
                 <span>{meeting.host} · 매너점수 4.8</span>
+              </div>
               </div>
             </div>
 

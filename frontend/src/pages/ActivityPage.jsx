@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
+import UiIcon from "../components/UiIcon";
 import { meetings } from "../data/demoData";
+import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/WeMovePages.module.css";
 
 const activityItems = [
@@ -41,7 +43,7 @@ export default function ActivityPage() {
             <div className={styles.dashboardActivityList}>
               {activityFeed.map((item) => (
                 <div key={item.title} className={styles.dashboardActivityItem}>
-                  <i>{item.meta.slice(0, 1)}</i>
+                  <i><UiIcon name="activity" className={styles.dashboardActivityGlyph} /></i>
                   <div>
                     <strong>{item.title}</strong>
                     <p>{item.meta}</p>
@@ -74,13 +76,16 @@ export default function ActivityPage() {
         <div className={styles.dashboardCompactList}>
           {meetings.slice(0, 3).map((meeting) => (
             <Link key={meeting.id} to={`/meetings/${meeting.id}`} className={styles.dashboardCompactCard}>
-              <div>
+              <div className={styles.dashboardCompactBody}>
+                <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.dashboardMiniImage} />
+                <div>
                 <div className={styles.dashboardMeetingBadges}>
                   <span>{meeting.sport}</span>
                   <span className={styles.dashboardStatusBadge}>{meeting.statusText}</span>
                 </div>
                 <h3>{meeting.title}</h3>
                 <p>{meeting.place} · {meeting.displayDate} {meeting.time}</p>
+                </div>
               </div>
               <strong>{meeting.current}/{meeting.max}명</strong>
             </Link>

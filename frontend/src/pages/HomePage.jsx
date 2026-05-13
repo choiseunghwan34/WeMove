@@ -1,51 +1,19 @@
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
+import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
+import { categoryItems, meetingImages } from "../data/dashboardData";
 import styles from "../styles/WeMovePages.module.css";
 
 export default function HomePage() {
   const recruitingMeetings = meetings.filter((meeting) => meeting.status === "RECRUITING");
   const featuredMeetings = recruitingMeetings.slice(0, 3);
 
-  const categoryIcons = {
-    전체: "◫",
-    러닝: "◔",
-    헬스: "◗",
-    풋살: "◉",
-    배드민턴: "◌",
-    농구: "◍",
-    등산: "△",
-    라이딩: "◎",
-    요가: "◠",
-    테니스: "◐",
-  };
-
-  const categoryItems = [
-    { name: "전체", accent: "blue" },
-    { name: "러닝", accent: "sky" },
-    { name: "헬스", accent: "blue" },
-    { name: "풋살", accent: "neutral" },
-    { name: "배드민턴", accent: "orange" },
-    { name: "농구", accent: "amber" },
-    { name: "등산", accent: "green" },
-    { name: "라이딩", accent: "teal" },
-    { name: "요가", accent: "purple" },
-    { name: "테니스", accent: "lime" },
-  ];
-
-  const meetingImages = {
-    1: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=80",
-    2: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
-    3: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80",
-    4: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=900&q=80",
-    5: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=900&q=80",
-  };
-
   const localStats = [
-    { label: "모집중 모임", value: "24개", tone: "blue" },
-    { label: "참여 예정 인원", value: "128명", tone: "indigo" },
-    { label: "오늘 진행 모임", value: "5개", tone: "green" },
-    { label: "신규 댓글", value: "43개", tone: "mint" },
+    { label: "모집중 모임", value: "24개", tone: "blue", icon: "spark" },
+    { label: "참여 예정 인원", value: "128명", tone: "indigo", icon: "user" },
+    { label: "오늘 진행 모임", value: "5개", tone: "green", icon: "calendar" },
+    { label: "신규 댓글", value: "43개", tone: "mint", icon: "comment" },
   ];
 
   const weeklySchedule = [
@@ -126,20 +94,20 @@ export default function HomePage() {
 
             <div className={styles.dashboardHeroFilters}>
               <label>
-                <span>📍</span>
+                <span><UiIcon name="location" className={styles.dashboardInlineIcon} /></span>
                 <select defaultValue={regions[0]}>
                   {regions.map((region) => <option key={region}>{region}</option>)}
                 </select>
               </label>
               <label>
-                <span>⌘</span>
+                <span><UiIcon name="spark" className={styles.dashboardInlineIcon} /></span>
                 <select defaultValue="전체 운동">
                   <option>전체 운동</option>
                   {sports.map((sport) => <option key={sport.id}>{sport.name}</option>)}
                 </select>
               </label>
               <label>
-                <span>◷</span>
+                <span><UiIcon name="calendar" className={styles.dashboardInlineIcon} /></span>
                 <select defaultValue="날짜 선택">
                   <option>날짜 선택</option>
                   <option>오늘</option>
@@ -160,7 +128,9 @@ export default function HomePage() {
           <div className={styles.dashboardSummaryGrid}>
             {localStats.map((stat) => (
               <article key={stat.label}>
-                <i className={styles[`dashboardTone${stat.tone[0].toUpperCase()}${stat.tone.slice(1)}`]}>●</i>
+                <i className={styles[`dashboardTone${stat.tone[0].toUpperCase()}${stat.tone.slice(1)}`]}>
+                  <UiIcon name={stat.icon} className={styles.dashboardStatIcon} />
+                </i>
                 <div>
                   <span>{stat.label}</span>
                   <strong>{stat.value}</strong>
@@ -175,7 +145,7 @@ export default function HomePage() {
         {categoryItems.map((item) => (
           <button key={item.name} type="button" className={styles.dashboardCategoryItem}>
             <i className={styles[`dashboardTone${item.accent[0].toUpperCase()}${item.accent.slice(1)}`]}>
-              {categoryIcons[item.name]}
+              <UiIcon name={item.icon} className={styles.dashboardCategoryGlyph} />
             </i>
             <span>{item.name}</span>
           </button>
@@ -210,9 +180,9 @@ export default function HomePage() {
                 <h3>{meeting.title}</h3>
                 <p>{meeting.desc}</p>
                 <div className={styles.dashboardMeetingMeta}>
-                  <span>📍 {meeting.place}</span>
-                  <span>◷ 오늘(금) {meeting.time}</span>
-                  <span>◔ {meeting.current} / {meeting.max}명</span>
+                  <span><UiIcon name="location" className={styles.dashboardMetaIcon} /> {meeting.place}</span>
+                  <span><UiIcon name="calendar" className={styles.dashboardMetaIcon} /> 오늘(금) {meeting.time}</span>
+                  <span><UiIcon name="user" className={styles.dashboardMetaIcon} /> {meeting.current} / {meeting.max}명</span>
                 </div>
                 <div className={styles.dashboardMeetingFooter}>
                   <div className={styles.dashboardHostMeta}>
@@ -220,9 +190,9 @@ export default function HomePage() {
                     <span>매너점수 4.8 (후기 18)</span>
                   </div>
                   <div className={styles.dashboardMeetingActions}>
-                    <button type="button">♡ 18</button>
-                    <button type="button">◌ 6</button>
-                    <button type="button">↗</button>
+                    <button type="button"><UiIcon name="heart" className={styles.dashboardActionIcon} />18</button>
+                    <button type="button"><UiIcon name="comment" className={styles.dashboardActionIcon} />6</button>
+                    <button type="button"><UiIcon name="share" className={styles.dashboardActionIcon} /></button>
                     <Link to={`/meetings/${meeting.id}`}>참가 신청</Link>
                   </div>
                 </div>

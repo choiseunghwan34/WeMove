@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import { meetings } from "../data/demoData";
+import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/WeMovePages.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
@@ -65,13 +66,16 @@ export default function MyPage() {
         <div className={styles.myList}>
           {meetings.slice(0, 4).map((meeting) => (
             <article key={meeting.id}>
-              <div>
+              <div className={styles.dashboardCompactBody}>
+                <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.dashboardMiniImage} />
+                <div>
                 <span className={cx("badge", meeting.status === "CLOSED" ? "warning" : "success")}>{meeting.statusText}</span>
                 {" "}
                 <span className={styles.badge}>{meeting.sport}</span>
                 <h3>{meeting.title}</h3>
                 <p>{meeting.desc}</p>
                 <small>{meeting.place} · {meeting.displayDate} {meeting.time}</small>
+                </div>
               </div>
               <aside>
                 <Link to={`/meetings/${meeting.id}`}>상세 보기</Link>

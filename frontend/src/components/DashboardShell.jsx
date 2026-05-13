@@ -1,20 +1,7 @@
 import { Link } from "react-router-dom";
+import UiIcon from "./UiIcon";
+import { interestItems, navItems } from "../data/dashboardData";
 import styles from "../styles/WeMovePages.module.css";
-
-const navItems = [
-  { label: "홈", icon: "⌂", to: "/" },
-  { label: "모임 찾기", icon: "⌕", to: "/meetings" },
-  { label: "내 활동", icon: "↺", to: "/activity" },
-  { label: "마이페이지", icon: "◡", to: "/mypage" },
-];
-
-const interestItems = [
-  { label: "러닝", icon: "◔" },
-  { label: "헬스", icon: "◗" },
-  { label: "풋살", icon: "◉" },
-  { label: "등산", icon: "△" },
-  { label: "배드민턴", icon: "◌" },
-];
 
 export default function DashboardShell({
   active = "홈",
@@ -33,7 +20,7 @@ export default function DashboardShell({
         </Link>
 
         <label className={styles.dashboardSearch}>
-          <span>⌕</span>
+          <UiIcon name="search" className={styles.dashboardSearchIcon} />
           <input placeholder="모임, 지역, 운동 종목을 검색해보세요" />
         </label>
 
@@ -52,7 +39,7 @@ export default function DashboardShell({
                 to={item.to}
                 className={active === item.label ? styles.dashboardNavItemActive : styles.dashboardNavItem}
               >
-                <i>{item.icon}</i>
+                <UiIcon name={item.icon} className={styles.dashboardNavIcon} />
                 <span>{item.label}</span>
               </Link>
             ))}
@@ -65,7 +52,7 @@ export default function DashboardShell({
             <div className={styles.dashboardInterestList}>
               {interestItems.map((item) => (
                 <span key={item.label}>
-                  <i>{item.icon}</i>
+                  <i><UiIcon name={item.icon} className={styles.dashboardInterestIcon} /></i>
                   {item.label}
                 </span>
               ))}
