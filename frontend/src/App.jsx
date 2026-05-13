@@ -1,5 +1,4 @@
 import { Route, Routes, useLocation } from "react-router-dom";
-import Footer from "./components/Footer";
 import Header from "./components/Header";
 import AdminPage from "./pages/AdminPage";
 import ActivityPage from "./pages/ActivityPage";
@@ -42,7 +41,6 @@ function LayoutRoutes() {
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
-      {!isDashboardRoute && <Footer />}
     </>
   );
 }
