@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
@@ -5,9 +6,37 @@ import { meetings, regions, sports } from "../data/demoData";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import styles from "../styles/HomePage.module.css";
 
+const heroSlides = [
+  {
+    title: "오늘 운동, 혼자 말고 같이",
+    description: "내 주변 운동 모임을 찾고, 함께 땀 흘려보세요.",
+    image: meetingImages[1],
+  },
+  {
+    title: "퇴근 후 5km, 가볍게 시작",
+    description: "러닝부터 헬스, 풋살까지 동네 루틴을 자연스럽게 이어가세요.",
+    image: meetingImages[2],
+  },
+  {
+    title: "이번 주말엔 새로운 크루와",
+    description: "관심 운동과 지역을 고르면 지금 참여 가능한 모임을 바로 볼 수 있어요.",
+    image: meetingImages[5],
+  },
+];
+
 export default function HomePage() {
+  const [activeSlide, setActiveSlide] = useState(0);
   const recruitingMeetings = meetings.filter((meeting) => meeting.status === "RECRUITING");
   const featuredMeetings = recruitingMeetings.slice(0, 3);
+  const currentHero = heroSlides[activeSlide];
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveSlide((index) => (index + 1) % heroSlides.length);
+    }, 4200);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const localStats = [
     { label: "모집중 모임", value: "24개", tone: "blue", icon: "spark" },
@@ -88,9 +117,22 @@ export default function HomePage() {
     >
       <section className={styles.dashboardHeroRow}>
         <div className={styles.dashboardHeroCard}>
+          <div className={styles.heroCarousel} aria-hidden="true">
+            {heroSlides.map((slide, index) => (
+              <img
+                key={slide.title}
+                src={slide.image}
+                alt=""
+                className={index === activeSlide ? styles.heroSlideActive : styles.heroSlide}
+              />
+            ))}
+          </div>
           <div className={styles.dashboardHeroContent}>
-            <h1>오늘 운동, 혼자 말고 같이</h1>
-            <p>내 주변 운동 모임을 찾고, 함께 땀 흘려보세요.</p>
+            <div>
+              <span className={styles.heroKicker}>Local Fitness Community</span>
+              <h1>{currentHero.title}</h1>
+              <p>{currentHero.description}</p>
+            </div>
 
             <div className={styles.dashboardHeroFilters}>
               <label>
@@ -116,6 +158,18 @@ export default function HomePage() {
                 </select>
               </label>
               <Link to="/meetings" className={styles.dashboardHeroButton}>모임 찾기</Link>
+            </div>
+
+            <div className={styles.heroDots} aria-label="홈 배너 슬라이드">
+              {heroSlides.map((slide, index) => (
+                <button
+                  key={slide.title}
+                  type="button"
+                  className={index === activeSlide ? styles.heroDotActive : styles.heroDot}
+                  onClick={() => setActiveSlide(index)}
+                  aria-label={`${index + 1}번째 배너 보기`}
+                />
+              ))}
             </div>
           </div>
         </div>
