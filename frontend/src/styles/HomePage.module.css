@@ -478,9 +478,216 @@
   box-shadow:0 10px 28px rgba(15,23,42,.04),inset 0 1px 0 rgba(255,255,255,.92)!important;
 }
 
+/* Icon tone pass: keep strong blue for actions, soften decorative symbols. */
+.dashboardCategoryItem i,
+.dashboardSummaryGrid i,
+.dashboardRankItem b,
+.dashboardActivityItem i{
+  background:#f2f6ff!important;
+  color:#3b6edc!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 6px 14px rgba(37,99,235,.055)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n+2) i{
+  background:#eef8f7!important;
+  color:#2e7d78!important;
+}
+
+.dashboardCategoryItem:nth-child(3n) i{
+  background:#fff7e8!important;
+  color:#b46b18!important;
+}
+
+.dashboardSummaryGrid article:nth-child(2) i,
+.dashboardActivityItem:nth-child(2n) i{
+  background:#eef4ff!important;
+  color:#3b6edc!important;
+}
+
+.dashboardSummaryGrid article:nth-child(3) i{
+  background:#eefaf6!important;
+  color:#23845f!important;
+}
+
+.dashboardSummaryGrid article:nth-child(4) i{
+  background:#eef8f7!important;
+  color:#2e7d78!important;
+}
+
+.dashboardRankItem b{
+  background:#f4f7fc!important;
+  color:#597294!important;
+  font-weight:800!important;
+}
+
+.dashboardRankItem:first-child b,
+.dashboardRankItem:nth-child(2) b,
+.dashboardRankItem:nth-child(3) b{
+  background:#eef4ff!important;
+  color:#3b6edc!important;
+}
+
+.dashboardCategoryItem:hover i{
+  background:#e8f0ff!important;
+  color:#2563eb!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.94),0 8px 18px rgba(37,99,235,.09)!important;
+}
+
+/* Neutral background pass: keep blue for actions, calm the surrounding surfaces. */
+.dashboardCategoryStrip{
+  background:
+    linear-gradient(135deg,rgba(250,250,249,.94),rgba(255,255,255,.92) 48%,rgba(247,248,250,.94))!important;
+  border-color:rgba(15,23,42,.055)!important;
+}
+
+.dashboardCategoryItem{
+  background:
+    radial-gradient(circle at 86% 10%,rgba(148,163,184,.08),transparent 34%),
+    linear-gradient(160deg,#ffffff,#f8f9fb)!important;
+  border-color:rgba(15,23,42,.055)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n+2){
+  background:
+    radial-gradient(circle at 86% 10%,rgba(45,125,120,.06),transparent 34%),
+    linear-gradient(160deg,#ffffff,#f8faf9)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n){
+  background:
+    radial-gradient(circle at 86% 10%,rgba(180,107,24,.055),transparent 34%),
+    linear-gradient(160deg,#ffffff,#fbfaf7)!important;
+}
+
+.dashboardPanel,
+.dashboardSummaryCard,
+.dashboardMeetingCard{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045),inset 0 1px 0 rgba(255,255,255,.94)!important;
+}
+
+.dashboardSummaryGrid article,
+.dashboardScheduleItem,
+.dashboardRankItem,
+.dashboardActivityItem{
+  background:rgba(249,250,251,.82)!important;
+  border-color:rgba(15,23,42,.052)!important;
+}
+
+.dashboardSummaryGrid article:nth-child(2),
+.dashboardSummaryGrid article:nth-child(3),
+.dashboardSummaryGrid article:nth-child(4){
+  background:rgba(249,250,251,.82)!important;
+}
+
 .dashboardPanel::after,
 .dashboardSummaryCard::after,
 .dashboardMeetingCard::after{
   width:3px!important;
   background:linear-gradient(180deg,rgba(37,99,235,.45),rgba(96,165,250,.42))!important;
+}
+
+/* Final clarity pass: quieter page background, whiter cards, lighter hero overlay. */
+.heroCarousel::after{
+  background:
+    radial-gradient(circle at 74% 16%,rgba(74,144,255,.18),transparent 26%),
+    linear-gradient(90deg,rgba(5,18,42,.72),rgba(11,42,92,.42) 54%,rgba(11,42,92,.1))!important;
+}
+
+.dashboardHeroCard::after{
+  background:linear-gradient(90deg,rgba(8,25,65,.54),rgba(8,25,65,.08))!important;
+}
+
+.dashboardPanel,
+.dashboardSummaryCard,
+.dashboardMeetingCard,
+.dashboardCategoryStrip{
+  background:rgba(255,255,255,.96)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.042),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+
+.dashboardCategoryItem,
+.dashboardSummaryGrid article,
+.dashboardScheduleItem,
+.dashboardRankItem,
+.dashboardActivityItem{
+  background:#fff!important;
+  border-color:rgba(15,23,42,.052)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n+2),
+.dashboardCategoryItem:nth-child(3n),
+.dashboardSummaryGrid article:nth-child(2),
+.dashboardSummaryGrid article:nth-child(3),
+.dashboardSummaryGrid article:nth-child(4){
+  background:#fff!important;
+}
+
+/* Warm-neutral final pass: blue stays on actions, not the page atmosphere. */
+.dashboardHeroContent h1{
+  max-width:620px!important;
+  font-size:clamp(2.34rem,3.22vw,2.75rem)!important;
+  line-height:1.12!important;
+  word-break:keep-all;
+}
+
+.heroCarousel::after{
+  background:
+    radial-gradient(circle at 74% 16%,rgba(255,255,255,.08),transparent 27%),
+    linear-gradient(90deg,rgba(8,24,58,.58),rgba(8,24,58,.16) 58%,rgba(8,24,58,.04))!important;
+}
+
+.dashboardHeroCard::after{
+  background:linear-gradient(90deg,rgba(8,24,58,.58),rgba(8,24,58,.16))!important;
+}
+
+.dashboardPanel,
+.dashboardSummaryCard,
+.dashboardMeetingCard,
+.dashboardCategoryStrip{
+  background:rgba(255,255,255,.97)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045),inset 0 1px 0 rgba(255,255,255,.97)!important;
+}
+
+.dashboardCategoryItem,
+.dashboardSummaryGrid article,
+.dashboardScheduleItem,
+.dashboardRankItem,
+.dashboardActivityItem{
+  background:#fff!important;
+}
+
+.dashboardCategoryItem i,
+.dashboardSummaryGrid i,
+.dashboardRankItem b,
+.dashboardActivityItem i{
+  background:#f4f5f7!important;
+  color:#3f6fd8!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 5px 12px rgba(15,23,42,.035)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n+2) i,
+.dashboardActivityItem:nth-child(2n) i,
+.dashboardSummaryGrid article:nth-child(4) i{
+  background:#f4f7f6!important;
+  color:#2e7d78!important;
+}
+
+.dashboardCategoryItem:nth-child(3n) i{
+  background:#faf6ef!important;
+  color:#a96a1b!important;
+}
+
+.dashboardRankItem b{
+  color:#667085!important;
+}
+
+.dashboardRankItem:first-child b,
+.dashboardRankItem:nth-child(2) b,
+.dashboardRankItem:nth-child(3) b{
+  background:#f4f5f7!important;
+  color:#3f6fd8!important;
 }
