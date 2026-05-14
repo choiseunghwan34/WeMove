@@ -1,0 +1,111 @@
+/* Auto-split from MeetingListPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.actionClosed{
+  composes:actionClosed from "./WeMoveShared.module.css";
+}
+
+.badge{
+  composes:badge from "./WeMoveShared.module.css";
+}
+
+.CLOSED{}
+
+.dashboardHostIcon{
+  composes:dashboardHostIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardMetaIcon{
+  composes:dashboardMetaIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardPanel{
+  composes:dashboardPanel from "./WeMoveShared.module.css";
+}
+
+.dashboardPanelHead{
+  composes:dashboardPanelHead from "./WeMoveShared.module.css";
+}
+
+.dashboardScheduleItem{
+  composes:dashboardScheduleItem from "./WeMoveShared.module.css";
+}
+
+.dashboardScheduleList{
+  composes:dashboardScheduleList from "./WeMoveShared.module.css";
+}
+
+.dashboardSimpleList{
+  composes:dashboardSimpleList from "./WeMoveShared.module.css";
+}
+
+.dateBox{
+  composes:dateBox from "./WeMoveShared.module.css";
+}
+
+.filterPanel{
+  composes:filterPanel from "./WeMoveShared.module.css";
+}
+
+.filterRow{
+  composes:filterRow from "./WeMoveShared.module.css";
+}
+
+.host{
+  composes:host from "./WeMoveShared.module.css";
+}
+
+.listCard{
+  composes:listCard from "./WeMoveShared.module.css";
+}
+
+.listCardBody{
+  composes:listCardBody from "./WeMoveShared.module.css";
+}
+
+.listCardContent{
+  composes:listCardContent from "./WeMoveShared.module.css";
+}
+
+.listCardImage{
+  composes:listCardImage from "./WeMoveShared.module.css";
+}
+
+.listHead{
+  composes:listHead from "./WeMoveShared.module.css";
+}
+
+.listMeta{
+  composes:listMeta from "./WeMoveShared.module.css";
+}
+
+.listTags{
+  composes:listTags from "./WeMoveShared.module.css";
+}
+
+.meetingList{
+  composes:meetingList from "./WeMoveShared.module.css";
+}
+
+.notice{
+  composes:notice from "./WeMoveShared.module.css";
+}
+
+.success{
+  composes:success from "./WeMoveShared.module.css";
+}
+
+.tabButton{
+  composes:tabButton from "./WeMoveShared.module.css";
+}
+
+.tabButtonActive{
+  composes:tabButtonActive from "./WeMoveShared.module.css";
+}
+
+.tabs{
+  composes:tabs from "./WeMoveShared.module.css";
+}
+
+.warning{
+  composes:warning from "./WeMoveShared.module.css";
+}

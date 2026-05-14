@@ -4,7 +4,7 @@ import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/MeetingListPage.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
 

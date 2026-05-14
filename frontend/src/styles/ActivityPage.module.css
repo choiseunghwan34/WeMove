@@ -1,0 +1,61 @@
+/* Auto-split from ActivityPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.dashboardActivityGlyph{
+  composes:dashboardActivityGlyph from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityItem{
+  composes:dashboardActivityItem from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityList{
+  composes:dashboardActivityList from "./WeMoveShared.module.css";
+}
+
+.dashboardCompactBody{
+  composes:dashboardCompactBody from "./WeMoveShared.module.css";
+}
+
+.dashboardCompactCard{
+  composes:dashboardCompactCard from "./WeMoveShared.module.css";
+}
+
+.dashboardCompactList{
+  composes:dashboardCompactList from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingBadges{
+  composes:dashboardMeetingBadges from "./WeMoveShared.module.css";
+}
+
+.dashboardMiniImage{
+  composes:dashboardMiniImage from "./WeMoveShared.module.css";
+}
+
+.dashboardPanel{
+  composes:dashboardPanel from "./WeMoveShared.module.css";
+}
+
+.dashboardPanelHead{
+  composes:dashboardPanelHead from "./WeMoveShared.module.css";
+}
+
+.dashboardSectionCopy{
+  composes:dashboardSectionCopy from "./WeMoveShared.module.css";
+}
+
+.dashboardSectionHead{
+  composes:dashboardSectionHead from "./WeMoveShared.module.css";
+}
+
+.dashboardSimpleList{
+  composes:dashboardSimpleList from "./WeMoveShared.module.css";
+}
+
+.dashboardStatGrid{
+  composes:dashboardStatGrid from "./WeMoveShared.module.css";
+}
+
+.dashboardStatusBadge{
+  composes:dashboardStatusBadge from "./WeMoveShared.module.css";
+}

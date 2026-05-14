@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/MyPage.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
 

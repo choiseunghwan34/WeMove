@@ -1,0 +1,51 @@
+/* Auto-split from AdminPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.badge{
+  composes:badge from "./WeMoveShared.module.css";
+}
+
+.CLOSED{}
+
+.page{
+  composes:page from "./WeMoveShared.module.css";
+}
+
+.pageTabs{
+  composes:pageTabs from "./WeMoveShared.module.css";
+}
+
+.pageTitle{
+  composes:pageTitle from "./WeMoveShared.module.css";
+}
+
+.PENDING{}
+
+.statGrid{
+  composes:statGrid from "./WeMoveShared.module.css";
+}
+
+.success{
+  composes:success from "./WeMoveShared.module.css";
+}
+
+.SUSPENDED{}
+
+.tabButton{
+  composes:tabButton from "./WeMoveShared.module.css";
+}
+
+.tabButtonActive{
+  composes:tabButtonActive from "./WeMoveShared.module.css";
+}
+
+.tableCard{
+  composes:tableCard from "./WeMoveShared.module.css";
+}
+
+.tableHead{
+  composes:tableHead from "./WeMoveShared.module.css";
+}
+
+.warning{
+  composes:warning from "./WeMoveShared.module.css";
+}

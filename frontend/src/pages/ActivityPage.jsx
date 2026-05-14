@@ -3,7 +3,7 @@ import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
 import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/ActivityPage.module.css";
 
 const activityItems = [
   { label: "참여 예정", value: "3회" },

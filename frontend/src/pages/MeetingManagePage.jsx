@@ -1,6 +1,6 @@
 ﻿import { Link, useParams } from "react-router-dom";
 import { meetings } from "../data/demoData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/MeetingManagePage.module.css";
 
 const pendingApplicants = [
   { id: 1, name: "러닝하나", note: "6분 페이스로 편하게 참여 가능합니다.", status: "대기중" },

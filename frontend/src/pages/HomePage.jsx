@@ -3,7 +3,7 @@ import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
 import { categoryItems, meetingImages } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/HomePage.module.css";
 
 export default function HomePage() {
   const recruitingMeetings = meetings.filter((meeting) => meeting.status === "RECRUITING");

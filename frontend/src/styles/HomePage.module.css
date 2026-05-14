@@ -1,0 +1,145 @@
+/* Auto-split from HomePage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.dashboardActionIcon{
+  composes:dashboardActionIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityItem{
+  composes:dashboardActivityItem from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityList{
+  composes:dashboardActivityList from "./WeMoveShared.module.css";
+}
+
+.dashboardCategoryGlyph{
+  composes:dashboardCategoryGlyph from "./WeMoveShared.module.css";
+}
+
+.dashboardCategoryItem{
+  composes:dashboardCategoryItem from "./WeMoveShared.module.css";
+}
+
+.dashboardCategoryStrip{
+  composes:dashboardCategoryStrip from "./WeMoveShared.module.css";
+}
+
+.dashboardFeed{
+  composes:dashboardFeed from "./WeMoveShared.module.css";
+}
+
+.dashboardHeroButton{
+  composes:dashboardHeroButton from "./WeMoveShared.module.css";
+}
+
+.dashboardHeroCard{
+  composes:dashboardHeroCard from "./WeMoveShared.module.css";
+}
+
+.dashboardHeroContent{
+  composes:dashboardHeroContent from "./WeMoveShared.module.css";
+}
+
+.dashboardHeroFilters{
+  composes:dashboardHeroFilters from "./WeMoveShared.module.css";
+}
+
+.dashboardHeroRow{
+  composes:dashboardHeroRow from "./WeMoveShared.module.css";
+}
+
+.dashboardHostMeta{
+  composes:dashboardHostMeta from "./WeMoveShared.module.css";
+}
+
+.dashboardInlineIcon{
+  composes:dashboardInlineIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingActions{
+  composes:dashboardMeetingActions from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingBadges{
+  composes:dashboardMeetingBadges from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingBody{
+  composes:dashboardMeetingBody from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingCard{
+  composes:dashboardMeetingCard from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingFooter{
+  composes:dashboardMeetingFooter from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingImage{
+  composes:dashboardMeetingImage from "./WeMoveShared.module.css";
+}
+
+.dashboardMeetingMeta{
+  composes:dashboardMeetingMeta from "./WeMoveShared.module.css";
+}
+
+.dashboardMetaIcon{
+  composes:dashboardMetaIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardPanel{
+  composes:dashboardPanel from "./WeMoveShared.module.css";
+}
+
+.dashboardPanelHead{
+  composes:dashboardPanelHead from "./WeMoveShared.module.css";
+}
+
+.dashboardPills{
+  composes:dashboardPills from "./WeMoveShared.module.css";
+}
+
+.dashboardRankItem{
+  composes:dashboardRankItem from "./WeMoveShared.module.css";
+}
+
+.dashboardRankList{
+  composes:dashboardRankList from "./WeMoveShared.module.css";
+}
+
+.dashboardScheduleItem{
+  composes:dashboardScheduleItem from "./WeMoveShared.module.css";
+}
+
+.dashboardScheduleList{
+  composes:dashboardScheduleList from "./WeMoveShared.module.css";
+}
+
+.dashboardSection{
+  composes:dashboardSection from "./WeMoveShared.module.css";
+}
+
+.dashboardSectionHead{
+  composes:dashboardSectionHead from "./WeMoveShared.module.css";
+}
+
+.dashboardSidebarHead{
+  composes:dashboardSidebarHead from "./WeMoveShared.module.css";
+}
+
+.dashboardStatIcon{
+  composes:dashboardStatIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardStatusBadge{
+  composes:dashboardStatusBadge from "./WeMoveShared.module.css";
+}
+
+.dashboardSummaryCard{
+  composes:dashboardSummaryCard from "./WeMoveShared.module.css";
+}
+
+.dashboardSummaryGrid{
+  composes:dashboardSummaryGrid from "./WeMoveShared.module.css";
+}

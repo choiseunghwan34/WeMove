@@ -1,0 +1,53 @@
+/* Auto-split from MeetingManagePage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.badge{
+  composes:badge from "./WeMoveShared.module.css";
+}
+
+.formActions{
+  composes:formActions from "./WeMoveShared.module.css";
+}
+
+.page{
+  composes:page from "./WeMoveShared.module.css";
+}
+
+.pageTitle{
+  composes:pageTitle from "./WeMoveShared.module.css";
+}
+
+.participantActions{
+  composes:participantActions from "./WeMoveShared.module.css";
+}
+
+.participantCard{
+  composes:participantCard from "./WeMoveShared.module.css";
+}
+
+.participantHead{
+  composes:participantHead from "./WeMoveShared.module.css";
+}
+
+.participantList{
+  composes:participantList from "./WeMoveShared.module.css";
+}
+
+.participantMeta{
+  composes:participantMeta from "./WeMoveShared.module.css";
+}
+
+.reviewScore{
+  composes:reviewScore from "./WeMoveShared.module.css";
+}
+
+.softPanel{
+  composes:softPanel from "./WeMoveShared.module.css";
+}
+
+.statGrid{
+  composes:statGrid from "./WeMoveShared.module.css";
+}
+
+.subGrid{
+  composes:subGrid from "./WeMoveShared.module.css";
+}

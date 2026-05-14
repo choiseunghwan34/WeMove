@@ -2,7 +2,7 @@
 import { Link, useParams } from "react-router-dom";
 import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/MeetingEditPage.module.css";
 
 function useImagePreviews(files) {
   const previews = useMemo(() => {

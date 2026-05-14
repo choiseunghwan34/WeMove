@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/MeetingDetailPage.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
 

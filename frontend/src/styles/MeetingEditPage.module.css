@@ -1,0 +1,61 @@
+/* Auto-split from MeetingEditPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.choiceGroup{
+  composes:choiceGroup from "./WeMoveShared.module.css";
+}
+
+.formActions{
+  composes:formActions from "./WeMoveShared.module.css";
+}
+
+.formCard{
+  composes:formCard from "./WeMoveShared.module.css";
+}
+
+.formIntro{
+  composes:formIntro from "./WeMoveShared.module.css";
+}
+
+.full{
+  composes:full from "./WeMoveShared.module.css";
+}
+
+.kicker{
+  composes:kicker from "./WeMoveShared.module.css";
+}
+
+.page{
+  composes:page from "./WeMoveShared.module.css";
+}
+
+.pageTitle{
+  composes:pageTitle from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewCard{
+  composes:reviewPreviewCard from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewGrid{
+  composes:reviewPreviewGrid from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewImage{
+  composes:reviewPreviewImage from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewMeta{
+  composes:reviewPreviewMeta from "./WeMoveShared.module.css";
+}
+
+.uploadBlock{
+  composes:uploadBlock from "./WeMoveShared.module.css";
+}
+
+.uploadHint{
+  composes:uploadHint from "./WeMoveShared.module.css";
+}
+
+.uploadInput{
+  composes:uploadInput from "./WeMoveShared.module.css";
+}

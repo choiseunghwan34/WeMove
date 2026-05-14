@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { meetings } from "../data/demoData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/ReviewPage.module.css";
 
 const initialReviews = [
   {

@@ -1,0 +1,97 @@
+/* Auto-split from ReviewPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.formActions{
+  composes:formActions from "./WeMoveShared.module.css";
+}
+
+.kicker{
+  composes:kicker from "./WeMoveShared.module.css";
+}
+
+.page{
+  composes:page from "./WeMoveShared.module.css";
+}
+
+.pageTitle{
+  composes:pageTitle from "./WeMoveShared.module.css";
+}
+
+.ratingCaption{
+  composes:ratingCaption from "./WeMoveShared.module.css";
+}
+
+.ratingStar{
+  composes:ratingStar from "./WeMoveShared.module.css";
+}
+
+.ratingStarActive{
+  composes:ratingStarActive from "./WeMoveShared.module.css";
+}
+
+.ratingStars{
+  composes:ratingStars from "./WeMoveShared.module.css";
+}
+
+.reviewCard{
+  composes:reviewCard from "./WeMoveShared.module.css";
+}
+
+.reviewForm{
+  composes:reviewForm from "./WeMoveShared.module.css";
+}
+
+.reviewHead{
+  composes:reviewHead from "./WeMoveShared.module.css";
+}
+
+.reviewList{
+  composes:reviewList from "./WeMoveShared.module.css";
+}
+
+.reviewMeta{
+  composes:reviewMeta from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewCard{
+  composes:reviewPreviewCard from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewGrid{
+  composes:reviewPreviewGrid from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewImage{
+  composes:reviewPreviewImage from "./WeMoveShared.module.css";
+}
+
+.reviewPreviewMeta{
+  composes:reviewPreviewMeta from "./WeMoveShared.module.css";
+}
+
+.reviewScore{
+  composes:reviewScore from "./WeMoveShared.module.css";
+}
+
+.reviewTextarea{
+  composes:reviewTextarea from "./WeMoveShared.module.css";
+}
+
+.softPanel{
+  composes:softPanel from "./WeMoveShared.module.css";
+}
+
+.subGrid{
+  composes:subGrid from "./WeMoveShared.module.css";
+}
+
+.uploadBlock{
+  composes:uploadBlock from "./WeMoveShared.module.css";
+}
+
+.uploadHint{
+  composes:uploadHint from "./WeMoveShared.module.css";
+}
+
+.uploadInput{
+  composes:uploadInput from "./WeMoveShared.module.css";
+}

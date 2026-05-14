@@ -1,0 +1,85 @@
+/* Auto-split from DashboardShell.jsx. Page/component styles compose shared WeMove design rules. */
+
+.dashboardActions{
+  composes:dashboardActions from "./WeMoveShared.module.css";
+}
+
+.dashboardAside{
+  composes:dashboardAside from "./WeMoveShared.module.css";
+}
+
+.dashboardHeader{
+  composes:dashboardHeader from "./WeMoveShared.module.css";
+}
+
+.dashboardInterestCard{
+  composes:dashboardInterestCard from "./WeMoveShared.module.css";
+}
+
+.dashboardInterestIcon{
+  composes:dashboardInterestIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardInterestList{
+  composes:dashboardInterestList from "./WeMoveShared.module.css";
+}
+
+.dashboardLoginButton{
+  composes:dashboardLoginButton from "./WeMoveShared.module.css";
+}
+
+.dashboardLogo{
+  composes:dashboardLogo from "./WeMoveShared.module.css";
+}
+
+.dashboardMain{
+  composes:dashboardMain from "./WeMoveShared.module.css";
+}
+
+.dashboardNav{
+  composes:dashboardNav from "./WeMoveShared.module.css";
+}
+
+.dashboardNavIcon{
+  composes:dashboardNavIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardNavItem{
+  composes:dashboardNavItem from "./WeMoveShared.module.css";
+}
+
+.dashboardNavItemActive{
+  composes:dashboardNavItemActive from "./WeMoveShared.module.css";
+}
+
+.dashboardPage{
+  composes:dashboardPage from "./WeMoveShared.module.css";
+}
+
+.dashboardPageIntro{
+  composes:dashboardPageIntro from "./WeMoveShared.module.css";
+}
+
+.dashboardSearch{
+  composes:dashboardSearch from "./WeMoveShared.module.css";
+}
+
+.dashboardSearchIcon{
+  composes:dashboardSearchIcon from "./WeMoveShared.module.css";
+}
+
+.dashboardShell{
+  composes:dashboardShell from "./WeMoveShared.module.css";
+}
+
+.dashboardSidebar{
+  composes:dashboardSidebar from "./WeMoveShared.module.css";
+}
+
+.dashboardSidebarHead{
+  composes:dashboardSidebarHead from "./WeMoveShared.module.css";
+}
+
+.dashboardSignupButton{
+  composes:dashboardSignupButton from "./WeMoveShared.module.css";
+}

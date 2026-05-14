@@ -1,0 +1,75 @@
+/* Auto-split from MyPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.badge{
+  composes:badge from "./WeMoveShared.module.css";
+}
+
+.CLOSED{}
+
+.dashboardCompactBody{
+  composes:dashboardCompactBody from "./WeMoveShared.module.css";
+}
+
+.dashboardMiniImage{
+  composes:dashboardMiniImage from "./WeMoveShared.module.css";
+}
+
+.dashboardPanel{
+  composes:dashboardPanel from "./WeMoveShared.module.css";
+}
+
+.dashboardPanelHead{
+  composes:dashboardPanelHead from "./WeMoveShared.module.css";
+}
+
+.dashboardQuickLinks{
+  composes:dashboardQuickLinks from "./WeMoveShared.module.css";
+}
+
+.dashboardSimpleList{
+  composes:dashboardSimpleList from "./WeMoveShared.module.css";
+}
+
+.dashboardStatGrid{
+  composes:dashboardStatGrid from "./WeMoveShared.module.css";
+}
+
+.myList{
+  composes:myList from "./WeMoveShared.module.css";
+}
+
+.pageTabs{
+  composes:pageTabs from "./WeMoveShared.module.css";
+}
+
+.profileAvatar{
+  composes:profileAvatar from "./WeMoveShared.module.css";
+}
+
+.profileCard{
+  composes:profileCard from "./WeMoveShared.module.css";
+}
+
+.profileLeft{
+  composes:profileLeft from "./WeMoveShared.module.css";
+}
+
+.success{
+  composes:success from "./WeMoveShared.module.css";
+}
+
+.tabButton{
+  composes:tabButton from "./WeMoveShared.module.css";
+}
+
+.tabButtonActive{
+  composes:tabButtonActive from "./WeMoveShared.module.css";
+}
+
+.tabsPanel{
+  composes:tabsPanel from "./WeMoveShared.module.css";
+}
+
+.warning{
+  composes:warning from "./WeMoveShared.module.css";
+}

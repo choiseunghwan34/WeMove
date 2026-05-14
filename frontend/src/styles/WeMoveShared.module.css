@@ -2713,3 +2713,296 @@
     font-size:clamp(1.75rem,8vw,2.15rem);
   }
 }
+
+/* Mobile finder visual polish */
+@media (max-width:720px){
+  .dashboardPage{
+    padding-top:10px;
+  }
+
+  .dashboardHeader{
+    padding:14px;
+    gap:11px;
+    border-radius:24px;
+  }
+
+  .dashboardLogo{
+    justify-self:start;
+  }
+
+  .dashboardLogo span{
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    font-size:17px;
+  }
+
+  .dashboardLogo strong{
+    font-size:24px;
+  }
+
+  .dashboardSearch{
+    order:2;
+    height:46px;
+    padding:0 14px;
+    border-radius:16px;
+    background:#f8fbff;
+  }
+
+  .dashboardActions{
+    order:3;
+  }
+
+  .dashboardLoginButton,
+  .dashboardSignupButton{
+    height:44px;
+    border-radius:15px;
+    font-size:.86rem;
+  }
+
+  .dashboardSidebar{
+    position:sticky;
+    top:8px;
+    z-index:20;
+    padding:8px;
+    border-radius:22px;
+    background:rgba(255,255,255,.78);
+    backdrop-filter:blur(18px) saturate(140%);
+  }
+
+  .dashboardInterestCard{
+    display:none;
+  }
+
+  .dashboardNav{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:6px;
+  }
+
+  .dashboardNavItem,
+  .dashboardNavItemActive{
+    min-height:54px;
+    padding:7px 6px;
+    display:grid;
+    place-items:center;
+    align-content:center;
+    gap:4px;
+    border-radius:16px;
+    font-size:.72rem;
+    text-align:center;
+    line-height:1.15;
+  }
+
+  .dashboardNavIcon{
+    width:18px;
+    height:18px;
+  }
+
+  .dashboardPageIntro{
+    display:none;
+  }
+
+  .notice{
+    margin-top:2px;
+    border-radius:28px;
+    background:
+      radial-gradient(circle at 88% 12%,rgba(147,197,253,.36),transparent 30%),
+      linear-gradient(145deg,#08214a,#1747b8 58%,#3b82f6);
+    box-shadow:0 24px 58px rgba(37,99,235,.2);
+  }
+
+  .notice h1{
+    margin-bottom:9px;
+    max-width:11.5ch;
+    font-size:clamp(2rem,9vw,2.75rem);
+    line-height:1.02;
+    letter-spacing:-.07em;
+  }
+
+  .notice p{
+    font-size:.92rem;
+    line-height:1.65;
+  }
+
+  .notice a{
+    height:48px;
+    border-radius:16px;
+    background:rgba(255,255,255,.95);
+    color:#1747b8;
+    box-shadow:0 14px 28px rgba(3,12,31,.16);
+  }
+
+  .filterPanel{
+    margin-top:0;
+    padding:12px;
+    border-radius:24px;
+    background:rgba(255,255,255,.88);
+  }
+
+  .tabs{
+    margin-bottom:12px;
+    padding:2px 1px 4px;
+    gap:7px;
+  }
+
+  .tabButton,
+  .pageTabs button{
+    height:36px;
+    padding:0 14px;
+    border-radius:999px;
+    background:#fff;
+  }
+
+  .tabButtonActive{
+    background:#2563eb;
+    color:#fff;
+    box-shadow:0 10px 24px rgba(37,99,235,.2);
+  }
+
+  .filterRow{
+    gap:9px;
+  }
+
+  .filterRow select,
+  .filterRow input{
+    height:46px;
+    border-radius:15px;
+    background:#fbfdff;
+  }
+
+  .listHead{
+    margin:4px 2px 12px;
+    padding:0 2px;
+  }
+
+  .listHead h2{
+    font-size:1.35rem;
+    letter-spacing:-.045em;
+  }
+
+  .listHead span{
+    display:inline-flex;
+    align-items:center;
+    width:max-content;
+    height:28px;
+    padding:0 10px;
+    border-radius:999px;
+    background:#eaf2ff;
+    color:#1747b8;
+    font-size:.78rem;
+  }
+
+  .meetingList{
+    gap:12px;
+  }
+
+  .listCard{
+    padding:12px;
+    border-radius:26px;
+    background:rgba(255,255,255,.92);
+    box-shadow:0 16px 42px rgba(18,32,59,.08);
+  }
+
+  .listCardImage{
+    height:176px;
+    border-radius:22px;
+  }
+
+  .listTags{
+    margin-top:2px;
+  }
+
+  .badge,
+  .dashboardMeetingBadges span{
+    height:28px;
+    padding:0 10px;
+    border-radius:999px;
+    font-size:.75rem;
+  }
+
+  .listCard h3{
+    margin:10px 0 6px;
+    font-size:1.35rem;
+    line-height:1.22;
+    letter-spacing:-.045em;
+  }
+
+  .listCard p{
+    font-size:.9rem;
+    line-height:1.62;
+  }
+
+  .listMeta{
+    display:grid;
+    grid-template-columns:1fr;
+    margin-top:11px;
+    color:#61758d;
+  }
+
+  .listMeta span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .host{
+    margin-top:12px;
+    padding-top:12px;
+  }
+
+  .dateBox{
+    padding:13px 14px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#f2f7ff,#eaf2ff);
+  }
+
+  .dateBox strong{
+    font-size:1.25rem;
+  }
+
+  .listCard aside button{
+    height:48px;
+    border-radius:16px;
+    font-size:.9rem;
+  }
+}
+
+/* Fixed mobile account header */
+@media (max-width:720px){
+  .dashboardPage{
+    padding-top:132px!important;
+  }
+
+  .dashboardHeader{
+    position:fixed!important;
+    top:10px!important;
+    left:10px!important;
+    right:10px!important;
+    z-index:60!important;
+    width:auto!important;
+    max-width:none!important;
+    margin:0!important;
+    box-shadow:0 18px 46px rgba(18,32,59,.16),inset 0 1px 0 rgba(255,255,255,.94)!important;
+  }
+
+  .dashboardSidebar{
+    top:118px!important;
+  }
+}
+
+@media (max-width:420px){
+  .dashboardPage{
+    padding-top:184px!important;
+  }
+
+  .dashboardHeader{
+    top:8px!important;
+    left:8px!important;
+    right:8px!important;
+  }
+
+  .dashboardSidebar{
+    top:170px!important;
+  }
+}

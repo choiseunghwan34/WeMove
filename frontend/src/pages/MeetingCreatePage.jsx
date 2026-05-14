@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { regions, sports } from "../data/demoData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/MeetingCreatePage.module.css";
 
 function useImagePreviews(files) {
   const previews = useMemo(() => {

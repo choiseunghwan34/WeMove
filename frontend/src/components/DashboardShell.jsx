@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import UiIcon from "./UiIcon";
 import { interestItems, navItems } from "../data/dashboardData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/DashboardShell.module.css";
 
 export default function DashboardShell({
   active = "홈",

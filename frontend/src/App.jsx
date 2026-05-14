@@ -12,7 +12,6 @@ import MeetingManagePage from "./pages/MeetingManagePage";
 import MyPage from "./pages/MyPage";
 import ReviewPage from "./pages/ReviewPage";
 import SignupPage from "./pages/SignupPage";
-import SiteDemoPage from "./pages/SiteDemoPage";
 
 function LayoutRoutes() {
   const location = useLocation();
@@ -50,7 +49,6 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/demo" element={<SiteDemoPage />} />
       <Route path="*" element={<LayoutRoutes />} />
     </Routes>
   );

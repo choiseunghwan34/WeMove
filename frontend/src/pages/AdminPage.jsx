@@ -1,5 +1,5 @@
 import { adminMembers, meetings, reports, sports } from "../data/demoData";
-import styles from "../styles/WeMovePages.module.css";
+import styles from "../styles/AdminPage.module.css";
 
 const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
 

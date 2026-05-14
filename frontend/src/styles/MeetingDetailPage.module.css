@@ -1,0 +1,117 @@
+/* Auto-split from MeetingDetailPage.jsx. Page/component styles compose shared WeMove design rules. */
+
+.badge{
+  composes:badge from "./WeMoveShared.module.css";
+}
+
+.commentAvatar{
+  composes:commentAvatar from "./WeMoveShared.module.css";
+}
+
+.commentForm{
+  composes:commentForm from "./WeMoveShared.module.css";
+}
+
+.commentItem{
+  composes:commentItem from "./WeMoveShared.module.css";
+}
+
+.commentList{
+  composes:commentList from "./WeMoveShared.module.css";
+}
+
+.commentMeta{
+  composes:commentMeta from "./WeMoveShared.module.css";
+}
+
+.detailBadges{
+  composes:detailBadges from "./WeMoveShared.module.css";
+}
+
+.detailBody{
+  composes:detailBody from "./WeMoveShared.module.css";
+}
+
+.detailChecklist{
+  composes:detailChecklist from "./WeMoveShared.module.css";
+}
+
+.detailCover{
+  composes:detailCover from "./WeMoveShared.module.css";
+}
+
+.detailHero{
+  composes:detailHero from "./WeMoveShared.module.css";
+}
+
+.detailHeroImage{}
+
+.detailHeroImageWrap{}
+
+.detailLayout{
+  composes:detailLayout from "./WeMoveShared.module.css";
+}
+
+.detailMain{
+  composes:detailMain from "./WeMoveShared.module.css";
+}
+
+.detailPanel{
+  composes:detailPanel from "./WeMoveShared.module.css";
+}
+
+.detailSection{
+  composes:detailSection from "./WeMoveShared.module.css";
+}
+
+.detailSidebar{
+  composes:detailSidebar from "./WeMoveShared.module.css";
+}
+
+.detailSummary{
+  composes:detailSummary from "./WeMoveShared.module.css";
+}
+
+.formActions{
+  composes:formActions from "./WeMoveShared.module.css";
+}
+
+.hostCard{
+  composes:hostCard from "./WeMoveShared.module.css";
+}
+
+.page{
+  composes:page from "./WeMoveShared.module.css";
+}
+
+.primaryButton{
+  composes:primaryButton from "./WeMoveShared.module.css";
+}
+
+.profileAvatar{
+  composes:profileAvatar from "./WeMoveShared.module.css";
+}
+
+.secondaryButton{
+  composes:secondaryButton from "./WeMoveShared.module.css";
+}
+
+.sectionHead{
+  composes:sectionHead from "./WeMoveShared.module.css";
+}
+
+.sideInfo{
+  composes:sideInfo from "./WeMoveShared.module.css";
+}
+
+.stickyActions{
+  composes:stickyActions from "./WeMoveShared.module.css";
+}
+
+.success{
+  composes:success from "./WeMoveShared.module.css";
+}
+
+.warning{
+  composes:warning from "./WeMoveShared.module.css";
+}
