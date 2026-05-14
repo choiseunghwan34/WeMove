@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import bg1 from "../assets/image/bg1.jpg";
 import bg2 from "../assets/image/bg2.jpg";
@@ -9,6 +9,8 @@ const authBackgrounds = [bg1, bg2];
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [isSportsOpen, setIsSportsOpen] = useState(false);
+  const [selectedSports, setSelectedSports] = useState(() => sports.slice(0, 2).map((sport) => sport.id));
   const backgroundImage = useMemo(
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
     []
@@ -18,6 +20,18 @@ export default function SignupPage() {
     event.preventDefault();
     navigate("/login");
   };
+
+  const toggleSport = (sportId) => {
+    setSelectedSports((current) => (
+      current.includes(sportId)
+        ? current.filter((id) => id !== sportId)
+        : [...current, sportId]
+    ));
+  };
+
+  const selectedSportNames = sports
+    .filter((sport) => selectedSports.includes(sport.id))
+    .map((sport) => sport.name);
 
   return (
     <main
@@ -61,11 +75,17 @@ export default function SignupPage() {
             <div className={styles.fieldGrid}>
               <label>
                 <span>아이디</span>
-                <input placeholder="wemove_runner" />
+                <div className={styles.inlineField}>
+                  <input placeholder="wemove_runner" />
+                  <button type="button">중복확인</button>
+                </div>
               </label>
               <label>
                 <span>이메일</span>
-                <input type="email" placeholder="runner@wemove.kr" />
+                <div className={styles.inlineField}>
+                  <input type="email" placeholder="runner@wemove.kr" />
+                  <button type="button">인증</button>
+                </div>
               </label>
               <label>
                 <span>비밀번호</span>
@@ -89,14 +109,30 @@ export default function SignupPage() {
           </div>
 
           <div className={`${styles.choiceBlock} ${styles.signupSection}`}>
-            <span>관심 운동 종목</span>
-            <div className={styles.choiceList}>
-              {sports.map((sport) => (
-                <label key={sport.id} className={styles.choiceChip}>
-                  <input type="checkbox" defaultChecked={sport.id <= 2} />
-                  {sport.name}
-                </label>
-              ))}
+            <button
+              type="button"
+              className={styles.sportToggle}
+              onClick={() => setIsSportsOpen((value) => !value)}
+              aria-expanded={isSportsOpen}
+            >
+              <span>관심 운동 종목</span>
+              <strong>{selectedSportNames.length ? selectedSportNames.join(", ") : "선택해주세요"}</strong>
+              <i>{isSportsOpen ? "접기" : "펼치기"}</i>
+            </button>
+
+            <div className={isSportsOpen ? styles.choiceListOpen : styles.choiceListCollapsed}>
+              <div className={styles.choiceList}>
+                {sports.map((sport) => (
+                  <label key={sport.id} className={styles.choiceChip}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSports.includes(sport.id)}
+                      onChange={() => toggleSport(sport.id)}
+                    />
+                    {sport.name}
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 

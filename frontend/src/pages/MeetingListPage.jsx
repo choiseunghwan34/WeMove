@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
@@ -25,7 +26,9 @@ export default function MeetingListPage() {
   const [sport, setSport] = useState(ALL_SPORT);
   const [region, setRegion] = useState(ALL_REGION);
   const [status, setStatus] = useState(ALL_STATUS);
+  const [date, setDate] = useState("");
   const [keyword, setKeyword] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const filteredMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
@@ -84,6 +87,11 @@ export default function MeetingListPage() {
         <Link to="/meetings/new">모임 만들기</Link>
       </section>
 
+      <div className={styles.mobileFilterBar}>
+        <button type="button" onClick={() => setIsFilterOpen(true)}>필터 열기</button>
+        <span>{sport} · {region} · {status}</span>
+      </div>
+
       <section className={styles.filterPanel}>
         <div className={styles.tabs}>
           {[ALL_SPORT, ...sports.map((item) => item.name)].map((item) => (
@@ -108,7 +116,7 @@ export default function MeetingListPage() {
             <option>모집중</option>
             <option>모집마감</option>
           </select>
-          <input type="date" />
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
@@ -163,6 +171,47 @@ export default function MeetingListPage() {
           </Link>
         ))}
       </section>
+
+      <AppModal
+        open={isFilterOpen}
+        variant="sheet"
+        eyebrow="모임 필터"
+        title="원하는 모임만 빠르게 볼까요?"
+        description="모바일에서는 필터를 한 번에 펼쳐서 고르고, 목록은 넓게 보이도록 정리했습니다."
+        confirmText="필터 적용"
+        onClose={() => setIsFilterOpen(false)}
+        onConfirm={() => setIsFilterOpen(false)}
+      >
+        <div className={styles.sheetSportGrid}>
+          {[ALL_SPORT, ...sports.map((item) => item.name)].map((item) => (
+            <button
+              key={item}
+              className={cx("sheetChip", sport === item && "sheetChipActive")}
+              type="button"
+              onClick={() => setSport(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+        <div className={styles.sheetFilterFields}>
+          <select value={region} onChange={(event) => setRegion(event.target.value)}>
+            <option>{ALL_REGION}</option>
+            {regions.map((item) => <option key={item}>{item}</option>)}
+          </select>
+          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option>{ALL_STATUS}</option>
+            <option>모집중</option>
+            <option>모집마감</option>
+          </select>
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          <input
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder="제목, 장소 검색"
+          />
+        </div>
+      </AppModal>
     </DashboardShell>
   );
 }

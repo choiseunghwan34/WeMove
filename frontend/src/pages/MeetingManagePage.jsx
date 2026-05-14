@@ -1,4 +1,6 @@
-﻿import { Link, useParams } from "react-router-dom";
+﻿import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import AppModal from "../components/AppModal";
 import { meetings } from "../data/demoData";
 import styles from "../styles/MeetingManagePage.module.css";
 
@@ -16,6 +18,30 @@ const approvedApplicants = [
 export default function MeetingManagePage() {
   const { meetingId } = useParams();
   const meeting = meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
+  const [actionModal, setActionModal] = useState(null);
+  const closeModal = () => setActionModal(null);
+
+  const modalCopy = {
+    hold: {
+      eyebrow: "신청 보류",
+      title: `${actionModal?.applicant?.name ?? ""}님을 보류할까요?`,
+      description: "참가 메시지를 조금 더 확인한 뒤 승인 여부를 결정할 수 있습니다.",
+      confirmText: "보류 처리",
+    },
+    approve: {
+      eyebrow: "참가 승인",
+      title: `${actionModal?.applicant?.name ?? ""}님을 승인할까요?`,
+      description: "승인하면 참가자 목록에 추가되고 모임 정원에 반영됩니다.",
+      confirmText: "승인하기",
+    },
+    close: {
+      eyebrow: "모집 마감",
+      title: "이 모임의 모집을 마감할까요?",
+      description: "마감 처리 후에는 신규 참가 신청 버튼이 비활성화됩니다.",
+      confirmText: "모집 마감 처리",
+      tone: "danger",
+    },
+  }[actionModal?.type] ?? {};
 
   return (
     <div className={styles.page}>
@@ -48,8 +74,8 @@ export default function MeetingManagePage() {
                   <span className={styles.badge}>{item.status}</span>
                 </div>
                 <div className={styles.participantActions}>
-                  <button type="button">보류</button>
-                  <button type="button">승인</button>
+                  <button type="button" onClick={() => setActionModal({ type: "hold", applicant: item })}>보류</button>
+                  <button type="button" onClick={() => setActionModal({ type: "approve", applicant: item })}>승인</button>
                 </div>
               </article>
             ))}
@@ -74,10 +100,39 @@ export default function MeetingManagePage() {
           </div>
           <div className={styles.formActions}>
             <Link to={`/meetings/${meeting.id}`}>상세로 돌아가기</Link>
-            <button type="button">모집 마감 처리</button>
+            <button type="button" onClick={() => setActionModal({ type: "close" })}>모집 마감 처리</button>
           </div>
         </section>
       </div>
+
+      <AppModal
+        open={Boolean(actionModal)}
+        eyebrow={modalCopy.eyebrow}
+        title={modalCopy.title}
+        description={modalCopy.description}
+        confirmText={modalCopy.confirmText}
+        tone={modalCopy.tone}
+        onClose={closeModal}
+        onConfirm={closeModal}
+      >
+        {actionModal?.applicant ? (
+          <div className={styles.applicantModalCard}>
+            <div className={styles.applicantAvatar}>{actionModal.applicant.name.slice(0, 1)}</div>
+            <div>
+              <strong>{actionModal.applicant.name}</strong>
+              <p>{actionModal.applicant.note}</p>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.applicantModalCard}>
+            <div className={styles.applicantAvatar}>마</div>
+            <div>
+              <strong>{meeting.title}</strong>
+              <p>현재 승인 완료 {approvedApplicants.length}명, 대기 인원 {pendingApplicants.length}명입니다.</p>
+            </div>
+          </div>
+        )}
+      </AppModal>
     </div>
   );
 }

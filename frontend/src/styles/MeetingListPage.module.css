@@ -90,6 +90,18 @@
   composes:notice from "./WeMoveShared.module.css";
 }
 
+.notice::after{
+  pointer-events:none;
+}
+
+.notice a{
+  position:relative;
+  z-index:2;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
 .success{
   composes:success from "./WeMoveShared.module.css";
 }
@@ -108,4 +120,88 @@
 
 .warning{
   composes:warning from "./WeMoveShared.module.css";
+}
+
+.mobileFilterBar{
+  display:none;
+}
+
+.sheetSportGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+}
+
+.sheetChip{
+  min-height:44px;
+  border:1px solid rgba(151,170,194,.24);
+  border-radius:999px;
+  background:#fff;
+  color:#506784;
+  font-size:13px;
+  font-weight:900;
+}
+
+.sheetChipActive{
+  border-color:transparent;
+  background:linear-gradient(135deg,#1e63f0,#348cff);
+  color:#fff;
+  box-shadow:0 12px 24px rgba(34,104,239,.2);
+}
+
+.sheetFilterFields{
+  display:grid;
+  gap:10px;
+}
+
+.sheetFilterFields select,
+.sheetFilterFields input{
+  width:100%;
+  min-height:50px;
+  border:1px solid rgba(151,170,194,.22);
+  border-radius:16px;
+  background:#fff;
+  color:#132844;
+  padding:0 15px;
+  font-weight:800;
+}
+
+@media (max-width:720px){
+  .mobileFilterBar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border:1px solid rgba(151,170,194,.18);
+    border-radius:18px;
+    background:rgba(255,255,255,.86);
+    box-shadow:0 14px 34px rgba(15,40,73,.08);
+    padding:10px;
+    margin:0 0 14px;
+  }
+
+  .mobileFilterBar button{
+    border:0;
+    border-radius:14px;
+    background:#2368f2;
+    color:#fff;
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .mobileFilterBar span{
+    min-width:0;
+    overflow:hidden;
+    color:#627894;
+    font-size:12px;
+    font-weight:800;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .filterPanel{
+    display:none;
+  }
 }

@@ -124,6 +124,7 @@ body{
     linear-gradient(180deg,#f7fbff 0%,#f2f6fc 46%,#f7f9fd 100%);
   overflow-x:hidden;
 }
+body.modal-open{overflow:hidden}
 body::before,
 body::after{
   content:"";

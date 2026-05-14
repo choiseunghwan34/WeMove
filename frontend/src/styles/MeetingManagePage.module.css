@@ -51,3 +51,39 @@
 .subGrid{
   composes:subGrid from "./WeMoveShared.module.css";
 }
+
+.applicantModalCard{
+  display:grid;
+  grid-template-columns:54px 1fr;
+  gap:14px;
+  align-items:center;
+  border:1px solid rgba(151,170,194,.2);
+  border-radius:22px;
+  background:#fff;
+  padding:16px;
+}
+
+.applicantAvatar{
+  display:grid;
+  place-items:center;
+  width:54px;
+  height:54px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#eaf2ff,#dbeafe);
+  color:#2268ef;
+  font-weight:900;
+}
+
+.applicantModalCard strong{
+  color:#10233d;
+  font-size:17px;
+  font-weight:900;
+}
+
+.applicantModalCard p{
+  margin:4px 0 0;
+  color:#647c98;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.65;
+}

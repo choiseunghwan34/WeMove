@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import UiIcon from "./UiIcon";
 import { interestItems, navItems } from "../data/dashboardData";
@@ -11,10 +12,14 @@ export default function DashboardShell({
   aside = null,
   children,
 }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const closeMenu = () => setIsMenuOpen(false);
+
   return (
     <div className={styles.dashboardPage}>
       <header className={styles.dashboardHeader}>
-        <Link to="/" className={styles.dashboardLogo}>
+        <Link to="/" className={styles.dashboardLogo} onClick={closeMenu}>
           <span>W</span>
           <strong>WeMove</strong>
         </Link>
@@ -28,16 +33,43 @@ export default function DashboardShell({
           <Link to="/login" className={styles.dashboardLoginButton}>로그인</Link>
           <Link to="/signup" className={styles.dashboardSignupButton}>회원가입</Link>
         </div>
+
+        <button
+          type="button"
+          className={styles.mobileMenuButton}
+          aria-label={isMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((value) => !value)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </header>
 
+      {isMenuOpen ? (
+        <button
+          type="button"
+          className={styles.mobileMenuBackdrop}
+          aria-label="메뉴 닫기"
+          onClick={closeMenu}
+        />
+      ) : null}
+
       <div className={styles.dashboardShell}>
-        <aside className={styles.dashboardSidebar}>
+        <aside className={`${styles.dashboardSidebar} ${isMenuOpen ? styles.dashboardSidebarOpen : ""}`}>
+          <div className={styles.mobileDrawerHead}>
+            <strong>메뉴</strong>
+            <button type="button" onClick={closeMenu} aria-label="메뉴 닫기">닫기</button>
+          </div>
+
           <nav className={styles.dashboardNav}>
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.to}
                 className={active === item.label ? styles.dashboardNavItemActive : styles.dashboardNavItem}
+                onClick={closeMenu}
               >
                 <UiIcon name={item.icon} className={styles.dashboardNavIcon} />
                 <span>{item.label}</span>

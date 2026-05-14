@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import AppModal from "../components/AppModal";
 import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MeetingDetailPage.module.css";
@@ -15,6 +17,8 @@ export default function MeetingDetailPage() {
   const { meetingId } = useParams();
   const meeting = meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
   const isClosed = meeting.status === "CLOSED";
+  const [modalType, setModalType] = useState(null);
+  const closeModal = () => setModalType(null);
 
   return (
     <div className={styles.page}>
@@ -126,16 +130,63 @@ export default function MeetingDetailPage() {
               <p><span>최대 인원</span><b>{meeting.max}명</b></p>
             </div>
             <div className={styles.stickyActions}>
-              <button type="button" className={styles.primaryButton}>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                disabled={isClosed}
+                onClick={() => !isClosed && setModalType("apply")}
+              >
                 {isClosed ? "신청 마감" : "참가 신청"}
               </button>
-              <button type="button" className={styles.secondaryButton}>신청 취소</button>
+              <button type="button" className={styles.secondaryButton} onClick={() => setModalType("cancel")}>신청 취소</button>
               <Link to={`/meetings/${meeting.id}/edit`} className={styles.secondaryButton}>모임 수정</Link>
               <Link to={`/meetings/${meeting.id}/manage`} className={styles.secondaryButton}>신청자 관리</Link>
             </div>
           </section>
         </aside>
       </div>
+
+      <AppModal
+        open={modalType === "apply"}
+        eyebrow="참가 신청"
+        title="이 모임에 참가 신청할까요?"
+        description="신청 전에 일정과 준비물을 한 번 더 확인해 주세요. 모임장이 승인하면 참여가 확정됩니다."
+        confirmText="참가 신청하기"
+        onClose={closeModal}
+        onConfirm={closeModal}
+      >
+        <div className={styles.modalMeetingCard}>
+          <img src={meetingImages[meeting.id]} alt={meeting.title} />
+          <div>
+            <span>{meeting.sport} · {meeting.statusText}</span>
+            <strong>{meeting.title}</strong>
+            <p>{meeting.region} · {meeting.place}</p>
+          </div>
+        </div>
+        <dl className={styles.modalInfoList}>
+          <div><dt>일시</dt><dd>2026.{meeting.displayDate} {meeting.time}</dd></div>
+          <div><dt>모임 방식</dt><dd>1회성 모임</dd></div>
+          <div><dt>반복 방식</dt><dd>없음</dd></div>
+          <div><dt>준비물</dt><dd>편한 운동복, 물, 개인 이어폰</dd></div>
+          <div><dt>진행 안내</dt><dd>시작 10분 전 집결 권장</dd></div>
+        </dl>
+      </AppModal>
+
+      <AppModal
+        open={modalType === "cancel"}
+        eyebrow="신청 취소"
+        title="참가 신청을 취소할까요?"
+        description="취소하면 다시 신청해야 하며, 모임장에게 신청 취소 상태로 표시됩니다."
+        confirmText="신청 취소하기"
+        tone="danger"
+        onClose={closeModal}
+        onConfirm={closeModal}
+      >
+        <div className={styles.modalNotice}>
+          <strong>{meeting.title}</strong>
+          <p>이미 승인된 일정이라면 모임장에게 간단한 사유를 남기는 것이 좋아요.</p>
+        </div>
+      </AppModal>
     </div>
   );
 }
