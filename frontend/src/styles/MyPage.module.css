@@ -70,6 +70,32 @@
   composes:tabsPanel from "./WeMoveShared.module.css";
 }
 
+/* Home-aligned my page polish */
+.profileCard,
+.tabsPanel,
+.dashboardPanel,
+.dashboardStatGrid article,
+.myList article{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+}
+
+.dashboardMiniImage{
+  border:2px solid rgba(255,255,255,.95);
+  box-shadow:0 10px 24px rgba(29,78,216,.08)!important;
+}
+
+.myList aside a{
+  border-color:rgba(15,23,42,.08)!important;
+}
+
+.myList aside a:last-child{
+  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+}
+
 .warning{
   composes:warning from "./WeMoveShared.module.css";
 }

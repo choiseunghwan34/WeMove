@@ -87,3 +87,27 @@
   font-weight:700;
   line-height:1.65;
 }
+
+/* Home-aligned management polish */
+.softPanel,
+.participantCard,
+.statGrid article{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+}
+
+.participantActions button:first-child{
+  background:#fff1f2!important;
+  border-color:rgba(239,68,68,.14)!important;
+  color:#dc2626!important;
+}
+
+.participantActions button:last-child{
+  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+}
+
+.reviewScore{
+  background:#ecfdf3!important;
+  color:#0f8a62!important;
+}

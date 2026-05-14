@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import bg1 from "../assets/image/bg1.jpg";
-import bg2 from "../assets/image/bg2.jpg";
+import homeBg from "../assets/images/home-bg.webp";
 import { regions, sports } from "../data/demoData";
 import styles from "../styles/SignupPage.module.css";
 
-const authBackgrounds = [bg1, bg2];
+const authBackgrounds = [homeBg];
 
 export default function SignupPage() {
   const navigate = useNavigate();

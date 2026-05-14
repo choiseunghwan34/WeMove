@@ -205,3 +205,38 @@
     display:none;
   }
 }
+
+/* Home-aligned meeting list polish */
+.notice{
+  min-height:172px;
+  padding:26px 30px;
+}
+
+.filterPanel{
+  border-color:rgba(15,23,42,.06)!important;
+  background:rgba(255,255,255,.92)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+}
+
+.listCard{
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 12px 30px rgba(15,23,42,.045)!important;
+}
+
+.listCard::after{
+  background:linear-gradient(180deg,rgba(37,99,235,.45),rgba(96,165,250,.4))!important;
+}
+
+.listCardImage{
+  border:2px solid rgba(255,255,255,.95);
+  box-shadow:0 10px 24px rgba(29,78,216,.08)!important;
+}
+
+.dateBox{
+  background:#f8fbff!important;
+}
+
+.listCard aside button:not(.actionClosed){
+  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+  box-shadow:0 12px 26px rgba(37,99,235,.18)!important;
+}

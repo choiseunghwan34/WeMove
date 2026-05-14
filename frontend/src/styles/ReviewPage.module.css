@@ -95,3 +95,32 @@
 .uploadInput{
   composes:uploadInput from "./WeMoveShared.module.css";
 }
+
+/* Home-aligned review polish */
+.softPanel,
+.reviewCard,
+.reviewPreviewCard,
+.reviewForm{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+}
+
+.reviewTextarea{
+  background:#fff!important;
+  border-color:rgba(15,23,42,.09)!important;
+}
+
+.ratingStar,
+.ratingStarActive{
+  box-shadow:none!important;
+}
+
+.ratingStarActive{
+  background:#eff6ff!important;
+  color:#2563eb!important;
+}
+
+.formActions button{
+  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+}

@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import bg1 from "../assets/image/bg1.jpg";
-import bg2 from "../assets/image/bg2.jpg";
+import homeBg from "../assets/images/home-bg.webp";
 import styles from "../styles/LoginPage.module.css";
 
-const authBackgrounds = [bg1, bg2];
+const authBackgrounds = [homeBg];
 
 export default function LoginPage() {
   const navigate = useNavigate();

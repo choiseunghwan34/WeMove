@@ -49,3 +49,34 @@
 .warning{
   composes:warning from "./WeMoveShared.module.css";
 }
+
+/* Home-aligned back-office polish */
+.statGrid article,
+.tableCard{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(15,23,42,.06)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+}
+
+.tableHead{
+  background:#fff!important;
+}
+
+.tableCard th{
+  background:#f8fbff!important;
+  color:#6f8298!important;
+}
+
+.tableCard tr:hover td{
+  background:#f8fbff!important;
+}
+
+.tableCard td button,
+.tableHead button{
+  height:34px;
+  border-radius:12px;
+  border:1px solid rgba(15,23,42,.08)!important;
+  background:#fff!important;
+  color:#49627f!important;
+  box-shadow:none!important;
+}

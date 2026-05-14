@@ -227,3 +227,260 @@
     margin-top:14px;
   }
 }
+
+/* Home detail polish: keep the current structure, tighten density, and calm the background. */
+.dashboardHeroRow{
+  gap:18px;
+}
+
+.dashboardHeroCard{
+  min-height:234px!important;
+  padding:26px 30px!important;
+}
+
+.dashboardHeroContent h1{
+  max-width:680px;
+  font-size:clamp(2.48rem,3.48vw,2.94rem)!important;
+  line-height:1.08!important;
+  letter-spacing:-.052em!important;
+}
+
+.dashboardHeroContent p{
+  margin-top:10px!important;
+  font-size:1rem!important;
+}
+
+.dashboardHeroFilters{
+  margin-top:18px!important;
+}
+
+.dashboardCategoryStrip{
+  padding:8px 10px!important;
+  gap:7px!important;
+}
+
+.dashboardCategoryItem{
+  min-height:60px!important;
+  padding:6px 4px!important;
+  gap:5px!important;
+  border-radius:15px!important;
+}
+
+.dashboardCategoryItem i{
+  width:34px!important;
+  height:34px!important;
+  border-radius:12px!important;
+}
+
+.dashboardCategoryItem span{
+  font-size:.78rem!important;
+}
+
+.dashboardSection{
+  gap:14px!important;
+}
+
+.dashboardSectionHead{
+  margin-top:-2px;
+}
+
+.dashboardSectionHead h2{
+  margin-bottom:8px!important;
+  font-size:clamp(1.7rem,2vw,2.12rem)!important;
+}
+
+.dashboardPills{
+  gap:6px!important;
+}
+
+.dashboardPills button{
+  height:31px!important;
+  padding:0 12px!important;
+  font-size:.78rem!important;
+}
+
+.dashboardPanel{
+  padding:16px!important;
+  border-radius:22px!important;
+}
+
+.dashboardPanelHead{
+  margin-bottom:12px!important;
+}
+
+.dashboardPanelHead h3{
+  font-size:clamp(1.02rem,1.2vw,1.28rem)!important;
+}
+
+.dashboardRankList,
+.dashboardScheduleList,
+.dashboardActivityList{
+  gap:8px!important;
+}
+
+.dashboardRankItem{
+  padding:9px 0!important;
+  gap:9px!important;
+}
+
+.dashboardScheduleItem,
+.dashboardActivityItem{
+  gap:9px!important;
+}
+
+.dashboardMeetingCard{
+  padding:10px 12px!important;
+  gap:13px!important;
+  border-radius:22px!important;
+}
+
+.dashboardMeetingImage{
+  height:120px!important;
+  border-radius:17px!important;
+}
+
+.dashboardMeetingBody{
+  gap:6px!important;
+}
+
+.dashboardMeetingBody h3{
+  font-size:clamp(1.38rem,1.82vw,1.63rem)!important;
+  line-height:1.15!important;
+}
+
+.dashboardMeetingBody p{
+  line-height:1.58!important;
+}
+
+.dashboardMeetingMeta{
+  gap:8px!important;
+  font-size:.82rem!important;
+}
+
+.dashboardMeetingFooter{
+  gap:10px!important;
+}
+
+.dashboardMeetingActions{
+  gap:6px!important;
+}
+
+.dashboardMeetingActions button,
+.dashboardMeetingActions a{
+  height:36px!important;
+  padding:0 12px!important;
+  border-radius:11px!important;
+  font-size:.8rem!important;
+}
+
+@media (max-width:1100px){
+  .dashboardHeroCard{
+    min-height:236px!important;
+  }
+
+  .dashboardHeroContent h1{
+    font-size:clamp(2.1rem,5.6vw,2.58rem)!important;
+  }
+}
+
+@media (max-width:720px){
+  .dashboardHeroRow{
+    gap:14px;
+  }
+
+  .dashboardHeroCard{
+    min-height:238px!important;
+    padding:22px 20px!important;
+  }
+
+  .dashboardHeroContent h1{
+    font-size:clamp(1.9rem,7.4vw,2.28rem)!important;
+    line-height:1.06!important;
+  }
+
+  .dashboardHeroContent p{
+    font-size:.92rem!important;
+  }
+
+  .dashboardHeroFilters{
+    margin-top:18px!important;
+  }
+
+  .dashboardCategoryStrip{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    padding:8px!important;
+  }
+
+  .dashboardCategoryItem{
+    min-height:58px!important;
+  }
+
+  .dashboardMeetingImage{
+    height:160px!important;
+  }
+}
+
+/* Final home surface tuning: quieter cards, softer categories, clearer content. */
+.dashboardCategoryStrip{
+  background:
+    linear-gradient(135deg,rgba(244,248,253,.92),rgba(255,255,255,.9) 48%,rgba(241,247,253,.94))!important;
+  box-shadow:0 10px 28px rgba(15,23,42,.035),inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+
+.dashboardCategoryItem{
+  background:
+    radial-gradient(circle at 86% 10%,rgba(96,165,250,.12),transparent 34%),
+    linear-gradient(160deg,#ffffff,#f4f8fd)!important;
+  box-shadow:0 8px 18px rgba(30,64,175,.03),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n+2){
+  background:
+    radial-gradient(circle at 86% 10%,rgba(20,184,166,.1),transparent 34%),
+    linear-gradient(160deg,#ffffff,#f3fbfb)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n){
+  background:
+    radial-gradient(circle at 86% 10%,rgba(245,158,11,.09),transparent 34%),
+    linear-gradient(160deg,#ffffff,#fdf8ef)!important;
+}
+
+.dashboardCategoryItem i{
+  background:linear-gradient(135deg,#2f6fe6,#5ea4f4)!important;
+  box-shadow:0 8px 16px rgba(37,99,235,.13),inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+
+.dashboardMeetingCard{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(37,99,235,.1)!important;
+  box-shadow:0 10px 28px rgba(15,23,42,.04),inset 0 1px 0 rgba(255,255,255,.94)!important;
+}
+
+.dashboardMeetingCard::before{
+  opacity:.35!important;
+}
+
+.dashboardMeetingCard:hover{
+  box-shadow:0 16px 38px rgba(15,23,42,.065),inset 0 1px 0 rgba(255,255,255,.94)!important;
+}
+
+.dashboardMeetingBody h3{
+  font-size:clamp(1.32rem,1.72vw,1.52rem)!important;
+}
+
+.dashboardMeetingImage{
+  box-shadow:0 10px 24px rgba(29,78,216,.08)!important;
+}
+
+.dashboardPanel,
+.dashboardSummaryCard{
+  box-shadow:0 10px 28px rgba(15,23,42,.04),inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+.dashboardPanel::after,
+.dashboardSummaryCard::after,
+.dashboardMeetingCard::after{
+  width:3px!important;
+  background:linear-gradient(180deg,rgba(37,99,235,.45),rgba(96,165,250,.42))!important;
+}
