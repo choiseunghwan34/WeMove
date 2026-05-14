@@ -3006,3 +3006,388 @@
     top:170px!important;
   }
 }
+
+/* Brand color pass: add depth so the app feels less plain-white. */
+.dashboardShell::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(37,99,235,.08),transparent 24%,rgba(14,165,233,.08) 78%,transparent),
+    radial-gradient(circle at 48% 0%,rgba(29,78,216,.1),transparent 34%);
+}
+
+.dashboardPanel,
+.dashboardSummaryCard,
+.dashboardCategoryStrip,
+.dashboardMeetingCard,
+.filterPanel,
+.listCard,
+.detailHero,
+.detailSection,
+.detailPanel,
+.softPanel,
+.formCard,
+.profileCard,
+.tabsPanel,
+.tableCard,
+.statGrid article,
+.myList article,
+.reviewCard,
+.participantCard{
+  border-color:rgba(45,111,255,.13)!important;
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.94),rgba(244,249,255,.86) 54%,rgba(235,244,255,.72))!important;
+  box-shadow:
+    0 18px 46px rgba(29,78,216,.08),
+    inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+
+.dashboardPanel:nth-of-type(2n),
+.softPanel:nth-of-type(2n),
+.detailSection:nth-of-type(2n){
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.94),rgba(239,247,255,.86) 48%,rgba(230,241,255,.78))!important;
+}
+
+.dashboardPanelHead,
+.sectionHead,
+.listHead,
+.tableHead{
+  position:relative;
+}
+
+.dashboardPanelHead::before,
+.sectionHead::before,
+.listHead::before,
+.tableHead::before{
+  content:"";
+  width:7px;
+  min-width:7px;
+  height:26px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#2563eb,#58a7ff);
+  box-shadow:0 8px 18px rgba(37,99,235,.22);
+}
+
+.dashboardPanelHead::before,
+.sectionHead::before,
+.listHead::before{
+  display:inline-block;
+}
+
+.dashboardPanelHead,
+.listHead{
+  align-items:center;
+}
+
+.sectionHead{
+  align-items:center;
+}
+
+.dashboardCategoryItem,
+.tabButton,
+.pageTabs button,
+.dashboardPills button,
+.dashboardFilterButton,
+.dashboardQuickLinks a,
+.secondaryButton,
+.formActions a,
+.participantActions button:first-child{
+  background:linear-gradient(180deg,#ffffff,#f2f7ff)!important;
+  border-color:rgba(37,99,235,.12)!important;
+  color:#385a84!important;
+}
+
+.dashboardCategoryItem:hover,
+.tabButton:hover,
+.pageTabs button:hover,
+.dashboardFilterButton:hover,
+.dashboardQuickLinks a:hover,
+.secondaryButton:hover,
+.formActions a:hover{
+  border-color:rgba(37,99,235,.24)!important;
+  box-shadow:0 12px 26px rgba(37,99,235,.1)!important;
+  color:#1747b8!important;
+}
+
+.badge,
+.dashboardMeetingBadges span,
+.reviewScore{
+  border:1px solid rgba(37,99,235,.12);
+  background:linear-gradient(135deg,#eaf2ff,#f5fbff)!important;
+  color:#1747b8!important;
+}
+
+.success,
+.dashboardStatusBadge{
+  border-color:rgba(18,128,92,.14)!important;
+  background:linear-gradient(135deg,#ddf8ee,#f2fffb)!important;
+  color:#0f766e!important;
+}
+
+.warning{
+  border-color:rgba(183,110,0,.14)!important;
+  background:linear-gradient(135deg,#fff4e6,#fffaf1)!important;
+  color:#b76e00!important;
+}
+
+.detailCover,
+.formIntro,
+.dateBox,
+.hostCard{
+  background:
+    radial-gradient(circle at 92% 12%,rgba(88,167,255,.16),transparent 26%),
+    linear-gradient(145deg,#f8fbff,#edf6ff 72%,#e3efff)!important;
+}
+
+.filterRow select,
+.filterRow input,
+.commentForm textarea,
+.formCard input,
+.formCard select,
+.formCard textarea{
+  background:linear-gradient(180deg,#ffffff,#f7fbff)!important;
+  border-color:rgba(37,99,235,.12)!important;
+}
+
+.dashboardSummaryGrid article,
+.formHintGrid article,
+.detailChecklist li,
+.commentItem{
+  border:1px solid rgba(37,99,235,.1);
+  background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(236,246,255,.72))!important;
+}
+
+.listCard:hover,
+.dashboardMeetingCard:hover,
+.participantCard:hover,
+.reviewCard:hover{
+  border-color:rgba(37,99,235,.24)!important;
+  box-shadow:0 24px 58px rgba(29,78,216,.13)!important;
+}
+
+/* Stronger visual identity: colored surfaces, rails, and richer component accents. */
+.dashboardPanel,
+.dashboardSummaryCard,
+.dashboardMeetingCard,
+.filterPanel,
+.listCard,
+.detailSection,
+.detailPanel,
+.softPanel,
+.formCard,
+.profileCard,
+.tabsPanel,
+.tableCard,
+.statGrid article,
+.myList article,
+.reviewCard,
+.participantCard{
+  position:relative;
+  overflow:hidden;
+}
+
+.dashboardPanel::after,
+.dashboardSummaryCard::after,
+.dashboardMeetingCard::after,
+.filterPanel::after,
+.listCard::after,
+.detailSection::after,
+.detailPanel::after,
+.softPanel::after,
+.formCard::after,
+.profileCard::after,
+.tabsPanel::after,
+.tableCard::after,
+.statGrid article::after,
+.myList article::after,
+.reviewCard::after,
+.participantCard::after{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:5px;
+  background:linear-gradient(180deg,#1d4ed8,#38bdf8);
+  opacity:.86;
+  pointer-events:none;
+}
+
+.dashboardPanel::before,
+.dashboardSummaryCard::before,
+.dashboardMeetingCard::before,
+.filterPanel::before,
+.listCard::before,
+.detailSection::before,
+.detailPanel::before,
+.softPanel::before,
+.formCard::before,
+.profileCard::before,
+.tabsPanel::before,
+.tableCard::before,
+.statGrid article::before,
+.myList article::before,
+.reviewCard::before,
+.participantCard::before{
+  content:"";
+  position:absolute;
+  right:-58px;
+  top:-70px;
+  width:180px;
+  height:180px;
+  border-radius:999px;
+  background:radial-gradient(circle,rgba(59,130,246,.16),rgba(59,130,246,0) 68%);
+  pointer-events:none;
+}
+
+.dashboardSummaryGrid article{
+  position:relative;
+  min-height:102px;
+  align-items:center;
+  background:
+    radial-gradient(circle at 92% 10%,rgba(255,255,255,.44),transparent 36%),
+    linear-gradient(135deg,#eaf2ff,#f7fbff 52%,#e6f5ff)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 28px rgba(37,99,235,.08);
+}
+
+.dashboardSummaryGrid article:nth-child(2){
+  background:linear-gradient(135deg,#eef0ff,#f8fbff 54%,#edf7ff)!important;
+}
+
+.dashboardSummaryGrid article:nth-child(3){
+  background:linear-gradient(135deg,#e9fbf5,#f8fffc 54%,#e9f6ff)!important;
+}
+
+.dashboardSummaryGrid article:nth-child(4){
+  background:linear-gradient(135deg,#eafcf8,#f8fffd 54%,#eaf2ff)!important;
+}
+
+.dashboardSummaryGrid i,
+.dashboardCategoryItem i,
+.dashboardRankItem b,
+.dashboardActivityItem i,
+.profileAvatar,
+.commentAvatar,
+.avatar,
+.host i{
+  color:#fff!important;
+  background:linear-gradient(135deg,#1d4ed8,#2f7cff 56%,#38bdf8)!important;
+  box-shadow:0 12px 26px rgba(37,99,235,.24),inset 0 1px 0 rgba(255,255,255,.25)!important;
+}
+
+.dashboardCategoryStrip{
+  padding:16px!important;
+  background:
+    linear-gradient(135deg,rgba(219,234,254,.92),rgba(255,255,255,.78) 42%,rgba(224,242,254,.92))!important;
+}
+
+.dashboardCategoryItem{
+  min-height:92px;
+  padding:14px 10px 12px!important;
+  border:1px solid rgba(37,99,235,.13)!important;
+  background:
+    radial-gradient(circle at 86% 10%,rgba(96,165,250,.24),transparent 34%),
+    linear-gradient(160deg,#ffffff,#eef6ff)!important;
+  box-shadow:0 12px 26px rgba(30,64,175,.07),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n+2){
+  background:
+    radial-gradient(circle at 86% 10%,rgba(20,184,166,.18),transparent 34%),
+    linear-gradient(160deg,#ffffff,#ecfeff)!important;
+}
+
+.dashboardCategoryItem:nth-child(3n){
+  background:
+    radial-gradient(circle at 86% 10%,rgba(245,158,11,.16),transparent 34%),
+    linear-gradient(160deg,#ffffff,#fff7ed)!important;
+}
+
+.dashboardCategoryItem:hover{
+  transform:translateY(-3px);
+  background:
+    radial-gradient(circle at 86% 10%,rgba(96,165,250,.34),transparent 34%),
+    linear-gradient(160deg,#f8fbff,#e7f1ff)!important;
+}
+
+.dashboardMeetingCard,
+.listCard,
+.myList article{
+  background:
+    linear-gradient(90deg,rgba(29,78,216,.075),transparent 18%),
+    linear-gradient(160deg,#ffffff,#f3f8ff 58%,#eaf3ff)!important;
+}
+
+.dashboardMeetingImage,
+.listCardImage,
+.reviewPreviewImage,
+.detailHeroImage{
+  border:3px solid rgba(255,255,255,.92);
+  box-shadow:0 18px 42px rgba(29,78,216,.16)!important;
+}
+
+.dashboardMeetingBody h3,
+.listCard h3,
+.myList h3,
+.detailCover h1,
+.softPanel h2,
+.dashboardPanelHead h3{
+  color:#102a4c;
+}
+
+.dashboardMeetingBadges span:first-child,
+.listTags .badge:first-child{
+  background:linear-gradient(135deg,#1d4ed8,#38bdf8)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+}
+
+.statGrid article{
+  min-height:132px;
+  padding:24px!important;
+  background:
+    radial-gradient(circle at 86% 16%,rgba(37,99,235,.18),transparent 38%),
+    linear-gradient(150deg,#ffffff,#eef6ff)!important;
+}
+
+.statGrid article:nth-child(2){
+  background:
+    radial-gradient(circle at 86% 16%,rgba(14,165,233,.2),transparent 38%),
+    linear-gradient(150deg,#ffffff,#ecfeff)!important;
+}
+
+.statGrid article:nth-child(3){
+  background:
+    radial-gradient(circle at 86% 16%,rgba(16,185,129,.18),transparent 38%),
+    linear-gradient(150deg,#ffffff,#effdf7)!important;
+}
+
+.statGrid article:nth-child(4){
+  background:
+    radial-gradient(circle at 86% 16%,rgba(245,158,11,.18),transparent 38%),
+    linear-gradient(150deg,#ffffff,#fff7ed)!important;
+}
+
+.statGrid strong{
+  color:#12325a;
+}
+
+.formIntro,
+.detailCover{
+  color:#102a4c;
+  border-bottom-color:rgba(37,99,235,.12)!important;
+  background:
+    radial-gradient(circle at 88% 8%,rgba(59,130,246,.2),transparent 34%),
+    linear-gradient(135deg,#eaf2ff,#ffffff 56%,#e6f5ff)!important;
+}
+
+.dashboardPills button:nth-child(1),
+.tabButtonActive,
+.pageTabs button:first-child{
+  background:linear-gradient(135deg,#1d4ed8,#2f7cff 58%,#38bdf8)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+  box-shadow:0 12px 26px rgba(37,99,235,.22)!important;
+}
