@@ -366,3 +366,48 @@
   background:#f4f5f7!important;
   color:#3f6fd8!important;
 }
+
+/* Shell final: white canvas, blue-tinted surfaces only. */
+.dashboardPage,
+.dashboardShell,
+.dashboardMain{
+  background:transparent!important;
+  background-image:none!important;
+}
+
+.dashboardHeader,
+.dashboardSidebar,
+.dashboardInterestCard{
+  background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)!important;
+  background-image:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)!important;
+  border-color:rgba(37,99,235,.08)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.045),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+
+.dashboardInterestList i,
+.dashboardInterestList span:nth-child(2n) i,
+.dashboardInterestList span:nth-child(3n) i{
+  background:#eef4ff!important;
+  background-image:none!important;
+  color:#3f6fd8!important;
+}
+
+/* Shell balance pass. */
+.dashboardHeader,
+.dashboardSidebar,
+.dashboardInterestCard{
+  background:linear-gradient(180deg,#ffffff 0%,#f3f7ff 100%)!important;
+  background-image:linear-gradient(180deg,#ffffff 0%,#f3f7ff 100%)!important;
+  border-color:rgba(37,99,235,.105)!important;
+  box-shadow:0 16px 40px rgba(15,23,42,.052),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+
+/* Final shell card contrast pass */
+.dashboardHeader,
+.dashboardSidebar,
+.dashboardInterestCard{
+  background:#ffffff!important;
+  background-image:none!important;
+  border:1px solid rgba(15,23,42,.07)!important;
+  box-shadow:0 12px 30px rgba(15,23,42,.045)!important;
+}
