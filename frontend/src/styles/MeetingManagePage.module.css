@@ -111,3 +111,37 @@
   background:#ecfdf3!important;
   color:#0f8a62!important;
 }
+
+/* 2026-05-18 neutral management page finish */
+.softPanel,
+.participantCard,
+.statGrid article{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+}
+
+.applicantModalCard,
+.applicantAvatar{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  color:#374151!important;
+  box-shadow:none!important;
+}
+
+.participantActions button:first-child{
+  background:#fef2f2!important;
+  border-color:rgba(220,38,38,.12)!important;
+  color:#dc2626!important;
+}
+
+.participantActions button:last-child{
+  background:#2563eb!important;
+  box-shadow:none!important;
+}
+
+.reviewScore{
+  background:#ecfdf3!important;
+  color:#15803d!important;
+  border:1px solid rgba(21,128,61,.12)!important;
+}

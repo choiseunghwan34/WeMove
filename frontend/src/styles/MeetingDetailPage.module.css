@@ -266,3 +266,50 @@
   border-color:rgba(15,23,42,.08)!important;
   color:#49627f!important;
 }
+
+/* 2026-05-18 neutral detail page finish */
+.detailHero,
+.detailSection,
+.detailPanel{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+}
+
+.detailCover,
+.detailSummary article,
+.detailChecklist li,
+.hostCard,
+.modalInfoList div{
+  background:#f9fafb!important;
+  border-color:#eef0f3!important;
+}
+
+.commentItem,
+.commentForm textarea,
+.modalMeetingCard,
+.modalNotice{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:none!important;
+}
+
+.primaryButton{
+  background:#2563eb!important;
+  box-shadow:none!important;
+}
+
+.secondaryButton{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  color:#374151!important;
+}
+
+/* 2026-05-18 unify page-specific primary buttons */
+.primaryButton{
+  background:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
+  background-image:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
+  color:#fff!important;
+  border-color:#2563eb!important;
+  box-shadow:0 6px 14px rgba(37,99,235,.18), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}

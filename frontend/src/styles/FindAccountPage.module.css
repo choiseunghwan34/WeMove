@@ -1,0 +1,161 @@
+.page{
+  composes: page from "./LoginPage.module.css";
+}
+
+.layout{
+  composes: layout from "./LoginPage.module.css";
+}
+
+.copy{
+  composes: copy from "./LoginPage.module.css";
+}
+
+.logo{
+  composes: logo from "./LoginPage.module.css";
+}
+
+.eyebrow{
+  composes: eyebrow from "./LoginPage.module.css";
+}
+
+.metrics{
+  composes: metrics from "./LoginPage.module.css";
+}
+
+.card{
+  composes: card from "./LoginPage.module.css";
+}
+
+.cardHead{
+  composes: cardHead from "./LoginPage.module.css";
+}
+
+.cardKicker{
+  composes: cardKicker from "./LoginPage.module.css";
+}
+
+.links{
+  composes: links from "./LoginPage.module.css";
+}
+
+.submit{
+  composes: submit from "./LoginPage.module.css";
+}
+
+.form{
+  display:grid;
+  gap:14px;
+}
+
+.form label{
+  display:grid;
+  gap:8px;
+  color:#304761;
+  font-size:13px;
+  font-weight:900;
+}
+
+.form input{
+  width:100%;
+  height:54px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#fff;
+  padding:0 15px;
+  color:#10233f;
+  outline:0;
+  font-weight:800;
+}
+
+.form input:focus{
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+.tabRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:18px;
+}
+
+.tab,
+.tabActive{
+  height:44px;
+  border-radius:14px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  color:#374151;
+  font-weight:800;
+}
+
+.tabActive{
+  background:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%);
+  color:#fff;
+  border-color:#2563eb;
+  box-shadow:0 6px 14px rgba(37,99,235,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.inlineField{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 82px;
+  gap:8px;
+}
+
+.inlineField button{
+  height:54px;
+  border:1px solid #2563eb;
+  border-radius:16px;
+  background:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:0 6px 14px rgba(37,99,235,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.resultBox{
+  margin-top:16px;
+  padding:16px;
+  border:1px solid #dbeafe;
+  border-radius:16px;
+  background:#eff6ff;
+}
+
+.resultBox strong{
+  color:#1d4ed8;
+  font-size:13px;
+  font-weight:900;
+}
+
+.resultBox p{
+  margin:6px 0 0;
+  color:#1f2937;
+  font-size:14px;
+  line-height:1.6;
+}
+
+/* 2026-05-18 auth metric contrast recovery */
+.metrics article{
+  background:rgba(255,255,255,.12)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
+  backdrop-filter:none!important;
+}
+
+.metrics strong{
+  color:#ffffff!important;
+}
+
+.metrics span{
+  color:rgba(255,255,255,.82)!important;
+}
+
+@media (max-width:640px){
+  .tabRow{
+    grid-template-columns:1fr;
+  }
+
+  .inlineField{
+    grid-template-columns:1fr;
+  }
+}

@@ -270,3 +270,62 @@ body,
   background:#f5f6f8!important;
   background-image:none!important;
 }
+
+/* Final neutral service UI tokens */
+:root{
+  --color-bg:#f6f7f8;
+  --color-bg-soft:#f9fafb;
+  --color-surface:#ffffff;
+  --color-surface-strong:#ffffff;
+  --color-surface-muted:#f9fafb;
+  --color-line:#e5e7eb;
+  --color-line-strong:rgba(15,23,42,.08);
+  --color-text:#111827;
+  --color-text-soft:#4b5563;
+  --color-primary:#2563eb;
+  --color-primary-strong:#1d4ed8;
+  --color-primary-soft:#eff6ff;
+  --color-success:#15803d;
+  --color-warning:#b45309;
+  --shadow-xs:0 1px 2px rgba(15,23,42,.04);
+  --shadow-sm:0 4px 16px rgba(15,23,42,.035);
+  --shadow-md:0 8px 24px rgba(15,23,42,.045);
+  --shadow-lg:0 12px 30px rgba(15,23,42,.05);
+  --radius-xl:24px;
+  --radius-lg:18px;
+  --radius-md:14px;
+}
+
+html,
+body,
+#root,
+.app,
+.app-main,
+.page{
+  background:var(--color-bg)!important;
+  background-image:none!important;
+}
+
+body::before,
+body::after{
+  display:none!important;
+  content:none!important;
+}
+
+.card{
+  background:#fff;
+  border:1px solid var(--color-line);
+  border-radius:18px;
+  box-shadow:0 4px 16px rgba(15,23,42,.035);
+}
+
+.btn{
+  background:var(--color-primary);
+  box-shadow:none;
+}
+
+.badge{
+  background:#f3f4f6;
+  color:#374151;
+  border:1px solid #e5e7eb;
+}

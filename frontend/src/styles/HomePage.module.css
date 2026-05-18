@@ -853,3 +853,357 @@
   background-image:none!important;
   border-color:rgba(15,23,42,.06)!important;
 }
+
+/* 2026-05-18 home hero cleanup: keep image, remove glass-heavy feel */
+.heroCarousel::after{
+  background:linear-gradient(90deg,rgba(17,24,39,.54),rgba(17,24,39,.22) 56%,rgba(17,24,39,.08))!important;
+}
+
+.dashboardHeroCard{
+  border:1px solid rgba(229,231,235,.9)!important;
+  box-shadow:0 6px 20px rgba(15,23,42,.06)!important;
+}
+
+.dashboardHeroCard::after{
+  background:linear-gradient(90deg,rgba(17,24,39,.38),rgba(17,24,39,.08))!important;
+}
+
+.heroKicker{
+  background:rgba(17,24,39,.48)!important;
+  border-color:rgba(255,255,255,.14)!important;
+  backdrop-filter:none!important;
+}
+
+.heroDot,
+.heroDotActive{
+  box-shadow:none!important;
+}
+
+/* 2026-05-18 home side panels cleanup */
+.dashboardSummaryCard,
+.dashboardPanel{
+  background:#ffffff!important;
+  background-image:none!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+}
+
+.dashboardSummaryGrid{
+  gap:12px!important;
+  margin-top:16px!important;
+}
+
+.dashboardSummaryGrid article,
+.dashboardSummaryGrid article:nth-child(2),
+.dashboardSummaryGrid article:nth-child(3),
+.dashboardSummaryGrid article:nth-child(4){
+  min-height:0!important;
+  padding:16px 14px!important;
+  background:#ffffff!important;
+  background-image:none!important;
+  border:1px solid #eef0f3!important;
+  border-radius:16px!important;
+  box-shadow:none!important;
+}
+
+.dashboardSummaryGrid i,
+.dashboardSummaryGrid article:nth-child(2) i,
+.dashboardSummaryGrid article:nth-child(3) i,
+.dashboardSummaryGrid article:nth-child(4) i{
+  width:36px!important;
+  height:36px!important;
+  border-radius:12px!important;
+  background:#f3f4f6!important;
+  color:#4b5563!important;
+}
+
+.dashboardSummaryGrid span{
+  color:#6b7280!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+
+.dashboardSummaryGrid strong{
+  color:#111827!important;
+  font-size:15px!important;
+  font-weight:700!important;
+}
+
+.dashboardPanelHead{
+  margin-bottom:10px!important;
+}
+
+.dashboardPanelHead h3{
+  font-size:1.15rem!important;
+  font-weight:800!important;
+  letter-spacing:-.02em!important;
+}
+
+.dashboardPanelHead a{
+  color:#6b7280!important;
+  font-weight:700!important;
+}
+
+.dashboardPanelHead::before{
+  width:3px!important;
+  min-width:3px!important;
+  height:18px!important;
+  border-radius:999px!important;
+  background:#2563eb!important;
+}
+
+.dashboardRankList,
+.dashboardScheduleList,
+.dashboardActivityList{
+  gap:0!important;
+}
+
+.dashboardRankItem,
+.dashboardScheduleItem,
+.dashboardActivityItem{
+  padding:12px 0!important;
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-bottom:1px solid #eef0f3!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+
+.dashboardRankItem:last-child,
+.dashboardScheduleItem:last-child,
+.dashboardActivityItem:last-child{
+  border-bottom:0!important;
+  padding-bottom:0!important;
+}
+
+.dashboardRankItem:first-child,
+.dashboardScheduleItem:first-child,
+.dashboardActivityItem:first-child{
+  padding-top:2px!important;
+}
+
+.dashboardRankItem{
+  padding:10px 12px!important;
+  margin-bottom:8px!important;
+  border:1px solid #eef0f3!important;
+  border-radius:12px!important;
+  background:#ffffff!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:start!important;
+}
+
+.dashboardRankItem:last-child{
+  margin-bottom:0!important;
+}
+
+.dashboardRankItem strong{
+  font-size:13px!important;
+  line-height:1.45!important;
+}
+
+.dashboardRankItem span{
+  margin-top:4px!important;
+  font-size:12px!important;
+  line-height:1.3!important;
+}
+
+.dashboardRankItem b{
+  width:24px!important;
+  height:24px!important;
+  border-radius:999px!important;
+  background:#f3f4f6!important;
+  color:#6b7280!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+
+.dashboardRankItem strong,
+.dashboardScheduleItem strong,
+.dashboardActivityItem strong{
+  color:#111827!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+
+.dashboardRankItem span,
+.dashboardScheduleItem span,
+.dashboardScheduleItem p,
+.dashboardActivityItem p,
+.dashboardActivityItem > span{
+  color:#6b7280!important;
+}
+
+.dashboardScheduleItem{
+  grid-template-columns:34px 56px minmax(0,1fr)!important;
+  gap:10px!important;
+}
+
+.dashboardScheduleItem span{
+  font-weight:700!important;
+}
+
+.dashboardActivityItem{
+  grid-template-columns:32px minmax(0,1fr) auto!important;
+  gap:10px!important;
+}
+
+.dashboardActivityItem i{
+  width:32px!important;
+  height:32px!important;
+  border-radius:999px!important;
+  background:#f3f4f6!important;
+  color:#4b5563!important;
+}
+
+/* 2026-05-18 recommendation card action cleanup */
+.dashboardMeetingCard{
+  border-radius:20px!important;
+}
+
+.dashboardMeetingFooter{
+  padding-top:12px!important;
+  border-top:1px solid #eef0f3!important;
+}
+
+.dashboardMeetingActions{
+  gap:8px!important;
+}
+
+.dashboardMeetingActions button,
+.dashboardMeetingActions a{
+  min-width:42px!important;
+  height:36px!important;
+  padding:0 12px!important;
+  border:1px solid #e5e7eb!important;
+  border-radius:12px!important;
+  background:#ffffff!important;
+  color:#4b5563!important;
+  box-shadow:none!important;
+}
+
+.dashboardMeetingActions a:last-child,
+.dashboardMeetingActions button:last-child{
+  background:#2563eb!important;
+  color:#fff!important;
+  border-color:#2563eb!important;
+}
+
+.dashboardMeetingActions button:hover,
+.dashboardMeetingActions a:hover{
+  border-color:#d1d5db!important;
+  background:#f9fafb!important;
+}
+
+.dashboardMeetingActions a:last-child:hover,
+.dashboardMeetingActions button:last-child:hover{
+  background:#1d4ed8!important;
+  border-color:#1d4ed8!important;
+}
+
+/* 2026-05-18 radius + typography alignment */
+.dashboardPanel{
+  border-radius:18px!important;
+}
+
+.dashboardRankItem,
+.dashboardScheduleItem,
+.dashboardActivityItem{
+  padding:12px 0!important;
+}
+
+.dashboardMeetingCard{
+  border-radius:18px!important;
+}
+
+.dashboardMeetingBody h3{
+  margin:0 0 6px!important;
+  font-size:1.08rem!important;
+  line-height:1.3!important;
+  letter-spacing:-.02em!important;
+}
+
+.dashboardMeetingBody p{
+  font-size:.92rem!important;
+  line-height:1.55!important;
+}
+
+.dashboardMeetingMeta{
+  margin-top:8px!important;
+  gap:10px!important;
+  font-size:.8rem!important;
+}
+
+.dashboardHostMeta{
+  margin-top:10px!important;
+  padding-top:10px!important;
+  border-top:1px solid #eef0f3!important;
+}
+
+/* 2026-05-18 hero density pass */
+.dashboardHeroCard{
+  min-height:224px!important;
+  padding:24px 28px!important;
+}
+
+.dashboardHeroContent h1{
+  margin:0 0 12px!important;
+  max-width:600px!important;
+  font-size:clamp(2.28rem,3.1vw,2.62rem)!important;
+  line-height:1.1!important;
+}
+
+.dashboardHeroContent p{
+  margin-top:0!important;
+  font-size:.94rem!important;
+  line-height:1.58!important;
+  color:rgba(255,255,255,.86)!important;
+}
+
+.dashboardHeroFilters{
+  margin-top:14px!important;
+}
+
+.dashboardMeetingCard{
+  min-height:168px!important;
+}
+
+.dashboardMeetingBody{
+  gap:5px!important;
+}
+
+.dashboardMeetingBody h3{
+  margin:0!important;
+  font-size:clamp(1.28rem,1.62vw,1.46rem)!important;
+}
+
+.dashboardMeetingBody p{
+  font-size:.92rem!important;
+  line-height:1.54!important;
+}
+
+.dashboardMeetingMeta{
+  margin-top:4px!important;
+  gap:7px!important;
+}
+
+.dashboardHostMeta{
+  margin-top:8px!important;
+}
+
+/* 2026-05-18 meeting card primary action gradient */
+.dashboardMeetingActions a:last-child,
+.dashboardMeetingActions button:last-child{
+  background:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
+  background-image:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
+  border-color:#2563eb!important;
+  box-shadow:0 6px 14px rgba(37,99,235,.18), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+
+.dashboardMeetingActions a:last-child:hover,
+.dashboardMeetingActions button:last-child:hover{
+  background:linear-gradient(180deg,#4b8eff 0%,#2d6df1 56%,#1d4ed8 100%)!important;
+  border-color:#1d4ed8!important;
+  box-shadow:0 8px 18px rgba(37,99,235,.22), inset 0 1px 0 rgba(255,255,255,.2)!important;
+}

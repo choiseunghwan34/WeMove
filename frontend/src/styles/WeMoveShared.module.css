@@ -3873,3 +3873,288 @@
   background-image:none!important;
   border-color:rgba(15,23,42,.06)!important;
 }
+
+/* 2026-05-18 final neutral service override */
+.dashboardPage,
+.page{
+  background:#f6f7f8!important;
+  background-image:none!important;
+}
+
+.dashboardShell,
+.dashboardMain{
+  background:transparent!important;
+  background-image:none!important;
+}
+
+.dashboardPage::before,
+.dashboardPage::after,
+.dashboardShell::before,
+.dashboardShell::after,
+.dashboardMain::before,
+.dashboardMain::after{
+  display:none!important;
+  content:none!important;
+}
+
+.dashboardHeader,
+.dashboardSidebar,
+.dashboardPanel,
+.dashboardSummaryCard,
+.dashboardCategoryStrip,
+.dashboardMeetingCard,
+.dashboardInterestCard,
+.filterPanel,
+.listCard,
+.detailHero,
+.detailSection,
+.detailPanel,
+.softPanel,
+.formCard,
+.profileCard,
+.tabsPanel,
+.tableCard,
+.statGrid article,
+.myList article,
+.reviewCard,
+.participantCard,
+.pageTitle{
+  background:#ffffff!important;
+  background-image:none!important;
+  border:1px solid #e5e7eb!important;
+  border-radius:18px!important;
+  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+  backdrop-filter:none!important;
+}
+
+.dashboardPanel::before,
+.dashboardPanel::after,
+.dashboardSummaryCard::before,
+.dashboardSummaryCard::after,
+.dashboardMeetingCard::before,
+.dashboardMeetingCard::after,
+.filterPanel::before,
+.filterPanel::after,
+.listCard::before,
+.listCard::after,
+.detailSection::before,
+.detailSection::after,
+.detailPanel::before,
+.detailPanel::after,
+.softPanel::before,
+.softPanel::after,
+.formCard::before,
+.formCard::after,
+.profileCard::before,
+.profileCard::after,
+.tabsPanel::before,
+.tabsPanel::after,
+.tableCard::before,
+.tableCard::after,
+.statGrid article::before,
+.statGrid article::after,
+.myList article::before,
+.myList article::after,
+.reviewCard::before,
+.reviewCard::after,
+.participantCard::before,
+.participantCard::after{
+  display:none!important;
+  content:none!important;
+}
+
+.dashboardCategoryItem,
+.dashboardSummaryGrid article,
+.dashboardScheduleItem,
+.dashboardRankItem,
+.dashboardActivityItem,
+.detailSummary article,
+.detailChecklist li,
+.hostCard,
+.sideInfo p,
+.commentItem,
+.tableCard th,
+.tableCard tr:hover td{
+  background:#f9fafb!important;
+  background-image:none!important;
+  border-color:#e5e7eb!important;
+  box-shadow:none!important;
+}
+
+.dashboardCategoryItem i,
+.dashboardSummaryGrid i,
+.dashboardRankItem b,
+.dashboardActivityItem i,
+.dashboardInterestList i,
+.profileAvatar,
+.commentAvatar,
+.avatar,
+.host i{
+  background:#f3f4f6!important;
+  background-image:none!important;
+  color:#4b5563!important;
+  box-shadow:none!important;
+}
+
+.dashboardMeetingBody h3,
+.listCard h3,
+.myList h3,
+.detailCover h1,
+.pageTitle h1,
+.dashboardPanelHead h3,
+.sectionHead h2,
+.listHead h2,
+.tableHead h2{
+  color:#111827!important;
+}
+
+.dashboardMeetingBody p,
+.listCard p,
+.myList p,
+.detailBody p,
+.detailCover p,
+.pageTitle p,
+.formIntro p,
+.profileCard p,
+.dashboardCategoryItem span,
+.dashboardRankItem small,
+.dashboardActivityItem small,
+.dashboardNavItem .dashboardNavIcon{
+  color:#4b5563!important;
+}
+
+.badge,
+.dashboardMeetingBadges span,
+.reviewScore{
+  background:#f3f4f6!important;
+  color:#374151!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:none!important;
+}
+
+.success,
+.dashboardStatusBadge{
+  background:#ecfdf3!important;
+  color:#15803d!important;
+  border:1px solid rgba(21,128,61,.12)!important;
+}
+
+.warning,
+.PENDING,
+.CLOSED{
+  background:#fff7ed!important;
+  color:#b45309!important;
+  border:1px solid rgba(180,83,9,.12)!important;
+}
+
+.danger,
+.rejected,
+.SUSPENDED{
+  background:#fef2f2!important;
+  color:#dc2626!important;
+  border:1px solid rgba(220,38,38,.12)!important;
+}
+
+.dashboardHeroButton,
+.primaryButton,
+.dashboardMeetingActions a,
+.dashboardMeetingActions button:last-child,
+.formActions button,
+.profileCard button,
+.tableHead button,
+.participantActions button:last-child,
+.myList aside a,
+.tabButtonActive,
+.pageTabs button:first-child,
+.dashboardPills button:first-child{
+  background:#2563eb!important;
+  background-image:none!important;
+  color:#fff!important;
+  border-color:#2563eb!important;
+  box-shadow:none!important;
+}
+
+.secondaryButton,
+.formActions a,
+.participantActions button:first-child,
+.tableCard td button,
+.tabButton,
+.pageTabs button,
+.dashboardFilterButton,
+.dashboardQuickLinks a{
+  background:#ffffff!important;
+  background-image:none!important;
+  color:#374151!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:none!important;
+}
+
+.filterRow select,
+.filterRow input,
+.commentForm textarea,
+.formCard input,
+.formCard select,
+.formCard textarea,
+.reviewTextarea{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  color:#111827!important;
+  box-shadow:none!important;
+}
+
+.filterRow select:focus,
+.filterRow input:focus,
+.commentForm textarea:focus,
+.formCard input:focus,
+.formCard select:focus,
+.formCard textarea:focus,
+.reviewTextarea:focus{
+  border-color:#2563eb!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;
+}
+
+.dashboardPanelHead::before,
+.sectionHead::before,
+.listHead::before,
+.tableHead::before{
+  width:4px!important;
+  min-width:4px!important;
+  height:20px!important;
+  background:#2563eb!important;
+  box-shadow:none!important;
+}
+
+/* 2026-05-18 primary button gradient polish */
+.dashboardHeroButton,
+.primaryButton,
+.formActions button,
+.profileCard button,
+.tableHead button,
+.participantActions button:last-child,
+.myList aside a,
+.tabButtonActive,
+.pageTabs button:first-child,
+.dashboardPills button:first-child,
+.dashboardSignupButton{
+  background:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
+  background-image:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
+  border-color:#2563eb!important;
+  color:#fff!important;
+  box-shadow:0 6px 14px rgba(37,99,235,.18), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+
+.dashboardHeroButton:hover,
+.primaryButton:hover,
+.formActions button:hover,
+.profileCard button:hover,
+.tableHead button:hover,
+.participantActions button:last-child:hover,
+.myList aside a:hover,
+.tabButtonActive:hover,
+.pageTabs button:first-child:hover,
+.dashboardPills button:first-child:hover,
+.dashboardSignupButton:hover{
+  background:linear-gradient(180deg,#4b8eff 0%,#2d6df1 56%,#1d4ed8 100%)!important;
+  border-color:#1d4ed8!important;
+  box-shadow:0 8px 18px rgba(37,99,235,.22), inset 0 1px 0 rgba(255,255,255,.2)!important;
+}

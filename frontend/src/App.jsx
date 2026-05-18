@@ -2,6 +2,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import AdminPage from "./pages/AdminPage";
 import ActivityPage from "./pages/ActivityPage";
+import FindAccountPage from "./pages/FindAccountPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import MeetingCreatePage from "./pages/MeetingCreatePage";
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/find-account" element={<FindAccountPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="*" element={<LayoutRoutes />} />
     </Routes>

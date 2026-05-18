@@ -66,7 +66,7 @@ export default function LoginPage() {
 
           <label>
             <span>비밀번호</span>
-            <input type="password" placeholder="1234" defaultValue="1234" />
+            <input type="password" placeholder="비밀번호 입력" defaultValue="1234" />
           </label>
 
           <div className={styles.options}>
@@ -79,7 +79,7 @@ export default function LoginPage() {
           <div className={styles.links}>
             <Link to="/signup">회원가입</Link>
             <span>·</span>
-            <button type="button">아이디/비밀번호 찾기</button>
+            <Link to="/find-account">아이디/비밀번호 찾기</Link>
           </div>
         </form>
       </div>
