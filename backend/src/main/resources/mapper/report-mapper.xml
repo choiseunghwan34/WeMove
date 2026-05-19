@@ -1,12 +1,42 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="report"><insert
-    id="insertReport"
-    parameterType="kr.co.iei.report.model.vo.Report"
-  >INSERT INTO reports(reporter_id,meeting_id,target_user_id,reason,content) VALUES(#{reporterId},#{meetingId},#{targetUserId},#{reason},#{content})</insert><select
-    id="selectReports"
-    resultType="kr.co.iei.report.model.vo.ReportResponse"
-  >SELECT report_id,reporter_id,reason,status,created_at FROM reports ORDER BY report_id DESC</select><update
-    id="updateReportStatus"
-  >UPDATE reports SET status=#{status}, processed_at=NOW() WHERE report_id=#{reportId}</update></mapper>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="report">
+
+    <insert id="insertReport" parameterType="kr.co.iei.report.model.vo.Report">
+        INSERT INTO reports(
+            reporter_id,
+            meeting_id,
+            target_user_id,
+            reason,
+            content
+        )
+        VALUES(
+            #{reporterId},
+            #{meetingId},
+            #{targetUserId},
+            #{reason},
+            #{content}
+        )
+    </insert>
+
+    <select id="selectReports" resultType="kr.co.iei.report.model.vo.ReportResponse">
+        SELECT
+            report_id,
+            reporter_id,
+            reason,
+            status,
+            created_at
+        FROM reports
+        ORDER BY report_id DESC
+    </select>
+
+    <update id="updateReportStatus">
+        UPDATE reports
+        SET
+            status=#{status},
+            processed_at=NOW()
+        WHERE report_id=#{reportId}
+    </update>
+
+</mapper>

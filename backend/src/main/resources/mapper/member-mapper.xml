@@ -1,9 +1,29 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="member"><select
-    id="selectMemberById"
-    resultType="kr.co.iei.member.model.vo.MemberResponse"
-  >SELECT user_id,login_id,email,nickname,region_id,role,status FROM users WHERE user_id=#{memberId}</select><update
-    id="updateMember"
-  >UPDATE users SET email=#{request.email},nickname=#{request.nickname},phone=#{request.phone},region_id=#{request.regionId} WHERE user_id=#{memberId}</update></mapper>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="member">
+
+    <select id="selectMemberById" resultType="kr.co.iei.member.model.vo.MemberResponse">
+        SELECT
+            user_id,
+            login_id,
+            email,
+            nickname,
+            region_id,
+            role,
+            status
+        FROM users
+        WHERE user_id=#{memberId}
+    </select>
+
+    <update id="updateMember">
+        UPDATE users
+        SET
+            email=#{request.email},
+            nickname=#{request.nickname},
+            phone=#{request.phone},
+            region_id=#{request.regionId}
+        WHERE user_id=#{memberId}
+    </update>
+
+</mapper>

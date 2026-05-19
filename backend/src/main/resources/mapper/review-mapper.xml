@@ -1,10 +1,35 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="review"><select
-    id="selectReviews"
-    resultType="kr.co.iei.review.model.vo.ReviewResponse"
-  >SELECT r.review_id,r.writer_id,u.nickname,r.rating,r.content,r.created_at FROM reviews r JOIN users u ON r.writer_id=u.user_id WHERE r.meeting_id=#{meetingId} ORDER BY r.created_at DESC</select><insert
-    id="insertReview"
-    parameterType="kr.co.iei.review.model.vo.Review"
-  >INSERT INTO reviews(meeting_id,writer_id,rating,content) VALUES(#{meetingId},#{writerId},#{rating},#{content})</insert></mapper>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="review">
+
+    <select id="selectReviews" resultType="kr.co.iei.review.model.vo.ReviewResponse">
+        SELECT
+            r.review_id,
+            r.writer_id,
+            u.nickname,
+            r.rating,
+            r.content,
+            r.created_at
+        FROM reviews r
+        JOIN users u ON r.writer_id=u.user_id
+        WHERE r.meeting_id=#{meetingId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <insert id="insertReview" parameterType="kr.co.iei.review.model.vo.Review">
+        INSERT INTO reviews(
+            meeting_id,
+            writer_id,
+            rating,
+            content
+        )
+        VALUES(
+            #{meetingId},
+            #{writerId},
+            #{rating},
+            #{content}
+        )
+    </insert>
+
+</mapper>
