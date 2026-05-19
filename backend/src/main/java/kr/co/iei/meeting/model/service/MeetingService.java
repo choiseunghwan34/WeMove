@@ -1,1 +1,18 @@
-﻿package kr.co.iei.meeting.model.service; import kr.co.iei.meeting.model.vo.*; import java.util.*; public interface MeetingService { List<MeetingListResponse> getMeetings(MeetingSearchCondition condition); MeetingDetailResponse getMeeting(Long meetingId); Long createMeeting(MeetingCreateRequest request); void updateMeeting(Long meetingId, MeetingUpdateRequest request); void deleteMeeting(Long meetingId); void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request); }
+package kr.co.iei.meeting.model.service;
+
+import java.util.*;
+import kr.co.iei.meeting.model.vo.*;
+
+public interface MeetingService {
+  List<MeetingListResponse> getMeetings(MeetingSearchCondition condition);
+
+  MeetingDetailResponse getMeeting(Long meetingId);
+
+  Long createMeeting(MeetingCreateRequest request);
+
+  void updateMeeting(Long meetingId, MeetingUpdateRequest request);
+
+  void deleteMeeting(Long meetingId);
+
+  void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request);
+}

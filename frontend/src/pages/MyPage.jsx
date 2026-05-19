@@ -4,7 +4,11 @@ import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MyPage.module.css";
 
-const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
+const cx = (...names) =>
+  names
+    .filter(Boolean)
+    .map((name) => styles[name])
+    .join(" ");
 
 export default function MyPage() {
   return (
@@ -19,9 +23,18 @@ export default function MyPage() {
               <h3>프로필 요약</h3>
             </div>
             <div className={styles.dashboardSimpleList}>
-              <div><span>활동 지역</span><strong>경기 파주시</strong></div>
-              <div><span>관심 운동</span><strong>러닝, 풋살, 등산</strong></div>
-              <div><span>매너점수</span><strong>4.8 / 5.0</strong></div>
+              <div>
+                <span>활동 지역</span>
+                <strong>경기 파주시</strong>
+              </div>
+              <div>
+                <span>관심 운동</span>
+                <strong>러닝, 풋살, 등산</strong>
+              </div>
+              <div>
+                <span>매너점수</span>
+                <strong>4.8 / 5.0</strong>
+              </div>
             </div>
           </section>
           <section className={styles.dashboardPanel}>
@@ -49,32 +62,64 @@ export default function MyPage() {
       </section>
 
       <section className={styles.dashboardStatGrid}>
-        <article><span>내가 만든 모임</span><strong>4</strong></article>
-        <article><span>신청한 모임</span><strong>3</strong></article>
-        <article><span>참여 완료</span><strong>12</strong></article>
-        <article><span>후기 작성 가능</span><strong>2</strong></article>
+        <article>
+          <span>내가 만든 모임</span>
+          <strong>4</strong>
+        </article>
+        <article>
+          <span>신청한 모임</span>
+          <strong>3</strong>
+        </article>
+        <article>
+          <span>참여 완료</span>
+          <strong>12</strong>
+        </article>
+        <article>
+          <span>후기 작성 가능</span>
+          <strong>2</strong>
+        </article>
       </section>
 
       <section className={styles.tabsPanel}>
         <div className={styles.pageTabs}>
-          <button className={cx("tabButton", "tabButtonActive")} type="button">내가 만든 모임</button>
-          <button className={styles.tabButton} type="button">내가 신청한 모임</button>
-          <button className={styles.tabButton} type="button">참여한 모임</button>
-          <button className={styles.tabButton} type="button">후기 관리</button>
+          <button className={cx("tabButton", "tabButtonActive")} type="button">
+            내가 만든 모임
+          </button>
+          <button className={styles.tabButton} type="button">
+            내가 신청한 모임
+          </button>
+          <button className={styles.tabButton} type="button">
+            참여한 모임
+          </button>
+          <button className={styles.tabButton} type="button">
+            후기 관리
+          </button>
         </div>
 
         <div className={styles.myList}>
           {meetings.slice(0, 4).map((meeting) => (
             <article key={meeting.id}>
               <div className={styles.dashboardCompactBody}>
-                <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.dashboardMiniImage} />
+                <img
+                  src={meetingImages[meeting.id]}
+                  alt={meeting.title}
+                  className={styles.dashboardMiniImage}
+                />
                 <div>
-                <span className={cx("badge", meeting.status === "CLOSED" ? "warning" : "success")}>{meeting.statusText}</span>
-                {" "}
-                <span className={styles.badge}>{meeting.sport}</span>
-                <h3>{meeting.title}</h3>
-                <p>{meeting.desc}</p>
-                <small>{meeting.place} · {meeting.displayDate} {meeting.time}</small>
+                  <span
+                    className={cx(
+                      "badge",
+                      meeting.status === "CLOSED" ? "warning" : "success",
+                    )}
+                  >
+                    {meeting.statusText}
+                  </span>{" "}
+                  <span className={styles.badge}>{meeting.sport}</span>
+                  <h3>{meeting.title}</h3>
+                  <p>{meeting.desc}</p>
+                  <small>
+                    {meeting.place} · {meeting.displayDate} {meeting.time}
+                  </small>
                 </div>
               </div>
               <aside>

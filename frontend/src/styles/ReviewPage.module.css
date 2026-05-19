@@ -1,128 +1,128 @@
 /* Auto-split from ReviewPage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.formActions{
-  composes:formActions from "./WeMoveShared.module.css";
+.formActions {
+  composes: formActions from "./WeMoveShared.module.css";
 }
 
-.kicker{
-  composes:kicker from "./WeMoveShared.module.css";
+.kicker {
+  composes: kicker from "./WeMoveShared.module.css";
 }
 
-.page{
-  composes:page from "./WeMoveShared.module.css";
+.page {
+  composes: page from "./WeMoveShared.module.css";
 }
 
-.pageTitle{
-  composes:pageTitle from "./WeMoveShared.module.css";
+.pageTitle {
+  composes: pageTitle from "./WeMoveShared.module.css";
 }
 
-.ratingCaption{
-  composes:ratingCaption from "./WeMoveShared.module.css";
+.ratingCaption {
+  composes: ratingCaption from "./WeMoveShared.module.css";
 }
 
-.ratingStar{
-  composes:ratingStar from "./WeMoveShared.module.css";
+.ratingStar {
+  composes: ratingStar from "./WeMoveShared.module.css";
 }
 
-.ratingStarActive{
-  composes:ratingStarActive from "./WeMoveShared.module.css";
+.ratingStarActive {
+  composes: ratingStarActive from "./WeMoveShared.module.css";
 }
 
-.ratingStars{
-  composes:ratingStars from "./WeMoveShared.module.css";
+.ratingStars {
+  composes: ratingStars from "./WeMoveShared.module.css";
 }
 
-.reviewCard{
-  composes:reviewCard from "./WeMoveShared.module.css";
+.reviewCard {
+  composes: reviewCard from "./WeMoveShared.module.css";
 }
 
-.reviewForm{
-  composes:reviewForm from "./WeMoveShared.module.css";
+.reviewForm {
+  composes: reviewForm from "./WeMoveShared.module.css";
 }
 
-.reviewHead{
-  composes:reviewHead from "./WeMoveShared.module.css";
+.reviewHead {
+  composes: reviewHead from "./WeMoveShared.module.css";
 }
 
-.reviewList{
-  composes:reviewList from "./WeMoveShared.module.css";
+.reviewList {
+  composes: reviewList from "./WeMoveShared.module.css";
 }
 
-.reviewMeta{
-  composes:reviewMeta from "./WeMoveShared.module.css";
+.reviewMeta {
+  composes: reviewMeta from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewCard{
-  composes:reviewPreviewCard from "./WeMoveShared.module.css";
+.reviewPreviewCard {
+  composes: reviewPreviewCard from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewGrid{
-  composes:reviewPreviewGrid from "./WeMoveShared.module.css";
+.reviewPreviewGrid {
+  composes: reviewPreviewGrid from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewImage{
-  composes:reviewPreviewImage from "./WeMoveShared.module.css";
+.reviewPreviewImage {
+  composes: reviewPreviewImage from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewMeta{
-  composes:reviewPreviewMeta from "./WeMoveShared.module.css";
+.reviewPreviewMeta {
+  composes: reviewPreviewMeta from "./WeMoveShared.module.css";
 }
 
-.reviewScore{
-  composes:reviewScore from "./WeMoveShared.module.css";
+.reviewScore {
+  composes: reviewScore from "./WeMoveShared.module.css";
 }
 
-.reviewTextarea{
-  composes:reviewTextarea from "./WeMoveShared.module.css";
+.reviewTextarea {
+  composes: reviewTextarea from "./WeMoveShared.module.css";
 }
 
-.softPanel{
-  composes:softPanel from "./WeMoveShared.module.css";
+.softPanel {
+  composes: softPanel from "./WeMoveShared.module.css";
 }
 
-.subGrid{
-  composes:subGrid from "./WeMoveShared.module.css";
+.subGrid {
+  composes: subGrid from "./WeMoveShared.module.css";
 }
 
-.uploadBlock{
-  composes:uploadBlock from "./WeMoveShared.module.css";
+.uploadBlock {
+  composes: uploadBlock from "./WeMoveShared.module.css";
 }
 
-.uploadHint{
-  composes:uploadHint from "./WeMoveShared.module.css";
+.uploadHint {
+  composes: uploadHint from "./WeMoveShared.module.css";
 }
 
-.uploadInput{
-  composes:uploadInput from "./WeMoveShared.module.css";
+.uploadInput {
+  composes: uploadInput from "./WeMoveShared.module.css";
 }
 
 /* Home-aligned review polish */
 .softPanel,
 .reviewCard,
 .reviewPreviewCard,
-.reviewForm{
-  background:rgba(255,255,255,.94)!important;
-  border-color:rgba(15,23,42,.06)!important;
-  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+.reviewForm {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
 }
 
-.reviewTextarea{
-  background:#fff!important;
-  border-color:rgba(15,23,42,.09)!important;
+.reviewTextarea {
+  background: #fff !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
 }
 
 .ratingStar,
-.ratingStarActive{
-  box-shadow:none!important;
+.ratingStarActive {
+  box-shadow: none !important;
 }
 
-.ratingStarActive{
-  background:#eff6ff!important;
-  color:#2563eb!important;
+.ratingStarActive {
+  background: #eff6ff !important;
+  color: #2563eb !important;
 }
 
-.formActions button{
-  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+.formActions button {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
 }
 
 /* 2026-05-18 neutral review/admin finish */
@@ -130,31 +130,31 @@
 .reviewCard,
 .reviewPreviewCard,
 .reviewForm,
-.uploadBlock{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+.uploadBlock {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
-.reviewTextarea{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
+.reviewTextarea {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
 }
 
 .ratingStar,
-.ratingStarActive{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:none!important;
+.ratingStarActive {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
 }
 
-.ratingStarActive{
-  background:#eff6ff!important;
-  border-color:#bfdbfe!important;
-  color:#2563eb!important;
+.ratingStarActive {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #2563eb !important;
 }
 
-.formActions button{
-  background:#2563eb!important;
-  box-shadow:none!important;
+.formActions button {
+  background: #2563eb !important;
+  box-shadow: none !important;
 }

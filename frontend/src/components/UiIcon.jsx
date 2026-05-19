@@ -10,27 +10,21 @@ const iconProps = {
 
 export default function UiIcon({ name, className }) {
   const icons = {
-    home: (
-      <path d="M3 10.5 12 4l9 6.5M5.5 9.5V20h13V9.5" />
-    ),
+    home: <path d="M3 10.5 12 4l9 6.5M5.5 9.5V20h13V9.5" />,
     search: (
       <>
         <circle cx="11" cy="11" r="6.5" />
         <path d="m16 16 4.5 4.5" />
       </>
     ),
-    activity: (
-      <path d="M4 12h3l2.4-5 4.2 10 2.6-5H20" />
-    ),
+    activity: <path d="M4 12h3l2.4-5 4.2 10 2.6-5H20" />,
     user: (
       <>
         <circle cx="12" cy="8" r="3.5" />
         <path d="M5 19c1.7-3.2 4-4.8 7-4.8s5.3 1.6 7 4.8" />
       </>
     ),
-    chevronDown: (
-      <path d="m7 10 5 5 5-5" />
-    ),
+    chevronDown: <path d="m7 10 5 5 5-5" />,
     location: (
       <>
         <path d="M12 20s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z" />
@@ -83,9 +77,7 @@ export default function UiIcon({ name, className }) {
         <path d="M6.8 18.2c1.3-1.3 2-2.1 2.7-2.8M13 7l4.3-2" />
       </>
     ),
-    mountain: (
-      <path d="m3.5 18 5.4-8 3.2 4.6 2.5-3.6 5.9 7H3.5Z" />
-    ),
+    mountain: <path d="m3.5 18 5.4-8 3.2 4.6 2.5-3.6 5.9 7H3.5Z" />,
     bike: (
       <>
         <circle cx="6.5" cy="16" r="3.2" />
@@ -112,9 +104,7 @@ export default function UiIcon({ name, className }) {
         <path d="m10 20 2.2-5.2 2.8-2.3 2 2.4M9.5 12l3.4-1.3 2-3.2M12.2 9.8 9 9" />
       </>
     ),
-    arrowRight: (
-      <path d="M5 12h14M13 6l6 6-6 6" />
-    ),
+    arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
   };
 
   return (

@@ -19,14 +19,17 @@ const heroSlides = [
   },
   {
     title: "이번 주말엔 새로운 크루와",
-    description: "관심 운동과 지역을 고르면 지금 참여 가능한 모임을 바로 볼 수 있어요.",
+    description:
+      "관심 운동과 지역을 고르면 지금 참여 가능한 모임을 바로 볼 수 있어요.",
     image: meetingImages[5],
   },
 ];
 
 export default function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
-  const recruitingMeetings = meetings.filter((meeting) => meeting.status === "RECRUITING");
+  const recruitingMeetings = meetings.filter(
+    (meeting) => meeting.status === "RECRUITING",
+  );
   const featuredMeetings = recruitingMeetings.slice(0, 3);
   const currentHero = heroSlides[activeSlide];
 
@@ -68,7 +71,11 @@ export default function HomePage() {
             </div>
             <div className={styles.dashboardRankList}>
               {featuredMeetings.map((meeting, index) => (
-                <Link key={meeting.id} to={`/meetings/${meeting.id}`} className={styles.dashboardRankItem}>
+                <Link
+                  key={meeting.id}
+                  to={`/meetings/${meeting.id}`}
+                  className={styles.dashboardRankItem}
+                >
                   <b>{index + 1}</b>
                   <div>
                     <strong>{meeting.title}</strong>
@@ -86,7 +93,10 @@ export default function HomePage() {
             </div>
             <div className={styles.dashboardScheduleList}>
               {weeklySchedule.map((item) => (
-                <div key={`${item.day}-${item.time}`} className={styles.dashboardScheduleItem}>
+                <div
+                  key={`${item.day}-${item.time}`}
+                  className={styles.dashboardScheduleItem}
+                >
                   <span>{item.day}</span>
                   <strong>{item.time}</strong>
                   <p>{item.title}</p>
@@ -101,7 +111,10 @@ export default function HomePage() {
             </div>
             <div className={styles.dashboardActivityList}>
               {recentActivities.map((activity) => (
-                <div key={activity.user} className={styles.dashboardActivityItem}>
+                <div
+                  key={activity.user}
+                  className={styles.dashboardActivityItem}
+                >
                   <i>{activity.user.slice(0, 1)}</i>
                   <div>
                     <strong>{activity.user}</strong>
@@ -123,7 +136,11 @@ export default function HomePage() {
                 key={slide.title}
                 src={slide.image}
                 alt=""
-                className={index === activeSlide ? styles.heroSlideActive : styles.heroSlide}
+                className={
+                  index === activeSlide
+                    ? styles.heroSlideActive
+                    : styles.heroSlide
+                }
               />
             ))}
           </div>
@@ -136,20 +153,36 @@ export default function HomePage() {
 
             <div className={styles.dashboardHeroFilters}>
               <label>
-                <span><UiIcon name="location" className={styles.dashboardInlineIcon} /></span>
+                <span>
+                  <UiIcon
+                    name="location"
+                    className={styles.dashboardInlineIcon}
+                  />
+                </span>
                 <select defaultValue={regions[0]}>
-                  {regions.map((region) => <option key={region}>{region}</option>)}
+                  {regions.map((region) => (
+                    <option key={region}>{region}</option>
+                  ))}
                 </select>
               </label>
               <label>
-                <span><UiIcon name="spark" className={styles.dashboardInlineIcon} /></span>
+                <span>
+                  <UiIcon name="spark" className={styles.dashboardInlineIcon} />
+                </span>
                 <select defaultValue="전체 운동">
                   <option>전체 운동</option>
-                  {sports.map((sport) => <option key={sport.id}>{sport.name}</option>)}
+                  {sports.map((sport) => (
+                    <option key={sport.id}>{sport.name}</option>
+                  ))}
                 </select>
               </label>
               <label>
-                <span><UiIcon name="calendar" className={styles.dashboardInlineIcon} /></span>
+                <span>
+                  <UiIcon
+                    name="calendar"
+                    className={styles.dashboardInlineIcon}
+                  />
+                </span>
                 <select defaultValue="날짜 선택">
                   <option>날짜 선택</option>
                   <option>오늘</option>
@@ -157,7 +190,9 @@ export default function HomePage() {
                   <option>주말</option>
                 </select>
               </label>
-              <Link to="/meetings" className={styles.dashboardHeroButton}>모임 찾기</Link>
+              <Link to="/meetings" className={styles.dashboardHeroButton}>
+                모임 찾기
+              </Link>
             </div>
 
             <div className={styles.heroDots} aria-label="홈 배너 슬라이드">
@@ -165,7 +200,11 @@ export default function HomePage() {
                 <button
                   key={slide.title}
                   type="button"
-                  className={index === activeSlide ? styles.heroDotActive : styles.heroDot}
+                  className={
+                    index === activeSlide
+                      ? styles.heroDotActive
+                      : styles.heroDot
+                  }
                   onClick={() => setActiveSlide(index)}
                   aria-label={`${index + 1}번째 배너 보기`}
                 />
@@ -182,8 +221,17 @@ export default function HomePage() {
           <div className={styles.dashboardSummaryGrid}>
             {localStats.map((stat) => (
               <article key={stat.label}>
-                <i className={styles[`dashboardTone${stat.tone[0].toUpperCase()}${stat.tone.slice(1)}`]}>
-                  <UiIcon name={stat.icon} className={styles.dashboardStatIcon} />
+                <i
+                  className={
+                    styles[
+                      `dashboardTone${stat.tone[0].toUpperCase()}${stat.tone.slice(1)}`
+                    ]
+                  }
+                >
+                  <UiIcon
+                    name={stat.icon}
+                    className={styles.dashboardStatIcon}
+                  />
                 </i>
                 <div>
                   <span>{stat.label}</span>
@@ -197,9 +245,22 @@ export default function HomePage() {
 
       <section className={styles.dashboardCategoryStrip}>
         {categoryItems.map((item) => (
-          <button key={item.name} type="button" className={styles.dashboardCategoryItem}>
-            <i className={styles[`dashboardTone${item.accent[0].toUpperCase()}${item.accent.slice(1)}`]}>
-              <UiIcon name={item.icon} className={styles.dashboardCategoryGlyph} />
+          <button
+            key={item.name}
+            type="button"
+            className={styles.dashboardCategoryItem}
+          >
+            <i
+              className={
+                styles[
+                  `dashboardTone${item.accent[0].toUpperCase()}${item.accent.slice(1)}`
+                ]
+              }
+            >
+              <UiIcon
+                name={item.icon}
+                className={styles.dashboardCategoryGlyph}
+              />
             </i>
             <span>{item.name}</span>
           </button>
@@ -224,19 +285,42 @@ export default function HomePage() {
         <div className={styles.dashboardFeed}>
           {featuredMeetings.map((meeting) => (
             <article key={meeting.id} className={styles.dashboardMeetingCard}>
-              <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.dashboardMeetingImage} />
+              <img
+                src={meetingImages[meeting.id]}
+                alt={meeting.title}
+                className={styles.dashboardMeetingImage}
+              />
               <div className={styles.dashboardMeetingBody}>
                 <div className={styles.dashboardMeetingBadges}>
                   <span>{meeting.sport}</span>
-                  <span className={styles.dashboardStatusBadge}>{meeting.statusText}</span>
-                  <span>{meeting.current < meeting.max ? "초보 환영" : "정기 모임"}</span>
+                  <span className={styles.dashboardStatusBadge}>
+                    {meeting.statusText}
+                  </span>
+                  <span>
+                    {meeting.current < meeting.max ? "초보 환영" : "정기 모임"}
+                  </span>
                 </div>
                 <h3>{meeting.title}</h3>
                 <p>{meeting.desc}</p>
                 <div className={styles.dashboardMeetingMeta}>
-                  <span><UiIcon name="location" className={styles.dashboardMetaIcon} /> {meeting.place}</span>
-                  <span><UiIcon name="calendar" className={styles.dashboardMetaIcon} /> 오늘(금) {meeting.time}</span>
-                  <span><UiIcon name="user" className={styles.dashboardMetaIcon} /> {meeting.current} / {meeting.max}명</span>
+                  <span>
+                    <UiIcon
+                      name="location"
+                      className={styles.dashboardMetaIcon}
+                    />{" "}
+                    {meeting.place}
+                  </span>
+                  <span>
+                    <UiIcon
+                      name="calendar"
+                      className={styles.dashboardMetaIcon}
+                    />{" "}
+                    오늘(금) {meeting.time}
+                  </span>
+                  <span>
+                    <UiIcon name="user" className={styles.dashboardMetaIcon} />{" "}
+                    {meeting.current} / {meeting.max}명
+                  </span>
                 </div>
                 <div className={styles.dashboardMeetingFooter}>
                   <div className={styles.dashboardHostMeta}>
@@ -244,9 +328,26 @@ export default function HomePage() {
                     <span>매너점수 4.8 (후기 18)</span>
                   </div>
                   <div className={styles.dashboardMeetingActions}>
-                    <button type="button"><UiIcon name="heart" className={styles.dashboardActionIcon} />18</button>
-                    <button type="button"><UiIcon name="comment" className={styles.dashboardActionIcon} />6</button>
-                    <button type="button"><UiIcon name="share" className={styles.dashboardActionIcon} /></button>
+                    <button type="button">
+                      <UiIcon
+                        name="heart"
+                        className={styles.dashboardActionIcon}
+                      />
+                      18
+                    </button>
+                    <button type="button">
+                      <UiIcon
+                        name="comment"
+                        className={styles.dashboardActionIcon}
+                      />
+                      6
+                    </button>
+                    <button type="button">
+                      <UiIcon
+                        name="share"
+                        className={styles.dashboardActionIcon}
+                      />
+                    </button>
                     <Link to={`/meetings/${meeting.id}`}>참가 신청</Link>
                   </div>
                 </div>

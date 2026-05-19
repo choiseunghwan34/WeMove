@@ -9,10 +9,12 @@ const authBackgrounds = [homeBg];
 export default function SignupPage() {
   const navigate = useNavigate();
   const [isSportsOpen, setIsSportsOpen] = useState(false);
-  const [selectedSports, setSelectedSports] = useState(() => sports.slice(0, 2).map((sport) => sport.id));
+  const [selectedSports, setSelectedSports] = useState(() =>
+    sports.slice(0, 2).map((sport) => sport.id),
+  );
   const backgroundImage = useMemo(
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
-    []
+    [],
   );
 
   const handleSubmit = (event) => {
@@ -21,11 +23,11 @@ export default function SignupPage() {
   };
 
   const toggleSport = (sportId) => {
-    setSelectedSports((current) => (
+    setSelectedSports((current) =>
       current.includes(sportId)
         ? current.filter((id) => id !== sportId)
-        : [...current, sportId]
-    ));
+        : [...current, sportId],
+    );
   };
 
   const selectedSportNames = sports
@@ -39,12 +41,15 @@ export default function SignupPage() {
     >
       <div className={`${styles.layout} ${styles.signupLayout}`}>
         <section className={styles.copy}>
-          <Link to="/" className={styles.logo}>WeMove</Link>
+          <Link to="/" className={styles.logo}>
+            WeMove
+          </Link>
           <span className={styles.eyebrow}>JOIN WEMOVE</span>
           <h1>내 지역과 관심 운동으로 시작하는 새로운 루틴</h1>
           <p>
-            프로필과 관심 운동 종목만 등록하면 내 주변 모임을 훨씬 더 빠르게 찾을 수 있습니다.
-            처음 가입해도 바로 참여 흐름이 이어지도록 설계했습니다.
+            프로필과 관심 운동 종목만 등록하면 내 주변 모임을 훨씬 더 빠르게
+            찾을 수 있습니다. 처음 가입해도 바로 참여 흐름이 이어지도록
+            설계했습니다.
           </p>
 
           <div className={styles.metrics}>
@@ -63,7 +68,10 @@ export default function SignupPage() {
           </div>
         </section>
 
-        <form className={`${styles.card} ${styles.signupCard}`} onSubmit={handleSubmit}>
+        <form
+          className={`${styles.card} ${styles.signupCard}`}
+          onSubmit={handleSubmit}
+        >
           <div className={styles.cardHead}>
             <span className={styles.cardKicker}>회원가입</span>
             <h2>프로필을 만들고 바로 시작하세요</h2>
@@ -101,7 +109,9 @@ export default function SignupPage() {
               <label>
                 <span>지역</span>
                 <select defaultValue={regions[0]}>
-                  {regions.map((region) => <option key={region}>{region}</option>)}
+                  {regions.map((region) => (
+                    <option key={region}>{region}</option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -115,11 +125,21 @@ export default function SignupPage() {
               aria-expanded={isSportsOpen}
             >
               <span>관심 운동 종목</span>
-              <strong>{selectedSportNames.length ? selectedSportNames.join(", ") : "선택해주세요"}</strong>
+              <strong>
+                {selectedSportNames.length
+                  ? selectedSportNames.join(", ")
+                  : "선택해주세요"}
+              </strong>
               <i>{isSportsOpen ? "접기" : "펼치기"}</i>
             </button>
 
-            <div className={isSportsOpen ? styles.choiceListOpen : styles.choiceListCollapsed}>
+            <div
+              className={
+                isSportsOpen
+                  ? styles.choiceListOpen
+                  : styles.choiceListCollapsed
+              }
+            >
               <div className={styles.choiceList}>
                 {sports.map((sport) => (
                   <label key={sport.id} className={styles.choiceChip}>
@@ -135,7 +155,9 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <button className={styles.submit} type="submit">가입 완료</button>
+          <button className={styles.submit} type="submit">
+            가입 완료
+          </button>
 
           <div className={styles.links}>
             <Link to="/login">이미 계정이 있어요</Link>

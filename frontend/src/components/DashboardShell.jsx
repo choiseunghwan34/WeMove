@@ -30,8 +30,12 @@ export default function DashboardShell({
         </label>
 
         <div className={styles.dashboardActions}>
-          <Link to="/login" className={styles.dashboardLoginButton}>로그인</Link>
-          <Link to="/signup" className={styles.dashboardSignupButton}>회원가입</Link>
+          <Link to="/login" className={styles.dashboardLoginButton}>
+            로그인
+          </Link>
+          <Link to="/signup" className={styles.dashboardSignupButton}>
+            회원가입
+          </Link>
         </div>
 
         <button
@@ -57,10 +61,14 @@ export default function DashboardShell({
       ) : null}
 
       <div className={styles.dashboardShell}>
-        <aside className={`${styles.dashboardSidebar} ${isMenuOpen ? styles.dashboardSidebarOpen : ""}`}>
+        <aside
+          className={`${styles.dashboardSidebar} ${isMenuOpen ? styles.dashboardSidebarOpen : ""}`}
+        >
           <div className={styles.mobileDrawerHead}>
             <strong>메뉴</strong>
-            <button type="button" onClick={closeMenu} aria-label="메뉴 닫기">닫기</button>
+            <button type="button" onClick={closeMenu} aria-label="메뉴 닫기">
+              닫기
+            </button>
           </div>
 
           <nav className={styles.dashboardNav}>
@@ -68,7 +76,11 @@ export default function DashboardShell({
               <Link
                 key={item.label}
                 to={item.to}
-                className={active === item.label ? styles.dashboardNavItemActive : styles.dashboardNavItem}
+                className={
+                  active === item.label
+                    ? styles.dashboardNavItemActive
+                    : styles.dashboardNavItem
+                }
                 onClick={closeMenu}
               >
                 <UiIcon name={item.icon} className={styles.dashboardNavIcon} />
@@ -84,7 +96,12 @@ export default function DashboardShell({
             <div className={styles.dashboardInterestList}>
               {interestItems.map((item) => (
                 <span key={item.label}>
-                  <i><UiIcon name={item.icon} className={styles.dashboardInterestIcon} /></i>
+                  <i>
+                    <UiIcon
+                      name={item.icon}
+                      className={styles.dashboardInterestIcon}
+                    />
+                  </i>
                   {item.label}
                 </span>
               ))}
@@ -104,9 +121,7 @@ export default function DashboardShell({
           {children}
         </main>
 
-        <aside className={styles.dashboardAside}>
-          {aside}
-        </aside>
+        <aside className={styles.dashboardAside}>{aside}</aside>
       </div>
     </div>
   );

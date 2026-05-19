@@ -1,1 +1,31 @@
-﻿package kr.co.iei.sport.controller; import kr.co.iei.sport.model.service.SportService; import kr.co.iei.sport.model.vo.*; import lombok.RequiredArgsConstructor; import org.springframework.http.ResponseEntity; import org.springframework.web.bind.annotation.*; import java.util.List; @RestController @RequiredArgsConstructor public class SportController { private final SportService sportService; @GetMapping("/api/sports") public ResponseEntity<List<Sport>> sports(){ return ResponseEntity.ok(sportService.getSports()); } @PostMapping("/api/admin/sports") public ResponseEntity<Void> create(@RequestBody SportRequest req){ sportService.createSport(req); return ResponseEntity.ok().build(); } @PutMapping("/api/admin/sports/{sportId}") public ResponseEntity<Void> update(@PathVariable Long sportId,@RequestBody SportRequest req){ sportService.updateSport(sportId, req); return ResponseEntity.ok().build(); } }
+package kr.co.iei.sport.controller;
+
+import java.util.List;
+import kr.co.iei.sport.model.service.SportService;
+import kr.co.iei.sport.model.vo.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+public class SportController {
+  private final SportService sportService;
+
+  @GetMapping("/api/sports")
+  public ResponseEntity<List<Sport>> sports() {
+    return ResponseEntity.ok(sportService.getSports());
+  }
+
+  @PostMapping("/api/admin/sports")
+  public ResponseEntity<Void> create(@RequestBody SportRequest req) {
+    sportService.createSport(req);
+    return ResponseEntity.ok().build();
+  }
+
+  @PutMapping("/api/admin/sports/{sportId}")
+  public ResponseEntity<Void> update(@PathVariable Long sportId, @RequestBody SportRequest req) {
+    sportService.updateSport(sportId, req);
+    return ResponseEntity.ok().build();
+  }
+}

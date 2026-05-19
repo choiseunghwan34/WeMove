@@ -1,1 +1,25 @@
-﻿package kr.co.iei.comment.model.dao; import kr.co.iei.comment.model.vo.*; import lombok.RequiredArgsConstructor; import org.apache.ibatis.session.SqlSession; import org.springframework.stereotype.Repository; import java.util.List; @Repository @RequiredArgsConstructor public class CommentDao { private final SqlSession sqlSession; public List<CommentResponse> selectComments(Long meetingId){ return sqlSession.selectList("comment.selectComments", meetingId);} public int insertComment(Comment c){ return sqlSession.insert("comment.insertComment", c);} public int softDeleteComment(Long id){ return sqlSession.update("comment.softDeleteComment", id);} }
+package kr.co.iei.comment.model.dao;
+
+import java.util.List;
+import kr.co.iei.comment.model.vo.*;
+import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class CommentDao {
+  private final SqlSession sqlSession;
+
+  public List<CommentResponse> selectComments(Long meetingId) {
+    return sqlSession.selectList("comment.selectComments", meetingId);
+  }
+
+  public int insertComment(Comment c) {
+    return sqlSession.insert("comment.insertComment", c);
+  }
+
+  public int softDeleteComment(Long id) {
+    return sqlSession.update("comment.softDeleteComment", id);
+  }
+}

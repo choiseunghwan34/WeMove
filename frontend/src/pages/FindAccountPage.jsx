@@ -10,12 +10,14 @@ export default function FindAccountPage() {
   const [resultMessage, setResultMessage] = useState("");
   const backgroundImage = useMemo(
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
-    []
+    [],
   );
 
   const handleFindId = (event) => {
     event.preventDefault();
-    setResultMessage("인증이 완료되었습니다. 가입된 아이디는 wemove_runner 입니다.");
+    setResultMessage(
+      "인증이 완료되었습니다. 가입된 아이디는 wemove_runner 입니다.",
+    );
   };
 
   const handleResetPassword = (event) => {
@@ -30,11 +32,14 @@ export default function FindAccountPage() {
     >
       <div className={styles.layout}>
         <section className={styles.copy}>
-          <Link to="/" className={styles.logo}>WeMove</Link>
+          <Link to="/" className={styles.logo}>
+            WeMove
+          </Link>
           <span className={styles.eyebrow}>ACCOUNT SUPPORT</span>
           <h1>아이디와 비밀번호를 빠르게 다시 찾는 방법</h1>
           <p>
-            가입한 이메일과 기본 정보만 확인하면 계정 조회와 비밀번호 재설정을 안전하게 이어갈 수 있습니다.
+            가입한 이메일과 기본 정보만 확인하면 계정 조회와 비밀번호 재설정을
+            안전하게 이어갈 수 있습니다.
           </p>
 
           <div className={styles.metrics}>
@@ -94,7 +99,9 @@ export default function FindAccountPage() {
                 <span>인증번호</span>
                 <input placeholder="6자리 인증번호 입력" />
               </label>
-              <button className={styles.submit} type="submit">아이디 확인</button>
+              <button className={styles.submit} type="submit">
+                아이디 확인
+              </button>
             </form>
           ) : (
             <form className={styles.form} onSubmit={handleResetPassword}>
@@ -117,7 +124,9 @@ export default function FindAccountPage() {
                 <span>새 비밀번호 확인</span>
                 <input type="password" placeholder="새 비밀번호 다시 입력" />
               </label>
-              <button className={styles.submit} type="submit">재설정 링크 받기</button>
+              <button className={styles.submit} type="submit">
+                재설정 링크 받기
+              </button>
             </form>
           )}
 

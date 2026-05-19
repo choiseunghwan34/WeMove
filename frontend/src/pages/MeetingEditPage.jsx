@@ -23,7 +23,8 @@ function useImagePreviews(files) {
 
 export default function MeetingEditPage() {
   const { meetingId } = useParams();
-  const meeting = meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
+  const meeting =
+    meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
   const [files, setFiles] = useState([]);
   const previews = useImagePreviews(files);
 
@@ -41,13 +42,19 @@ export default function MeetingEditPage() {
       <div className={styles.pageTitle}>
         <div>
           <h1>모임 수정</h1>
-          <p>참가 예정인 사람들도 헷갈리지 않도록, 바뀐 정보가 한눈에 보이게 정리해두세요.</p>
+          <p>
+            참가 예정인 사람들도 헷갈리지 않도록, 바뀐 정보가 한눈에 보이게
+            정리해두세요.
+          </p>
         </div>
       </div>
 
       <section className={styles.formIntro}>
         <h2>기존 흐름은 유지하고, 필요한 부분만 정확하게 다듬어보세요.</h2>
-        <p>시간, 장소, 사진, 소개 문구만 잘 정리해도 모임 페이지의 신뢰감이 크게 올라갑니다.</p>
+        <p>
+          시간, 장소, 사진, 소개 문구만 잘 정리해도 모임 페이지의 신뢰감이 크게
+          올라갑니다.
+        </p>
       </section>
 
       <form className={styles.formCard}>
@@ -57,11 +64,19 @@ export default function MeetingEditPage() {
         </label>
         <label>
           <span>운동 종목</span>
-          <select defaultValue={meeting.sport}>{sports.map((sport) => <option key={sport.id}>{sport.name}</option>)}</select>
+          <select defaultValue={meeting.sport}>
+            {sports.map((sport) => (
+              <option key={sport.id}>{sport.name}</option>
+            ))}
+          </select>
         </label>
         <label>
           <span>지역</span>
-          <select defaultValue={meeting.region}>{regions.map((region) => <option key={region}>{region}</option>)}</select>
+          <select defaultValue={meeting.region}>
+            {regions.map((region) => (
+              <option key={region}>{region}</option>
+            ))}
+          </select>
         </label>
         <label>
           <span>상세 장소</span>
@@ -92,8 +107,13 @@ export default function MeetingEditPage() {
         <div className={`${styles.full} ${styles.choiceGroup}`}>
           <span>모임 방식</span>
           <div>
-            <label><input type="radio" name="meetingType" defaultChecked /> 1회성 모임</label>
-            <label><input type="radio" name="meetingType" /> 정기 모임</label>
+            <label>
+              <input type="radio" name="meetingType" defaultChecked /> 1회성
+              모임
+            </label>
+            <label>
+              <input type="radio" name="meetingType" /> 정기 모임
+            </label>
           </div>
         </div>
 
@@ -114,9 +134,7 @@ export default function MeetingEditPage() {
 
         <label className={styles.full}>
           <span>진행 안내</span>
-          <textarea
-            defaultValue="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다."
-          />
+          <textarea defaultValue="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다." />
         </label>
 
         <label className={styles.full}>
@@ -128,7 +146,11 @@ export default function MeetingEditPage() {
           <span className={styles.kicker}>현재 대표 사진</span>
           <div className={styles.reviewPreviewGrid}>
             <article className={styles.reviewPreviewCard}>
-              <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.reviewPreviewImage} />
+              <img
+                src={meetingImages[meeting.id]}
+                alt={meeting.title}
+                className={styles.reviewPreviewImage}
+              />
               <div className={styles.reviewPreviewMeta}>
                 <span>현재 사용 중인 대표 사진</span>
                 <button type="button">유지</button>
@@ -146,17 +168,28 @@ export default function MeetingEditPage() {
             className={styles.uploadInput}
             onChange={handleFileChange}
           />
-          <small className={styles.uploadHint}>새 사진을 올리면 기존 대표 사진 대신 사용할 후보로 보여집니다.</small>
+          <small className={styles.uploadHint}>
+            새 사진을 올리면 기존 대표 사진 대신 사용할 후보로 보여집니다.
+          </small>
         </div>
 
         {previews.length > 0 ? (
           <div className={`${styles.full} ${styles.reviewPreviewGrid}`}>
             {previews.map((preview) => (
               <article key={preview.name} className={styles.reviewPreviewCard}>
-                <img src={preview.url} alt={preview.name} className={styles.reviewPreviewImage} />
+                <img
+                  src={preview.url}
+                  alt={preview.name}
+                  className={styles.reviewPreviewImage}
+                />
                 <div className={styles.reviewPreviewMeta}>
                   <span>{preview.name}</span>
-                  <button type="button" onClick={() => removeFile(preview.name)}>삭제</button>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(preview.name)}
+                  >
+                    삭제
+                  </button>
                 </div>
               </article>
             ))}

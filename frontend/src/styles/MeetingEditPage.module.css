@@ -1,134 +1,134 @@
 /* Auto-split from MeetingEditPage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.choiceGroup{
-  composes:choiceGroup from "./WeMoveShared.module.css";
+.choiceGroup {
+  composes: choiceGroup from "./WeMoveShared.module.css";
 }
 
-.formActions{
-  composes:formActions from "./WeMoveShared.module.css";
+.formActions {
+  composes: formActions from "./WeMoveShared.module.css";
 }
 
-.formCard{
-  composes:formCard from "./WeMoveShared.module.css";
+.formCard {
+  composes: formCard from "./WeMoveShared.module.css";
 }
 
-.formIntro{
-  composes:formIntro from "./WeMoveShared.module.css";
+.formIntro {
+  composes: formIntro from "./WeMoveShared.module.css";
 }
 
-.full{
-  composes:full from "./WeMoveShared.module.css";
+.full {
+  composes: full from "./WeMoveShared.module.css";
 }
 
-.kicker{
-  composes:kicker from "./WeMoveShared.module.css";
+.kicker {
+  composes: kicker from "./WeMoveShared.module.css";
 }
 
-.page{
-  composes:page from "./WeMoveShared.module.css";
+.page {
+  composes: page from "./WeMoveShared.module.css";
 }
 
-.pageTitle{
-  composes:pageTitle from "./WeMoveShared.module.css";
+.pageTitle {
+  composes: pageTitle from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewCard{
-  composes:reviewPreviewCard from "./WeMoveShared.module.css";
+.reviewPreviewCard {
+  composes: reviewPreviewCard from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewGrid{
-  composes:reviewPreviewGrid from "./WeMoveShared.module.css";
+.reviewPreviewGrid {
+  composes: reviewPreviewGrid from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewImage{
-  composes:reviewPreviewImage from "./WeMoveShared.module.css";
+.reviewPreviewImage {
+  composes: reviewPreviewImage from "./WeMoveShared.module.css";
 }
 
-.reviewPreviewMeta{
-  composes:reviewPreviewMeta from "./WeMoveShared.module.css";
+.reviewPreviewMeta {
+  composes: reviewPreviewMeta from "./WeMoveShared.module.css";
 }
 
-.uploadBlock{
-  composes:uploadBlock from "./WeMoveShared.module.css";
+.uploadBlock {
+  composes: uploadBlock from "./WeMoveShared.module.css";
 }
 
-.uploadHint{
-  composes:uploadHint from "./WeMoveShared.module.css";
+.uploadHint {
+  composes: uploadHint from "./WeMoveShared.module.css";
 }
 
-.uploadInput{
-  composes:uploadInput from "./WeMoveShared.module.css";
+.uploadInput {
+  composes: uploadInput from "./WeMoveShared.module.css";
 }
 
 /* Home-aligned form polish */
 .formCard,
 .formIntro,
-.reviewPreviewCard{
-  background:rgba(255,255,255,.94)!important;
-  border-color:rgba(15,23,42,.06)!important;
-  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+.reviewPreviewCard {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
 }
 
 .formCard input,
 .formCard select,
-.formCard textarea{
-  background:#fff!important;
-  border-color:rgba(15,23,42,.09)!important;
+.formCard textarea {
+  background: #fff !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
 }
 
-.choiceGroup label{
-  background:#fff!important;
-  border-color:rgba(15,23,42,.08)!important;
+.choiceGroup label {
+  background: #fff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
 }
 
-.formActions button{
-  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+.formActions button {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
 }
 
-.formActions a{
-  background:#fff!important;
-  border-color:rgba(15,23,42,.08)!important;
+.formActions a {
+  background: #fff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
 }
 
 /* 2026-05-18 neutral create/edit form finish */
 .formCard,
 .formIntro,
 .reviewPreviewCard,
-.uploadBlock{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+.uploadBlock {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
 .formCard input,
 .formCard select,
 .formCard textarea,
-.uploadInput{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:none!important;
+.uploadInput {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
 }
 
-.choiceGroup label{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  color:#374151!important;
+.choiceGroup label {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
 }
 
-.choiceGroup label:has(input:checked){
-  background:#eff6ff!important;
-  border-color:#bfdbfe!important;
-  color:#1d4ed8!important;
-  box-shadow:none!important;
+.choiceGroup label:has(input:checked) {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #1d4ed8 !important;
+  box-shadow: none !important;
 }
 
-.formActions button{
-  background:#2563eb!important;
-  box-shadow:none!important;
+.formActions button {
+  background: #2563eb !important;
+  box-shadow: none !important;
 }
 
-.formActions a{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  color:#374151!important;
+.formActions a {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
 }

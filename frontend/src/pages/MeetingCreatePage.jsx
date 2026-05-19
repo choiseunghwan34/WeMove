@@ -38,13 +38,19 @@ export default function MeetingCreatePage() {
       <div className={styles.pageTitle}>
         <div>
           <h1>모임 만들기</h1>
-          <p>제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는 모임 페이지를 만들 수 있습니다.</p>
+          <p>
+            제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는
+            모임 페이지를 만들 수 있습니다.
+          </p>
         </div>
       </div>
 
       <section className={styles.formIntro}>
         <h2>좋은 모임은 한눈에 이해되는 정보에서 시작됩니다.</h2>
-        <p>참가자는 제목과 썸네일, 장소, 분위기를 먼저 봅니다. 처음 보는 사람도 바로 감을 잡을 수 있게 간결하고 선명하게 구성해보세요.</p>
+        <p>
+          참가자는 제목과 썸네일, 장소, 분위기를 먼저 봅니다. 처음 보는 사람도
+          바로 감을 잡을 수 있게 간결하고 선명하게 구성해보세요.
+        </p>
         <div className={styles.formHintGrid}>
           <article>
             <span>제목 작성 팁</span>
@@ -56,7 +62,9 @@ export default function MeetingCreatePage() {
           </article>
           <article>
             <span>소개 작성 팁</span>
-            <strong>초보 가능 여부, 준비물, 진행 방식을 짧고 명확하게 안내</strong>
+            <strong>
+              초보 가능 여부, 준비물, 진행 방식을 짧고 명확하게 안내
+            </strong>
           </article>
         </div>
       </section>
@@ -68,11 +76,19 @@ export default function MeetingCreatePage() {
         </label>
         <label>
           <span>운동 종목</span>
-          <select>{sports.map((sport) => <option key={sport.id}>{sport.name}</option>)}</select>
+          <select>
+            {sports.map((sport) => (
+              <option key={sport.id}>{sport.name}</option>
+            ))}
+          </select>
         </label>
         <label>
           <span>지역</span>
-          <select>{regions.map((region) => <option key={region}>{region}</option>)}</select>
+          <select>
+            {regions.map((region) => (
+              <option key={region}>{region}</option>
+            ))}
+          </select>
         </label>
         <label>
           <span>상세 장소</span>
@@ -105,8 +121,13 @@ export default function MeetingCreatePage() {
         <div className={`${styles.full} ${styles.choiceGroup}`}>
           <span>모임 방식</span>
           <div>
-            <label><input type="radio" name="meetingType" defaultChecked /> 1회성 모임</label>
-            <label><input type="radio" name="meetingType" /> 정기 모임</label>
+            <label>
+              <input type="radio" name="meetingType" defaultChecked /> 1회성
+              모임
+            </label>
+            <label>
+              <input type="radio" name="meetingType" /> 정기 모임
+            </label>
           </div>
         </div>
 
@@ -127,9 +148,7 @@ export default function MeetingCreatePage() {
 
         <label className={styles.full}>
           <span>진행 안내</span>
-          <textarea
-            defaultValue="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다."
-          />
+          <textarea defaultValue="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다." />
         </label>
 
         <label className={styles.full}>
@@ -146,17 +165,29 @@ export default function MeetingCreatePage() {
             className={styles.uploadInput}
             onChange={handleFileChange}
           />
-          <small className={styles.uploadHint}>최대 4장까지 등록할 수 있습니다. 첫 번째 사진이 대표 썸네일처럼 보입니다.</small>
+          <small className={styles.uploadHint}>
+            최대 4장까지 등록할 수 있습니다. 첫 번째 사진이 대표 썸네일처럼
+            보입니다.
+          </small>
         </div>
 
         {previews.length > 0 ? (
           <div className={`${styles.full} ${styles.reviewPreviewGrid}`}>
             {previews.map((preview) => (
               <article key={preview.name} className={styles.reviewPreviewCard}>
-                <img src={preview.url} alt={preview.name} className={styles.reviewPreviewImage} />
+                <img
+                  src={preview.url}
+                  alt={preview.name}
+                  className={styles.reviewPreviewImage}
+                />
                 <div className={styles.reviewPreviewMeta}>
                   <span>{preview.name}</span>
-                  <button type="button" onClick={() => removeFile(preview.name)}>삭제</button>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(preview.name)}
+                  >
+                    삭제
+                  </button>
                 </div>
               </article>
             ))}

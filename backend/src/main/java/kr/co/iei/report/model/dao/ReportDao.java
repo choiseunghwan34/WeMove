@@ -1,1 +1,27 @@
-﻿package kr.co.iei.report.model.dao; import kr.co.iei.report.model.vo.*; import lombok.RequiredArgsConstructor; import org.apache.ibatis.session.SqlSession; import org.springframework.stereotype.Repository; import java.util.List; import java.util.Map; @Repository @RequiredArgsConstructor public class ReportDao { private final SqlSession sqlSession; public int insertReport(Report r){ return sqlSession.insert("report.insertReport", r);} public List<ReportResponse> selectReports(){ return sqlSession.selectList("report.selectReports"); } public int updateReportStatus(Long reportId,String status){ return sqlSession.update("report.updateReportStatus", Map.of("reportId",reportId,"status",status)); } }
+package kr.co.iei.report.model.dao;
+
+import java.util.List;
+import java.util.Map;
+import kr.co.iei.report.model.vo.*;
+import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class ReportDao {
+  private final SqlSession sqlSession;
+
+  public int insertReport(Report r) {
+    return sqlSession.insert("report.insertReport", r);
+  }
+
+  public List<ReportResponse> selectReports() {
+    return sqlSession.selectList("report.selectReports");
+  }
+
+  public int updateReportStatus(Long reportId, String status) {
+    return sqlSession.update(
+        "report.updateReportStatus", Map.of("reportId", reportId, "status", status));
+  }
+}

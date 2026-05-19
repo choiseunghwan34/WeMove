@@ -32,15 +32,16 @@ export default function AppModal({
 
   if (!open) return null;
 
-  const modalClassName = [
-    styles.modal,
-    variant === "sheet" ? styles.sheet : "",
-  ].filter(Boolean).join(" ");
+  const modalClassName = [styles.modal, variant === "sheet" ? styles.sheet : ""]
+    .filter(Boolean)
+    .join(" ");
 
   const confirmClassName = [
     styles.confirmButton,
     tone === "danger" ? styles.dangerButton : "",
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={styles.overlay} role="presentation" onMouseDown={onClose}>
@@ -51,7 +52,12 @@ export default function AppModal({
         aria-labelledby="app-modal-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button type="button" className={styles.closeButton} onClick={onClose} aria-label="모달 닫기">
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={onClose}
+          aria-label="모달 닫기"
+        >
           ×
         </button>
 
@@ -64,11 +70,19 @@ export default function AppModal({
         {children && <div className={styles.body}>{children}</div>}
 
         <div className={styles.actions}>
-          <button type="button" className={styles.cancelButton} onClick={onClose}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onClose}
+          >
             {cancelText}
           </button>
           {onConfirm && (
-            <button type="button" className={confirmClassName} onClick={onConfirm}>
+            <button
+              type="button"
+              className={confirmClassName}
+              onClick={onConfirm}
+            >
               {confirmText}
             </button>
           )}

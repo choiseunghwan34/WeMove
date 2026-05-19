@@ -4,7 +4,9 @@ export default function Header() {
   return (
     <header className="header">
       <div className="inner">
-        <Link to="/" className="logo">WeMove</Link>
+        <Link to="/" className="logo">
+          WeMove
+        </Link>
 
         <nav className="main-nav">
           <Link to="/meetings">모임 찾기</Link>
@@ -14,8 +16,12 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          <Link to="/login" className="header-login">로그인</Link>
-          <Link to="/signup" className="header-signup">회원가입</Link>
+          <Link to="/login" className="header-login">
+            로그인
+          </Link>
+          <Link to="/signup" className="header-signup">
+            회원가입
+          </Link>
         </div>
       </div>
     </header>

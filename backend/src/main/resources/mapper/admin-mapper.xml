@@ -1,1 +1,18 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"><mapper namespace="admin"><select id="selectSummary" resultType="kr.co.iei.admin.model.vo.AdminSummary">SELECT (SELECT COUNT(*) FROM users) total_members,(SELECT COUNT(*) FROM meetings WHERE deleted_at IS NULL) total_meetings,(SELECT COUNT(*) FROM reports WHERE status="PENDING") pending_reports,(SELECT COUNT(*) FROM sports) total_sports</select><select id="selectMembers" resultType="kr.co.iei.admin.model.vo.AdminMemberResponse">SELECT user_id,login_id,nickname,role,status FROM users ORDER BY user_id DESC</select><select id="selectMeetings" resultType="kr.co.iei.admin.model.vo.AdminMeetingResponse">SELECT m.meeting_id,m.title,m.status,u.nickname host_nickname FROM meetings m JOIN users u ON m.host_user_id=u.user_id WHERE m.deleted_at IS NULL ORDER BY m.meeting_id DESC</select><select id="selectReports" resultType="kr.co.iei.admin.model.vo.AdminReportResponse">SELECT report_id,reason,status FROM reports ORDER BY report_id DESC</select><update id="updateReportStatus">UPDATE reports SET status=#{status}, processed_at=NOW() WHERE report_id=#{reportId}</update></mapper>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="admin"><select
+    id="selectSummary"
+    resultType="kr.co.iei.admin.model.vo.AdminSummary"
+  >SELECT (SELECT COUNT(*) FROM users) total_members,(SELECT COUNT(*) FROM meetings WHERE deleted_at IS NULL) total_meetings,(SELECT COUNT(*) FROM reports WHERE status="PENDING") pending_reports,(SELECT COUNT(*) FROM sports) total_sports</select><select
+    id="selectMembers"
+    resultType="kr.co.iei.admin.model.vo.AdminMemberResponse"
+  >SELECT user_id,login_id,nickname,role,status FROM users ORDER BY user_id DESC</select><select
+    id="selectMeetings"
+    resultType="kr.co.iei.admin.model.vo.AdminMeetingResponse"
+  >SELECT m.meeting_id,m.title,m.status,u.nickname host_nickname FROM meetings m JOIN users u ON m.host_user_id=u.user_id WHERE m.deleted_at IS NULL ORDER BY m.meeting_id DESC</select><select
+    id="selectReports"
+    resultType="kr.co.iei.admin.model.vo.AdminReportResponse"
+  >SELECT report_id,reason,status FROM reports ORDER BY report_id DESC</select><update
+    id="updateReportStatus"
+  >UPDATE reports SET status=#{status}, processed_at=NOW() WHERE report_id=#{reportId}</update></mapper>

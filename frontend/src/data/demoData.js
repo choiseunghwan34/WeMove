@@ -106,14 +106,60 @@ export const meetings = [
 ];
 
 export const adminMembers = [
-  { id: 1, loginId: "user01", nickname: "러너민수", region: "경기 파주시 야당동", role: "USER", status: "ACTIVE" },
-  { id: 2, loginId: "user02", nickname: "풋살지훈", region: "경기 파주시 운정동", role: "USER", status: "ACTIVE" },
-  { id: 3, loginId: "user03", nickname: "배드소라", region: "경기 파주시 문산읍", role: "USER", status: "ACTIVE" },
-  { id: 4, loginId: "admin01", nickname: "관리자", region: "서울 강남구 역삼동", role: "ADMIN", status: "ACTIVE" },
+  {
+    id: 1,
+    loginId: "user01",
+    nickname: "러너민수",
+    region: "경기 파주시 야당동",
+    role: "USER",
+    status: "ACTIVE",
+  },
+  {
+    id: 2,
+    loginId: "user02",
+    nickname: "풋살지훈",
+    region: "경기 파주시 운정동",
+    role: "USER",
+    status: "ACTIVE",
+  },
+  {
+    id: 3,
+    loginId: "user03",
+    nickname: "배드소라",
+    region: "경기 파주시 문산읍",
+    role: "USER",
+    status: "ACTIVE",
+  },
+  {
+    id: 4,
+    loginId: "admin01",
+    nickname: "관리자",
+    region: "서울 강남구 역삼동",
+    role: "ADMIN",
+    status: "ACTIVE",
+  },
 ];
 
 export const reports = [
-  { id: 1, target: "야당역 5km 러닝 크루 모집", reason: "노쇼 관련 신고", status: "PENDING", createdAt: "2026-05-10" },
-  { id: 2, target: "운정 풋살장 토요일 저녁 경기", reason: "부적절한 언행", status: "PENDING", createdAt: "2026-05-11" },
-  { id: 3, target: "러너민수", reason: "반복 취소", status: "RESOLVED", createdAt: "2026-05-07" },
+  {
+    id: 1,
+    target: "야당역 5km 러닝 크루 모집",
+    reason: "노쇼 관련 신고",
+    status: "PENDING",
+    createdAt: "2026-05-10",
+  },
+  {
+    id: 2,
+    target: "운정 풋살장 토요일 저녁 경기",
+    reason: "부적절한 언행",
+    status: "PENDING",
+    createdAt: "2026-05-11",
+  },
+  {
+    id: 3,
+    target: "러너민수",
+    reason: "반복 취소",
+    status: "RESOLVED",
+    createdAt: "2026-05-07",
+  },
 ];

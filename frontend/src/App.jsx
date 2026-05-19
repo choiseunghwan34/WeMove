@@ -17,12 +17,11 @@ import SignupPage from "./pages/SignupPage";
 function LayoutRoutes() {
   const location = useLocation();
   const { pathname } = location;
-  const isDashboardRoute = (
-    pathname === "/"
-    || pathname === "/meetings"
-    || pathname === "/activity"
-    || pathname === "/mypage"
-  );
+  const isDashboardRoute =
+    pathname === "/" ||
+    pathname === "/meetings" ||
+    pathname === "/activity" ||
+    pathname === "/mypage";
 
   return (
     <>
@@ -33,8 +32,14 @@ function LayoutRoutes() {
           <Route path="/meetings" element={<MeetingListPage />} />
           <Route path="/meetings/:meetingId" element={<MeetingDetailPage />} />
           <Route path="/meetings/new" element={<MeetingCreatePage />} />
-          <Route path="/meetings/:meetingId/edit" element={<MeetingEditPage />} />
-          <Route path="/meetings/:meetingId/manage" element={<MeetingManagePage />} />
+          <Route
+            path="/meetings/:meetingId/edit"
+            element={<MeetingEditPage />}
+          />
+          <Route
+            path="/meetings/:meetingId/manage"
+            element={<MeetingManagePage />}
+          />
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/meetings/:meetingId/reviews" element={<ReviewPage />} />

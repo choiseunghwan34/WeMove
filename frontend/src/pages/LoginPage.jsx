@@ -9,14 +9,19 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const backgroundImage = useMemo(
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
-    []
+    [],
   );
 
   const handleSubmit = (event) => {
     event.preventDefault();
     localStorage.setItem(
       "wemoveUser",
-      JSON.stringify({ memberId: 1, loginId: "user01", nickname: "러너민수", role: "USER" })
+      JSON.stringify({
+        memberId: 1,
+        loginId: "user01",
+        nickname: "러너민수",
+        role: "USER",
+      }),
     );
     navigate("/meetings");
   };
@@ -28,12 +33,15 @@ export default function LoginPage() {
     >
       <div className={styles.layout}>
         <section className={styles.copy}>
-          <Link to="/" className={styles.logo}>WeMove</Link>
+          <Link to="/" className={styles.logo}>
+            WeMove
+          </Link>
           <span className={styles.eyebrow}>LOCAL FITNESS COMMUNITY</span>
           <h1>동네 운동이 더 자연스럽게 이어지는 방식</h1>
           <p>
-            러닝, 헬스, 풋살, 배드민턴까지. 가까운 사람들과 함께 운동 루틴을 만들고,
-            모임을 찾고, 참여하고, 관리할 수 있는 지역 기반 운동 플랫폼입니다.
+            러닝, 헬스, 풋살, 배드민턴까지. 가까운 사람들과 함께 운동 루틴을
+            만들고, 모임을 찾고, 참여하고, 관리할 수 있는 지역 기반 운동
+            플랫폼입니다.
           </p>
 
           <div className={styles.metrics}>
@@ -66,15 +74,25 @@ export default function LoginPage() {
 
           <label>
             <span>비밀번호</span>
-            <input type="password" placeholder="비밀번호 입력" defaultValue="1234" />
+            <input
+              type="password"
+              placeholder="비밀번호 입력"
+              defaultValue="1234"
+            />
           </label>
 
           <div className={styles.options}>
-            <label><input type="checkbox" /> 아이디 저장</label>
-            <label><input type="checkbox" /> 자동 로그인</label>
+            <label>
+              <input type="checkbox" /> 아이디 저장
+            </label>
+            <label>
+              <input type="checkbox" /> 자동 로그인
+            </label>
           </div>
 
-          <button className={styles.submit} type="submit">로그인</button>
+          <button className={styles.submit} type="submit">
+            로그인
+          </button>
 
           <div className={styles.links}>
             <Link to="/signup">회원가입</Link>

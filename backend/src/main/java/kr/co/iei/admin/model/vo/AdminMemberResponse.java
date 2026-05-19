@@ -1,1 +1,12 @@
-﻿package kr.co.iei.admin.model.vo; import lombok.Data; @Data public class AdminMemberResponse { private Long userId; private String loginId; private String nickname; private String role; private String status; }
+package kr.co.iei.admin.model.vo;
+
+import lombok.Data;
+
+@Data
+public class AdminMemberResponse {
+  private Long userId;
+  private String loginId;
+  private String nickname;
+  private String role;
+  private String status;
+}

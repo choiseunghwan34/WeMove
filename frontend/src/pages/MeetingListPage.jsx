@@ -7,7 +7,11 @@ import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MeetingListPage.module.css";
 
-const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).join(" ");
+const cx = (...names) =>
+  names
+    .filter(Boolean)
+    .map((name) => styles[name])
+    .join(" ");
 
 const ALL_SPORT = "전체";
 const ALL_REGION = "전체 지역";
@@ -34,10 +38,15 @@ export default function MeetingListPage() {
     return meetings.filter((meeting) => {
       const q = keyword.trim();
 
-      return (sport === ALL_SPORT || meeting.sport === sport)
-        && (region === ALL_REGION || meeting.region === region)
-        && (status === ALL_STATUS || meeting.statusText === status)
-        && (!q || meeting.title.includes(q) || meeting.place.includes(q) || meeting.desc.includes(q));
+      return (
+        (sport === ALL_SPORT || meeting.sport === sport) &&
+        (region === ALL_REGION || meeting.region === region) &&
+        (status === ALL_STATUS || meeting.statusText === status) &&
+        (!q ||
+          meeting.title.includes(q) ||
+          meeting.place.includes(q) ||
+          meeting.desc.includes(q))
+      );
     });
   }, [sport, region, status, keyword]);
 
@@ -55,7 +64,9 @@ export default function MeetingListPage() {
             <div className={styles.dashboardSimpleList}>
               {regionRanking.map((item, index) => (
                 <div key={item.name}>
-                  <span>{index + 1}. {item.name}</span>
+                  <span>
+                    {index + 1}. {item.name}
+                  </span>
                   <strong>{item.count}개</strong>
                 </div>
               ))}
@@ -82,14 +93,21 @@ export default function MeetingListPage() {
       <section className={styles.notice}>
         <div>
           <h1>이번 주말, 동네에서 같이 운동할 사람을 찾아보세요.</h1>
-          <p>운동 종목과 지역을 선택하면 모집 중인 모임을 빠르게 확인할 수 있습니다.</p>
+          <p>
+            운동 종목과 지역을 선택하면 모집 중인 모임을 빠르게 확인할 수
+            있습니다.
+          </p>
         </div>
         <Link to="/meetings/new">모임 만들기</Link>
       </section>
 
       <div className={styles.mobileFilterBar}>
-        <button type="button" onClick={() => setIsFilterOpen(true)}>필터 열기</button>
-        <span>{sport} · {region} · {status}</span>
+        <button type="button" onClick={() => setIsFilterOpen(true)}>
+          필터 열기
+        </button>
+        <span>
+          {sport} · {region} · {status}
+        </span>
       </div>
 
       <section className={styles.filterPanel}>
@@ -107,16 +125,28 @@ export default function MeetingListPage() {
         </div>
 
         <div className={styles.filterRow}>
-          <select value={region} onChange={(event) => setRegion(event.target.value)}>
+          <select
+            value={region}
+            onChange={(event) => setRegion(event.target.value)}
+          >
             <option>{ALL_REGION}</option>
-            {regions.map((item) => <option key={item}>{item}</option>)}
+            {regions.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
           </select>
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
             <option>{ALL_STATUS}</option>
             <option>모집중</option>
             <option>모집마감</option>
           </select>
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          <input
+            type="date"
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+          />
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
@@ -132,25 +162,55 @@ export default function MeetingListPage() {
 
       <section className={styles.meetingList}>
         {filteredMeetings.map((meeting) => (
-          <Link key={meeting.id} className={styles.listCard} to={`/meetings/${meeting.id}`}>
+          <Link
+            key={meeting.id}
+            className={styles.listCard}
+            to={`/meetings/${meeting.id}`}
+          >
             <div className={styles.listCardBody}>
-              <img src={meetingImages[meeting.id]} alt={meeting.title} className={styles.listCardImage} />
+              <img
+                src={meetingImages[meeting.id]}
+                alt={meeting.title}
+                className={styles.listCardImage}
+              />
               <div className={styles.listCardContent}>
                 <div className={styles.listTags}>
                   <span className={styles.badge}>{meeting.sport}</span>
-                  <span className={cx("badge", meeting.status === "CLOSED" ? "warning" : "success")}>
+                  <span
+                    className={cx(
+                      "badge",
+                      meeting.status === "CLOSED" ? "warning" : "success",
+                    )}
+                  >
                     {meeting.statusText}
                   </span>
                 </div>
                 <h3>{meeting.title}</h3>
                 <p>{meeting.desc}</p>
                 <div className={styles.listMeta}>
-                  <span><UiIcon name="location" className={styles.dashboardMetaIcon} />{meeting.region}</span>
-                  <span><UiIcon name="calendar" className={styles.dashboardMetaIcon} />{meeting.place}</span>
-                  <span><UiIcon name="user" className={styles.dashboardMetaIcon} />{meeting.current}/{meeting.max}명</span>
+                  <span>
+                    <UiIcon
+                      name="location"
+                      className={styles.dashboardMetaIcon}
+                    />
+                    {meeting.region}
+                  </span>
+                  <span>
+                    <UiIcon
+                      name="calendar"
+                      className={styles.dashboardMetaIcon}
+                    />
+                    {meeting.place}
+                  </span>
+                  <span>
+                    <UiIcon name="user" className={styles.dashboardMetaIcon} />
+                    {meeting.current}/{meeting.max}명
+                  </span>
                 </div>
                 <div className={styles.host}>
-                  <i><UiIcon name="user" className={styles.dashboardHostIcon} /></i>
+                  <i>
+                    <UiIcon name="user" className={styles.dashboardHostIcon} />
+                  </i>
                   <span>{meeting.host} · 매너점수 4.8</span>
                 </div>
               </div>
@@ -163,7 +223,9 @@ export default function MeetingListPage() {
               </div>
               <button
                 type="button"
-                className={meeting.status === "CLOSED" ? styles.actionClosed : ""}
+                className={
+                  meeting.status === "CLOSED" ? styles.actionClosed : ""
+                }
               >
                 {meeting.status === "CLOSED" ? "마감" : "참가 신청"}
               </button>
@@ -195,16 +257,28 @@ export default function MeetingListPage() {
           ))}
         </div>
         <div className={styles.sheetFilterFields}>
-          <select value={region} onChange={(event) => setRegion(event.target.value)}>
+          <select
+            value={region}
+            onChange={(event) => setRegion(event.target.value)}
+          >
             <option>{ALL_REGION}</option>
-            {regions.map((item) => <option key={item}>{item}</option>)}
+            {regions.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
           </select>
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
             <option>{ALL_STATUS}</option>
             <option>모집중</option>
             <option>모집마감</option>
           </select>
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          <input
+            type="date"
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+          />
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}

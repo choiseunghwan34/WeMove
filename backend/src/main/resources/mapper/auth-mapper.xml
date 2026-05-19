@@ -1,1 +1,20 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"><mapper namespace="auth"><select id="selectByLoginId" resultType="kr.co.iei.member.model.vo.Member">SELECT * FROM users WHERE login_id=#{loginId}</select><select id="selectByEmail" resultType="kr.co.iei.member.model.vo.Member">SELECT * FROM users WHERE email=#{email}</select><select id="selectByNickname" resultType="kr.co.iei.member.model.vo.Member">SELECT * FROM users WHERE nickname=#{nickname}</select><insert id="insertMember" parameterType="kr.co.iei.member.model.vo.Member" useGeneratedKeys="true" keyProperty="userId">INSERT INTO users(login_id,email,password,nickname,region_id,role,status) VALUES(#{loginId},#{email},#{password},#{nickname},#{regionId},#{role},#{status})</insert><insert id="insertUserSport">INSERT INTO user_sports(user_id,sport_id) VALUES(#{userId},#{sportId})</insert></mapper>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="auth"><select
+    id="selectByLoginId"
+    resultType="kr.co.iei.member.model.vo.Member"
+  >SELECT * FROM users WHERE login_id=#{loginId}</select><select
+    id="selectByEmail"
+    resultType="kr.co.iei.member.model.vo.Member"
+  >SELECT * FROM users WHERE email=#{email}</select><select
+    id="selectByNickname"
+    resultType="kr.co.iei.member.model.vo.Member"
+  >SELECT * FROM users WHERE nickname=#{nickname}</select><insert
+    id="insertMember"
+    parameterType="kr.co.iei.member.model.vo.Member"
+    useGeneratedKeys="true"
+    keyProperty="userId"
+  >INSERT INTO users(login_id,email,password,nickname,region_id,role,status) VALUES(#{loginId},#{email},#{password},#{nickname},#{regionId},#{role},#{status})</insert><insert
+    id="insertUserSport"
+  >INSERT INTO user_sports(user_id,sport_id) VALUES(#{userId},#{sportId})</insert></mapper>

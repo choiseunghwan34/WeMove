@@ -1,147 +1,147 @@
 /* Auto-split from MeetingManagePage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.badge{
-  composes:badge from "./WeMoveShared.module.css";
+.badge {
+  composes: badge from "./WeMoveShared.module.css";
 }
 
-.formActions{
-  composes:formActions from "./WeMoveShared.module.css";
+.formActions {
+  composes: formActions from "./WeMoveShared.module.css";
 }
 
-.page{
-  composes:page from "./WeMoveShared.module.css";
+.page {
+  composes: page from "./WeMoveShared.module.css";
 }
 
-.pageTitle{
-  composes:pageTitle from "./WeMoveShared.module.css";
+.pageTitle {
+  composes: pageTitle from "./WeMoveShared.module.css";
 }
 
-.participantActions{
-  composes:participantActions from "./WeMoveShared.module.css";
+.participantActions {
+  composes: participantActions from "./WeMoveShared.module.css";
 }
 
-.participantCard{
-  composes:participantCard from "./WeMoveShared.module.css";
+.participantCard {
+  composes: participantCard from "./WeMoveShared.module.css";
 }
 
-.participantHead{
-  composes:participantHead from "./WeMoveShared.module.css";
+.participantHead {
+  composes: participantHead from "./WeMoveShared.module.css";
 }
 
-.participantList{
-  composes:participantList from "./WeMoveShared.module.css";
+.participantList {
+  composes: participantList from "./WeMoveShared.module.css";
 }
 
-.participantMeta{
-  composes:participantMeta from "./WeMoveShared.module.css";
+.participantMeta {
+  composes: participantMeta from "./WeMoveShared.module.css";
 }
 
-.reviewScore{
-  composes:reviewScore from "./WeMoveShared.module.css";
+.reviewScore {
+  composes: reviewScore from "./WeMoveShared.module.css";
 }
 
-.softPanel{
-  composes:softPanel from "./WeMoveShared.module.css";
+.softPanel {
+  composes: softPanel from "./WeMoveShared.module.css";
 }
 
-.statGrid{
-  composes:statGrid from "./WeMoveShared.module.css";
+.statGrid {
+  composes: statGrid from "./WeMoveShared.module.css";
 }
 
-.subGrid{
-  composes:subGrid from "./WeMoveShared.module.css";
+.subGrid {
+  composes: subGrid from "./WeMoveShared.module.css";
 }
 
-.applicantModalCard{
-  display:grid;
-  grid-template-columns:54px 1fr;
-  gap:14px;
-  align-items:center;
-  border:1px solid rgba(151,170,194,.2);
-  border-radius:22px;
-  background:#fff;
-  padding:16px;
+.applicantModalCard {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid rgba(151, 170, 194, 0.2);
+  border-radius: 22px;
+  background: #fff;
+  padding: 16px;
 }
 
-.applicantAvatar{
-  display:grid;
-  place-items:center;
-  width:54px;
-  height:54px;
-  border-radius:18px;
-  background:linear-gradient(135deg,#eaf2ff,#dbeafe);
-  color:#2268ef;
-  font-weight:900;
+.applicantAvatar {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #eaf2ff, #dbeafe);
+  color: #2268ef;
+  font-weight: 900;
 }
 
-.applicantModalCard strong{
-  color:#10233d;
-  font-size:17px;
-  font-weight:900;
+.applicantModalCard strong {
+  color: #10233d;
+  font-size: 17px;
+  font-weight: 900;
 }
 
-.applicantModalCard p{
-  margin:4px 0 0;
-  color:#647c98;
-  font-size:14px;
-  font-weight:700;
-  line-height:1.65;
+.applicantModalCard p {
+  margin: 4px 0 0;
+  color: #647c98;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.65;
 }
 
 /* Home-aligned management polish */
 .softPanel,
 .participantCard,
-.statGrid article{
-  background:rgba(255,255,255,.94)!important;
-  border-color:rgba(15,23,42,.06)!important;
-  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+.statGrid article {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
 }
 
-.participantActions button:first-child{
-  background:#fff1f2!important;
-  border-color:rgba(239,68,68,.14)!important;
-  color:#dc2626!important;
+.participantActions button:first-child {
+  background: #fff1f2 !important;
+  border-color: rgba(239, 68, 68, 0.14) !important;
+  color: #dc2626 !important;
 }
 
-.participantActions button:last-child{
-  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+.participantActions button:last-child {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
 }
 
-.reviewScore{
-  background:#ecfdf3!important;
-  color:#0f8a62!important;
+.reviewScore {
+  background: #ecfdf3 !important;
+  color: #0f8a62 !important;
 }
 
 /* 2026-05-18 neutral management page finish */
 .softPanel,
 .participantCard,
-.statGrid article{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+.statGrid article {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
 .applicantModalCard,
-.applicantAvatar{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  color:#374151!important;
-  box-shadow:none!important;
+.applicantAvatar {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  box-shadow: none !important;
 }
 
-.participantActions button:first-child{
-  background:#fef2f2!important;
-  border-color:rgba(220,38,38,.12)!important;
-  color:#dc2626!important;
+.participantActions button:first-child {
+  background: #fef2f2 !important;
+  border-color: rgba(220, 38, 38, 0.12) !important;
+  color: #dc2626 !important;
 }
 
-.participantActions button:last-child{
-  background:#2563eb!important;
-  box-shadow:none!important;
+.participantActions button:last-child {
+  background: #2563eb !important;
+  box-shadow: none !important;
 }
 
-.reviewScore{
-  background:#ecfdf3!important;
-  color:#15803d!important;
-  border:1px solid rgba(21,128,61,.12)!important;
+.reviewScore {
+  background: #ecfdf3 !important;
+  color: #15803d !important;
+  border: 1px solid rgba(21, 128, 61, 0.12) !important;
 }

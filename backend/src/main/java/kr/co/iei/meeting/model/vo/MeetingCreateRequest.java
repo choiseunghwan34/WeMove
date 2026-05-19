@@ -1,1 +1,20 @@
-﻿package kr.co.iei.meeting.model.vo; import lombok.Data; import java.time.*; @Data public class MeetingCreateRequest { private Long hostUserId; private Long sportId; private Long regionId; private String title; private String content; private String placeName; private String address; private LocalDate meetingDate; private LocalTime startTime; private Integer maxMembers; private String meetingType; private String repeatType; }
+package kr.co.iei.meeting.model.vo;
+
+import java.time.*;
+import lombok.Data;
+
+@Data
+public class MeetingCreateRequest {
+  private Long hostUserId;
+  private Long sportId;
+  private Long regionId;
+  private String title;
+  private String content;
+  private String placeName;
+  private String address;
+  private LocalDate meetingDate;
+  private LocalTime startTime;
+  private Integer maxMembers;
+  private String meetingType;
+  private String repeatType;
+}

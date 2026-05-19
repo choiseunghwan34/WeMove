@@ -1,76 +1,76 @@
 /* Auto-split from ActivityPage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.dashboardActivityGlyph{
-  composes:dashboardActivityGlyph from "./WeMoveShared.module.css";
+.dashboardActivityGlyph {
+  composes: dashboardActivityGlyph from "./WeMoveShared.module.css";
 }
 
-.dashboardActivityItem{
-  composes:dashboardActivityItem from "./WeMoveShared.module.css";
+.dashboardActivityItem {
+  composes: dashboardActivityItem from "./WeMoveShared.module.css";
 }
 
-.dashboardActivityList{
-  composes:dashboardActivityList from "./WeMoveShared.module.css";
+.dashboardActivityList {
+  composes: dashboardActivityList from "./WeMoveShared.module.css";
 }
 
-.dashboardCompactBody{
-  composes:dashboardCompactBody from "./WeMoveShared.module.css";
+.dashboardCompactBody {
+  composes: dashboardCompactBody from "./WeMoveShared.module.css";
 }
 
-.dashboardCompactCard{
-  composes:dashboardCompactCard from "./WeMoveShared.module.css";
+.dashboardCompactCard {
+  composes: dashboardCompactCard from "./WeMoveShared.module.css";
 }
 
-.dashboardCompactList{
-  composes:dashboardCompactList from "./WeMoveShared.module.css";
+.dashboardCompactList {
+  composes: dashboardCompactList from "./WeMoveShared.module.css";
 }
 
-.dashboardMeetingBadges{
-  composes:dashboardMeetingBadges from "./WeMoveShared.module.css";
+.dashboardMeetingBadges {
+  composes: dashboardMeetingBadges from "./WeMoveShared.module.css";
 }
 
-.dashboardMiniImage{
-  composes:dashboardMiniImage from "./WeMoveShared.module.css";
+.dashboardMiniImage {
+  composes: dashboardMiniImage from "./WeMoveShared.module.css";
 }
 
-.dashboardPanel{
-  composes:dashboardPanel from "./WeMoveShared.module.css";
+.dashboardPanel {
+  composes: dashboardPanel from "./WeMoveShared.module.css";
 }
 
-.dashboardPanelHead{
-  composes:dashboardPanelHead from "./WeMoveShared.module.css";
+.dashboardPanelHead {
+  composes: dashboardPanelHead from "./WeMoveShared.module.css";
 }
 
-.dashboardSectionCopy{
-  composes:dashboardSectionCopy from "./WeMoveShared.module.css";
+.dashboardSectionCopy {
+  composes: dashboardSectionCopy from "./WeMoveShared.module.css";
 }
 
-.dashboardSectionHead{
-  composes:dashboardSectionHead from "./WeMoveShared.module.css";
+.dashboardSectionHead {
+  composes: dashboardSectionHead from "./WeMoveShared.module.css";
 }
 
-.dashboardSimpleList{
-  composes:dashboardSimpleList from "./WeMoveShared.module.css";
+.dashboardSimpleList {
+  composes: dashboardSimpleList from "./WeMoveShared.module.css";
 }
 
-.dashboardStatGrid{
-  composes:dashboardStatGrid from "./WeMoveShared.module.css";
+.dashboardStatGrid {
+  composes: dashboardStatGrid from "./WeMoveShared.module.css";
 }
 
-.dashboardStatusBadge{
-  composes:dashboardStatusBadge from "./WeMoveShared.module.css";
+.dashboardStatusBadge {
+  composes: dashboardStatusBadge from "./WeMoveShared.module.css";
 }
 
 /* 2026-05-18 neutral activity page finish */
 .dashboardPanel,
 .dashboardCompactCard,
-.dashboardStatGrid article{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+.dashboardStatGrid article {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
 .dashboardCompactCard,
 .dashboardSimpleList li,
-.dashboardActivityItem{
-  border-color:#eef0f3!important;
+.dashboardActivityItem {
+  border-color: #eef0f3 !important;
 }

@@ -1,73 +1,74 @@
 /* Auto-split from MyPage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.badge{
-  composes:badge from "./WeMoveShared.module.css";
+.badge {
+  composes: badge from "./WeMoveShared.module.css";
 }
 
-.CLOSED{}
-
-.dashboardCompactBody{
-  composes:dashboardCompactBody from "./WeMoveShared.module.css";
+.CLOSED {
 }
 
-.dashboardMiniImage{
-  composes:dashboardMiniImage from "./WeMoveShared.module.css";
+.dashboardCompactBody {
+  composes: dashboardCompactBody from "./WeMoveShared.module.css";
 }
 
-.dashboardPanel{
-  composes:dashboardPanel from "./WeMoveShared.module.css";
+.dashboardMiniImage {
+  composes: dashboardMiniImage from "./WeMoveShared.module.css";
 }
 
-.dashboardPanelHead{
-  composes:dashboardPanelHead from "./WeMoveShared.module.css";
+.dashboardPanel {
+  composes: dashboardPanel from "./WeMoveShared.module.css";
 }
 
-.dashboardQuickLinks{
-  composes:dashboardQuickLinks from "./WeMoveShared.module.css";
+.dashboardPanelHead {
+  composes: dashboardPanelHead from "./WeMoveShared.module.css";
 }
 
-.dashboardSimpleList{
-  composes:dashboardSimpleList from "./WeMoveShared.module.css";
+.dashboardQuickLinks {
+  composes: dashboardQuickLinks from "./WeMoveShared.module.css";
 }
 
-.dashboardStatGrid{
-  composes:dashboardStatGrid from "./WeMoveShared.module.css";
+.dashboardSimpleList {
+  composes: dashboardSimpleList from "./WeMoveShared.module.css";
 }
 
-.myList{
-  composes:myList from "./WeMoveShared.module.css";
+.dashboardStatGrid {
+  composes: dashboardStatGrid from "./WeMoveShared.module.css";
 }
 
-.pageTabs{
-  composes:pageTabs from "./WeMoveShared.module.css";
+.myList {
+  composes: myList from "./WeMoveShared.module.css";
 }
 
-.profileAvatar{
-  composes:profileAvatar from "./WeMoveShared.module.css";
+.pageTabs {
+  composes: pageTabs from "./WeMoveShared.module.css";
 }
 
-.profileCard{
-  composes:profileCard from "./WeMoveShared.module.css";
+.profileAvatar {
+  composes: profileAvatar from "./WeMoveShared.module.css";
 }
 
-.profileLeft{
-  composes:profileLeft from "./WeMoveShared.module.css";
+.profileCard {
+  composes: profileCard from "./WeMoveShared.module.css";
 }
 
-.success{
-  composes:success from "./WeMoveShared.module.css";
+.profileLeft {
+  composes: profileLeft from "./WeMoveShared.module.css";
 }
 
-.tabButton{
-  composes:tabButton from "./WeMoveShared.module.css";
+.success {
+  composes: success from "./WeMoveShared.module.css";
 }
 
-.tabButtonActive{
-  composes:tabButtonActive from "./WeMoveShared.module.css";
+.tabButton {
+  composes: tabButton from "./WeMoveShared.module.css";
 }
 
-.tabsPanel{
-  composes:tabsPanel from "./WeMoveShared.module.css";
+.tabButtonActive {
+  composes: tabButtonActive from "./WeMoveShared.module.css";
+}
+
+.tabsPanel {
+  composes: tabsPanel from "./WeMoveShared.module.css";
 }
 
 /* Home-aligned my page polish */
@@ -75,29 +76,29 @@
 .tabsPanel,
 .dashboardPanel,
 .dashboardStatGrid article,
-.myList article{
-  background:rgba(255,255,255,.94)!important;
-  border-color:rgba(15,23,42,.06)!important;
-  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+.myList article {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
 }
 
-.dashboardMiniImage{
-  border:2px solid rgba(255,255,255,.95);
-  box-shadow:0 10px 24px rgba(29,78,216,.08)!important;
+.dashboardMiniImage {
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.08) !important;
 }
 
-.myList aside a{
-  border-color:rgba(15,23,42,.08)!important;
+.myList aside a {
+  border-color: rgba(15, 23, 42, 0.08) !important;
 }
 
-.myList aside a:last-child{
-  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
-  color:#fff!important;
-  border-color:transparent!important;
+.myList aside a:last-child {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+  color: #fff !important;
+  border-color: transparent !important;
 }
 
-.warning{
-  composes:warning from "./WeMoveShared.module.css";
+.warning {
+  composes: warning from "./WeMoveShared.module.css";
 }
 
 /* 2026-05-18 neutral my page finish */
@@ -105,58 +106,58 @@
 .tabsPanel,
 .dashboardPanel,
 .dashboardStatGrid article,
-.myList article{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+.myList article {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
-.dashboardMiniImage{
-  box-shadow:none!important;
-  border:1px solid #eef0f3!important;
+.dashboardMiniImage {
+  box-shadow: none !important;
+  border: 1px solid #eef0f3 !important;
 }
 
-.myList aside a{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  color:#374151!important;
-  box-shadow:none!important;
+.myList aside a {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  box-shadow: none !important;
 }
 
-.myList aside a:last-child{
-  background:#2563eb!important;
-  border-color:#2563eb!important;
-  color:#fff!important;
+.myList aside a:last-child {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
 }
 
 /* 2026-05-18 my page density pass */
-.dashboardStatGrid article{
-  min-height:108px!important;
-  padding:18px 18px!important;
+.dashboardStatGrid article {
+  min-height: 108px !important;
+  padding: 18px 18px !important;
 }
 
-.myList article{
-  min-height:156px!important;
-  padding:16px!important;
-  gap:14px!important;
+.myList article {
+  min-height: 156px !important;
+  padding: 16px !important;
+  gap: 14px !important;
 }
 
-.myList h3{
-  margin:8px 0 6px!important;
-  font-size:1.06rem!important;
-  line-height:1.3!important;
+.myList h3 {
+  margin: 8px 0 6px !important;
+  font-size: 1.06rem !important;
+  line-height: 1.3 !important;
 }
 
-.myList p{
-  font-size:.92rem!important;
-  line-height:1.55!important;
+.myList p {
+  font-size: 0.92rem !important;
+  line-height: 1.55 !important;
 }
 
 .dashboardCompactBody,
-.myList .dashboardCompactBody{
-  gap:6px!important;
+.myList .dashboardCompactBody {
+  gap: 6px !important;
 }
 
-.dashboardPanelHead h3{
-  font-size:1.08rem!important;
+.dashboardPanelHead h3 {
+  font-size: 1.08rem !important;
 }

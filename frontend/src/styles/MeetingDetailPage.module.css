@@ -1,315 +1,329 @@
 /* Auto-split from MeetingDetailPage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.badge{
-  composes:badge from "./WeMoveShared.module.css";
+.badge {
+  composes: badge from "./WeMoveShared.module.css";
 }
 
-.commentAvatar{
-  composes:commentAvatar from "./WeMoveShared.module.css";
+.commentAvatar {
+  composes: commentAvatar from "./WeMoveShared.module.css";
 }
 
-.commentForm{
-  composes:commentForm from "./WeMoveShared.module.css";
+.commentForm {
+  composes: commentForm from "./WeMoveShared.module.css";
 }
 
-.commentItem{
-  composes:commentItem from "./WeMoveShared.module.css";
+.commentItem {
+  composes: commentItem from "./WeMoveShared.module.css";
 }
 
-.commentList{
-  composes:commentList from "./WeMoveShared.module.css";
+.commentList {
+  composes: commentList from "./WeMoveShared.module.css";
 }
 
-.commentMeta{
-  composes:commentMeta from "./WeMoveShared.module.css";
+.commentMeta {
+  composes: commentMeta from "./WeMoveShared.module.css";
 }
 
-.detailBadges{
-  composes:detailBadges from "./WeMoveShared.module.css";
+.detailBadges {
+  composes: detailBadges from "./WeMoveShared.module.css";
 }
 
-.detailBody{
-  composes:detailBody from "./WeMoveShared.module.css";
+.detailBody {
+  composes: detailBody from "./WeMoveShared.module.css";
 }
 
-.detailChecklist{
-  composes:detailChecklist from "./WeMoveShared.module.css";
+.detailChecklist {
+  composes: detailChecklist from "./WeMoveShared.module.css";
 }
 
-.detailCover{
-  composes:detailCover from "./WeMoveShared.module.css";
+.detailCover {
+  composes: detailCover from "./WeMoveShared.module.css";
 }
 
-.detailHero{
-  composes:detailHero from "./WeMoveShared.module.css";
+.detailHero {
+  composes: detailHero from "./WeMoveShared.module.css";
 }
 
-.detailHeroImage{}
-
-.detailHeroImageWrap{}
-
-.detailLayout{
-  composes:detailLayout from "./WeMoveShared.module.css";
+.detailHeroImage {
 }
 
-.detailMain{
-  composes:detailMain from "./WeMoveShared.module.css";
+.detailHeroImageWrap {
 }
 
-.detailPanel{
-  composes:detailPanel from "./WeMoveShared.module.css";
+.detailLayout {
+  composes: detailLayout from "./WeMoveShared.module.css";
 }
 
-.detailSection{
-  composes:detailSection from "./WeMoveShared.module.css";
+.detailMain {
+  composes: detailMain from "./WeMoveShared.module.css";
 }
 
-.detailSidebar{
-  composes:detailSidebar from "./WeMoveShared.module.css";
+.detailPanel {
+  composes: detailPanel from "./WeMoveShared.module.css";
 }
 
-.detailSummary{
-  composes:detailSummary from "./WeMoveShared.module.css";
+.detailSection {
+  composes: detailSection from "./WeMoveShared.module.css";
 }
 
-.formActions{
-  composes:formActions from "./WeMoveShared.module.css";
+.detailSidebar {
+  composes: detailSidebar from "./WeMoveShared.module.css";
 }
 
-.hostCard{
-  composes:hostCard from "./WeMoveShared.module.css";
+.detailSummary {
+  composes: detailSummary from "./WeMoveShared.module.css";
 }
 
-.page{
-  composes:page from "./WeMoveShared.module.css";
+.formActions {
+  composes: formActions from "./WeMoveShared.module.css";
 }
 
-.primaryButton{
-  composes:primaryButton from "./WeMoveShared.module.css";
+.hostCard {
+  composes: hostCard from "./WeMoveShared.module.css";
 }
 
-.profileAvatar{
-  composes:profileAvatar from "./WeMoveShared.module.css";
+.page {
+  composes: page from "./WeMoveShared.module.css";
 }
 
-.secondaryButton{
-  composes:secondaryButton from "./WeMoveShared.module.css";
+.primaryButton {
+  composes: primaryButton from "./WeMoveShared.module.css";
 }
 
-.sectionHead{
-  composes:sectionHead from "./WeMoveShared.module.css";
+.profileAvatar {
+  composes: profileAvatar from "./WeMoveShared.module.css";
 }
 
-.sideInfo{
-  composes:sideInfo from "./WeMoveShared.module.css";
+.secondaryButton {
+  composes: secondaryButton from "./WeMoveShared.module.css";
 }
 
-.stickyActions{
-  composes:stickyActions from "./WeMoveShared.module.css";
+.sectionHead {
+  composes: sectionHead from "./WeMoveShared.module.css";
 }
 
-.success{
-  composes:success from "./WeMoveShared.module.css";
+.sideInfo {
+  composes: sideInfo from "./WeMoveShared.module.css";
 }
 
-.warning{
-  composes:warning from "./WeMoveShared.module.css";
+.stickyActions {
+  composes: stickyActions from "./WeMoveShared.module.css";
 }
 
-.modalMeetingCard{
-  display:grid;
-  grid-template-columns:96px 1fr;
-  gap:14px;
-  align-items:center;
-  border:1px solid rgba(151,170,194,.2);
-  border-radius:22px;
-  background:#fff;
-  padding:12px;
+.success {
+  composes: success from "./WeMoveShared.module.css";
 }
 
-.modalMeetingCard img{
-  width:96px;
-  height:86px;
-  object-fit:cover;
-  border-radius:18px;
+.warning {
+  composes: warning from "./WeMoveShared.module.css";
 }
 
-.modalMeetingCard div{
-  display:grid;
-  gap:3px;
-  min-width:0;
+.modalMeetingCard {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid rgba(151, 170, 194, 0.2);
+  border-radius: 22px;
+  background: #fff;
+  padding: 12px;
 }
 
-.modalMeetingCard span{
-  color:#2268ef;
-  font-size:12px;
-  font-weight:900;
+.modalMeetingCard img {
+  width: 96px;
+  height: 86px;
+  object-fit: cover;
+  border-radius: 18px;
 }
 
-.modalMeetingCard strong{
-  color:#10233d;
-  font-size:17px;
-  font-weight:900;
-  letter-spacing:-.035em;
+.modalMeetingCard div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
-.modalMeetingCard p{
-  margin:0;
-  color:#647c98;
-  font-size:13px;
-  font-weight:700;
+.modalMeetingCard span {
+  color: #2268ef;
+  font-size: 12px;
+  font-weight: 900;
 }
 
-.modalInfoList{
-  display:grid;
-  gap:9px;
-  margin:0;
+.modalMeetingCard strong {
+  color: #10233d;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
 }
 
-.modalInfoList div{
-  display:grid;
-  grid-template-columns:86px 1fr;
-  gap:12px;
-  border-radius:16px;
-  background:#f3f7fd;
-  padding:12px 14px;
+.modalMeetingCard p {
+  margin: 0;
+  color: #647c98;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modalInfoList {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.modalInfoList div {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 12px;
+  border-radius: 16px;
+  background: #f3f7fd;
+  padding: 12px 14px;
 }
 
 .modalInfoList dt,
-.modalInfoList dd{
-  margin:0;
+.modalInfoList dd {
+  margin: 0;
 }
 
-.modalInfoList dt{
-  color:#6f839e;
-  font-size:13px;
-  font-weight:900;
+.modalInfoList dt {
+  color: #6f839e;
+  font-size: 13px;
+  font-weight: 900;
 }
 
-.modalInfoList dd{
-  color:#142944;
-  font-size:14px;
-  font-weight:800;
+.modalInfoList dd {
+  color: #142944;
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.modalNotice{
-  border:1px solid rgba(239,68,68,.12);
-  border-radius:20px;
-  background:#fff7f5;
-  padding:16px;
+.modalNotice {
+  border: 1px solid rgba(239, 68, 68, 0.12);
+  border-radius: 20px;
+  background: #fff7f5;
+  padding: 16px;
 }
 
-.modalNotice strong{
-  color:#132844;
-  font-weight:900;
+.modalNotice strong {
+  color: #132844;
+  font-weight: 900;
 }
 
-.modalNotice p{
-  margin:6px 0 0;
-  color:#71839b;
-  font-size:14px;
-  font-weight:700;
-  line-height:1.7;
+.modalNotice p {
+  margin: 6px 0 0;
+  color: #71839b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
 }
 
-@media (max-width:720px){
-  .modalMeetingCard{
-    grid-template-columns:82px 1fr;
+@media (max-width: 720px) {
+  .modalMeetingCard {
+    grid-template-columns: 82px 1fr;
   }
 
-  .modalMeetingCard img{
-    width:82px;
-    height:78px;
+  .modalMeetingCard img {
+    width: 82px;
+    height: 78px;
   }
 }
 
 /* Home-aligned detail polish */
 .detailHero,
 .detailSection,
-.detailPanel{
-  background:rgba(255,255,255,.94)!important;
-  border-color:rgba(15,23,42,.06)!important;
-  box-shadow:0 14px 36px rgba(15,23,42,.045)!important;
+.detailPanel {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
 }
 
-.detailHeroImageWrap{
-  overflow:hidden;
-  border-radius:24px 24px 0 0;
-  background:#f8fbff;
+.detailHeroImageWrap {
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  background: #f8fbff;
 }
 
-.detailHeroImage{
-  width:100%;
-  max-height:360px;
-  object-fit:cover;
+.detailHeroImage {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
 }
 
 .detailSummary article,
 .detailChecklist li,
-.hostCard{
-  border-radius:16px;
-  background:#f8fbff!important;
+.hostCard {
+  border-radius: 16px;
+  background: #f8fbff !important;
 }
 
 .commentItem,
-.commentForm textarea{
-  background:#fff!important;
-  border-color:rgba(15,23,42,.06)!important;
+.commentForm textarea {
+  background: #fff !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
 }
 
-.primaryButton{
-  background:linear-gradient(135deg,#2563eb,#3b82f6)!important;
+.primaryButton {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
 }
 
-.secondaryButton{
-  background:#fff!important;
-  border-color:rgba(15,23,42,.08)!important;
-  color:#49627f!important;
+.secondaryButton {
+  background: #fff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #49627f !important;
 }
 
 /* 2026-05-18 neutral detail page finish */
 .detailHero,
 .detailSection,
-.detailPanel{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:0 4px 16px rgba(15,23,42,.035)!important;
+.detailPanel {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
 .detailCover,
 .detailSummary article,
 .detailChecklist li,
 .hostCard,
-.modalInfoList div{
-  background:#f9fafb!important;
-  border-color:#eef0f3!important;
+.modalInfoList div {
+  background: #f9fafb !important;
+  border-color: #eef0f3 !important;
 }
 
 .commentItem,
 .commentForm textarea,
 .modalMeetingCard,
-.modalNotice{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  box-shadow:none!important;
+.modalNotice {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
 }
 
-.primaryButton{
-  background:#2563eb!important;
-  box-shadow:none!important;
+.primaryButton {
+  background: #2563eb !important;
+  box-shadow: none !important;
 }
 
-.secondaryButton{
-  background:#ffffff!important;
-  border:1px solid #e5e7eb!important;
-  color:#374151!important;
+.secondaryButton {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
 }
 
 /* 2026-05-18 unify page-specific primary buttons */
-.primaryButton{
-  background:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
-  background-image:linear-gradient(180deg,#3b82f6 0%,#2563eb 56%,#1d4ed8 100%)!important;
-  color:#fff!important;
-  border-color:#2563eb!important;
-  box-shadow:0 6px 14px rgba(37,99,235,.18), inset 0 1px 0 rgba(255,255,255,.18)!important;
+.primaryButton {
+  background: linear-gradient(
+    180deg,
+    #3b82f6 0%,
+    #2563eb 56%,
+    #1d4ed8 100%
+  ) !important;
+  background-image: linear-gradient(
+    180deg,
+    #3b82f6 0%,
+    #2563eb 56%,
+    #1d4ed8 100%
+  ) !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+  box-shadow:
+    0 6px 14px rgba(37, 99, 235, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
