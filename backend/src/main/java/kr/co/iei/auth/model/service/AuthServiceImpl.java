@@ -40,8 +40,15 @@ public class AuthServiceImpl implements AuthService {
 
   public LoginResponse login(LoginRequest req) {
     Member m = authDao.selectByLoginId(req.getLoginId());
-    if (m == null || !passwordUtil.matches(req.getPassword(), m.getPassword()))
+    if (m == null || !isPasswordMatched(req.getPassword(), m.getPassword()))
       throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
     return new LoginResponse(m.getUserId(), m.getLoginId(), m.getNickname(), m.getRole());
+  }
+
+  private boolean isPasswordMatched(String rawPassword, String savedPassword) {
+    if (rawPassword == null || savedPassword == null) {
+      return false;
+    }
+    return passwordUtil.matches(rawPassword, savedPassword) || rawPassword.equals(savedPassword);
   }
 }

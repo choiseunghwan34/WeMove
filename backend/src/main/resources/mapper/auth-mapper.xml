@@ -6,7 +6,7 @@
     <select id="selectByLoginId" resultType="kr.co.iei.member.model.vo.Member">
         SELECT *
         FROM users
-        WHERE login_id=#{loginId}
+        WHERE loginId=#{loginId}
     </select>
 
     <select id="selectByEmail" resultType="kr.co.iei.member.model.vo.Member">
@@ -23,11 +23,11 @@
 
     <insert id="insertMember" parameterType="kr.co.iei.member.model.vo.Member" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO users(
-            login_id,
+            loginId,
             email,
             password,
             nickname,
-            region_id,
+            regionId,
             role,
             status
         )

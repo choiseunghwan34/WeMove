@@ -70,7 +70,8 @@
   align-items: center;
   gap: 10px;
 }
-.header-actions a {
+.header-actions a,
+.header-actions button {
   height: 44px;
   padding: 0 18px;
   border-radius: 14px;
@@ -81,6 +82,17 @@
   font-weight: 900;
   white-space: nowrap;
   transition: all 0.2s ease;
+  cursor: pointer;
+  font-family: inherit;
+}
+.header-user-name {
+  max-width: 160px;
+  overflow: hidden;
+  color: #24415f;
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .header-login {
   border: 1px solid rgba(148, 163, 184, 0.24);

@@ -1,20 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UiIcon from "./UiIcon";
 import { interestItems, navItems } from "../data/dashboardData";
 import styles from "../styles/DashboardShell.module.css";
+import { getStoredUser, removeStoredUser } from "../utils/authStorage";
 
 export default function DashboardShell({
-  active = "홈",
+  active = "",
   title,
   description,
   sidebarExtra = null,
   aside = null,
   children,
 }) {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(() => getStoredUser());
 
   const closeMenu = () => setIsMenuOpen(false);
+  const handleLogout = () => {
+    removeStoredUser();
+    setUser(null);
+    closeMenu();
+    navigate("/login");
+  };
 
   return (
     <div className={styles.dashboardPage}>
@@ -30,12 +39,29 @@ export default function DashboardShell({
         </label>
 
         <div className={styles.dashboardActions}>
-          <Link to="/login" className={styles.dashboardLoginButton}>
-            로그인
-          </Link>
-          <Link to="/signup" className={styles.dashboardSignupButton}>
-            회원가입
-          </Link>
+          {user ? (
+            <>
+              <span className={styles.dashboardUserName}>
+                {user.nickname || user.loginId}
+              </span>
+              <button
+                type="button"
+                className={styles.dashboardSignupButton}
+                onClick={handleLogout}
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className={styles.dashboardLoginButton}>
+                로그인
+              </Link>
+              <Link to="/signup" className={styles.dashboardSignupButton}>
+                회원가입
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -62,7 +88,9 @@ export default function DashboardShell({
 
       <div className={styles.dashboardShell}>
         <aside
-          className={`${styles.dashboardSidebar} ${isMenuOpen ? styles.dashboardSidebarOpen : ""}`}
+          className={`${styles.dashboardSidebar} ${
+            isMenuOpen ? styles.dashboardSidebarOpen : ""
+          }`}
         >
           <div className={styles.mobileDrawerHead}>
             <strong>메뉴</strong>

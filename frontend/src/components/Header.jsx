@@ -1,6 +1,17 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getStoredUser, removeStoredUser } from "../utils/authStorage";
 
 export default function Header() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(() => getStoredUser());
+
+  const handleLogout = () => {
+    removeStoredUser();
+    setUser(null);
+    navigate("/login");
+  };
+
   return (
     <header className="header">
       <div className="inner">
@@ -16,12 +27,27 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          <Link to="/login" className="header-login">
-            로그인
-          </Link>
-          <Link to="/signup" className="header-signup">
-            회원가입
-          </Link>
+          {user ? (
+            <>
+              <span className="header-user-name">{user.nickname || user.loginId}</span>
+              <button
+                type="button"
+                className="header-signup"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="header-login">
+                로그인
+              </Link>
+              <Link to="/signup" className="header-signup">
+                회원가입
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

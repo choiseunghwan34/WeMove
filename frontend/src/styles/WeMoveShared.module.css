@@ -2564,6 +2564,15 @@
   justify-content: flex-end;
   gap: 10px;
 }
+.dashboardUserName {
+  max-width: 160px;
+  overflow: hidden;
+  color: #24415f;
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .dashboardLoginButton,
 .dashboardSignupButton {
   height: 42px;
@@ -2573,6 +2582,8 @@
   justify-content: center;
   border-radius: 12px;
   font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
 }
 .dashboardLoginButton {
   border: 1px solid rgba(148, 163, 184, 0.18);
