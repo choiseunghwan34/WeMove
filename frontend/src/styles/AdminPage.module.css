@@ -7,6 +7,58 @@
 .CLOSED {
 }
 
+.emptyCell {
+  padding: 24px 18px !important;
+  color: #6b7280 !important;
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.filterHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.filterHead h2 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 1.1rem;
+}
+
+.filterHead p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.filterMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  color: #6b7280;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.filterMeta strong {
+  color: #1f2937;
+  font-size: 0.94rem;
+}
+
+.filterPanel {
+  composes: filterPanel from "./WeMoveShared.module.css";
+}
+
+.filterRow {
+  composes: filterRow from "./WeMoveShared.module.css";
+}
+
 .page {
   composes: page from "./WeMoveShared.module.css";
 }
@@ -53,44 +105,20 @@
   composes: warning from "./WeMoveShared.module.css";
 }
 
-/* Home-aligned back-office polish */
-.statGrid article,
-.tableCard {
-  background: rgba(255, 255, 255, 0.94) !important;
-  border-color: rgba(15, 23, 42, 0.06) !important;
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
-}
-
-.tableHead {
-  background: #fff !important;
-}
-
-.tableCard th {
-  background: #f8fbff !important;
-  color: #6f8298 !important;
-}
-
-.tableCard tr:hover td {
-  background: #f8fbff !important;
-}
-
-.tableCard td button,
-.tableHead button {
-  height: 34px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  background: #fff !important;
-  color: #49627f !important;
-  box-shadow: none !important;
-}
-
-/* 2026-05-18 neutral admin finish */
 .statGrid article,
 .tableCard,
-.tableHead {
+.filterPanel {
   background: #ffffff !important;
   border: 1px solid #e5e7eb !important;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
+}
+
+.tableHead {
+  background: #ffffff !important;
+}
+
+.filterPanel {
+  margin-bottom: 18px;
 }
 
 .tableCard th {
@@ -102,15 +130,18 @@
   background: #f9fafb !important;
 }
 
+.filterHead button,
 .tableCard td button,
 .tableHead button {
-  background: #ffffff !important;
+  height: 34px;
+  border-radius: 12px;
   border: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
   color: #374151 !important;
   box-shadow: none !important;
 }
 
-/* 2026-05-18 unify page-specific primary buttons */
+.filterHead button:last-child,
 .tableHead button:last-child,
 .tableCard td button:last-child {
   background: linear-gradient(
@@ -130,4 +161,17 @@
   box-shadow:
     0 6px 14px rgba(37, 99, 235, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+@media (max-width: 900px) {
+  .filterHead,
+  .filterMeta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterHead button,
+  .filterMeta strong {
+    align-self: flex-start;
+  }
 }

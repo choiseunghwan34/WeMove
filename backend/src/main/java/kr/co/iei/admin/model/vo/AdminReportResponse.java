@@ -7,4 +7,5 @@ public class AdminReportResponse {
   private Long reportId;
   private String reason;
   private String status;
+  private java.time.LocalDateTime createdAt;
 }

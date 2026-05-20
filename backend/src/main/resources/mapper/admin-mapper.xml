@@ -5,50 +5,67 @@
 
     <select id="selectSummary" resultType="kr.co.iei.admin.model.vo.AdminSummary">
         SELECT
-            (SELECT COUNT(*) FROM users) total_members,
-            (SELECT COUNT(*) FROM meetings WHERE deleted_at IS NULL) total_meetings,
-            (SELECT COUNT(*) FROM reports WHERE status="PENDING") pending_reports,
-            (SELECT COUNT(*) FROM sports) total_sports
+            (SELECT COUNT(*) FROM users) AS total_members,
+            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS total_meetings,
+            (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pending_reports,
+            (SELECT COUNT(*) FROM sports) AS total_sports
     </select>
 
     <select id="selectMembers" resultType="kr.co.iei.admin.model.vo.AdminMemberResponse">
         SELECT
-            user_id,
-            login_id,
-            nickname,
-            role,
-            status
-        FROM users
-        ORDER BY user_id DESC
+            u.userId,
+            u.loginId,
+            u.nickname,
+            CASE
+                WHEN r.regionId IS NULL THEN NULL
+                ELSE CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong)
+            END AS region_name,
+            u.role,
+            u.status
+        FROM users u
+        LEFT JOIN regions r ON u.regionId = r.regionId
+        ORDER BY u.userId DESC
     </select>
 
     <select id="selectMeetings" resultType="kr.co.iei.admin.model.vo.AdminMeetingResponse">
         SELECT
-            m.meeting_id,
+            m.meetingId,
             m.title,
+            s.name AS sport_name,
+            CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong) AS region_name,
+            (
+                SELECT COUNT(*)
+                FROM meeting_participants mp
+                WHERE mp.meetingId = m.meetingId
+                  AND mp.status = 'APPROVED'
+            ) AS approved_count,
+            m.maxMembers,
             m.status,
-            u.nickname host_nickname
+            u.nickname AS host_nickname
         FROM meetings m
-        JOIN users u ON m.host_user_id=u.user_id
-        WHERE m.deleted_at IS NULL
-        ORDER BY m.meeting_id DESC
+        JOIN users u ON m.hostUserId = u.userId
+        JOIN sports s ON m.sportId = s.sportId
+        JOIN regions r ON m.regionId = r.regionId
+        WHERE m.deletedAt IS NULL
+        ORDER BY m.meetingId DESC
     </select>
 
     <select id="selectReports" resultType="kr.co.iei.admin.model.vo.AdminReportResponse">
         SELECT
-            report_id,
+            reportId,
             reason,
-            status
+            status,
+            createdAt
         FROM reports
-        ORDER BY report_id DESC
+        ORDER BY reportId DESC
     </select>
 
     <update id="updateReportStatus">
         UPDATE reports
         SET
-            status=#{status},
-            processed_at=NOW()
-        WHERE report_id=#{reportId}
+            status = #{status},
+            processedAt = NOW()
+        WHERE reportId = #{reportId}
     </update>
 
 </mapper>

@@ -6,14 +6,14 @@
     <select id="selectSports" resultType="kr.co.iei.sport.model.vo.Sport">
         SELECT *
         FROM sports
-        ORDER BY sport_id
+        ORDER BY sportId
     </select>
 
     <insert id="insertSport">
         INSERT INTO sports(
             name,
             category,
-            is_active
+            isActive
         )
         VALUES(
             #{name},
@@ -27,8 +27,8 @@
         SET
             name=#{request.name},
             category=#{request.category},
-            is_active=#{request.isActive}
-        WHERE sport_id=#{sportId}
+            isActive=#{request.isActive}
+        WHERE sportId=#{sportId}
     </update>
 
 </mapper>
