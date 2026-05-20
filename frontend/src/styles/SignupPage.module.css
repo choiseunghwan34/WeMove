@@ -751,7 +751,7 @@
 
 .signupLayout {
   width: min(1220px, 100%) !important;
-  grid-template-columns: minmax(0, 520px) !important;
+  grid-template-columns: minmax(0, 620px) !important;
 }
 
 .copy {
