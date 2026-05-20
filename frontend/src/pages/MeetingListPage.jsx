@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
@@ -6,6 +6,7 @@ import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MeetingListPage.module.css";
+import { getMeeting, getMeetings } from "../api/meetingApi";
 
 const cx = (...names) =>
   names
@@ -34,6 +35,40 @@ export default function MeetingListPage() {
   const [keyword, setKeyword] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const [sport2, setSport2] = useState(null);
+  const [region2, setRegion2] = useState(null);
+  const [status2, setStatus2] = useState("");
+  const [keyword2, setKeyword2] = useState("");
+  const [meeting2, setMeeting2] = useState([]);
+  const [statusText, setStatusText] = useState("모집중");
+  const [meetingHost, setMeetingHost] = useState("민수");
+  const [displayDate, setDisplayDate] = useState("05.16");
+  const [time, setTime] = useState("20:00");
+
+  const searchParams = useMemo(() => {
+    return {
+      sportId : sport2,
+      regionId : region2,
+      status : status2,
+      keyword : keyword2
+    };
+  }, [sport2, region2, status2, keyword2]); 
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const response = await getMeetings(searchParams);
+        console.log(response.data);
+        setMeeting2(response.data);
+      } catch (error) {
+       
+        console.error(error);
+      } 
+    };
+    
+    fetchMeetings();
+  }, [searchParams]);
+  
   const filteredMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
       const q = keyword.trim();
@@ -49,6 +84,9 @@ export default function MeetingListPage() {
       );
     });
   }, [sport, region, status, keyword]);
+
+  
+  
 
   return (
     <DashboardShell
@@ -161,73 +199,73 @@ export default function MeetingListPage() {
       </div>
 
       <section className={styles.meetingList}>
-        {filteredMeetings.map((meeting) => (
+        {meeting2.map((meeting2) => (
           <Link
-            key={meeting.id}
+            key={meeting2.meetingId}
             className={styles.listCard}
-            to={`/meetings/${meeting.id}`}
+            to={`/meetings/${meeting2.meetingId}`}
           >
             <div className={styles.listCardBody}>
               <img
-                src={meetingImages[meeting.id]}
-                alt={meeting.title}
+                src={meeting2.thumbnailImage}
+                alt={meeting2.title}
                 className={styles.listCardImage}
               />
               <div className={styles.listCardContent}>
                 <div className={styles.listTags}>
-                  <span className={styles.badge}>{meeting.sport}</span>
+                  <span className={styles.badge}>{meeting2.sportName}</span>
                   <span
                     className={cx(
                       "badge",
-                      meeting.status === "CLOSED" ? "warning" : "success",
+                      meeting2.status === "CLOSED" ? "warning" : "success",
                     )}
                   >
-                    {meeting.statusText}
+                    {statusText}
                   </span>
                 </div>
-                <h3>{meeting.title}</h3>
-                <p>{meeting.desc}</p>
+                <h3>{meeting2.title}</h3>
+                <p>{meeting2.content}</p>
                 <div className={styles.listMeta}>
                   <span>
                     <UiIcon
                       name="location"
                       className={styles.dashboardMetaIcon}
                     />
-                    {meeting.region}
+                    {meeting2.regionName}
                   </span>
                   <span>
                     <UiIcon
                       name="calendar"
                       className={styles.dashboardMetaIcon}
                     />
-                    {meeting.place}
+                    {meeting2.placeName}
                   </span>
                   <span>
                     <UiIcon name="user" className={styles.dashboardMetaIcon} />
-                    {meeting.current}/{meeting.max}명
+                    {meeting2.maxMembers}/{meeting2.maxMembers}명
                   </span>
                 </div>
                 <div className={styles.host}>
                   <i>
                     <UiIcon name="user" className={styles.dashboardHostIcon} />
                   </i>
-                  <span>{meeting.host} · 매너점수 4.8</span>
+                  <span>{meetingHost} · 매너점수 4.8</span>
                 </div>
               </div>
             </div>
 
             <aside>
               <div className={styles.dateBox}>
-                <span>{meeting.displayDate}</span>
-                <strong>{meeting.time}</strong>
+                <span>{displayDate}</span>
+                <strong>{time}</strong>
               </div>
               <button
                 type="button"
                 className={
-                  meeting.status === "CLOSED" ? styles.actionClosed : ""
+                  meeting2.status === "CLOSED" ? styles.actionClosed : ""
                 }
               >
-                {meeting.status === "CLOSED" ? "마감" : "참가 신청"}
+                {meeting2.status === "CLOSED" ? "마감" : "참가 신청"}
               </button>
             </aside>
           </Link>
