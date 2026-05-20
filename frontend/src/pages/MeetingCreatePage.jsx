@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { regions, sports } from "../data/demoData";
 import styles from "../styles/MeetingCreatePage.module.css";
 
+//썸네일영역
 function useImagePreviews(files) {
   const previews = useMemo(() => {
     return files.map((file) => ({
@@ -21,6 +22,34 @@ function useImagePreviews(files) {
 }
 
 export default function MeetingCreatePage() {
+  //인풋정보
+  const initialForm = {
+    sportId: "",
+    regionId: "",
+    title: "",
+    content: "",
+    placeName: "",
+    address: "",
+    latitude: null,
+    longitude: null,
+    meetingDate: "",
+    startTime: "",
+    maxMembers: "",
+    meetingType: "ONE_TIME",
+    repeatType: "NONE",
+    supplies: "",
+    guideText: "",
+    status: "RECRUITING",
+  };
+  const [form, setForm] = useState(initialForm);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  //썸네일
   const [files, setFiles] = useState([]);
   const previews = useImagePreviews(files);
 
@@ -72,19 +101,26 @@ export default function MeetingCreatePage() {
       <form className={styles.formCard}>
         <label className={styles.full}>
           <span>모임 제목</span>
-          <input placeholder="예: 야당역 5km 러닝 크루 모집" />
+          <input
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="예: 야당역 5km 러닝 크루 모집"
+          />
         </label>
         <label>
           <span>운동 종목</span>
-          <select>
+          <select name="sportId" value={form.sportId} onChange={handleChange}>
             {sports.map((sport) => (
-              <option key={sport.id}>{sport.name}</option>
+              <option key={sport.id} value={sport.id}>
+                {sport.name}
+              </option>
             ))}
           </select>
         </label>
         <label>
           <span>지역</span>
-          <select>
+          <select name="regionId" value={form.regionId} onChange={handleChange}>
             {regions.map((region) => (
               <option key={region}>{region}</option>
             ))}
@@ -92,44 +128,67 @@ export default function MeetingCreatePage() {
         </label>
         <label>
           <span>상세 장소</span>
-          <input placeholder="예: 야당역 2번 출구 앞" />
+          <input
+            name="placeName"
+            value={form.placeName}
+            onChange={handleChange}
+            placeholder="예: 야당역 2번 출구 앞"
+          />
         </label>
         <label>
           <span>주소</span>
-          <input placeholder="예: 경기 파주시 경의로 000" />
+          <input
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            placeholder="예: 경기 파주시 경의로 000"
+          />
         </label>
         <label>
           <span>날짜</span>
-          <input type="date" defaultValue="2026-05-16" />
+          <input
+            name="meetingDate"
+            value={form.meetingDate}
+            onChange={handleChange}
+            type="date"
+          />
         </label>
         <label>
           <span>시작 시간</span>
-          <input type="time" defaultValue="20:00" />
+          <input
+            name="startTime"
+            value={form.startTime}
+            onChange={handleChange}
+            type="time"
+            defaultValue="20:00"
+          />
         </label>
         <label>
           <span>모집 인원</span>
-          <input type="number" min="2" defaultValue="10" />
+          <input
+            name="maxMembers"
+            value={form.maxMembers}
+            onChange={handleChange}
+            type="number"
+            min="2"
+          />
         </label>
         <label>
           <span>모집 상태</span>
-          <select defaultValue="RECRUITING">
+          <select>
             <option value="RECRUITING">모집중</option>
             <option value="CLOSED">모집마감</option>
           </select>
         </label>
-
+        {/*
         <div className={`${styles.full} ${styles.choiceGroup}`}>
           <span>모임 방식</span>
           <div>
-            <label>
-              <input type="radio" name="meetingType" defaultChecked /> 1회성
-              모임
-            </label>
-            <label>
-              <input type="radio" name="meetingType" /> 정기 모임
-            </label>
+            <label><input type="radio" name="meetingType" defaultChecked /> 1회성 모임</label>
+            <label><input type="radio" name="meetingType" /> 정기 모임</label>
           </div>
         </div>
+
 
         <label>
           <span>반복 주기</span>
@@ -140,20 +199,36 @@ export default function MeetingCreatePage() {
             <option value="MONTHLY">매월</option>
           </select>
         </label>
+            */}
 
         <label className={styles.full}>
           <span>준비물</span>
-          <input defaultValue="편한 운동복, 물, 개인 이어폰" />
+          <input
+            name="supplies"
+            value={form.supplies}
+            onChange={handleChange}
+            placeholder="편한 운동복, 물, 개인 이어폰"
+          />
         </label>
 
         <label className={styles.full}>
           <span>진행 안내</span>
-          <textarea defaultValue="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다." />
+          <textarea
+            name="guideText"
+            value={form.guideText}
+            onChange={handleChange}
+            placeholder="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다."
+          />
         </label>
 
         <label className={styles.full}>
           <span>모임 소개</span>
-          <textarea placeholder="모임 분위기, 참가 대상, 준비물, 진행 방식, 초보 가능 여부를 적어주세요." />
+          <textarea
+            name="content"
+            value={form.content}
+            onChange={handleChange}
+            placeholder="모임 분위기, 참가 대상, 준비물, 진행 방식, 초보 가능 여부를 적어주세요."
+          />
         </label>
 
         <div className={`${styles.full} ${styles.uploadBlock}`}>

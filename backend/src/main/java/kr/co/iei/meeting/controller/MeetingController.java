@@ -23,6 +23,7 @@ public class MeetingController {
     return ResponseEntity.ok(meetingService.getMeeting(meetingId));
   }
 
+  //모임생성
   @PostMapping
   public ResponseEntity<Map<String, Long>> create(@RequestBody MeetingCreateRequest r) {
     Long id = meetingService.createMeeting(r);
