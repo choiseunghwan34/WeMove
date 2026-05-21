@@ -20,13 +20,36 @@
                 FROM meetingParticipants mp
                 WHERE mp.meetingId=m.meetingId
                 AND mp.status="APPROVED"
-            ) approved_count
+            ) approvedCount
         FROM meetings m
         JOIN sports s ON m.sportId=s.sportId
         JOIN regions r ON m.regionId=r.regionId
         WHERE m.deletedAt IS NULL
-        <if test="sportId != null">
-            AND m.sportId=#{sportId}
+<!--        <if test="sportId != null">-->
+<!--            AND m.sportId=#{sportId}-->
+<!--        </if>-->
+<!--        <if test='sportName != "전체"'>-->
+<!--            AND s.name=#{sportName}-->
+<!--        </if>-->
+        <choose>
+            <when test='sportName == "전체"'>
+            </when>
+
+            <when test='sportName == "기타"'>
+                <if test="fixedSports != null and fixedSports.size() > 0">
+                    AND s.name NOT IN
+                    <foreach collection="fixedSports" item="sport" open="(" separator="," close=")">
+                        #{sport}
+                    </foreach>
+                </if>
+            </when>
+
+            <otherwise>
+                AND s.name = #{sportName}
+            </otherwise>
+        </choose>
+        <if test='meetingDate != null and meetingDate != ""'>
+            AND m.meetingDate = #{meetingDate}
         </if>
         <if test="regionId != null">
             AND m.regionId=#{regionId}
@@ -36,8 +59,14 @@
         </if>
         <if test='keyword != null and keyword != ""'>
             AND (
-                m.title LIKE CONCAT("%",#{keyword},"%")
-                OR m.content LIKE CONCAT("%",#{keyword},"%")
+            m.title LIKE CONCAT('%', #{keyword}, '%')
+            OR m.content LIKE CONCAT('%', #{keyword}, '%')
+
+            OR s.name LIKE CONCAT('%', #{keyword}, '%')
+
+            OR r.sido LIKE CONCAT('%', #{keyword}, '%')
+            OR r.sigungu LIKE CONCAT('%', #{keyword}, '%')
+            OR r.dong LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
         ORDER BY m.meetingDate ASC, m.startTime ASC
