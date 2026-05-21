@@ -10,23 +10,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AuthCookieUtil {
-  public static final String ACCESS_TOKEN_COOKIE = "wemove_access_token";
   public static final String REFRESH_TOKEN_COOKIE = "wemove_refresh_token";
 
   private final boolean secureCookie;
 
   public AuthCookieUtil(@Value("${wemove.auth.secure-cookie:false}") boolean secureCookie) {
     this.secureCookie = secureCookie;
-  }
-
-  public void addAccessTokenCookie(
-      HttpServletResponse response, String accessToken, long maxAgeSeconds) {
-    response.addHeader(
-        "Set-Cookie",
-        baseCookie(ACCESS_TOKEN_COOKIE, accessToken)
-            .maxAge(maxAgeSeconds)
-            .build()
-            .toString());
   }
 
   public void addRefreshTokenCookie(
@@ -44,9 +33,7 @@ public class AuthCookieUtil {
     response.addHeader("Set-Cookie", builder.build().toString());
   }
 
-  public void clearAuthCookies(HttpServletResponse response) {
-    response.addHeader(
-        "Set-Cookie", baseCookie(ACCESS_TOKEN_COOKIE, "").maxAge(0).build().toString());
+  public void clearRefreshTokenCookie(HttpServletResponse response) {
     response.addHeader(
         "Set-Cookie", baseCookie(REFRESH_TOKEN_COOKIE, "").maxAge(0).build().toString());
   }

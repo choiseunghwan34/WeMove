@@ -88,15 +88,7 @@ public class AuthServiceImpl implements AuthService {
         autoLogin);
   }
 
-  public AuthSessionResult getSession(String accessToken, String refreshToken) {
-    if (hasText(accessToken) && jwtTokenProvider.isValid(accessToken)) {
-      return new AuthSessionResult(jwtTokenProvider.parseUser(accessToken), null, accessTokenSeconds);
-    }
-
-    return refresh(refreshToken);
-  }
-
-  public AuthSessionResult refresh(String refreshToken) {
+  public AuthRefreshResult refresh(String refreshToken) {
     if (!hasText(refreshToken) || !jwtTokenProvider.isValid(refreshToken)) {
       throw new IllegalArgumentException("유효한 리프레시 토큰이 없습니다.");
     }
@@ -117,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
             member.getUserId(), member.getLoginId(), member.getNickname(), member.getRole());
 
     String renewedAccessToken = jwtTokenProvider.createAccessToken(user);
-    return new AuthSessionResult(user, renewedAccessToken, accessTokenSeconds);
+    return new AuthRefreshResult(renewedAccessToken);
   }
 
   public void logout(String refreshToken) {

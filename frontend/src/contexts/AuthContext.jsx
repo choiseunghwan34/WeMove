@@ -1,23 +1,36 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getMe, logout as logoutApi } from "../api/authApi";
+import { logout as logoutApi, refreshSession } from "../api/authApi";
+import {
+  clearAccessToken,
+  setAccessToken,
+} from "../utils/authTokenStore";
+import { parseUserFromAccessToken } from "../utils/jwtPayload";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const [accessToken, setAccessTokenState] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
 
-    const loadSession = async () => {
+    const bootstrapSession = async () => {
       try {
-        const { data } = await getMe();
+        const { data } = await refreshSession();
+        const refreshedAccessToken = data?.accessToken ?? null;
+        const parsedUser = parseUserFromAccessToken(refreshedAccessToken);
+
         if (active) {
-          setUser(data);
+          setAccessToken(refreshedAccessToken);
+          setAccessTokenState(refreshedAccessToken);
+          setUser(parsedUser);
         }
       } catch {
         if (active) {
+          clearAccessToken();
+          setAccessTokenState(null);
           setUser(null);
         }
       } finally {
@@ -27,27 +40,41 @@ export function AuthProvider({ children }) {
       }
     };
 
-    loadSession();
+    bootstrapSession();
     return () => {
       active = false;
     };
   }, []);
 
+  const applyAccessToken = (nextAccessToken) => {
+    const parsedUser = parseUserFromAccessToken(nextAccessToken);
+    setAccessToken(nextAccessToken);
+    setAccessTokenState(nextAccessToken);
+    setUser(parsedUser);
+  };
+
+  const clearSession = () => {
+    clearAccessToken();
+    setAccessTokenState(null);
+    setUser(null);
+  };
+
   const value = useMemo(
     () => ({
+      accessToken,
       user,
       loading,
-      isAuthenticated: Boolean(user),
-      setAuthenticatedUser: setUser,
+      isAuthenticated: Boolean(accessToken && user),
+      setAuthenticatedAccessToken: applyAccessToken,
       logout: async () => {
         try {
           await logoutApi();
         } finally {
-          setUser(null);
+          clearSession();
         }
       },
     }),
-    [user, loading],
+    [accessToken, user, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

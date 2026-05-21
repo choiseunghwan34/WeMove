@@ -28,7 +28,7 @@ const getLoginErrorMessage = (error) => {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { setAuthenticatedUser } = useAuth();
+  const { setAuthenticatedAccessToken } = useAuth();
   const [form, setForm] = useState({
     loginId: "",
     password: "",
@@ -76,6 +76,7 @@ export default function LoginPage() {
 
     try {
       const { data } = await login({ loginId, password, autoLogin });
+      const nextAccessToken = data?.accessToken;
 
       if (rememberLoginId) {
         setRememberedLoginId(loginId);
@@ -83,7 +84,7 @@ export default function LoginPage() {
         clearRememberedLoginId();
       }
 
-      setAuthenticatedUser(data);
+      setAuthenticatedAccessToken(nextAccessToken);
       navigate("/meetings");
     } catch (error) {
       setErrorMessage(getLoginErrorMessage(error));

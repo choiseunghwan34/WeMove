@@ -24,54 +24,29 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<LoginResponse> login(
+  public ResponseEntity<AccessTokenResponse> login(
       @RequestBody LoginRequest request, HttpServletResponse response) {
     AuthLoginResult result = authService.login(request);
 
-    authCookieUtil.addAccessTokenCookie(
-        response, result.getAccessToken(), result.getAccessTokenSeconds());
     authCookieUtil.addRefreshTokenCookie(
         response,
         result.getRefreshToken(),
         result.getRefreshTokenSeconds(),
         result.isPersistentLogin());
 
-    return ResponseEntity.ok(result.getUser());
-  }
-
-  @GetMapping("/me")
-  public ResponseEntity<LoginResponse> me(
-      HttpServletRequest request, HttpServletResponse response) {
-    try {
-      String accessToken =
-          authCookieUtil.getCookieValue(request, AuthCookieUtil.ACCESS_TOKEN_COOKIE);
-      String refreshToken =
-          authCookieUtil.getCookieValue(request, AuthCookieUtil.REFRESH_TOKEN_COOKIE);
-
-      AuthSessionResult result = authService.getSession(accessToken, refreshToken);
-      if (result.getRenewedAccessToken() != null) {
-        authCookieUtil.addAccessTokenCookie(
-            response, result.getRenewedAccessToken(), result.getAccessTokenSeconds());
-      }
-      return ResponseEntity.ok(result.getUser());
-    } catch (IllegalArgumentException exception) {
-      authCookieUtil.clearAuthCookies(response);
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+    return ResponseEntity.ok(new AccessTokenResponse(result.getAccessToken()));
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<LoginResponse> refresh(
+  public ResponseEntity<AccessTokenResponse> refresh(
       HttpServletRequest request, HttpServletResponse response) {
     try {
       String refreshToken =
           authCookieUtil.getCookieValue(request, AuthCookieUtil.REFRESH_TOKEN_COOKIE);
-      AuthSessionResult result = authService.refresh(refreshToken);
-      authCookieUtil.addAccessTokenCookie(
-          response, result.getRenewedAccessToken(), result.getAccessTokenSeconds());
-      return ResponseEntity.ok(result.getUser());
+      AuthRefreshResult result = authService.refresh(refreshToken);
+      return ResponseEntity.ok(new AccessTokenResponse(result.getAccessToken()));
     } catch (IllegalArgumentException exception) {
-      authCookieUtil.clearAuthCookies(response);
+      authCookieUtil.clearRefreshTokenCookie(response);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
   }
@@ -82,7 +57,7 @@ public class AuthController {
     String refreshToken =
         authCookieUtil.getCookieValue(request, AuthCookieUtil.REFRESH_TOKEN_COOKIE);
     authService.logout(refreshToken);
-    authCookieUtil.clearAuthCookies(response);
+    authCookieUtil.clearRefreshTokenCookie(response);
     return ResponseEntity.ok().build();
   }
 }

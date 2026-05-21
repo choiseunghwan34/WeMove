@@ -1,17 +1,21 @@
-﻿import api from "./axiosInstance";
-export const getMeetings = (p) => api.get("/meetings", { params: p });
+import api from "./axiosInstance";
+import { getAccessToken } from "../utils/authTokenStore";
+import { parseUserFromAccessToken } from "../utils/jwtPayload";
+
+export const getMeetings = (params) => api.get("/meetings", { params });
 export const getMeeting = (id) => api.get("/meetings/" + id);
 
-export const createMeeting = (d) => {
-    const loginUser = JSON.parse(localStorage.getItem("wemoveUser"));
-    return api.post("/meetings", d,{
-        headers: {
-            "X-Member-Id": loginUser?.userId
-        }
-    })
-}
+export const createMeeting = (data) => {
+  const loginUser = parseUserFromAccessToken(getAccessToken());
 
-export const updateMeeting = (id, d) => api.put("/meetings/" + id, d);
+  return api.post("/meetings", data, {
+    headers: {
+      "X-Member-Id": loginUser?.memberId,
+    },
+  });
+};
+
+export const updateMeeting = (id, data) => api.put("/meetings/" + id, data);
 export const deleteMeeting = (id) => api.delete("/meetings/" + id);
-export const updateMeetingStatus = (id, d) =>
-  api.patch("/meetings/" + id + "/status", d);
+export const updateMeetingStatus = (id, data) =>
+  api.patch("/meetings/" + id + "/status", data);

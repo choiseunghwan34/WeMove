@@ -7,9 +7,7 @@ public interface AuthService {
 
   AuthLoginResult login(LoginRequest request);
 
-  AuthSessionResult getSession(String accessToken, String refreshToken);
-
-  AuthSessionResult refresh(String refreshToken);
+  AuthRefreshResult refresh(String refreshToken);
 
   void logout(String refreshToken);
 }
