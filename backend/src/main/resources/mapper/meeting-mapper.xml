@@ -72,18 +72,20 @@
 
     <insert id="insertMeeting" parameterType="kr.co.iei.meeting.model.vo.Meeting" useGeneratedKeys="true" keyProperty="meetingId">
         INSERT INTO meetings(
-            host_user_id,
-            sport_id,
-            region_id,
+            hostUserId,
+            sportId,
+            regionId,
             title,
             content,
-            place_name,
+            placeName,
             address,
-            meeting_date,
-            start_time,
-            max_members,
-            meeting_type,
-            repeat_type,
+            meetingDate,
+            startTime,
+            maxMembers,
+            meetingType,
+            repeatType,
+            supplies,
+            guideText,
             status
         )
         VALUES(
@@ -99,6 +101,8 @@
             #{maxMembers},
             #{meetingType},
             #{repeatType},
+            #{supplies},
+            #{guideText},
             #{status}
         )
     </insert>

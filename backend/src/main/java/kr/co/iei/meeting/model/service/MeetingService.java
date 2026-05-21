@@ -8,7 +8,7 @@ public interface MeetingService {
 
   MeetingDetailResponse getMeeting(Long meetingId);
 
-  Long createMeeting(MeetingCreateRequest request);
+  Long createMeeting(MeetingCreateRequest request, Long userId);
 
   void updateMeeting(Long meetingId, MeetingUpdateRequest request);
 

@@ -63,8 +63,10 @@ export default function LoginPage() {
       localStorage.setItem(
         "wemoveUser",
         JSON.stringify({
-          ...data,
-          memberId: data.memberId ?? data.userId,
+          userId: data.memberId, // 로그인구현끝나면 userId: data.userId로 바꾸기
+          loginId: data.loginId,
+          nickname: data.nickname,
+          role: data.role,
         }),
       );
       navigate("/meetings");

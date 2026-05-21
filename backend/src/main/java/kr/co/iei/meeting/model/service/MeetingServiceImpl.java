@@ -1,5 +1,7 @@
 package kr.co.iei.meeting.model.service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.meeting.model.vo.*;
@@ -18,22 +20,32 @@ public class MeetingServiceImpl implements MeetingService {
   public MeetingDetailResponse getMeeting(Long id) {
     return meetingDao.selectMeetingDetail(id);
   }
+@Override
+  public Long createMeeting(MeetingCreateRequest r, Long userId) {
 
-  public Long createMeeting(MeetingCreateRequest r) {
     Meeting m = new Meeting();
-    m.setHostUserId(r.getHostUserId());
+    m.setHostUserId(userId);
     m.setSportId(r.getSportId());
     m.setRegionId(r.getRegionId());
+
     m.setTitle(r.getTitle());
     m.setContent(r.getContent());
+
     m.setPlaceName(r.getPlaceName());
     m.setAddress(r.getAddress());
-    m.setMeetingDate(r.getMeetingDate());
-    m.setStartTime(r.getStartTime());
+
+    m.setMeetingDate(LocalDate.parse(r.getMeetingDate()));
+    m.setStartTime(LocalTime.parse(r.getStartTime()));
+
     m.setMaxMembers(r.getMaxMembers());
+
     m.setMeetingType(r.getMeetingType());
     m.setRepeatType(r.getRepeatType());
     m.setStatus("RECRUITING");
+
+    m.setSupplies(r.getSupplies());
+    m.setGuideText(r.getGuideText());
+
     meetingDao.insertMeeting(m);
     return m.getMeetingId();
   }
