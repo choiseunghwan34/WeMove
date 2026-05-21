@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
+import Pagination from "../components/Pagination";
 import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
@@ -11,32 +12,27 @@ import { getMeeting, getMeetings, getTopRegions } from "../api/meetingApi";
 const cx = (...names) =>
   names
     .filter(Boolean)
-    .map((name) => styles[name])
+    .map((name) => styles[name] || name)
     .join(" ");
 
 const ALL_SPORT = "전체";
 const ALL_REGION = "전체 지역";
 const ALL_STATUS = "전체 상태";
 
+const PAGE_SIZE = 10;
 const weekdayLabels = ["오늘", "내일", "토", "일"];
 
 export default function MeetingListPage() {
-  const [sport, setSport] = useState(ALL_SPORT);
-  const [region, setRegion] = useState(ALL_REGION);
-  const [status, setStatus] = useState(ALL_STATUS);
   const [meetingDate, setMeetingDate] = useState("");
-  const [keyword, setKeyword] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [sport2, setSport2] = useState("전체");
-  const [region2, setRegion2] = useState(null);
+  const [region2, setRegion2] = useState("");
   const [status2, setStatus2] = useState("");
   const [keyword2, setKeyword2] = useState("");
   const [meeting2, setMeeting2] = useState([]);
-  const [statusText, setStatusText] = useState("모집중");
-  const [meetingHost, setMeetingHost] = useState("민수");
-  const [displayDate, setDisplayDate] = useState("05.16");
-  const [time, setTime] = useState("20:00");
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [topRegions, setTopRegions] = useState([]);
 
   const STATUS_MAP = {
@@ -51,19 +47,24 @@ export default function MeetingListPage() {
   const searchParams = useMemo(() => {
     return {
       sportName: sport2,
-      regionId: region2,
+      regionId: region2 || null,
       status: status2,
       keyword: keyword2,
       fixedSports: fixedSports,
       meetingDate: meetingDate,
+      page: currentPage,
+      size: PAGE_SIZE,
     };
-  }, [sport2, region2, status2, keyword2, fixedSports, meetingDate]);
+  }, [sport2, region2, status2, keyword2, fixedSports, meetingDate, currentPage]);
 
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
         const response = await getMeetings(searchParams);
-        setMeeting2(response.data);
+        if (response.data) {
+          setMeeting2(response.data.list || []);
+          setTotalCount(response.data.totalCount || 0);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -86,21 +87,21 @@ export default function MeetingListPage() {
     fetchTopRegions();
   }, []);
 
-  const filteredMeetings = useMemo(() => {
-    return meetings.filter((meeting) => {
-      const q = keyword.trim();
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-      return (
-        (sport === ALL_SPORT || meeting.sport === sport) &&
-        (region === ALL_REGION || meeting.region === region) &&
-        (status === ALL_STATUS || meeting.statusText === status) &&
-        (!q ||
-          meeting.title.includes(q) ||
-          meeting.place.includes(q) ||
-          meeting.desc.includes(q))
-      );
-    });
-  }, [sport, region, status, keyword]);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const resetFilters = () => {
+    setSport2("전체");
+    setRegion2("");
+    setStatus2("");
+    setKeyword2("");
+    setMeetingDate("");
+    setCurrentPage(1);
+  };
 
   return (
     <DashboardShell
@@ -158,7 +159,7 @@ export default function MeetingListPage() {
           필터 열기
         </button>
         <span>
-          {sport} · {region} · {status}
+          {sport2} · {region2 || ALL_REGION} · {status2 || "전체 상태"}
         </span>
       </div>
 
@@ -169,7 +170,10 @@ export default function MeetingListPage() {
               key={item}
               className={cx("tabButton", sport2 === item && "tabButtonActive")}
               type="button"
-              onClick={() => setSport2(item)}
+              onClick={() => {
+                setSport2(item);
+                setCurrentPage(1);
+              }}
             >
               {item}
             </button>
@@ -178,18 +182,24 @@ export default function MeetingListPage() {
 
         <div className={styles.filterRow}>
           <select
-            value={region}
-            onChange={(event) => setRegion(event.target.value)}
+            value={region2}
+            onChange={(event) => {
+              setRegion2(event.target.value);
+              setCurrentPage(1);
+            }}
           >
-            <option>{ALL_REGION}</option>
+            <option value="">{ALL_REGION}</option>
             {regions.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
           <select
             value={status2}
             onChange={(event) => {
               setStatus2(event.target.value);
+              setCurrentPage(1);
             }}
           >
             <option value="">전체 상태</option>
@@ -201,19 +211,33 @@ export default function MeetingListPage() {
           <input
             type="date"
             value={meetingDate}
-            onChange={(event) => setMeetingDate(event.target.value)}
+            onChange={(event) => {
+              setMeetingDate(event.target.value);
+              setCurrentPage(1);
+            }}
           />
           <input
             value={keyword2}
-            onChange={(event) => setKeyword2(event.target.value)}
+            onChange={(event) => {
+              setKeyword2(event.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="운동명, 제목, 지역 검색"
           />
+          <button
+            type="button"
+            className={styles.resetButton}
+            onClick={resetFilters}
+          >
+            <UiIcon name="refresh" className={styles.resetIcon} />
+            초기화
+          </button>
         </div>
       </section>
 
       <div className={styles.listHead}>
         <h2>파주시 주변 모임</h2>
-        <span>총 {meeting2.length}개</span>
+        <span>총 {totalCount}개</span>
       </div>
 
       <section className={styles.meetingList}>
@@ -234,14 +258,7 @@ export default function MeetingListPage() {
               <p>선택하신 지역이나 종목, 날짜를 변경해 보세요.</p>
               <button
                 type="button"
-                onClick={() => {
-                  // 검색 조건 초기화 버튼 기능
-                  setSport2("전체");
-                  setRegion2(null);
-                  setStatus2("");
-                  setKeyword2("");
-                  setMeetingDate("");
-                }}
+                onClick={resetFilters}
                 style={{
                   marginTop: "16px",
                   padding: "8px 16px",
@@ -341,6 +358,19 @@ export default function MeetingListPage() {
         )}
       </section>
 
+      {totalCount > 0 && (
+        <div className={styles.paginationWrapper}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            pageSize={PAGE_SIZE}
+            onPageChange={handlePageChange}
+            variant="centered"
+          />
+        </div>
+      )}
+
       <AppModal
         open={isFilterOpen}
         variant="sheet"
@@ -351,14 +381,16 @@ export default function MeetingListPage() {
         onClose={() => setIsFilterOpen(false)}
         onConfirm={() => setIsFilterOpen(false)}
       >
-        {/* 1. 운동 종목 선택 (sport2 연동) */}
         <div className={styles.sheetSportGrid}>
           {[ALL_SPORT, ...sports.map((item) => item.name)].map((item) => (
             <button
               key={item}
               className={cx("sheetChip", sport2 === item && "sheetChipActive")}
               type="button"
-              onClick={() => setSport2(item)} // sport -> sport2로 변경
+              onClick={() => {
+                setSport2(item);
+                setCurrentPage(1);
+              }}
             >
               {item}
             </button>
@@ -366,10 +398,12 @@ export default function MeetingListPage() {
         </div>
 
         <div className={styles.sheetFilterFields}>
-          {/* 2. 지역 선택 (region2 연동) */}
           <select
             value={region2 || ""}
-            onChange={(event) => setRegion2(event.target.value)} // region -> region2로 변경
+            onChange={(event) => {
+              setRegion2(event.target.value);
+              setCurrentPage(1);
+            }}
           >
             <option value="">{ALL_REGION}</option>
             {regions.map((item) => (
@@ -377,27 +411,33 @@ export default function MeetingListPage() {
             ))}
           </select>
 
-          {/* 3. 모임 상태 선택 (status2 연동 및 영문 코드 매핑) */}
           <select
             value={status2}
-            onChange={(event) => setStatus2(event.target.value)} // status -> status2로 변경
+            onChange={(event) => {
+              setStatus2(event.target.value);
+              setCurrentPage(1);
+            }}
           >
             <option value="">전체 상태</option>
             <option value="RECRUITING">모집중</option>
             <option value="CLOSED">모집마감</option>
           </select>
 
-          {/* 4. 날짜 선택 */}
           <input
             type="date"
             value={meetingDate}
-            onChange={(event) => setMeetingDate(event.target.value)}
+            onChange={(event) => {
+              setMeetingDate(event.target.value);
+              setCurrentPage(1);
+            }}
           />
 
-          {/* 5. 키워드 검색 (keyword2 연동) */}
           <input
             value={keyword2}
-            onChange={(event) => setKeyword2(event.target.value)} // keyword -> keyword2로 변경
+            onChange={(event) => {
+              setKeyword2(event.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="제목, 장소 검색"
           />
         </div>

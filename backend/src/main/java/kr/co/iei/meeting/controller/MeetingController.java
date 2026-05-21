@@ -14,7 +14,7 @@ public class MeetingController {
   private final MeetingService meetingService;
 
   @GetMapping
-  public ResponseEntity<List<MeetingListResponse>> list(MeetingSearchCondition c) {
+  public ResponseEntity<Map<String, Object>> list(MeetingSearchCondition c) {
     return ResponseEntity.ok(meetingService.getMeetings(c));
   }
 

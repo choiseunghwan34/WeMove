@@ -4,7 +4,7 @@ import java.util.*;
 import kr.co.iei.meeting.model.vo.*;
 
 public interface MeetingService {
-  List<MeetingListResponse> getMeetings(MeetingSearchCondition condition);
+  Map<String, Object> getMeetings(MeetingSearchCondition condition);
 
   List<Map<String, Object>> getTopRegions();
 

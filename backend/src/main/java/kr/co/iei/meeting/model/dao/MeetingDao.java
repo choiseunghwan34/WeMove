@@ -15,6 +15,10 @@ public class MeetingDao {
     return sqlSession.selectList("meeting.selectMeetingList", c);
   }
 
+  public int selectMeetingCount(MeetingSearchCondition c) {
+    return sqlSession.selectOne("meeting.selectMeetingCount", c);
+  }
+
   public List<Map<String, Object>> selectTopRegions() {
     return sqlSession.selectList("meeting.selectTopRegions");
   }

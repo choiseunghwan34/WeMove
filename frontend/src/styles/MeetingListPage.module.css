@@ -49,6 +49,38 @@
 
 .filterRow {
   composes: filterRow from "./WeMoveShared.module.css";
+  display: grid !important;
+  grid-template-columns: 300px 300px 300px 1fr auto !important;
+  gap: 10px !important;
+  align-items: center;
+}
+
+.resetButton {
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.resetIcon {
+  width: 14px;
+  height: 14px;
 }
 
 .host {
@@ -409,6 +441,13 @@
   margin-top: 10px !important;
   padding-top: 10px !important;
   border-top: 1px solid #eef0f3 !important;
+}
+
+.paginationWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
 }
 
 /* 2026-05-18 unify page-specific primary buttons */
