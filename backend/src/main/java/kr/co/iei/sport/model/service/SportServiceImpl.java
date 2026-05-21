@@ -22,4 +22,8 @@ public class SportServiceImpl implements SportService {
   public void updateSport(Long sportId, SportRequest req) {
     sportDao.updateSport(sportId, req);
   }
+
+  public void deleteSport(Long sportId) {
+    sportDao.deleteSport(sportId);
+  }
 }

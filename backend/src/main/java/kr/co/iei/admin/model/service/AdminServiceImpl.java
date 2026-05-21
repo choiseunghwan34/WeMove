@@ -19,12 +19,24 @@ public class AdminServiceImpl implements AdminService {
     return adminDao.selectMembers();
   }
 
+  public List<AdminRegionResponse> getRegions() {
+    return adminDao.selectRegions();
+  }
+
   public List<AdminMeetingResponse> getMeetings() {
     return adminDao.selectMeetings();
   }
 
   public List<AdminReportResponse> getReports() {
     return adminDao.selectReports();
+  }
+
+  public void updateMemberStatus(Long userId, String status) {
+    adminDao.updateMemberStatus(userId, status);
+  }
+
+  public void updateMeetingStatus(Long meetingId, String status) {
+    adminDao.updateMeetingStatus(meetingId, status);
   }
 
   public void resolveReport(Long reportId) {

@@ -1,14 +1,12 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getStoredUser, removeStoredUser } from "../utils/authStorage";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(() => getStoredUser());
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    removeStoredUser();
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
     navigate("/login");
   };
 

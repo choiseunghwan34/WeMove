@@ -28,4 +28,10 @@ public class SportController {
     sportService.updateSport(sportId, req);
     return ResponseEntity.ok().build();
   }
+
+  @DeleteMapping("/api/admin/sports/{sportId}")
+  public ResponseEntity<Void> delete(@PathVariable Long sportId) {
+    sportService.deleteSport(sportId);
+    return ResponseEntity.ok().build();
+  }
 }

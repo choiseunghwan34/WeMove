@@ -19,12 +19,27 @@ public class AdminDao {
     return sqlSession.selectList("admin.selectMembers");
   }
 
+  public List<AdminRegionResponse> selectRegions() {
+    return sqlSession.selectList("admin.selectRegions");
+  }
+
   public List<AdminMeetingResponse> selectMeetings() {
     return sqlSession.selectList("admin.selectMeetings");
   }
 
   public List<AdminReportResponse> selectReports() {
     return sqlSession.selectList("admin.selectReports");
+  }
+
+  public int updateMemberStatus(Long userId, String status) {
+    return sqlSession.update(
+        "admin.updateMemberStatus", Map.of("userId", userId, "status", status));
+  }
+
+  public int updateMeetingStatus(Long meetingId, String status) {
+    return sqlSession.update(
+        "admin.updateMeetingStatus",
+        Map.of("meetingId", meetingId, "status", status));
   }
 
   public int updateReportStatus(Long reportId, String status) {

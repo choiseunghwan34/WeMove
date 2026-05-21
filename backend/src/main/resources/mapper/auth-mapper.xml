@@ -9,6 +9,12 @@
         WHERE loginId=#{loginId}
     </select>
 
+    <select id="selectByUserId" resultType="kr.co.iei.member.model.vo.Member">
+        SELECT *
+        FROM users
+        WHERE userId=#{userId}
+    </select>
+
     <select id="selectByEmail" resultType="kr.co.iei.member.model.vo.Member">
         SELECT *
         FROM users

@@ -8,9 +8,15 @@ public interface AdminService {
 
   List<AdminMemberResponse> getMembers();
 
+  List<AdminRegionResponse> getRegions();
+
   List<AdminMeetingResponse> getMeetings();
 
   List<AdminReportResponse> getReports();
+
+  void updateMemberStatus(Long userId, String status);
+
+  void updateMeetingStatus(Long meetingId, String status);
 
   void resolveReport(Long reportId);
 

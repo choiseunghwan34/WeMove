@@ -5,15 +5,15 @@
 
     <select id="selectMemberById" resultType="kr.co.iei.member.model.vo.MemberResponse">
         SELECT
-            user_id,
-            login_id,
+            userId,
+            loginId,
             email,
             nickname,
-            region_id,
+            regionId,
             role,
             status
         FROM users
-        WHERE user_id=#{memberId}
+        WHERE userId=#{memberId}
     </select>
 
     <update id="updateMember">
@@ -22,8 +22,8 @@
             email=#{request.email},
             nickname=#{request.nickname},
             phone=#{request.phone},
-            region_id=#{request.regionId}
-        WHERE user_id=#{memberId}
+            regionId=#{request.regionId}
+        WHERE userId=#{memberId}
     </update>
 
 </mapper>

@@ -55,7 +55,7 @@
             AND m.regionId=#{regionId}
         </if>
         <if test='status != null and status != ""'>
-            AND m.status=#{status}
+            AND m.status = #{status}
         </if>
         <if test='keyword != null and keyword != ""'>
             AND (
@@ -74,19 +74,19 @@
 
     <select id="selectMeetingDetail" resultType="kr.co.iei.meeting.model.vo.MeetingDetailResponse">
         SELECT
-            m.meeting_id,
-            m.host_user_id,
-            u.nickname host_nickname,
+            m.meetingId,
+            m.hostUserId,
+            u.nickname AS hostNickname,
             m.title,
             m.content,
-            m.place_name,
+            m.placeName,
             m.address,
-            m.meeting_date,
-            m.start_time,
-            m.max_members,
+            m.meetingDate,
+            m.startTime,
+            m.maxMembers,
             m.status,
-            s.name sport_name,
-            CONCAT(r.sido," ",r.sigungu," ",COALESCE(r.dong,"")) region_name,
+            s.name AS sportName,
+            CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) AS regionName,
             (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
@@ -94,11 +94,11 @@
                 AND mp.status="APPROVED"
             ) approved_count
         FROM meetings m
-        JOIN users u ON m.host_user_id=u.user_id
-        JOIN sports s ON m.sport_id=s.sport_id
-        JOIN regions r ON m.region_id=r.region_id
-        WHERE m.meeting_id=#{meetingId}
-        AND m.deleted_at IS NULL
+        JOIN users u ON m.hostUserId = u.userId
+        JOIN sports s ON m.sportId = s.sportId
+        JOIN regions r ON m.regionId = r.regionId
+        WHERE m.meetingId = #{meetingId}
+        AND m.deletedAt IS NULL
     </select>
 
     <insert id="insertMeeting" parameterType="kr.co.iei.meeting.model.vo.Meeting" useGeneratedKeys="true" keyProperty="meetingId">
@@ -117,6 +117,7 @@
             repeatType,
             supplies,
             guideText,
+
             status
         )
         VALUES(
@@ -141,34 +142,34 @@
     <update id="updateMeeting">
         UPDATE meetings
         SET
-            title=#{request.title},
-            content=#{request.content},
-            place_name=#{request.placeName},
-            address=#{request.address},
-            meeting_date=#{request.meetingDate},
-            start_time=#{request.startTime},
-            max_members=#{request.maxMembers},
-            status=#{request.status}
-        WHERE meeting_id=#{meetingId}
-        AND deleted_at IS NULL
+            title = #{request.title},
+            content = #{request.content},
+            placeName = #{request.placeName},
+            address = #{request.address},
+            meetingDate = #{request.meetingDate},
+            startTime = #{request.startTime},
+            maxMembers = #{request.maxMembers},
+            status = #{request.status}
+        WHERE meetingId = #{meetingId}
+          AND deletedAt IS NULL
     </update>
 
     <update id="softDeleteMeeting">
         UPDATE meetings
-        SET deleted_at=NOW()
-        WHERE meeting_id=#{meetingId}
+        SET deletedAt = NOW()
+        WHERE meetingId = #{meetingId}
     </update>
 
     <update id="updateMeetingStatus">
         UPDATE meetings
-        SET status=#{status}
-        WHERE meeting_id=#{meetingId}
+        SET status = #{status}
+        WHERE meetingId = #{meetingId}
     </update>
 
     <select id="selectMaxMembers" resultType="int">
-        SELECT max_members
+        SELECT maxMembers
         FROM meetings
-        WHERE meeting_id=#{meetingId}
+        WHERE meetingId = #{meetingId}
     </select>
 
 </mapper>

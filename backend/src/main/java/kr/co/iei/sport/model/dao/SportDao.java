@@ -25,4 +25,8 @@ public class SportDao {
     p.put("request", req);
     return sqlSession.update("sport.updateSport", p);
   }
+
+  public int deleteSport(Long sportId) {
+    return sqlSession.delete("sport.deleteSport", sportId);
+  }
 }

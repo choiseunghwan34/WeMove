@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import UiIcon from "./UiIcon";
 import { interestItems, navItems } from "../data/dashboardData";
 import styles from "../styles/DashboardShell.module.css";
-import { getStoredUser, removeStoredUser } from "../utils/authStorage";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function DashboardShell({
   active = "",
@@ -14,13 +14,13 @@ export default function DashboardShell({
   children,
 }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(() => getStoredUser());
 
   const closeMenu = () => setIsMenuOpen(false);
-  const handleLogout = () => {
-    removeStoredUser();
-    setUser(null);
+
+  const handleLogout = async () => {
+    await logout();
     closeMenu();
     navigate("/login");
   };

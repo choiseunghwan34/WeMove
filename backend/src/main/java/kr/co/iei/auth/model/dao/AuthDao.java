@@ -15,6 +15,10 @@ public class AuthDao {
     return sqlSession.selectOne("auth.selectByLoginId", loginId);
   }
 
+  public Member selectByUserId(Long userId) {
+    return sqlSession.selectOne("auth.selectByUserId", userId);
+  }
+
   public Member selectByEmail(String email) {
     return sqlSession.selectOne("auth.selectByEmail", email);
   }

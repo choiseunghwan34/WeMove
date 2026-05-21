@@ -1,96 +1,498 @@
-/* Auto-split from AdminPage.jsx. Page/component styles compose shared WeMove design rules. */
-
 .badge {
   composes: badge from "./WeMoveShared.module.css";
-}
-
-.CLOSED {
 }
 
 .page {
   composes: page from "./WeMoveShared.module.css";
 }
 
-.pageTabs {
-  composes: pageTabs from "./WeMoveShared.module.css";
-}
-
 .pageTitle {
   composes: pageTitle from "./WeMoveShared.module.css";
-}
-
-.PENDING {
 }
 
 .statGrid {
   composes: statGrid from "./WeMoveShared.module.css";
 }
 
-.success {
-  composes: success from "./WeMoveShared.module.css";
+.summaryEyebrow {
+  color: #6b7280;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-.SUSPENDED {
+.summaryCaption {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.summaryCardMembers,
+.summaryCardMeetings,
+.summaryCardReports,
+.summaryCardSports {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 24px;
+  border-radius: 24px;
+}
+
+.summaryCardMembers::after,
+.summaryCardMeetings::after,
+.summaryCardReports::after,
+.summaryCardSports::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.summaryCardMembers::after {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(96, 165, 250, 0.2), transparent 32%),
+    radial-gradient(circle at 18% 90%, rgba(191, 219, 254, 0.22), transparent 28%);
+}
+
+.summaryCardMeetings::after {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(56, 189, 248, 0.18), transparent 30%),
+    radial-gradient(circle at 14% 86%, rgba(186, 230, 253, 0.24), transparent 30%);
+}
+
+.summaryCardReports::after {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(248, 113, 113, 0.16), transparent 28%),
+    radial-gradient(circle at 16% 88%, rgba(254, 202, 202, 0.24), transparent 28%);
+}
+
+.summaryCardSports::after {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(251, 191, 36, 0.18), transparent 30%),
+    radial-gradient(circle at 16% 88%, rgba(254, 240, 138, 0.22), transparent 30%);
+}
+
+.filterPanel {
+  composes: filterPanel from "./WeMoveShared.module.css";
+}
+
+.filterRow {
+  composes: filterRow from "./WeMoveShared.module.css";
+}
+
+.regionPickerRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.regionPickerButton {
+  min-width: 124px;
+  height: 46px;
+  border: 1px solid #2563eb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 0.94rem;
+  font-weight: 800;
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.regionPickerSummary {
+  flex: 1;
+  min-height: 46px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.regionPickerLabel {
+  color: #6b7280;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.regionPickerSummary strong {
+  color: #10233f;
+  font-size: 0.95rem;
+}
+
+.pageTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pageTabsShell {
+  display: inline-flex;
+  margin-bottom: 18px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
 }
 
 .tabButton {
-  composes: tabButton from "./WeMoveShared.module.css";
+  min-width: 110px;
+  height: 42px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #53657c;
+  font-size: 0.94rem;
+  font-weight: 800;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.tabButtonActive {
-  composes: tabButtonActive from "./WeMoveShared.module.css";
+.tabButtonCurrent {
+  border-color: #2563eb;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .tableCard {
   composes: tableCard from "./WeMoveShared.module.css";
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04) !important;
 }
 
 .tableHead {
   composes: tableHead from "./WeMoveShared.module.css";
+  background: #ffffff !important;
+}
+.tableHead{
+  justify-content: flex-start !important;
+}
+
+.tableToolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin: 10px;
+}
+
+.searchField {
+  width: min(360px, 100%);
+  display: grid;
+  gap: 8px;
+}
+
+.searchField span {
+  color: #6b7280;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.searchField input,
+.inlineSelect {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111827;
+}
+
+.searchField input:focus,
+.inlineSelect:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+.inlineSelect {
+  min-width: 138px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.success {
+  composes: success from "./WeMoveShared.module.css";
 }
 
 .warning {
   composes: warning from "./WeMoveShared.module.css";
 }
 
-/* Home-aligned back-office polish */
-.statGrid article,
-.tableCard {
-  background: rgba(255, 255, 255, 0.94) !important;
-  border-color: rgba(15, 23, 42, 0.06) !important;
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
+.danger {
+  composes: danger from "./WeMoveShared.module.css";
 }
 
-.tableHead {
-  background: #fff !important;
+.emptyCell {
+  padding: 26px 18px !important;
+  color: #6b7280 !important;
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-align: center;
 }
 
-.tableCard th {
-  background: #f8fbff !important;
-  color: #6f8298 !important;
+.filterHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
-.tableCard tr:hover td {
-  background: #f8fbff !important;
+.filterHead h2 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 1.08rem;
 }
 
-.tableCard td button,
-.tableHead button {
-  height: 34px;
+.filterHead p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.filterMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  color: #6b7280;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.filterMeta strong {
+  color: #1f2937;
+}
+
+.filterSummaryBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
+}
+
+.filterSummaryKicker {
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.meetingFilterRow {
+  margin-top: 14px;
+}
+
+.categorySection {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.categoryLabel {
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.categoryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.categoryChip {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #53657c;
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.categoryChip:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+}
+
+.categoryChipCurrent {
+  border-color: #2563eb;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.categoryPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.scheduleCell {
+  display: grid;
+  gap: 4px;
+}
+
+.scheduleCell strong {
+  color: #1f2937;
+  font-size: 0.92rem;
+}
+
+.scheduleCell span {
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.sectionHint {
+  margin: 8px 20px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.stackCell {
+  display: grid;
+  gap: 4px;
+}
+
+.stackCell strong {
+  color: #1f2937;
+}
+
+.stackCell span {
+  color: #6b7280;
+  font-size: 0.84rem;
+}
+
+.modalSection {
+  display: grid;
+  gap: 14px;
+}
+
+.modalPanel {
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.modalTitle,
+.modalField span {
+  color: #111827;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.sportFormGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.modalField {
+  display: grid;
+  gap: 8px;
+}
+
+.modalField input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #d1d5db;
   border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  background: #fff !important;
-  color: #49627f !important;
-  box-shadow: none !important;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #111827;
 }
 
-/* 2026-05-18 neutral admin finish */
-.statGrid article,
-.tableCard,
-.tableHead {
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
+.modalCheck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.sportList {
+  display: grid;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.sportCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.sportCard p {
+  margin: 4px 0 0;
+  color: #6b7280;
+}
+
+.sportCardBody {
+  min-width: 0;
+}
+
+.sportCardControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deleteButton {
+  min-width: 72px;
+  height: 44px;
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  border-radius: 12px;
+  background: #fff1f2;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .tableCard th {
@@ -98,36 +500,64 @@
   color: #6b7280 !important;
 }
 
-.tableCard tr:hover td {
-  background: #f9fafb !important;
-}
-
-.tableCard td button,
-.tableHead button {
+.tableCard td {
   background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  color: #374151 !important;
-  box-shadow: none !important;
+  color: #1f2937 !important;
 }
 
-/* 2026-05-18 unify page-specific primary buttons */
-.tableHead button:last-child,
-.tableCard td button:last-child {
-  background: linear-gradient(
-    180deg,
-    #3b82f6 0%,
-    #2563eb 56%,
-    #1d4ed8 100%
-  ) !important;
-  background-image: linear-gradient(
-    180deg,
-    #3b82f6 0%,
-    #2563eb 56%,
-    #1d4ed8 100%
-  ) !important;
-  color: #fff !important;
+.tableCard tr:hover td {
+  background: #f8fbff !important;
+}
+
+.filterHead button,
+.tableHead button {
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid #dbe3ef !important;
+  background: #ffffff !important;
+  color: #374151 !important;
+  font-weight: 800;
+}
+
+.filterHead button:last-child,
+.tableHead button:last-child {
   border-color: #2563eb !important;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
   box-shadow:
     0 6px 14px rgba(37, 99, 235, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+@media (max-width: 960px) {
+  .filterHead,
+  .filterMeta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterSummaryBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tableToolbar {
+    justify-content: stretch;
+  }
+
+  .searchField {
+    width: 100%;
+  }
+
+  .regionPickerRow,
+  .regionPickerSummary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sportCard,
+  .sportCardControls {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
