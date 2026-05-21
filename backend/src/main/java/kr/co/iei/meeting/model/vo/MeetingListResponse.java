@@ -17,4 +17,5 @@ public class MeetingListResponse {
   private String regionName;
   private String content;
   private String thumbnailImage;
+  private String meetingHostName;
 }

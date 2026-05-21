@@ -15,6 +15,10 @@ public class MeetingDao {
     return sqlSession.selectList("meeting.selectMeetingList", c);
   }
 
+  public List<Map<String, Object>> selectTopRegions() {
+    return sqlSession.selectList("meeting.selectTopRegions");
+  }
+
   public MeetingDetailResponse selectMeetingDetail(Long id) {
     return sqlSession.selectOne("meeting.selectMeetingDetail", id);
   }

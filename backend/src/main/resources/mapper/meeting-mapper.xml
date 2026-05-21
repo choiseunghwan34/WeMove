@@ -16,6 +16,11 @@
             s.name sportName,
             CONCAT(r.sido," ",r.sigungu," ",COALESCE(r.dong,"")) regionName,
             (
+                SELECT nickname
+                FROM users
+                where userId = m.hostUserId
+            ) meetingHostName,
+            (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
                 WHERE mp.meetingId=m.meetingId
@@ -70,6 +75,20 @@
             )
         </if>
         ORDER BY m.meetingDate ASC, m.startTime ASC
+    </select>
+
+    <select id="selectTopRegions" resultType="map">
+        SELECT
+            r.dong AS name,
+            COUNT(*) AS count
+        FROM meetings m
+        JOIN regions r ON m.regionId = r.regionId
+        WHERE m.deletedAt IS NULL
+          AND r.dong IS NOT NULL
+          AND r.dong != ''
+        GROUP BY r.dong
+        ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.dong ASC
+        LIMIT 4
     </select>
 
     <select id="selectMeetingDetail" resultType="kr.co.iei.meeting.model.vo.MeetingDetailResponse">

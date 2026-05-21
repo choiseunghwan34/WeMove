@@ -18,6 +18,11 @@ public class MeetingController {
     return ResponseEntity.ok(meetingService.getMeetings(c));
   }
 
+  @GetMapping("/top-regions")
+  public ResponseEntity<List<Map<String, Object>>> topRegions() {
+    return ResponseEntity.ok(meetingService.getTopRegions());
+  }
+
   @GetMapping("/{meetingId}")
   public ResponseEntity<MeetingDetailResponse> detail(@PathVariable Long meetingId) {
     return ResponseEntity.ok(meetingService.getMeeting(meetingId));

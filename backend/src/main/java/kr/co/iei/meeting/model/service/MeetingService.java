@@ -6,6 +6,8 @@ import kr.co.iei.meeting.model.vo.*;
 public interface MeetingService {
   List<MeetingListResponse> getMeetings(MeetingSearchCondition condition);
 
+  List<Map<String, Object>> getTopRegions();
+
   MeetingDetailResponse getMeeting(Long meetingId);
 
   Long createMeeting(MeetingCreateRequest request, Long userId);

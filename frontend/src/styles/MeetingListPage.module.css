@@ -73,6 +73,16 @@
 
 .listHead {
   composes: listHead from "./WeMoveShared.module.css";
+  position: relative;
+  justify-content: flex-end;
+  min-height: 32px;
+}
+
+.listHead h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .listMeta {

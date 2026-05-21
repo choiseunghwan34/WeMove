@@ -6,7 +6,7 @@ import UiIcon from "../components/UiIcon";
 import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MeetingListPage.module.css";
-import { getMeeting, getMeetings } from "../api/meetingApi";
+import { getMeeting, getMeetings, getTopRegions } from "../api/meetingApi";
 
 const cx = (...names) =>
   names
@@ -17,13 +17,6 @@ const cx = (...names) =>
 const ALL_SPORT = "전체";
 const ALL_REGION = "전체 지역";
 const ALL_STATUS = "전체 상태";
-
-const regionRanking = [
-  { name: "운정동", count: 38 },
-  { name: "야당동", count: 27 },
-  { name: "금촌동", count: 19 },
-  { name: "문산읍", count: 13 },
-];
 
 const weekdayLabels = ["오늘", "내일", "토", "일"];
 
@@ -44,12 +37,13 @@ export default function MeetingListPage() {
   const [meetingHost, setMeetingHost] = useState("민수");
   const [displayDate, setDisplayDate] = useState("05.16");
   const [time, setTime] = useState("20:00");
+  const [topRegions, setTopRegions] = useState([]);
 
   const STATUS_MAP = {
     RECRUITING: "모집중",
     CLOSED: "모집마감",
-    COMPLETED: "진행완료",
-    CANCLED: "취소됨",
+    COMPLETED: "모임완료",
+    CANCELLED: "취소됨",
   };
 
   const fixedSports = sports.map((sport) => sport.name);
@@ -77,6 +71,20 @@ export default function MeetingListPage() {
 
     fetchMeetings();
   }, [searchParams]);
+
+  useEffect(() => {
+    const fetchTopRegions = async () => {
+      try {
+        const response = await getTopRegions();
+        setTopRegions(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error(error);
+        setTopRegions([]);
+      }
+    };
+
+    fetchTopRegions();
+  }, []);
 
   const filteredMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
@@ -106,8 +114,8 @@ export default function MeetingListPage() {
               <h3>인기 지역</h3>
             </div>
             <div className={styles.dashboardSimpleList}>
-              {regionRanking.map((item, index) => (
-                <div key={item.name}>
+              {topRegions.map((item, index) => (
+                <div key={`${item.name}-${index}`}>
                   <span>
                     {index + 1}. {item.name}
                   </span>
@@ -187,6 +195,8 @@ export default function MeetingListPage() {
             <option value="">전체 상태</option>
             <option value="RECRUITING">모집중</option>
             <option value="CLOSED">모집마감</option>
+            <option value="COMPLETED">모임완료</option>
+            <option value="CANCELLED">취소됨</option>
           </select>
           <input
             type="date"
@@ -196,7 +206,7 @@ export default function MeetingListPage() {
           <input
             value={keyword2}
             onChange={(event) => setKeyword2(event.target.value)}
-            placeholder="제목, 장소 검색"
+            placeholder="운동명, 제목, 지역 검색"
           />
         </div>
       </section>
@@ -264,7 +274,10 @@ export default function MeetingListPage() {
                     <span
                       className={cx(
                         "badge",
-                        meeting.status === "CLOSED" ? "warning" : "success",
+                        meeting.status === "CLOSED" ||
+                          meeting.status === "CANCELLED"
+                          ? "warning"
+                          : "success",
                       )}
                     >
                       {STATUS_MAP[meeting.status] || "알 수 없음"}
@@ -302,7 +315,7 @@ export default function MeetingListPage() {
                         className={styles.dashboardHostIcon}
                       />
                     </i>
-                    <span>{meetingHost} · 매너점수 4.8</span>
+                    <span>{meeting.meetingHostName} · 매너점수 4.8</span>
                   </div>
                 </div>
               </div>

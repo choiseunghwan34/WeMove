@@ -17,6 +17,10 @@ public class MeetingServiceImpl implements MeetingService {
     return meetingDao.selectMeetingList(c);
   }
 
+  public List<Map<String, Object>> getTopRegions() {
+    return meetingDao.selectTopRegions();
+  }
+
   public MeetingDetailResponse getMeeting(Long id) {
     return meetingDao.selectMeetingDetail(id);
   }
