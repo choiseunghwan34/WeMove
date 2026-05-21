@@ -13,6 +13,7 @@ public class Meeting {
 
   private String title;
   private String content;
+  private String thumbnailImage;
 
   private String placeName;
   private String address;

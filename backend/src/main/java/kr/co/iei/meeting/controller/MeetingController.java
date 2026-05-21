@@ -1,11 +1,29 @@
 package kr.co.iei.meeting.controller;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import kr.co.iei.meeting.model.service.MeetingService;
-import kr.co.iei.meeting.model.vo.*;
+import kr.co.iei.meeting.model.vo.MeetingCreateRequest;
+import kr.co.iei.meeting.model.vo.MeetingDetailResponse;
+import kr.co.iei.meeting.model.vo.MeetingListResponse;
+import kr.co.iei.meeting.model.vo.MeetingSearchCondition;
+import kr.co.iei.meeting.model.vo.MeetingStatusUpdateRequest;
+import kr.co.iei.meeting.model.vo.MeetingUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/meetings")
@@ -14,8 +32,8 @@ public class MeetingController {
   private final MeetingService meetingService;
 
   @GetMapping
-  public ResponseEntity<List<MeetingListResponse>> list(MeetingSearchCondition c) {
-    return ResponseEntity.ok(meetingService.getMeetings(c));
+  public ResponseEntity<List<MeetingListResponse>> list(MeetingSearchCondition condition) {
+    return ResponseEntity.ok(meetingService.getMeetings(condition));
   }
 
   @GetMapping("/{meetingId}")
@@ -23,17 +41,19 @@ public class MeetingController {
     return ResponseEntity.ok(meetingService.getMeeting(meetingId));
   }
 
-  //모임생성
-  @PostMapping
-  public ResponseEntity<Map<String, Long>> create(@RequestBody MeetingCreateRequest r, @RequestHeader("X-Member-Id") Long userId) {
-    Long id = meetingService.createMeeting(r, userId);
-    return ResponseEntity.ok(Map.of("meetingId", id));
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Map<String, Long>> create(
+      @RequestPart("request") MeetingCreateRequest request,
+      @RequestPart(value = "image", required = false) MultipartFile image,
+      @RequestHeader("X-Member-Id") Long userId) {
+    Long meetingId = meetingService.createMeeting(request, image, userId);
+    return ResponseEntity.ok(Map.of("meetingId", meetingId));
   }
 
   @PutMapping("/{meetingId}")
   public ResponseEntity<Void> update(
-      @PathVariable Long meetingId, @RequestBody MeetingUpdateRequest r) {
-    meetingService.updateMeeting(meetingId, r);
+      @PathVariable Long meetingId, @RequestBody MeetingUpdateRequest request) {
+    meetingService.updateMeeting(meetingId, request);
     return ResponseEntity.ok().build();
   }
 
@@ -45,8 +65,8 @@ public class MeetingController {
 
   @PatchMapping("/{meetingId}/status")
   public ResponseEntity<Void> status(
-      @PathVariable Long meetingId, @RequestBody MeetingStatusUpdateRequest r) {
-    meetingService.updateMeetingStatus(meetingId, r);
+      @PathVariable Long meetingId, @RequestBody MeetingStatusUpdateRequest request) {
+    meetingService.updateMeetingStatus(meetingId, request);
     return ResponseEntity.ok().build();
   }
 }

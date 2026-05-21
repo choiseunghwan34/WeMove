@@ -12,6 +12,7 @@ public class MeetingDetailResponse {
   private String content;
   private String placeName;
   private String address;
+  private String thumbnailImage;
   private LocalDate meetingDate;
   private LocalTime startTime;
   private Integer maxMembers;

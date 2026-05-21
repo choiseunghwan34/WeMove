@@ -59,7 +59,7 @@ export default function MeetingCreatePage() {
     const previews = useImagePreviews(files);
 
     const handleFileChange = (event) => {
-        const nextFiles = Array.from(event.target.files ?? []).slice(0, 4);
+        const nextFiles = Array.from(event.target.files ?? []).slice(0, 1);
         setFiles(nextFiles);
     };
 
@@ -69,41 +69,26 @@ export default function MeetingCreatePage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(form);
-        createMeeting(form).then((res)=>{console.log(res)
-        alert("모임 등록 완료");
-        navigate("/meetings");
-        }).catch((err)=>{console.log(err)})
-
-        /*파일 추가시 아래코드사용
         const formData = new FormData();
-
-                // JSON 데이터 추가
-        formData.append("request",
+        formData.append(
+            "request",
             new Blob([JSON.stringify(form)], {
                 type: "application/json",
-            }))
+            }),
+        );
 
-        //이미지 파일 추가
-        files.forEach((file) => {
-            formData.append("images", file);
-        })
+        if (files[0]) {
+            formData.append("image", files[0]);
+        }
 
-        //api요청
         createMeeting(formData).then((res) => {
-            console.log(res)
-            alert("모임 등록 완료")
-            //navigate("/meetings");
+            console.log(res);
+            alert("모임 등록 완료");
+            navigate("/meetings");
         }).catch((err) => {
-            console.log(err)
-            alert("모임 등록 실패")
-        })
-        * */
-
-
-
-
-
+            console.log(err);
+            alert("모임 등록 실패");
+        });
     }
 
 
@@ -281,13 +266,11 @@ export default function MeetingCreatePage() {
                     <input
                         type="file"
                         accept="image/*"
-                        multiple
                         className={styles.uploadInput}
                         onChange={handleFileChange}
                     />
                     <small className={styles.uploadHint}>
-                        최대 4장까지 등록할 수 있습니다. 첫 번째 사진이 대표 썸네일처럼
-                        보입니다.
+                        대표 썸네일 1장만 등록할 수 있습니다.
                     </small>
                 </div>
 

@@ -2,13 +2,14 @@ package kr.co.iei.meeting.model.service;
 
 import java.util.*;
 import kr.co.iei.meeting.model.vo.*;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MeetingService {
   List<MeetingListResponse> getMeetings(MeetingSearchCondition condition);
 
   MeetingDetailResponse getMeeting(Long meetingId);
 
-  Long createMeeting(MeetingCreateRequest request, Long userId);
+  Long createMeeting(MeetingCreateRequest request, MultipartFile image, Long userId);
 
   void updateMeeting(Long meetingId, MeetingUpdateRequest request);
 
