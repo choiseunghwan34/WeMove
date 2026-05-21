@@ -14,6 +14,10 @@ public interface AdminService {
 
   List<AdminReportResponse> getReports();
 
+  void updateMemberStatus(Long userId, String status);
+
+  void updateMeetingStatus(Long meetingId, String status);
+
   void resolveReport(Long reportId);
 
   void rejectReport(Long reportId);

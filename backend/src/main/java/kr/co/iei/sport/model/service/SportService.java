@@ -9,4 +9,6 @@ public interface SportService {
   void createSport(SportRequest req);
 
   void updateSport(Long sportId, SportRequest req);
+
+  void deleteSport(Long sportId);
 }

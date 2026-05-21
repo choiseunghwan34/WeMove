@@ -81,4 +81,18 @@
         WHERE reportId = #{reportId}
     </update>
 
+    <update id="updateMemberStatus">
+        UPDATE users
+        SET status = #{status}
+        WHERE userId = #{userId}
+    </update>
+
+    <update id="updateMeetingStatus">
+        UPDATE meetings
+        SET
+            status = #{status},
+            updatedAt = NOW()
+        WHERE meetingId = #{meetingId}
+    </update>
+
 </mapper>

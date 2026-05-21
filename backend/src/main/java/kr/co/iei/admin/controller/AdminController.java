@@ -38,6 +38,20 @@ public class AdminController {
     return ResponseEntity.ok(adminService.getReports());
   }
 
+  @PatchMapping("/members/{userId}/status")
+  public ResponseEntity<Void> updateMemberStatus(
+      @PathVariable Long userId, @RequestBody AdminStatusUpdateRequest request) {
+    adminService.updateMemberStatus(userId, request.getStatus());
+    return ResponseEntity.ok().build();
+  }
+
+  @PatchMapping("/meetings/{meetingId}/status")
+  public ResponseEntity<Void> updateMeetingStatus(
+      @PathVariable Long meetingId, @RequestBody AdminStatusUpdateRequest request) {
+    adminService.updateMeetingStatus(meetingId, request.getStatus());
+    return ResponseEntity.ok().build();
+  }
+
   @PatchMapping("/reports/{reportId}/resolve")
   public ResponseEntity<Void> resolve(@PathVariable Long reportId) {
     adminService.resolveReport(reportId);

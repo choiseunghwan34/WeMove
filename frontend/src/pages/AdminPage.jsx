@@ -2,17 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 import AppModal from "../components/AppModal";
 import {
   createAdminSport,
+  deleteAdminSport,
   getAdminMeetings,
   getAdminMembers,
   getAdminRegions,
   getAdminReports,
   getAdminSports,
   getSummary,
+  updateAdminMeetingStatus,
+  updateAdminMemberStatus,
+  updateAdminSport,
 } from "../api/adminApi";
 import styles from "../styles/AdminPage.module.css";
 
 const cx = (...names) =>
   names
+    .flat()
     .filter(Boolean)
     .map((name) => styles[name] ?? name)
     .join(" ");
@@ -28,6 +33,33 @@ const tabs = [
   { id: "meetings", label: "모임 관리" },
   { id: "reports", label: "신고 내역" },
   { id: "sports", label: "운동 종목" },
+];
+
+const summaryCards = [
+  {
+    key: "totalMembers",
+    label: "전체 회원",
+    toneClass: "summaryCardMembers",
+    caption: "가입을 완료한 전체 회원 수",
+  },
+  {
+    key: "totalMeetings",
+    label: "등록 모임",
+    toneClass: "summaryCardMeetings",
+    caption: "현재 서비스에 등록된 전체 모임 수",
+  },
+  {
+    key: "pendingReports",
+    label: "대기 신고",
+    toneClass: "summaryCardReports",
+    caption: "빠른 확인이 필요한 미처리 신고 수",
+  },
+  {
+    key: "totalSports",
+    label: "운동 종목",
+    toneClass: "summaryCardSports",
+    caption: "서비스에서 관리 중인 전체 종목 수",
+  },
 ];
 
 const initialSummary = {
@@ -50,7 +82,31 @@ const meetingStatusText = {
   CANCELLED: "취소됨",
 };
 
-const normalizeText = (value = "") => value.trim();
+const reportStatusText = {
+  PENDING: "대기중",
+  RESOLVED: "처리완료",
+  REJECTED: "반려됨",
+};
+
+const memberStatusOptions = [
+  { value: "ACTIVE", label: "ACTIVE" },
+  { value: "SUSPENDED", label: "SUSPENDED" },
+  { value: "DELETED", label: "DELETED" },
+];
+
+const meetingStatusOptions = [
+  { value: "RECRUITING", label: "모집중" },
+  { value: "CLOSED", label: "모집마감" },
+  { value: "COMPLETED", label: "모임완료" },
+  { value: "CANCELLED", label: "취소됨" },
+];
+
+const sportStatusOptions = [
+  { value: true, label: "사용중" },
+  { value: false, label: "비활성" },
+];
+
+const normalizeText = (value = "") => String(value).trim();
 
 const parseRegionLabel = (label = "") => {
   const [sido = "", sigungu = "", dong = ""] = normalizeText(label).split(/\s+/);
@@ -67,10 +123,14 @@ const matchesRegionSelection = (regionLabel, sido, sigungu, dong) => {
   );
 };
 
-const formatMeetingSchedule = (meetingDate, startTime) => {
-  const date = meetingDate ? String(meetingDate) : "-";
-  const time = startTime ? String(startTime).slice(0, 5) : "--:--";
-  return `${date} ${time}`;
+const formatMeetingDate = (meetingDate) => {
+  if (!meetingDate) return "-";
+  return String(meetingDate);
+};
+
+const formatMeetingTime = (startTime) => {
+  if (!startTime) return "--:--";
+  return String(startTime).slice(0, 5);
 };
 
 const paginate = (items, page) => {
@@ -91,6 +151,22 @@ const buildPageButtons = (currentPage, totalPages) => {
   return buttons;
 };
 
+const badgeToneByMemberStatus = (status) => {
+  if (status === "SUSPENDED" || status === "DELETED") return "warning";
+  return "success";
+};
+
+const badgeToneByMeetingStatus = (status) => {
+  if (status === "CLOSED" || status === "CANCELLED") return "warning";
+  return "success";
+};
+
+const badgeToneByReportStatus = (status) => {
+  if (status === "PENDING") return "warning";
+  if (status === "REJECTED") return "danger";
+  return "success";
+};
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("members");
   const [summary, setSummary] = useState(initialSummary);
@@ -102,10 +178,18 @@ export default function AdminPage() {
   const [selectedSido, setSelectedSido] = useState(ALL_SIDO);
   const [selectedSigungu, setSelectedSigungu] = useState(ALL_SIGUNGU);
   const [selectedDong, setSelectedDong] = useState(ALL_DONG);
-  const [selectedMeetingCategory, setSelectedMeetingCategory] = useState(ALL_CATEGORY);
-  const [selectedSportCategory, setSelectedSportCategory] = useState(ALL_CATEGORY);
+  const [selectedMeetingCategory, setSelectedMeetingCategory] =
+    useState(ALL_CATEGORY);
+  const [selectedSportCategory, setSelectedSportCategory] =
+    useState(ALL_CATEGORY);
+  const [memberKeyword, setMemberKeyword] = useState("");
+  const [meetingKeyword, setMeetingKeyword] = useState("");
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
   const [sportForm, setSportForm] = useState(initialSportForm);
+  const [updatingMemberId, setUpdatingMemberId] = useState(null);
+  const [updatingMeetingId, setUpdatingMeetingId] = useState(null);
+  const [updatingSportId, setUpdatingSportId] = useState(null);
+  const [deletingSportId, setDeletingSportId] = useState(null);
   const [pages, setPages] = useState({
     members: 1,
     meetings: 1,
@@ -153,8 +237,8 @@ export default function AdminPage() {
           loginId: member.loginId,
           nickname: member.nickname,
           region: member.regionName ?? "-",
-          role: member.role,
-          status: member.status,
+          role: member.role ?? "USER",
+          status: member.status ?? "ACTIVE",
         })),
       );
     }
@@ -182,15 +266,17 @@ export default function AdminPage() {
       setMeetings(
         meetingsResult.value.data.map((meeting) => ({
           id: meeting.meetingId,
-          title: meeting.title,
+          title: meeting.title ?? "-",
           sport: meeting.sportName ?? "-",
           sportCategory: meeting.sportCategory ?? "기타",
           region: meeting.regionName ?? "-",
-          schedule: formatMeetingSchedule(meeting.meetingDate, meeting.startTime),
+          meetingDate: formatMeetingDate(meeting.meetingDate),
+          startTime: formatMeetingTime(meeting.startTime),
           current: meeting.approvedCount ?? 0,
           max: meeting.maxMembers ?? 0,
-          status: meeting.status,
-          statusText: meetingStatusText[meeting.status] ?? meeting.status,
+          status: meeting.status ?? "RECRUITING",
+          statusText:
+            meetingStatusText[meeting.status] ?? meeting.status ?? "모집중",
           hostNickname: meeting.hostNickname ?? "-",
         })),
       );
@@ -203,8 +289,8 @@ export default function AdminPage() {
       setSports(
         sportsResult.value.data.map((sport) => ({
           id: sport.sportId,
-          name: sport.name,
-          category: sport.category ?? "-",
+          name: sport.name ?? "-",
+          category: sport.category ?? "기타",
           isActive: sport.isActive ?? true,
         })),
       );
@@ -218,9 +304,11 @@ export default function AdminPage() {
         reportsResult.value.data.map((report) => ({
           id: report.reportId,
           target: `신고 #${report.reportId}`,
-          reason: report.reason,
-          status: report.status,
-          createdAt: report.createdAt ? report.createdAt.slice(0, 10) : "-",
+          reason: report.reason ?? "-",
+          status: report.status ?? "PENDING",
+          statusText:
+            reportStatusText[report.status] ?? report.status ?? "대기중",
+          createdAt: report.createdAt ? String(report.createdAt).slice(0, 10) : "-",
         })),
       );
     }
@@ -230,87 +318,150 @@ export default function AdminPage() {
     loadAdminData();
   }, []);
 
-  const sidoOptions = useMemo(() => {
-    return [...new Set(regions.map((region) => region.sido))].sort((left, right) =>
-      left.localeCompare(right, "ko"),
-    );
-  }, [regions]);
-
-  const sigunguOptions = useMemo(() => {
-    return [
-      ...new Set(
-        regions
-          .filter(
-            (region) => selectedSido === ALL_SIDO || region.sido === selectedSido,
-          )
-          .map((region) => region.sigungu),
+  const sidoOptions = useMemo(
+    () =>
+      [...new Set(regions.map((region) => region.sido))].sort((left, right) =>
+        left.localeCompare(right, "ko"),
       ),
-    ].sort((left, right) => left.localeCompare(right, "ko"));
-  }, [regions, selectedSido]);
+    [regions],
+  );
 
-  const dongOptions = useMemo(() => {
-    return [
-      ...new Set(
-        regions
-          .filter(
-            (region) =>
-              (selectedSido === ALL_SIDO || region.sido === selectedSido) &&
-              (selectedSigungu === ALL_SIGUNGU ||
-                region.sigungu === selectedSigungu),
-          )
-          .map((region) => region.dong),
+  const sigunguOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          regions
+            .filter(
+              (region) =>
+                selectedSido === ALL_SIDO || region.sido === selectedSido,
+            )
+            .map((region) => region.sigungu),
+        ),
+      ].sort((left, right) => left.localeCompare(right, "ko")),
+    [regions, selectedSido],
+  );
+
+  const dongOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          regions
+            .filter(
+              (region) =>
+                (selectedSido === ALL_SIDO || region.sido === selectedSido) &&
+                (selectedSigungu === ALL_SIGUNGU ||
+                  region.sigungu === selectedSigungu),
+            )
+            .map((region) => region.dong),
+        ),
+      ].sort((left, right) => left.localeCompare(right, "ko")),
+    [regions, selectedSido, selectedSigungu],
+  );
+
+  const meetingCategoryOptions = useMemo(
+    () =>
+      [...new Set(meetings.map((meeting) => meeting.sportCategory))].sort(
+        (left, right) => left.localeCompare(right, "ko"),
       ),
-    ].sort((left, right) => left.localeCompare(right, "ko"));
-  }, [regions, selectedSido, selectedSigungu]);
+    [meetings],
+  );
 
-  const meetingCategoryOptions = useMemo(() => {
-    return [...new Set(meetings.map((meeting) => meeting.sportCategory))].sort(
-      (left, right) => left.localeCompare(right, "ko"),
-    );
-  }, [meetings]);
-
-  const sportCategoryOptions = useMemo(() => {
-    return [...new Set(sports.map((sport) => sport.category))].sort((left, right) =>
-      left.localeCompare(right, "ko"),
-    );
-  }, [sports]);
+  const sportCategoryOptions = useMemo(
+    () =>
+      [...new Set(sports.map((sport) => sport.category))].sort((left, right) =>
+        left.localeCompare(right, "ko"),
+      ),
+    [sports],
+  );
 
   const filteredMembers = useMemo(() => {
-    return members.filter((member) =>
-      matchesRegionSelection(member.region, selectedSido, selectedSigungu, selectedDong),
-    );
-  }, [members, selectedSido, selectedSigungu, selectedDong]);
+    const keyword = normalizeText(memberKeyword).toLowerCase();
+
+    return members.filter((member) => {
+      const matchesRegion = matchesRegionSelection(
+        member.region,
+        selectedSido,
+        selectedSigungu,
+        selectedDong,
+      );
+
+      if (!keyword) {
+        return matchesRegion;
+      }
+
+      const searchBase = [
+        member.nickname,
+        member.loginId,
+        String(member.id),
+        member.region,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return matchesRegion && searchBase.includes(keyword);
+    });
+  }, [
+    members,
+    memberKeyword,
+    selectedSido,
+    selectedSigungu,
+    selectedDong,
+  ]);
 
   const filteredMeetings = useMemo(() => {
-    return meetings.filter(
-      (meeting) =>
-        matchesRegionSelection(
-          meeting.region,
-          selectedSido,
-          selectedSigungu,
-          selectedDong,
-        ) &&
-        (selectedMeetingCategory === ALL_CATEGORY ||
-          meeting.sportCategory === selectedMeetingCategory),
-    );
+    const keyword = normalizeText(meetingKeyword).toLowerCase();
+
+    return meetings.filter((meeting) => {
+      const matchesRegion = matchesRegionSelection(
+        meeting.region,
+        selectedSido,
+        selectedSigungu,
+        selectedDong,
+      );
+      const matchesCategory =
+        selectedMeetingCategory === ALL_CATEGORY ||
+        meeting.sportCategory === selectedMeetingCategory;
+
+      if (!keyword) {
+        return matchesRegion && matchesCategory;
+      }
+
+      const searchBase = [
+        meeting.title,
+        meeting.hostNickname,
+        meeting.sport,
+        meeting.region,
+        `M${String(meeting.id).padStart(3, "0")}`,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return matchesRegion && matchesCategory && searchBase.includes(keyword);
+    });
   }, [
     meetings,
+    meetingKeyword,
     selectedSido,
     selectedSigungu,
     selectedDong,
     selectedMeetingCategory,
   ]);
 
-  const filteredSports = useMemo(() => {
-    return sports.filter(
-      (sport) =>
-        selectedSportCategory === ALL_CATEGORY ||
-        sport.category === selectedSportCategory,
-    );
-  }, [sports, selectedSportCategory]);
+  const filteredSports = useMemo(
+    () =>
+      sports.filter(
+        (sport) =>
+          selectedSportCategory === ALL_CATEGORY ||
+          sport.category === selectedSportCategory,
+      ),
+    [sports, selectedSportCategory],
+  );
 
   const memberPageCount = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE));
-  const meetingPageCount = Math.max(1, Math.ceil(filteredMeetings.length / PAGE_SIZE));
+  const meetingPageCount = Math.max(
+    1,
+    Math.ceil(filteredMeetings.length / PAGE_SIZE),
+  );
   const reportPageCount = Math.max(1, Math.ceil(reports.length / PAGE_SIZE));
   const sportPageCount = Math.max(1, Math.ceil(filteredSports.length / PAGE_SIZE));
 
@@ -333,16 +484,35 @@ export default function AdminPage() {
 
   const filterSummaryText =
     activeTab === "sports"
-      ? `${selectedSportCategory === ALL_CATEGORY ? "전체 카테고리" : selectedSportCategory} 기준으로 조회 중입니다.`
-      : `${regionSummary || "전체 지역"} 기준으로 조회 중입니다.`;
+      ? `${
+          selectedSportCategory === ALL_CATEGORY
+            ? "전체 카테고리"
+            : selectedSportCategory
+        } 기준으로 종목을 보고 있습니다.`
+      : `${regionSummary || "전체 지역"} 기준으로 목록을 보고 있습니다.`;
 
-  const resetRegionSelection = () => {
+  const filterPanelTitle =
+    activeTab === "sports" ? "카테고리별 조회" : "지역별 조회";
+
+  const filterPanelDescription =
+    activeTab === "sports"
+      ? "운동 종목은 카테고리별로 나눠서 빠르게 확인할 수 있습니다."
+      : "시도, 시군구, 읍면동을 차례대로 선택해 목록을 좁혀볼 수 있습니다.";
+
+  const resetSelection = () => {
     setSelectedSido(ALL_SIDO);
     setSelectedSigungu(ALL_SIGUNGU);
     setSelectedDong(ALL_DONG);
     setSelectedMeetingCategory(ALL_CATEGORY);
-    updatePage("members", 1);
-    updatePage("meetings", 1);
+    setSelectedSportCategory(ALL_CATEGORY);
+    setMemberKeyword("");
+    setMeetingKeyword("");
+    setPages({
+      members: 1,
+      meetings: 1,
+      reports: 1,
+      sports: 1,
+    });
   };
 
   const closeSportModal = () => {
@@ -366,15 +536,68 @@ export default function AdminPage() {
     updatePage("sports", 1);
   };
 
-  const renderPagination = (tab, currentPage, totalPages) => {
+  const handleMemberStatusChange = async (userId, nextStatus) => {
+    setUpdatingMemberId(userId);
+    try {
+      await updateAdminMemberStatus(userId, nextStatus);
+      await loadAdminData();
+    } finally {
+      setUpdatingMemberId(null);
+    }
+  };
+
+  const handleMeetingStatusChange = async (meetingId, nextStatus) => {
+    setUpdatingMeetingId(meetingId);
+    try {
+      await updateAdminMeetingStatus(meetingId, nextStatus);
+      await loadAdminData();
+    } finally {
+      setUpdatingMeetingId(null);
+    }
+  };
+
+  const handleSportStatusChange = async (sport, nextActive) => {
+    setUpdatingSportId(sport.id);
+    try {
+      await updateAdminSport(sport.id, {
+        name: sport.name,
+        category: sport.category,
+        isActive: nextActive,
+      });
+      await loadAdminData();
+    } finally {
+      setUpdatingSportId(null);
+    }
+  };
+
+  const handleSportDelete = async (sportId) => {
+    setDeletingSportId(sportId);
+    try {
+      await deleteAdminSport(sportId);
+      await loadAdminData();
+      updatePage("sports", 1);
+    } finally {
+      setDeletingSportId(null);
+    }
+  };
+
+  const renderPagination = (tab, currentPage, totalPages, totalItems) => {
     if (totalPages <= 1) {
       return null;
     }
 
     const pageButtons = buildPageButtons(currentPage, totalPages);
+    const startItem = (currentPage - 1) * PAGE_SIZE + 1;
+    const endItem = Math.min(currentPage * PAGE_SIZE, totalItems);
 
     return (
       <div className={styles.pagination}>
+        <div className={styles.paginationMeta}>
+          <strong>
+            {startItem}-{endItem}
+          </strong>
+          <span>표시 중</span>
+        </div>
         <button
           type="button"
           className={styles.paginationArrow}
@@ -389,8 +612,8 @@ export default function AdminPage() {
               key={page}
               type="button"
               className={cx(
-                styles.paginationNumber,
-                currentPage === page && styles.paginationNumberCurrent,
+                "paginationNumber",
+                currentPage === page && "paginationNumberCurrent",
               )}
               onClick={() => updatePage(tab, page)}
             >
@@ -420,50 +643,47 @@ export default function AdminPage() {
       </div>
 
       <section className={styles.statGrid}>
-        <article>
-          <span>전체 회원</span>
-          <strong>{summary.totalMembers}</strong>
-        </article>
-        <article>
-          <span>등록 모임</span>
-          <strong>{summary.totalMeetings}</strong>
-        </article>
-        <article>
-          <span>대기 신고</span>
-          <strong>{summary.pendingReports}</strong>
-        </article>
-        <article>
-          <span>운동 종목</span>
-          <strong>{summary.totalSports}</strong>
-        </article>
+        {summaryCards.map((card) => (
+          <article key={card.key} className={styles[card.toneClass]}>
+            <div className={styles.summaryEyebrow}>{card.label}</div>
+            <strong>{summary[card.key]}</strong>
+            <p className={styles.summaryCaption}>{card.caption}</p>
+          </article>
+        ))}
       </section>
 
-      <div className={styles.pageTabs}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={cx(styles.tabButton, activeTab === tab.id && styles.tabButtonCurrent)}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className={styles.pageTabsShell}>
+        <div className={styles.pageTabs}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={cx(
+                "tabButton",
+                activeTab === tab.id && "tabButtonCurrent",
+              )}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <section className={styles.filterPanel}>
         <div className={styles.filterHead}>
           <div>
-            <h2>지역별 조회</h2>
-            <p>
-              {activeTab === "sports"
-                ? "운동 종목은 카테고리 기준으로 깔끔하게 확인할 수 있습니다."
-                : "시도, 시군구, 읍면동을 차례대로 선택해 목록을 좁혀볼 수 있습니다."}
-            </p>
+            <h2>{filterPanelTitle}</h2>
+            <p>{filterPanelDescription}</p>
           </div>
-          <button type="button" onClick={resetRegionSelection}>
+          <button type="button" onClick={resetSelection}>
             전체 보기
           </button>
+        </div>
+
+        <div className={styles.filterSummaryBar}>
+          <span className={styles.filterSummaryKicker}>조회 기준</span>
+          <strong>{filterSummaryText}</strong>
         </div>
 
         {activeTab !== "sports" ? (
@@ -523,18 +743,18 @@ export default function AdminPage() {
           </div>
         ) : null}
 
-      {activeTab === "meetings" ? (
-        <div className={styles.categorySection}>
-          <span className={styles.categoryLabel}>운동 카테고리</span>
+        {activeTab === "meetings" ? (
+          <div className={styles.categorySection}>
+            <span className={styles.categoryLabel}>운동 카테고리</span>
             <div className={styles.categoryChips}>
               {[ALL_CATEGORY, ...meetingCategoryOptions].map((category) => (
                 <button
                   key={category}
                   type="button"
                   className={cx(
-                    styles.categoryChip,
+                    "categoryChip",
                     selectedMeetingCategory === category &&
-                      styles.categoryChipCurrent,
+                      "categoryChipCurrent",
                   )}
                   onClick={() => {
                     setSelectedMeetingCategory(category);
@@ -544,34 +764,34 @@ export default function AdminPage() {
                   {category}
                 </button>
               ))}
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      {activeTab === "sports" ? (
-        <div className={styles.categorySection}>
-          <span className={styles.categoryLabel}>운동 종목 카테고리</span>
-          <div className={styles.categoryChips}>
-            {[ALL_CATEGORY, ...sportCategoryOptions].map((category) => (
-              <button
-                key={category}
-                type="button"
-                className={cx(
-                  styles.categoryChip,
-                  selectedSportCategory === category &&
-                    styles.categoryChipCurrent,
-                )}
-                onClick={() => {
-                  setSelectedSportCategory(category);
-                  updatePage("sports", 1);
-                }}
-              >
-                {category}
-              </button>
-            ))}
+        {activeTab === "sports" ? (
+          <div className={styles.categorySection}>
+            <span className={styles.categoryLabel}>운동 종목 카테고리</span>
+            <div className={styles.categoryChips}>
+              {[ALL_CATEGORY, ...sportCategoryOptions].map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={cx(
+                    "categoryChip",
+                    selectedSportCategory === category &&
+                      "categoryChipCurrent",
+                  )}
+                  onClick={() => {
+                    setSelectedSportCategory(category);
+                    updatePage("sports", 1);
+                  }}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
         <div className={styles.filterMeta}>
           <span>{filterSummaryText}</span>
@@ -588,8 +808,21 @@ export default function AdminPage() {
           <div className={styles.tableHead}>
             <div>
               <h2>회원 관리</h2>
-              <p>한 페이지에 10명씩 보여줍니다.</p>
+              <p>닉네임, 로그인 ID로 검색하고 회원 상태를 바로 변경할 수 있습니다.</p>
             </div>
+          </div>
+          <div className={styles.tableToolbar}>
+            <label className={styles.searchField}>
+              <span>회원 검색</span>
+              <input
+                value={memberKeyword}
+                onChange={(event) => {
+                  setMemberKeyword(event.target.value);
+                  updatePage("members", 1);
+                }}
+                placeholder="닉네임, 로그인 ID, 회원 ID 검색"
+              />
+            </label>
           </div>
           <table>
             <thead>
@@ -600,6 +833,7 @@ export default function AdminPage() {
                 <th>지역</th>
                 <th>권한</th>
                 <th>상태</th>
+                <th>상태 변경</th>
               </tr>
             </thead>
             <tbody>
@@ -611,27 +845,43 @@ export default function AdminPage() {
                   <td>{member.region}</td>
                   <td>{member.role}</td>
                   <td>
-                    <span
-                      className={cx(
-                        "badge",
-                        member.status === "SUSPENDED" ? "warning" : "success",
-                      )}
-                    >
+                    <span className={cx("badge", badgeToneByMemberStatus(member.status))}>
                       {member.status}
                     </span>
+                  </td>
+                  <td>
+                    <select
+                      className={styles.inlineSelect}
+                      value={member.status}
+                      disabled={updatingMemberId === member.id}
+                      onChange={(event) =>
+                        handleMemberStatusChange(member.id, event.target.value)
+                      }
+                    >
+                      {memberStatusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               ))}
               {pagedMembers.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className={styles.emptyCell}>
-                    선택한 지역에 해당하는 회원이 없습니다.
+                  <td colSpan="7" className={styles.emptyCell}>
+                    선택한 조건에 해당하는 회원이 없습니다.
                   </td>
                 </tr>
               ) : null}
             </tbody>
           </table>
-          {renderPagination("members", memberPage, memberPageCount)}
+          {renderPagination(
+            "members",
+            memberPage,
+            memberPageCount,
+            filteredMembers.length,
+          )}
         </section>
       ) : null}
 
@@ -640,8 +890,21 @@ export default function AdminPage() {
           <div className={styles.tableHead}>
             <div>
               <h2>모임 관리</h2>
-              <p>카테고리, 지역, 일정과 시간대를 함께 확인할 수 있습니다.</p>
+              <p>제목, 주최자, 종목으로 검색하고 모임 상태를 바로 바꿀 수 있습니다.</p>
             </div>
+          </div>
+          <div className={styles.tableToolbar}>
+            <label className={styles.searchField}>
+              <span>모임 검색</span>
+              <input
+                value={meetingKeyword}
+                onChange={(event) => {
+                  setMeetingKeyword(event.target.value);
+                  updatePage("meetings", 1);
+                }}
+                placeholder="제목, 주최자, 종목, 모임 ID 검색"
+              />
+            </label>
           </div>
           <table>
             <thead>
@@ -651,9 +914,10 @@ export default function AdminPage() {
                 <th>종목</th>
                 <th>카테고리</th>
                 <th>지역</th>
-                <th>일자 / 시간</th>
+                <th>일정</th>
                 <th>참가 인원</th>
                 <th>상태</th>
+                <th>상태 변경</th>
               </tr>
             </thead>
             <tbody>
@@ -671,32 +935,53 @@ export default function AdminPage() {
                     <span className={styles.categoryPill}>{meeting.sportCategory}</span>
                   </td>
                   <td>{meeting.region}</td>
-                  <td>{meeting.schedule}</td>
+                  <td>
+                    <div className={styles.scheduleCell}>
+                      <strong>{meeting.meetingDate}</strong>
+                      <span>{meeting.startTime}</span>
+                    </div>
+                  </td>
                   <td>
                     {meeting.current}/{meeting.max}
                   </td>
                   <td>
-                    <span
-                      className={cx(
-                        "badge",
-                        meeting.status === "CLOSED" ? "warning" : "success",
-                      )}
-                    >
+                    <span className={cx("badge", badgeToneByMeetingStatus(meeting.status))}>
                       {meeting.statusText}
                     </span>
+                  </td>
+                  <td>
+                    <select
+                      className={styles.inlineSelect}
+                      value={meeting.status}
+                      disabled={updatingMeetingId === meeting.id}
+                      onChange={(event) =>
+                        handleMeetingStatusChange(meeting.id, event.target.value)
+                      }
+                    >
+                      {meetingStatusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               ))}
               {pagedMeetings.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className={styles.emptyCell}>
+                  <td colSpan="9" className={styles.emptyCell}>
                     조건에 맞는 모임이 없습니다.
                   </td>
                 </tr>
               ) : null}
             </tbody>
           </table>
-          {renderPagination("meetings", meetingPage, meetingPageCount)}
+          {renderPagination(
+            "meetings",
+            meetingPage,
+            meetingPageCount,
+            filteredMeetings.length,
+          )}
         </section>
       ) : null}
 
@@ -705,7 +990,7 @@ export default function AdminPage() {
           <div className={styles.tableHead}>
             <div>
               <h2>신고 내역</h2>
-              <p>최근 신고를 10개씩 확인할 수 있습니다.</p>
+              <p>최근 신고를 10개씩 확인하면서 처리 상태를 볼 수 있습니다.</p>
             </div>
           </div>
           <table>
@@ -725,21 +1010,23 @@ export default function AdminPage() {
                   <td>{report.target}</td>
                   <td>{report.reason}</td>
                   <td>
-                    <span
-                      className={cx(
-                        "badge",
-                        report.status === "PENDING" ? "warning" : "success",
-                      )}
-                    >
-                      {report.status}
+                    <span className={cx("badge", badgeToneByReportStatus(report.status))}>
+                      {report.statusText}
                     </span>
                   </td>
                   <td>{report.createdAt}</td>
                 </tr>
               ))}
+              {pagedReports.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className={styles.emptyCell}>
+                    표시할 신고 내역이 없습니다.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
-          {renderPagination("reports", reportPage, reportPageCount)}
+          {renderPagination("reports", reportPage, reportPageCount, reports.length)}
         </section>
       ) : null}
 
@@ -754,6 +1041,10 @@ export default function AdminPage() {
               종목 관리
             </button>
           </div>
+          <div className={styles.sectionHint}>
+            카테고리와 사용 상태를 함께 보면 현재 운영 중인 종목을 빠르게 정리할 수
+            있습니다.
+          </div>
           <table>
             <thead>
               <tr>
@@ -761,6 +1052,7 @@ export default function AdminPage() {
                 <th>이름</th>
                 <th>카테고리</th>
                 <th>사용 여부</th>
+                <th>활성화 변경</th>
               </tr>
             </thead>
             <tbody>
@@ -774,11 +1066,37 @@ export default function AdminPage() {
                       {sport.isActive ? "사용중" : "비활성"}
                     </span>
                   </td>
+                  <td>
+                    <select
+                      className={styles.inlineSelect}
+                      value={sport.isActive ? "true" : "false"}
+                      disabled={updatingSportId === sport.id}
+                      onChange={(event) =>
+                        handleSportStatusChange(sport, event.target.value === "true")
+                      }
+                    >
+                      {sportStatusOptions.map((option) => (
+                        <option
+                          key={String(option.value)}
+                          value={String(option.value)}
+                        >
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                 </tr>
               ))}
+              {pagedSports.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className={styles.emptyCell}>
+                    선택한 카테고리에 해당하는 종목이 없습니다.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
-          {renderPagination("sports", sportPage, sportPageCount)}
+          {renderPagination("sports", sportPage, sportPageCount, filteredSports.length)}
         </section>
       ) : null}
 
@@ -788,67 +1106,98 @@ export default function AdminPage() {
         title="운동 종목 관리"
         description="현재 종목 목록을 확인하고 새 종목을 바로 추가할 수 있습니다."
         confirmText="종목 추가"
+        cancelText="닫기"
         onConfirm={submitSport}
         onClose={closeSportModal}
       >
-        <div className={styles.modalSection}>
-          <div className={styles.sportFormGrid}>
-            <label className={styles.modalField}>
-              <span>종목명</span>
-              <input
-                value={sportForm.name}
-                onChange={(event) =>
-                  setSportForm((current) => ({
-                    ...current,
-                    name: event.target.value,
-                  }))
-                }
-                placeholder="예: 러닝"
-              />
-            </label>
-            <label className={styles.modalField}>
-              <span>카테고리</span>
-              <input
-                value={sportForm.category}
-                onChange={(event) =>
-                  setSportForm((current) => ({
-                    ...current,
-                    category: event.target.value,
-                  }))
-                }
-                placeholder="예: 유산소"
-              />
-            </label>
-            <label className={styles.modalCheck}>
-              <input
-                type="checkbox"
-                checked={sportForm.isActive}
-                onChange={(event) =>
-                  setSportForm((current) => ({
-                    ...current,
-                    isActive: event.target.checked,
-                  }))
-                }
-              />
-              <span>즉시 사용 가능 상태로 추가</span>
-            </label>
+        <div className={styles.modalPanel}>
+          <div className={styles.modalSection}>
+            <div className={styles.sportFormGrid}>
+              <label className={styles.modalField}>
+                <span>종목명</span>
+                <input
+                  value={sportForm.name}
+                  onChange={(event) =>
+                    setSportForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder="예: 클라이밍"
+                />
+              </label>
+              <label className={styles.modalField}>
+                <span>카테고리</span>
+                <input
+                  value={sportForm.category}
+                  onChange={(event) =>
+                    setSportForm((current) => ({
+                      ...current,
+                      category: event.target.value,
+                    }))
+                  }
+                  placeholder="예: 근력"
+                />
+              </label>
+              <label className={styles.modalCheck}>
+                <input
+                  type="checkbox"
+                  checked={sportForm.isActive}
+                  onChange={(event) =>
+                    setSportForm((current) => ({
+                      ...current,
+                      isActive: event.target.checked,
+                    }))
+                  }
+                />
+                <span>즉시 사용 가능한 상태로 추가</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className={styles.modalSection}>
-          <h3 className={styles.modalTitle}>현재 종목 목록</h3>
-          <div className={styles.sportList}>
-            {sports.map((sport) => (
-              <article key={sport.id} className={styles.sportCard}>
-                <div>
-                  <strong>{sport.name}</strong>
-                  <p>{sport.category}</p>
-                </div>
-                <span className={cx("badge", sport.isActive ? "success" : "warning")}>
-                  {sport.isActive ? "사용중" : "비활성"}
-                </span>
-              </article>
-            ))}
+        <div className={styles.modalPanel}>
+          <div className={styles.modalSection}>
+            <h3 className={styles.modalTitle}>현재 종목 목록</h3>
+            <div className={styles.sportList}>
+              {sports.map((sport) => (
+                <article key={sport.id} className={styles.sportCard}>
+                  <div className={styles.sportCardBody}>
+                    <strong>{sport.name}</strong>
+                    <p>{sport.category}</p>
+                  </div>
+                  <div className={styles.sportCardControls}>
+                    <select
+                      className={styles.inlineSelect}
+                      value={sport.isActive ? "true" : "false"}
+                      disabled={
+                        updatingSportId === sport.id || deletingSportId === sport.id
+                      }
+                      onChange={(event) =>
+                        handleSportStatusChange(sport, event.target.value === "true")
+                      }
+                    >
+                      {sportStatusOptions.map((option) => (
+                        <option
+                          key={String(option.value)}
+                          value={String(option.value)}
+                        >
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className={styles.deleteButton}
+                      disabled={deletingSportId === sport.id}
+                      onClick={() => handleSportDelete(sport.id)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </AppModal>

@@ -31,4 +31,9 @@
         WHERE sportId=#{sportId}
     </update>
 
+    <delete id="deleteSport" parameterType="long">
+        DELETE FROM sports
+        WHERE sportId = #{sportId}
+    </delete>
+
 </mapper>
