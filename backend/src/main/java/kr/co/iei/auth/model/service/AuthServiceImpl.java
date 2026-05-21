@@ -1,8 +1,14 @@
 package kr.co.iei.auth.model.service;
 
 import java.time.Duration;
+import java.util.UUID;
+import kr.co.iei.auth.exception.DuplicateLoginException;
 import kr.co.iei.auth.model.dao.AuthDao;
-import kr.co.iei.auth.model.vo.*;
+import kr.co.iei.auth.model.vo.AuthLoginResult;
+import kr.co.iei.auth.model.vo.AuthRefreshResult;
+import kr.co.iei.auth.model.vo.LoginRequest;
+import kr.co.iei.auth.model.vo.LoginResponse;
+import kr.co.iei.auth.model.vo.SignupRequest;
 import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.common.util.PasswordUtil;
 import kr.co.iei.member.model.vo.Member;
@@ -16,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
   private static final String REFRESH_KEY_PREFIX = "auth:refresh:";
+  private static final String SESSION_KEY_PREFIX = "auth:session:";
 
   private final AuthDao authDao;
   private final PasswordUtil passwordUtil;
@@ -33,12 +40,15 @@ public class AuthServiceImpl implements AuthService {
 
   @Transactional
   public void signup(SignupRequest req) {
-    if (authDao.selectByLoginId(req.getLoginId()) != null)
-      throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
-    if (authDao.selectByEmail(req.getEmail()) != null)
-      throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
-    if (authDao.selectByNickname(req.getNickname()) != null)
-      throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+    if (authDao.selectByLoginId(req.getLoginId()) != null) {
+      throw new IllegalArgumentException("Login ID is already in use.");
+    }
+    if (authDao.selectByEmail(req.getEmail()) != null) {
+      throw new IllegalArgumentException("Email is already in use.");
+    }
+    if (authDao.selectByNickname(req.getNickname()) != null) {
+      throw new IllegalArgumentException("Nickname is already in use.");
+    }
 
     Member member = new Member();
     member.setLoginId(req.getLoginId());
@@ -60,24 +70,32 @@ public class AuthServiceImpl implements AuthService {
   public AuthLoginResult login(LoginRequest req) {
     Member member = authDao.selectByLoginId(req.getLoginId());
     if (member == null || !isPasswordMatched(req.getPassword(), member.getPassword())) {
-      throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
+      throw new IllegalArgumentException("Invalid login credentials.");
+    }
+
+    boolean autoLogin = Boolean.TRUE.equals(req.getAutoLogin());
+    boolean forceLogin = Boolean.TRUE.equals(req.getForceLogin());
+    long effectiveRefreshSeconds =
+        autoLogin ? autoLoginRefreshTokenSeconds : refreshTokenSeconds;
+
+    String savedRefreshToken = stringRedisTemplate.opsForValue().get(refreshKey(member.getUserId()));
+    String savedSessionId = stringRedisTemplate.opsForValue().get(sessionKey(member.getUserId()));
+    if (hasText(savedRefreshToken) && hasText(savedSessionId) && !forceLogin) {
+      throw new DuplicateLoginException("An existing login session was found.");
     }
 
     LoginResponse user =
         new LoginResponse(
             member.getUserId(), member.getLoginId(), member.getNickname(), member.getRole());
 
-    boolean autoLogin = Boolean.TRUE.equals(req.getAutoLogin());
-    long effectiveRefreshSeconds =
-        autoLogin ? autoLoginRefreshTokenSeconds : refreshTokenSeconds;
-
-    String accessToken = jwtTokenProvider.createAccessToken(user);
+    String sessionId = UUID.randomUUID().toString();
+    String accessToken = jwtTokenProvider.createAccessToken(user, sessionId);
     String refreshToken =
-        jwtTokenProvider.createRefreshToken(member.getUserId(), effectiveRefreshSeconds);
+        jwtTokenProvider.createRefreshToken(member.getUserId(), sessionId, effectiveRefreshSeconds);
 
-    stringRedisTemplate
-        .opsForValue()
-        .set(refreshKey(member.getUserId()), refreshToken, Duration.ofSeconds(effectiveRefreshSeconds));
+    Duration ttl = Duration.ofSeconds(effectiveRefreshSeconds);
+    stringRedisTemplate.opsForValue().set(refreshKey(member.getUserId()), refreshToken, ttl);
+    stringRedisTemplate.opsForValue().set(sessionKey(member.getUserId()), sessionId, ttl);
 
     return new AuthLoginResult(
         user,
@@ -90,25 +108,27 @@ public class AuthServiceImpl implements AuthService {
 
   public AuthRefreshResult refresh(String refreshToken) {
     if (!hasText(refreshToken) || !jwtTokenProvider.isValid(refreshToken)) {
-      throw new IllegalArgumentException("유효한 리프레시 토큰이 없습니다.");
+      throw new IllegalArgumentException("Refresh token is missing or invalid.");
     }
 
     Long userId = jwtTokenProvider.parseUserId(refreshToken);
+    String sessionId = jwtTokenProvider.parseSessionId(refreshToken);
     String savedRefreshToken = stringRedisTemplate.opsForValue().get(refreshKey(userId));
-    if (!refreshToken.equals(savedRefreshToken)) {
-      throw new IllegalArgumentException("리프레시 토큰이 만료되었거나 일치하지 않습니다.");
+    String savedSessionId = stringRedisTemplate.opsForValue().get(sessionKey(userId));
+    if (!refreshToken.equals(savedRefreshToken) || !sessionMatches(sessionId, savedSessionId)) {
+      throw new IllegalArgumentException("Refresh token is expired or does not match.");
     }
 
     Member member = authDao.selectByUserId(userId);
     if (member == null) {
-      throw new IllegalArgumentException("사용자 정보를 찾을 수 없습니다.");
+      throw new IllegalArgumentException("User not found.");
     }
 
     LoginResponse user =
         new LoginResponse(
             member.getUserId(), member.getLoginId(), member.getNickname(), member.getRole());
 
-    String renewedAccessToken = jwtTokenProvider.createAccessToken(user);
+    String renewedAccessToken = jwtTokenProvider.createAccessToken(user, sessionId);
     return new AuthRefreshResult(renewedAccessToken);
   }
 
@@ -118,7 +138,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     Long userId = jwtTokenProvider.parseUserId(refreshToken);
-    stringRedisTemplate.delete(refreshKey(userId));
+    String sessionId = jwtTokenProvider.parseSessionId(refreshToken);
+    String savedRefreshToken = stringRedisTemplate.opsForValue().get(refreshKey(userId));
+    String savedSessionId = stringRedisTemplate.opsForValue().get(sessionKey(userId));
+
+    if (refreshToken.equals(savedRefreshToken) && sessionMatches(sessionId, savedSessionId)) {
+      stringRedisTemplate.delete(refreshKey(userId));
+      stringRedisTemplate.delete(sessionKey(userId));
+    }
+  }
+
+  public boolean isCurrentSession(String accessToken) {
+    if (!hasText(accessToken) || !jwtTokenProvider.isValid(accessToken)) {
+      return false;
+    }
+
+    Long userId = jwtTokenProvider.parseUserId(accessToken);
+    String sessionId = jwtTokenProvider.parseSessionId(accessToken);
+    String savedSessionId = stringRedisTemplate.opsForValue().get(sessionKey(userId));
+    return sessionMatches(sessionId, savedSessionId);
   }
 
   private boolean isPasswordMatched(String rawPassword, String savedPassword) {
@@ -134,5 +172,13 @@ public class AuthServiceImpl implements AuthService {
 
   private String refreshKey(Long userId) {
     return REFRESH_KEY_PREFIX + userId;
+  }
+
+  private String sessionKey(Long userId) {
+    return SESSION_KEY_PREFIX + userId;
+  }
+
+  private boolean sessionMatches(String sessionId, String savedSessionId) {
+    return hasText(sessionId) && sessionId.equals(savedSessionId);
   }
 }

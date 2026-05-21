@@ -13,6 +13,7 @@ export default function AppModal({
   onClose,
   variant = "default",
   tone = "primary",
+  hideCancel = false,
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -70,13 +71,15 @@ export default function AppModal({
         {children && <div className={styles.body}>{children}</div>}
 
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.cancelButton}
-            onClick={onClose}
-          >
-            {cancelText}
-          </button>
+          {!hideCancel && (
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={onClose}
+            >
+              {cancelText}
+            </button>
+          )}
           {onConfirm && (
             <button
               type="button"

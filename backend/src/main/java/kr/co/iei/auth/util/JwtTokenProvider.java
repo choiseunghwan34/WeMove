@@ -24,28 +24,42 @@ public class JwtTokenProvider {
   }
 
   public String createAccessToken(LoginResponse user) {
+    return createAccessToken(user, null);
+  }
+
+  public String createAccessToken(LoginResponse user, String sessionId) {
     Instant now = Instant.now();
-    return Jwts.builder()
+    var builder =
+        Jwts.builder()
         .subject(String.valueOf(user.getMemberId()))
         .claim("loginId", user.getLoginId())
         .claim("nickname", user.getNickname())
         .claim("role", user.getRole())
         .claim("typ", "access")
         .issuedAt(Date.from(now))
-        .expiration(Date.from(now.plusSeconds(accessTokenSeconds)))
-        .signWith(secretKey)
-        .compact();
+        .expiration(Date.from(now.plusSeconds(accessTokenSeconds)));
+
+    if (sessionId != null && !sessionId.isBlank()) {
+      builder.claim("sid", sessionId);
+    }
+
+    return builder.signWith(secretKey).compact();
   }
 
-  public String createRefreshToken(Long userId, long refreshTokenSeconds) {
+  public String createRefreshToken(Long userId, String sessionId, long refreshTokenSeconds) {
     Instant now = Instant.now();
-    return Jwts.builder()
+    var builder =
+        Jwts.builder()
         .subject(String.valueOf(userId))
         .claim("typ", "refresh")
         .issuedAt(Date.from(now))
-        .expiration(Date.from(now.plusSeconds(refreshTokenSeconds)))
-        .signWith(secretKey)
-        .compact();
+        .expiration(Date.from(now.plusSeconds(refreshTokenSeconds)));
+
+    if (sessionId != null && !sessionId.isBlank()) {
+      builder.claim("sid", sessionId);
+    }
+
+    return builder.signWith(secretKey).compact();
   }
 
   public boolean isValid(String token) {
@@ -68,6 +82,10 @@ public class JwtTokenProvider {
 
   public Long parseUserId(String token) {
     return Long.valueOf(parseClaims(token).getSubject());
+  }
+
+  public String parseSessionId(String token) {
+    return parseClaims(token).get("sid", String.class);
   }
 
   private Claims parseClaims(String token) {

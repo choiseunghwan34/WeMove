@@ -10,4 +10,6 @@ public interface AuthService {
   AuthRefreshResult refresh(String refreshToken);
 
   void logout(String refreshToken);
+
+  boolean isCurrentSession(String accessToken);
 }
