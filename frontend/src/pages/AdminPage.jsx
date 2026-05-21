@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AppModal from "../components/AppModal";
 import Pagination from "../components/Pagination";
+import RegionPickerModal from "../components/RegionPickerModal";
 import {
   createAdminSport,
   deleteAdminSport,
@@ -172,6 +173,12 @@ export default function AdminPage() {
     useState(ALL_CATEGORY);
   const [memberKeyword, setMemberKeyword] = useState("");
   const [meetingKeyword, setMeetingKeyword] = useState("");
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [draftRegionSelection, setDraftRegionSelection] = useState({
+    sido: ALL_SIDO,
+    sigungu: ALL_SIGUNGU,
+    dong: ALL_DONG,
+  });
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
   const [sportForm, setSportForm] = useState(initialSportForm);
   const [updatingMemberId, setUpdatingMemberId] = useState(null);
@@ -306,45 +313,36 @@ export default function AdminPage() {
     loadAdminData();
   }, []);
 
-  const sidoOptions = useMemo(
-    () =>
-      [...new Set(regions.map((region) => region.sido))].sort((left, right) =>
-        left.localeCompare(right, "ko"),
-      ),
-    [regions],
-  );
+  const regionHierarchy = useMemo(() => {
+    const grouped = new Map();
 
-  const sigunguOptions = useMemo(
-    () =>
-      [
-        ...new Set(
-          regions
-            .filter(
-              (region) =>
-                selectedSido === ALL_SIDO || region.sido === selectedSido,
-            )
-            .map((region) => region.sigungu),
-        ),
-      ].sort((left, right) => left.localeCompare(right, "ko")),
-    [regions, selectedSido],
-  );
+    regions.forEach((region) => {
+      if (!grouped.has(region.sido)) {
+        grouped.set(region.sido, new Map());
+      }
 
-  const dongOptions = useMemo(
-    () =>
-      [
-        ...new Set(
-          regions
-            .filter(
-              (region) =>
-                (selectedSido === ALL_SIDO || region.sido === selectedSido) &&
-                (selectedSigungu === ALL_SIGUNGU ||
-                  region.sigungu === selectedSigungu),
-            )
-            .map((region) => region.dong),
-        ),
-      ].sort((left, right) => left.localeCompare(right, "ko")),
-    [regions, selectedSido, selectedSigungu],
-  );
+      const sigunguMap = grouped.get(region.sido);
+      if (!sigunguMap.has(region.sigungu)) {
+        sigunguMap.set(region.sigungu, []);
+      }
+
+      sigunguMap.get(region.sigungu).push(region.dong);
+    });
+
+    return [...grouped.entries()]
+      .sort((left, right) => left[0].localeCompare(right[0], "ko"))
+      .map(([sido, sigunguMap]) => ({
+        sido,
+        sigungus: [...sigunguMap.entries()]
+          .sort((left, right) => left[0].localeCompare(right[0], "ko"))
+          .map(([sigungu, dongs]) => ({
+            sigungu,
+            dongs: [...new Set(dongs)].sort((left, right) =>
+              left.localeCompare(right, "ko"),
+            ),
+          })),
+      }));
+  }, [regions]);
 
   const meetingCategoryOptions = useMemo(
     () =>
@@ -491,6 +489,11 @@ export default function AdminPage() {
     setSelectedSido(ALL_SIDO);
     setSelectedSigungu(ALL_SIGUNGU);
     setSelectedDong(ALL_DONG);
+    setDraftRegionSelection({
+      sido: ALL_SIDO,
+      sigungu: ALL_SIGUNGU,
+      dong: ALL_DONG,
+    });
     setSelectedMeetingCategory(ALL_CATEGORY);
     setSelectedSportCategory(ALL_CATEGORY);
     setMemberKeyword("");
@@ -506,6 +509,34 @@ export default function AdminPage() {
   const closeSportModal = () => {
     setIsSportModalOpen(false);
     setSportForm(initialSportForm);
+  };
+
+  const openRegionModal = () => {
+    setDraftRegionSelection({
+      sido: selectedSido,
+      sigungu: selectedSigungu,
+      dong: selectedDong,
+    });
+    setIsRegionModalOpen(true);
+  };
+
+  const closeRegionModal = () => {
+    setDraftRegionSelection({
+      sido: selectedSido,
+      sigungu: selectedSigungu,
+      dong: selectedDong,
+    });
+    setIsRegionModalOpen(false);
+  };
+
+  const applyRegionSelection = (selection) => {
+    setSelectedSido(selection.sido);
+    setSelectedSigungu(selection.sigungu);
+    setSelectedDong(selection.dong);
+    setDraftRegionSelection(selection);
+    updatePage("members", 1);
+    updatePage("meetings", 1);
+    setIsRegionModalOpen(false);
   };
 
   const submitSport = async () => {
@@ -623,59 +654,18 @@ export default function AdminPage() {
         </div>
 
         {activeTab !== "sports" ? (
-          <div className={styles.filterRow}>
-            <select
-              value={selectedSido}
-              onChange={(event) => {
-                setSelectedSido(event.target.value);
-                setSelectedSigungu(ALL_SIGUNGU);
-                setSelectedDong(ALL_DONG);
-                updatePage("members", 1);
-                updatePage("meetings", 1);
-              }}
+          <div className={styles.regionPickerRow}>
+            <button
+              type="button"
+              className={styles.regionPickerButton}
+              onClick={openRegionModal}
             >
-              <option value={ALL_SIDO}>{ALL_SIDO}</option>
-              {sidoOptions.map((sido) => (
-                <option key={sido} value={sido}>
-                  {sido}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedSigungu}
-              onChange={(event) => {
-                setSelectedSigungu(event.target.value);
-                setSelectedDong(ALL_DONG);
-                updatePage("members", 1);
-                updatePage("meetings", 1);
-              }}
-              disabled={selectedSido === ALL_SIDO}
-            >
-              <option value={ALL_SIGUNGU}>{ALL_SIGUNGU}</option>
-              {sigunguOptions.map((sigungu) => (
-                <option key={sigungu} value={sigungu}>
-                  {sigungu}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedDong}
-              onChange={(event) => {
-                setSelectedDong(event.target.value);
-                updatePage("members", 1);
-                updatePage("meetings", 1);
-              }}
-              disabled={selectedSigungu === ALL_SIGUNGU}
-            >
-              <option value={ALL_DONG}>{ALL_DONG}</option>
-              {dongOptions.map((dong) => (
-                <option key={dong} value={dong}>
-                  {dong}
-                </option>
-              ))}
-            </select>
+              지역 조회
+            </button>
+            <div className={styles.regionPickerSummary}>
+              <span className={styles.regionPickerLabel}>선택 지역</span>
+              <strong>{regionSummary || "전체 지역"}</strong>
+            </div>
           </div>
         ) : null}
 
@@ -1151,6 +1141,14 @@ export default function AdminPage() {
           </div>
         </div>
       </AppModal>
+
+      <RegionPickerModal
+        open={isRegionModalOpen}
+        regions={regionHierarchy}
+        initialSelection={draftRegionSelection}
+        onApply={applyRegionSelection}
+        onClose={closeRegionModal}
+      />
     </div>
   );
 }

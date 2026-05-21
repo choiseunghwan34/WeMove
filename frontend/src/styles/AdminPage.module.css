@@ -82,6 +82,51 @@
   composes: filterRow from "./WeMoveShared.module.css";
 }
 
+.regionPickerRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.regionPickerButton {
+  min-width: 124px;
+  height: 46px;
+  border: 1px solid #2563eb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 0.94rem;
+  font-weight: 800;
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.regionPickerSummary {
+  flex: 1;
+  min-height: 46px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.regionPickerLabel {
+  color: #6b7280;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.regionPickerSummary strong {
+  color: #10233f;
+  font-size: 0.95rem;
+}
+
 .pageTabs {
   display: flex;
   flex-wrap: wrap;
@@ -502,6 +547,12 @@
 
   .searchField {
     width: 100%;
+  }
+
+  .regionPickerRow,
+  .regionPickerSummary {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .sportCard,
