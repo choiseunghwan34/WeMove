@@ -1,8 +1,11 @@
 ﻿import {useEffect, useMemo, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import {regions, sports} from "../data/demoData";
+import {regions} from "../data/demoData";
 import styles from "../styles/MeetingCreatePage.module.css";
 import {createMeeting} from "../api/meetingApi.js";
+import {getSports} from "../api/sportApi.js";
+import SportPickerModal from "../components/SportPickerModal.jsx";
+import RegionPickerModal from "../components/RegionPickerModal.jsx";
 
 //썸네일영역
 function useImagePreviews(files) {
@@ -44,14 +47,34 @@ export default function MeetingCreatePage() {
     };
     const [form, setForm] = useState(initialForm);
 
+    const [sports, setSports] = useState([]);
+    const [isSportModalOpen, setIsSportModalOpen] = useState(false);
+    const [selectedSportName, setSelectedSportName] = useState("");
+
+    useEffect(() => {
+        getSports().then((res) => {
+            console.log(res);
+            setSports(res.data)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }, []);
+    const handleSportApply = (selectedDraft) => {
+        setForm((prev) => ({...prev, sportId: selectedDraft.sportId}));
+        setSelectedSportName(selectedDraft.name);
+        setIsSportModalOpen(false);
+    };
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         const {name, value} = e.target;
 
-        setForm((prev) => ({...prev, [name]: ["sportId", "regionId", "maxMembers"].includes(name)
+        setForm((prev) => ({
+            ...prev, [name]: ["sportId", "regionId", "maxMembers"].includes(name)
                 ? Number(value)
-                : value,}));
+                : value,
+        }));
     };
 
     //썸네일
@@ -67,13 +90,18 @@ export default function MeetingCreatePage() {
         setFiles((current) => current.filter((file) => file.name !== targetName));
     };
 
+
+    //모임등록
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(form);
-        createMeeting(form).then((res)=>{console.log(res)
-        alert("모임 등록 완료");
-        navigate("/meetings");
-        }).catch((err)=>{console.log(err)})
+        createMeeting(form).then((res) => {
+            console.log(res)
+            alert("모임 등록 완료");
+            navigate("/meetings");
+        }).catch((err) => {
+            console.log(err)
+        })
 
         /*파일 추가시 아래코드사용
         const formData = new FormData();
@@ -99,9 +127,6 @@ export default function MeetingCreatePage() {
             alert("모임 등록 실패")
         })
         * */
-
-
-
 
 
     }
@@ -153,20 +178,27 @@ export default function MeetingCreatePage() {
                         placeholder="예: 야당역 5km 러닝 크루 모집"
                     />
                 </label>
-                <label>
+                {/* 운동 종목 선택 영역 (버튼 + 요약 박스 형태) */}
+                <label className={styles.full}>
                     <span>운동 종목</span>
-                    <select name="sportId" value={form.sportId} onChange={handleChange}>
-                        {sports.map((sport) => (
-                            <option key={sport.id} value={sport.id}>
-                                {sport.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className={styles.pickerRow}>
+                        <button
+                            type="button"
+                            className={styles.pickerButton}
+                            onClick={() => setIsSportModalOpen(true)}
+                        >
+                            종목 조회
+                        </button>
+                        <div className={styles.pickerSummary}>
+                            <span className={styles.pickerLabel}>선택 종목</span>
+                            <span className={selectedSportName? styles.valueText : styles.placeholderText}>{selectedSportName || "운동 종목을 선택해주세요"}</span>
+                        </div>
+                    </div>
                 </label>
                 <label>
                     <span>지역</span>
                     <select name="regionId" value={form.regionId} onChange={handleChange}>
-                        {regions.map((region,index) => (
+                        {regions.map((region, index) => (
                             <option key={index} value={index + 1}>{region}</option>
                         ))}
                     </select>
@@ -319,6 +351,14 @@ export default function MeetingCreatePage() {
                     <button type="submit">모임 등록</button>
                 </div>
             </form>
+
+            <SportPickerModal open={isSportModalOpen}
+                              sports={sports} // DB에서 가져온 배열 전달
+                              initialSelection={{sportId: form.sportId, name: selectedSportName}}
+                              onApply={handleSportApply}
+                              onClose={() => setIsSportModalOpen(false)}/>
+
+
         </div>
     );
 }
