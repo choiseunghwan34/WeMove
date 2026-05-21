@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import AppModal from "../components/AppModal";
+import Pagination from "../components/Pagination";
 import {
   createAdminSport,
   deleteAdminSport,
@@ -136,19 +137,6 @@ const formatMeetingTime = (startTime) => {
 const paginate = (items, page) => {
   const start = (page - 1) * PAGE_SIZE;
   return items.slice(start, start + PAGE_SIZE);
-};
-
-const buildPageButtons = (currentPage, totalPages) => {
-  const start = Math.max(1, currentPage - 2);
-  const end = Math.min(totalPages, start + 4);
-  const first = Math.max(1, end - 4);
-  const buttons = [];
-
-  for (let page = first; page <= end; page += 1) {
-    buttons.push(page);
-  }
-
-  return buttons;
 };
 
 const badgeToneByMemberStatus = (status) => {
@@ -581,58 +569,6 @@ export default function AdminPage() {
     }
   };
 
-  const renderPagination = (tab, currentPage, totalPages, totalItems) => {
-    if (totalPages <= 1) {
-      return null;
-    }
-
-    const pageButtons = buildPageButtons(currentPage, totalPages);
-    const startItem = (currentPage - 1) * PAGE_SIZE + 1;
-    const endItem = Math.min(currentPage * PAGE_SIZE, totalItems);
-
-    return (
-      <div className={styles.pagination}>
-        <div className={styles.paginationMeta}>
-          <strong>
-            {startItem}-{endItem}
-          </strong>
-          <span>표시 중</span>
-        </div>
-        <button
-          type="button"
-          className={styles.paginationArrow}
-          onClick={() => updatePage(tab, Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-        >
-          이전
-        </button>
-        <div className={styles.paginationNumbers}>
-          {pageButtons.map((page) => (
-            <button
-              key={page}
-              type="button"
-              className={cx(
-                "paginationNumber",
-                currentPage === page && "paginationNumberCurrent",
-              )}
-              onClick={() => updatePage(tab, page)}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          className={styles.paginationArrow}
-          onClick={() => updatePage(tab, Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
-        >
-          다음
-        </button>
-      </div>
-    );
-  };
-
   return (
     <div className={styles.page}>
       <div className={styles.pageTitle}>
@@ -876,12 +812,13 @@ export default function AdminPage() {
               ) : null}
             </tbody>
           </table>
-          {renderPagination(
-            "members",
-            memberPage,
-            memberPageCount,
-            filteredMembers.length,
-          )}
+          <Pagination
+            currentPage={memberPage}
+            totalPages={memberPageCount}
+            totalItems={filteredMembers.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={(page) => updatePage("members", page)}
+          />
         </section>
       ) : null}
 
@@ -976,12 +913,13 @@ export default function AdminPage() {
               ) : null}
             </tbody>
           </table>
-          {renderPagination(
-            "meetings",
-            meetingPage,
-            meetingPageCount,
-            filteredMeetings.length,
-          )}
+          <Pagination
+            currentPage={meetingPage}
+            totalPages={meetingPageCount}
+            totalItems={filteredMeetings.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={(page) => updatePage("meetings", page)}
+          />
         </section>
       ) : null}
 
@@ -1026,7 +964,13 @@ export default function AdminPage() {
               ) : null}
             </tbody>
           </table>
-          {renderPagination("reports", reportPage, reportPageCount, reports.length)}
+          <Pagination
+            currentPage={reportPage}
+            totalPages={reportPageCount}
+            totalItems={reports.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={(page) => updatePage("reports", page)}
+          />
         </section>
       ) : null}
 
@@ -1096,7 +1040,13 @@ export default function AdminPage() {
               ) : null}
             </tbody>
           </table>
-          {renderPagination("sports", sportPage, sportPageCount, filteredSports.length)}
+          <Pagination
+            currentPage={sportPage}
+            totalPages={sportPageCount}
+            totalItems={filteredSports.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={(page) => updatePage("sports", page)}
+          />
         </section>
       ) : null}
 
