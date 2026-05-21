@@ -1,14 +1,81 @@
-/* Auto-split from AdminPage.jsx. Page/component styles compose shared WeMove design rules. */
-
 .badge {
   composes: badge from "./WeMoveShared.module.css";
 }
 
-.CLOSED {
+.page {
+  composes: page from "./WeMoveShared.module.css";
+}
+
+.pageTitle {
+  composes: pageTitle from "./WeMoveShared.module.css";
+}
+
+.statGrid {
+  composes: statGrid from "./WeMoveShared.module.css";
+}
+
+.filterPanel {
+  composes: filterPanel from "./WeMoveShared.module.css";
+}
+
+.filterRow {
+  composes: filterRow from "./WeMoveShared.module.css";
+}
+
+.pageTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.tabButton {
+  min-width: 110px;
+  height: 42px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #53657c;
+  font-size: 0.94rem;
+  font-weight: 800;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tabButtonCurrent {
+  border-color: #2563eb;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.tableCard {
+  composes: tableCard from "./WeMoveShared.module.css";
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+.tableHead {
+  composes: tableHead from "./WeMoveShared.module.css";
+  background: #ffffff !important;
+}
+
+.success {
+  composes: success from "./WeMoveShared.module.css";
+}
+
+.warning {
+  composes: warning from "./WeMoveShared.module.css";
 }
 
 .emptyCell {
-  padding: 24px 18px !important;
+  padding: 26px 18px !important;
   color: #6b7280 !important;
   font-size: 0.94rem;
   font-weight: 700;
@@ -26,7 +93,7 @@
 .filterHead h2 {
   margin: 0 0 6px;
   color: #111827;
-  font-size: 1.1rem;
+  font-size: 1.08rem;
 }
 
 .filterHead p {
@@ -48,77 +115,191 @@
 
 .filterMeta strong {
   color: #1f2937;
-  font-size: 0.94rem;
 }
 
-.filterPanel {
-  composes: filterPanel from "./WeMoveShared.module.css";
+.meetingFilterRow {
+  margin-top: 14px;
 }
 
-.filterRow {
-  composes: filterRow from "./WeMoveShared.module.css";
+.categorySection {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.page {
-  composes: page from "./WeMoveShared.module.css";
+.categoryLabel {
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 800;
 }
 
-.pageTabs {
-  composes: pageTabs from "./WeMoveShared.module.css";
+.categoryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.pageTitle {
-  composes: pageTitle from "./WeMoveShared.module.css";
+.categoryChip {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #53657c;
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
 }
 
-.PENDING {
+.categoryChip:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
 }
 
-.statGrid {
-  composes: statGrid from "./WeMoveShared.module.css";
+.categoryChipCurrent {
+  border-color: #2563eb;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
 }
 
-.success {
-  composes: success from "./WeMoveShared.module.css";
+.categoryPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
-.SUSPENDED {
+.stackCell {
+  display: grid;
+  gap: 4px;
 }
 
-.tabButton {
-  composes: tabButton from "./WeMoveShared.module.css";
+.stackCell strong {
+  color: #1f2937;
 }
 
-.tabButtonActive {
-  composes: tabButtonActive from "./WeMoveShared.module.css";
+.stackCell span {
+  color: #6b7280;
+  font-size: 0.84rem;
 }
 
-.tableCard {
-  composes: tableCard from "./WeMoveShared.module.css";
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+  margin-bottom: 8px;
 }
 
-.tableHead {
-  composes: tableHead from "./WeMoveShared.module.css";
+.paginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.warning {
-  composes: warning from "./WeMoveShared.module.css";
+.paginationArrow,
+.paginationNumber {
+  min-width: 40px;
+  height: 40px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
-.statGrid article,
-.tableCard,
-.filterPanel {
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
+.paginationArrow {
+  min-width: 68px;
 }
 
-.tableHead {
-  background: #ffffff !important;
+.paginationNumberCurrent {
+  border-color: #2563eb;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow:
+    0 6px 14px rgba(37, 99, 235, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-.filterPanel {
-  margin-bottom: 18px;
+.paginationArrow:disabled,
+.paginationNumber:disabled {
+  opacity: 0.45;
+}
+
+.modalSection {
+  display: grid;
+  gap: 14px;
+}
+
+.modalTitle,
+.modalField span {
+  color: #111827;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.sportFormGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.modalField {
+  display: grid;
+  gap: 8px;
+}
+
+.modalField input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #111827;
+}
+
+.modalCheck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.sportList {
+  display: grid;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.sportCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.sportCard p {
+  margin: 4px 0 0;
+  color: #6b7280;
 }
 
 .tableCard th {
@@ -126,52 +307,48 @@
   color: #6b7280 !important;
 }
 
+.tableCard td {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
 .tableCard tr:hover td {
-  background: #f9fafb !important;
+  background: #f8fbff !important;
 }
 
 .filterHead button,
-.tableCard td button,
 .tableHead button {
-  height: 34px;
+  height: 36px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #dbe3ef !important;
   background: #ffffff !important;
   color: #374151 !important;
-  box-shadow: none !important;
+  font-weight: 800;
 }
 
 .filterHead button:last-child,
-.tableHead button:last-child,
-.tableCard td button:last-child {
-  background: linear-gradient(
-    180deg,
-    #3b82f6 0%,
-    #2563eb 56%,
-    #1d4ed8 100%
-  ) !important;
-  background-image: linear-gradient(
-    180deg,
-    #3b82f6 0%,
-    #2563eb 56%,
-    #1d4ed8 100%
-  ) !important;
-  color: #fff !important;
+.tableHead button:last-child {
   border-color: #2563eb !important;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
   box-shadow:
     0 6px 14px rgba(37, 99, 235, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .filterHead,
-  .filterMeta {
+  .filterMeta,
+  .pagination {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .filterHead button,
-  .filterMeta strong {
-    align-self: flex-start;
+  .pagination {
+    justify-content: flex-start;
+  }
+
+  .paginationNumbers {
+    flex-wrap: wrap;
   }
 }

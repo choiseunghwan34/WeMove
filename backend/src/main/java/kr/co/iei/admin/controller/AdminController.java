@@ -23,6 +23,11 @@ public class AdminController {
     return ResponseEntity.ok(adminService.getMembers());
   }
 
+  @GetMapping("/regions")
+  public ResponseEntity<List<AdminRegionResponse>> regions() {
+    return ResponseEntity.ok(adminService.getRegions());
+  }
+
   @GetMapping("/meetings")
   public ResponseEntity<List<AdminMeetingResponse>> meetings() {
     return ResponseEntity.ok(adminService.getMeetings());

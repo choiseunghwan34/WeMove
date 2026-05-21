@@ -8,6 +8,8 @@ public interface AdminService {
 
   List<AdminMemberResponse> getMembers();
 
+  List<AdminRegionResponse> getRegions();
+
   List<AdminMeetingResponse> getMeetings();
 
   List<AdminReportResponse> getReports();

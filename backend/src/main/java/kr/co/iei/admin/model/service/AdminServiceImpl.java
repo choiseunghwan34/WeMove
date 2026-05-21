@@ -19,6 +19,10 @@ public class AdminServiceImpl implements AdminService {
     return adminDao.selectMembers();
   }
 
+  public List<AdminRegionResponse> getRegions() {
+    return adminDao.selectRegions();
+  }
+
   public List<AdminMeetingResponse> getMeetings() {
     return adminDao.selectMeetings();
   }

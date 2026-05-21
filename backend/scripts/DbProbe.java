@@ -13,13 +13,25 @@ public class DbProbe {
 
     try (Connection connection = DriverManager.getConnection(url, user, password);
         Statement statement = connection.createStatement()) {
+      printTables(statement);
       printColumns(statement, "regions");
       printColumns(statement, "users");
       printColumns(statement, "meetings");
       printColumns(statement, "sports");
       printColumns(statement, "reports");
-      printColumns(statement, "meeting_participants");
+      printColumnsIfExists(statement, "meeting_participants");
+      printColumnsIfExists(statement, "participants");
+      printColumnsIfExists(statement, "meetingParticipants");
       printSample(statement, "SELECT * FROM regions LIMIT 3");
+    }
+  }
+
+  private static void printTables(Statement statement) throws Exception {
+    System.out.println("== TABLES ==");
+    try (ResultSet rs = statement.executeQuery("SHOW TABLES")) {
+      while (rs.next()) {
+        System.out.println(rs.getString(1));
+      }
     }
   }
 
@@ -29,6 +41,14 @@ public class DbProbe {
       while (rs.next()) {
         System.out.println(rs.getString("Field") + " | " + rs.getString("Type"));
       }
+    }
+  }
+
+  private static void printColumnsIfExists(Statement statement, String tableName) throws Exception {
+    try {
+      printColumns(statement, tableName);
+    } catch (Exception ignored) {
+      System.out.println("== MISSING: " + tableName + " ==");
     }
   }
 

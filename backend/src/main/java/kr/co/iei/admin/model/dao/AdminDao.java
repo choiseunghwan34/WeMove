@@ -19,6 +19,10 @@ public class AdminDao {
     return sqlSession.selectList("admin.selectMembers");
   }
 
+  public List<AdminRegionResponse> selectRegions() {
+    return sqlSession.selectList("admin.selectRegions");
+  }
+
   public List<AdminMeetingResponse> selectMeetings() {
     return sqlSession.selectList("admin.selectMeetings");
   }

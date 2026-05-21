@@ -27,21 +27,34 @@
         ORDER BY u.userId DESC
     </select>
 
+    <select id="selectRegions" resultType="kr.co.iei.admin.model.vo.AdminRegionResponse">
+        SELECT
+            regionId,
+            sido,
+            sigungu,
+            dong
+        FROM regions
+        ORDER BY sido ASC, sigungu ASC, dong ASC
+    </select>
+
     <select id="selectMeetings" resultType="kr.co.iei.admin.model.vo.AdminMeetingResponse">
         SELECT
             m.meetingId,
             m.title,
             s.name AS sport_name,
+            s.category AS sport_category,
             CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong) AS region_name,
             (
                 SELECT COUNT(*)
-                FROM meeting_participants mp
+                FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
                   AND mp.status = 'APPROVED'
             ) AS approved_count,
             m.maxMembers,
             m.status,
-            u.nickname AS host_nickname
+            u.nickname AS host_nickname,
+            m.meetingDate,
+            m.startTime
         FROM meetings m
         JOIN users u ON m.hostUserId = u.userId
         JOIN sports s ON m.sportId = s.sportId
