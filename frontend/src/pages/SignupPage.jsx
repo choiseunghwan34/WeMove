@@ -422,7 +422,7 @@ export default function SignupPage() {
         password,
         nickname: normalizeText(form.nickname),
         regionId: selectedRegion.regionId,
-        gender: form.gender,
+        gender: Number(form.gender),
         birthYear: Number(form.birthYear),
         phone: getPhoneDigits(form.phone),
       });
@@ -633,8 +633,8 @@ export default function SignupPage() {
                   disabled={isSubmitting}
                 >
                   <option value="">성별 선택</option>
-                  <option value="M">남</option>
-                  <option value="F">여</option>
+                  <option value="1">남</option>
+                  <option value="2">여</option>
                 </select>
                 <small className={styles.fieldError}>
                   {fieldErrors.gender || "\u00a0"}

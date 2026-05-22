@@ -10,6 +10,8 @@ public class Member {
   private String email;
   private String password;
   private String nickname;
+  private Integer gender;
+  private Integer birthYear;
   private String phone;
   private String profileImage;
   private Long regionId;

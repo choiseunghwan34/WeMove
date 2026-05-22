@@ -3,6 +3,7 @@ package kr.co.iei.auth.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.co.iei.auth.model.service.AuthService;
+import kr.co.iei.auth.model.service.EmailVerificationService;
 import kr.co.iei.auth.model.vo.*;
 import kr.co.iei.auth.util.AuthCookieUtil;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,20 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
   private final AuthService authService;
+  private final EmailVerificationService emailVerificationService;
   private final AuthCookieUtil authCookieUtil;
+
+  @GetMapping("/check-login-id")
+  public ResponseEntity<Void> checkLoginId(@RequestParam String loginId) {
+    authService.checkLoginId(loginId);
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/check-email")
+  public ResponseEntity<Void> checkEmail(@RequestParam String email) {
+    authService.checkEmail(email);
+    return ResponseEntity.ok().build();
+  }
 
   @PostMapping("/signup")
   public ResponseEntity<Void> signup(@RequestBody SignupRequest request) {
@@ -35,6 +49,29 @@ public class AuthController {
         result.isPersistentLogin());
 
     return ResponseEntity.ok(new AccessTokenResponse(result.getAccessToken()));
+  }
+
+  @PostMapping("/email/send")
+  public ResponseEntity<EmailVerificationSendResponse> sendEmailVerification(
+      @RequestBody EmailVerificationRequest request) {
+    return ResponseEntity.ok(emailVerificationService.sendVerificationEmail(request.getEmail()));
+  }
+
+  @GetMapping(value = "/email/verify", produces = "text/html; charset=UTF-8")
+  public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+    String email = emailVerificationService.verify(token);
+    return ResponseEntity.ok(
+        """
+        <!doctype html>
+        <html lang="ko">
+          <head><meta charset="UTF-8"><title>WeMove 이메일 인증</title></head>
+          <body style="font-family:Arial,sans-serif;padding:32px;color:#10233f">
+            <h1>이메일 인증이 완료되었습니다.</h1>
+            <p>%s 주소 인증이 완료되었습니다. 회원가입 화면으로 돌아가 진행해주세요.</p>
+          </body>
+        </html>
+        """
+            .formatted(email));
   }
 
   @PostMapping("/refresh")

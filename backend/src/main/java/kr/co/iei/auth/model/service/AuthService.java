@@ -5,6 +5,10 @@ import kr.co.iei.auth.model.vo.*;
 public interface AuthService {
   void signup(SignupRequest request);
 
+  void checkLoginId(String loginId);
+
+  void checkEmail(String email);
+
   AuthLoginResult login(LoginRequest request);
 
   AuthRefreshResult refresh(String refreshToken);
