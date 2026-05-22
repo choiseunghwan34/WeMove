@@ -5,7 +5,9 @@ import kr.co.iei.meeting.model.vo.*;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MeetingService {
-  List<MeetingListResponse> getMeetings(MeetingSearchCondition condition);
+  Map<String, Object> getMeetings(MeetingSearchCondition condition);
+
+  List<Map<String, Object>> getTopRegions();
 
   MeetingDetailResponse getMeeting(Long meetingId);
 

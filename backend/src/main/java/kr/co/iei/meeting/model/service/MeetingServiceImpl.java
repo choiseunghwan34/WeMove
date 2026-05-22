@@ -22,8 +22,18 @@ public class MeetingServiceImpl implements MeetingService {
   private final MeetingDao meetingDao;
   private final CloudinaryImageService cloudinaryImageService;
 
-  public List<MeetingListResponse> getMeetings(MeetingSearchCondition condition) {
-    return meetingDao.selectMeetingList(condition);
+  public Map<String, Object> getMeetings(MeetingSearchCondition c) {
+    List<MeetingListResponse> list = meetingDao.selectMeetingList(c);
+    int totalCount = meetingDao.selectMeetingCount(c);
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("list", list);
+    result.put("totalCount", totalCount);
+    return result;
+  }
+
+  public List<Map<String, Object>> getTopRegions() {
+    return meetingDao.selectTopRegions();
   }
 
   public MeetingDetailResponse getMeeting(Long meetingId) {

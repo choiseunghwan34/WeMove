@@ -34,8 +34,14 @@ public class MeetingController {
   private final JwtTokenProvider jwtTokenProvider;
 
   @GetMapping
-  public ResponseEntity<List<MeetingListResponse>> list(MeetingSearchCondition condition) {
-    return ResponseEntity.ok(meetingService.getMeetings(condition));
+
+  public ResponseEntity<Map<String, Object>> list(MeetingSearchCondition c) {
+    return ResponseEntity.ok(meetingService.getMeetings(c));
+  }
+
+  @GetMapping("/top-regions")
+  public ResponseEntity<List<Map<String, Object>>> topRegions() {
+    return ResponseEntity.ok(meetingService.getTopRegions());
   }
 
   @GetMapping("/{meetingId}")

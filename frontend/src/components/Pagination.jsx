@@ -22,6 +22,7 @@ export default function Pagination({
   previousLabel = "이전",
   nextLabel = "다음",
   showingLabel = "표시 중",
+  variant = "default", // 'default' or 'centered'
 }) {
   if (totalPages <= 1) {
     return null;
@@ -31,8 +32,12 @@ export default function Pagination({
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
+  const containerClass = `${styles.pagination} ${
+    variant === "centered" ? styles.paginationCentered : ""
+  }`.trim();
+
   return (
-    <div className={styles.pagination}>
+    <div className={containerClass}>
       <div className={styles.paginationMeta}>
         <strong>
           {startItem}-{endItem}
@@ -40,38 +45,42 @@ export default function Pagination({
         <span>{showingLabel}</span>
       </div>
 
-      <button
-        type="button"
-        className={styles.paginationArrow}
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-      >
-        {previousLabel}
-      </button>
+      <div className={styles.paginationNav}>
+        <button
+          type="button"
+          className={styles.paginationArrow}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+        >
+          {previousLabel}
+        </button>
 
-      <div className={styles.paginationNumbers}>
-        {pageButtons.map((page) => (
-          <button
-            key={page}
-            type="button"
-            className={`${styles.paginationNumber} ${
-              currentPage === page ? styles.paginationNumberCurrent : ""
-            }`.trim()}
-            onClick={() => onPageChange(page)}
-          >
-            {page}
-          </button>
-        ))}
+        <div className={styles.paginationNumbers}>
+          {pageButtons.map((page) => (
+            <button
+              key={page}
+              type="button"
+              className={`${styles.paginationNumber} ${
+                currentPage === page ? styles.paginationNumberCurrent : ""
+              }`.trim()}
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className={styles.paginationArrow}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+        >
+          {nextLabel}
+        </button>
       </div>
 
-      <button
-        type="button"
-        className={styles.paginationArrow}
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-      >
-        {nextLabel}
-      </button>
+      <div className={styles.paginationSpacer} />
     </div>
   );
 }
