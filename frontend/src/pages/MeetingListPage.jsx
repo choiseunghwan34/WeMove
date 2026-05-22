@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
@@ -96,6 +96,7 @@ export default function MeetingListPage() {
 
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isExplicitAll, setIsExplicitAll] = useState(false);
   const [topRegions, setTopRegions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
   const [sportOptions, setSportOptions] = useState([]);
@@ -199,7 +200,7 @@ export default function MeetingListPage() {
   const searchParams = useMemo(
     () => ({
       ...regionParams,
-      baseRegionId: selectedRegion ? null : memberRegionId,
+      baseRegionId: selectedRegion || isExplicitAll ? null : memberRegionId,
       sportId: selectedSport?.sportId ?? null,
       status,
       keyword,
@@ -210,6 +211,7 @@ export default function MeetingListPage() {
     [
       regionParams,
       selectedRegion,
+      isExplicitAll,
       memberRegionId,
       selectedSport,
       status,
@@ -258,8 +260,8 @@ export default function MeetingListPage() {
 
   const displayedRegionLabel = selectedRegion
     ? formatRegionLabel(selectedRegion)
-    : isAuthenticated && memberRegion
-      ? `${memberRegion.sido} ${memberRegion.sigungu} 주변`
+    : isAuthenticated && memberRegion && !isExplicitAll
+      ? `${memberRegion.sido} ${memberRegion.sigungu}`
       : ALL_REGION;
 
   const displayedSportLabel = selectedSport?.name ?? ALL_SPORT;
@@ -283,6 +285,7 @@ export default function MeetingListPage() {
 
   const resetFilters = () => {
     setSelectedRegion(null);
+    setIsExplicitAll(true);
     setSelectedSport(null);
     setStatus("");
     setKeyword("");
@@ -306,6 +309,7 @@ export default function MeetingListPage() {
     );
 
     setSelectedRegion(hasSelection ? normalized : null);
+    setIsExplicitAll(!hasSelection);
     setCurrentPage(1);
     setIsRegionModalOpen(false);
   };
@@ -388,7 +392,7 @@ export default function MeetingListPage() {
           <span>
             {selectedRegion
               ? "선택한 지역 기준으로 조회 중"
-              : isAuthenticated && memberRegion
+              : isAuthenticated && memberRegion && !isExplicitAll
                 ? "사용자의 지역 기준으로 조회 중"
                 : "전체 지역 기준으로 조회 중"}
           </span>
@@ -432,6 +436,7 @@ export default function MeetingListPage() {
               setMeetingDate(event.target.value);
               setCurrentPage(1);
             }}
+            onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
@@ -455,7 +460,12 @@ export default function MeetingListPage() {
       </section>
 
       <div className={styles.listHead}>
-        <h2>모임 리스트</h2>
+        <h2>
+          {displayedRegionLabel === ALL_REGION
+            ? "전체 지역"
+            : displayedRegionLabel}{" "}
+          모임
+        </h2>
         <span>총 {totalCount}개</span>
       </div>
 
@@ -637,6 +647,7 @@ export default function MeetingListPage() {
               setMeetingDate(event.target.value);
               setCurrentPage(1);
             }}
+            onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
