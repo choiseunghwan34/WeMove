@@ -27,6 +27,8 @@ const regionRanking = [
 
 const weekdayLabels = ["오늘", "내일", "토", "일"];
 
+const fixedSports = sports.map((sport) => sport.name);
+
 export default function MeetingListPage() {
   const [sport, setSport] = useState(ALL_SPORT);
   const [region, setRegion] = useState(ALL_REGION);
@@ -52,8 +54,6 @@ export default function MeetingListPage() {
     CANCLED: "취소됨",
   };
 
-  const fixedSports = sports.map((sport) => sport.name);
-
   const searchParams = useMemo(() => {
     return {
       sportName: sport2,
@@ -63,7 +63,7 @@ export default function MeetingListPage() {
       fixedSports: fixedSports,
       meetingDate: meetingDate,
     };
-  }, [sport2, region2, status2, keyword2, fixedSports, meetingDate]);
+  }, [sport2, region2, status2, keyword2, meetingDate]);
 
   useEffect(() => {
     const fetchMeetings = async () => {

@@ -47,12 +47,12 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     String verificationUrl = verificationBaseUrl + "?token=" + token;
 
     stringRedisTemplate
-        .opsForValue()
-        .set(tokenKey(token), normalizedEmail, TOKEN_TTL);
+            .opsForValue()
+            .set(tokenKey(token), normalizedEmail, TOKEN_TTL);
 
     sendMailIfAvailable(normalizedEmail, verificationUrl);
 
-    return new EmailVerificationSendResponse("인증 메일을 발송했습니다.", verificationUrl);
+    return new EmailVerificationSendResponse("인증 메일이 발송되었습니다.", verificationUrl);
   }
 
   @Override
@@ -92,7 +92,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
       helper.setSubject("[WeMove] 이메일 인증을 완료해주세요");
       helper.setText(buildMailHtml(verificationUrl), true);
       mailSender.send(message);
-    } catch (Exception ignored) {
+    } catch (Exception e) {
+      e.printStackTrace();
       // SMTP 설정이 없는 개발 환경에서는 응답의 verificationUrl로 인증 흐름을 확인합니다.
     }
   }
@@ -111,7 +112,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
           <p>%s</p>
         </div>
         """
-        .formatted(verificationUrl, verificationUrl);
+            .formatted(verificationUrl, verificationUrl);
   }
 
   private String normalizeEmail(String email) {

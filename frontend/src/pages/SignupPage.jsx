@@ -147,6 +147,8 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingLoginId, setIsCheckingLoginId] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [checkedLoginId, setCheckedLoginId] = useState("");
+  const [loginIdCheckMessage, setLoginIdCheckMessage] = useState("");
   const [emailVerificationStatus, setEmailVerificationStatus] =
     useState("idle");
   const [verifiedEmail, setVerifiedEmail] = useState("");
@@ -212,14 +214,13 @@ export default function SignupPage() {
       socket.onerror = () => {
         setFieldErrors((current) => ({
           ...current,
-          email:
-            "이메일 인증 연결을 확인할 수 없습니다. 인증 서버 상태를 확인해주세요.",
+          email: "인증 연결을 확인해주세요.",
         }));
       };
     } catch {
       setFieldErrors((current) => ({
         ...current,
-        email: "이메일 인증 연결을 시작할 수 없습니다.",
+        email: "인증 연결을 시작할 수 없습니다.",
       }));
     }
 
@@ -253,8 +254,9 @@ export default function SignupPage() {
     const birthYear = Number(form.birthYear);
 
     if (!LOGIN_ID_PATTERN.test(loginId)) {
-      nextErrors.loginId =
-        "아이디는 소문자와 숫자를 조합해 5자 이상 20자 이하로 입력해주세요.";
+      nextErrors.loginId = "소문자/숫자 5~20자로 입력해주세요.";
+    } else if (checkedLoginId !== loginId) {
+      nextErrors.loginId = "아이디 중복확인을 완료해주세요.";
     }
 
     if (!EMAIL_PATTERN.test(email)) {
@@ -267,8 +269,7 @@ export default function SignupPage() {
     }
 
     if (!PASSWORD_PATTERN.test(password)) {
-      nextErrors.password =
-        "비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해 8자 이상 16자 이하로 입력해주세요.";
+      nextErrors.password = "대소문자/숫자/특수문자 포함 8~16자입니다.";
     }
 
     if (form.passwordConfirm !== password) {
@@ -276,8 +277,7 @@ export default function SignupPage() {
     }
 
     if (!NICKNAME_PATTERN.test(normalizeText(form.nickname))) {
-      nextErrors.nickname =
-        "닉네임은 한글, 영문, 숫자만 입력해주세요. 공백과 특수문자는 사용할 수 없습니다.";
+      nextErrors.nickname = "한글/영문/숫자만 입력해주세요.";
     }
 
     if (!selectedRegion?.regionId) {
@@ -293,11 +293,11 @@ export default function SignupPage() {
       birthYear < 1900 ||
       birthYear > CURRENT_YEAR
     ) {
-      nextErrors.birthYear = "출생년도는 4자리 연도로 입력해주세요.";
+      nextErrors.birthYear = "4자리 연도로 입력해주세요.";
     }
 
     if (phoneDigits.length < 9 || phoneDigits.length > 11) {
-      nextErrors.phone = "연락처는 숫자 9자리에서 11자리까지 입력해주세요.";
+      nextErrors.phone = "숫자 9~11자리로 입력해주세요.";
     }
 
     setFieldErrors(nextErrors);
@@ -311,6 +311,10 @@ export default function SignupPage() {
     if (name === "email") {
       setVerifiedEmail("");
       setEmailVerificationStatus("idle");
+    }
+    if (name === "loginId") {
+      setCheckedLoginId("");
+      setLoginIdCheckMessage("");
     }
 
     setForm((current) => ({
@@ -328,9 +332,10 @@ export default function SignupPage() {
     const loginId = normalizeText(form.loginId);
 
     if (!LOGIN_ID_PATTERN.test(loginId)) {
+      setLoginIdCheckMessage("");
       setFieldErrors((current) => ({
         ...current,
-        loginId: "아이디는 소문자와 숫자를 조합해 5자 이상 20자 이하로 입력해주세요.",
+        loginId: "소문자/숫자 5~20자로 입력해주세요.",
       }));
       return;
     }
@@ -339,18 +344,24 @@ export default function SignupPage() {
 
     try {
       await api.get("/auth/check-login-id", { params: { loginId } });
+      setCheckedLoginId(loginId);
+      setLoginIdCheckMessage("중복확인이 완료되었습니다.");
       setFieldErrors((current) => ({
         ...current,
         loginId: "",
       }));
     } catch (error) {
       const status = error?.response?.status;
+      const serverMessage = error?.response?.data?.message;
+      setCheckedLoginId("");
+      setLoginIdCheckMessage("");
       setFieldErrors((current) => ({
         ...current,
         loginId:
-          status === 409
+          serverMessage ||
+          (status === 409
             ? "이미 사용 중인 아이디입니다."
-            : "중복 확인 API가 준비되지 않았습니다. 가입 시 서버에서 다시 확인됩니다.",
+            : "아이디 중복 확인에 실패했습니다. 백엔드 실행 상태를 확인해주세요."),
       }));
     } finally {
       setIsCheckingLoginId(false);
@@ -359,8 +370,10 @@ export default function SignupPage() {
 
   const requestEmailVerification = async () => {
     const email = normalizeText(form.email);
+    console.log("[Email Verification] Starting process for:", email);
 
     if (!EMAIL_PATTERN.test(email)) {
+      console.warn("[Email Verification] Invalid email pattern");
       setFieldErrors((current) => ({
         ...current,
         email: "올바른 이메일 형식으로 입력해주세요.",
@@ -372,20 +385,33 @@ export default function SignupPage() {
     setEmailVerificationStatus("pending");
 
     try {
-      await api.post("/auth/email/send", { email });
+      console.log("[Email Verification] Checking if email is available...");
+      const checkRes = await api.get("/auth/check-email", { params: { email } });
+      console.log("[Email Verification] Email check response:", checkRes.status, checkRes.data);
+
+      console.log("[Email Verification] Requesting email send...");
+      const sendRes = await api.post("/auth/email/send", { email });
+      console.log("[Email Verification] Email send response:", sendRes.status, sendRes.data);
+
       setFieldErrors((current) => ({
         ...current,
         email: "인증 메일을 보냈습니다. 메일의 인증하기 버튼을 눌러주세요.",
       }));
     } catch (error) {
+      console.error("[Email Verification] Error occurred:", {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message
+      });
       const status = error?.response?.status;
       setEmailVerificationStatus("idle");
       setFieldErrors((current) => ({
         ...current,
         email:
-          status === 409
+          error?.response?.data?.message ||
+          (status === 409
             ? "이미 사용 중인 이메일입니다."
-            : "이메일 인증 API가 준비되지 않았습니다.",
+            : "이메일 인증 요청에 실패했습니다."),
       }));
     } finally {
       setIsCheckingEmail(false);
@@ -503,18 +529,23 @@ export default function SignupPage() {
                     placeholder="영문 소문자와 숫자 5~20자"
                     autoComplete="username"
                     maxLength={20}
+                    readOnly={Boolean(checkedLoginId)}
                     disabled={isSubmitting}
                   />
                   <button
                     type="button"
                     onClick={checkLoginId}
-                    disabled={isSubmitting || isCheckingLoginId}
+                    disabled={isSubmitting || isCheckingLoginId || Boolean(checkedLoginId)}
                   >
-                    {isCheckingLoginId ? "확인중" : "중복확인"}
+                    {checkedLoginId ? "완료" : isCheckingLoginId ? "확인중" : "중복확인"}
                   </button>
                 </div>
-                <small className={styles.fieldError}>
-                  {fieldErrors.loginId || "\u00a0"}
+                <small
+                  className={
+                    loginIdCheckMessage ? styles.fieldSuccess : styles.fieldError
+                  }
+                >
+                  {fieldErrors.loginId || loginIdCheckMessage || "\u00a0"}
                 </small>
               </label>
 
@@ -600,7 +631,7 @@ export default function SignupPage() {
                   name="nickname"
                   value={form.nickname}
                   onChange={handleChange}
-                  placeholder="러너민수"
+                  placeholder="닉네임 입력"
                   autoComplete="nickname"
                   disabled={isSubmitting}
                 />
@@ -647,7 +678,7 @@ export default function SignupPage() {
                   name="birthYear"
                   value={form.birthYear}
                   onChange={handleChange}
-                  placeholder="1998"
+                  placeholder="출생년도 입력 "
                   inputMode="numeric"
                   maxLength={4}
                   disabled={isSubmitting}

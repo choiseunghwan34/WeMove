@@ -219,6 +219,12 @@
   box-shadow: 0 0 0 4px rgba(23, 105, 255, 0.12);
   background: #fff;
 }
+.card input:read-only {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #64748b;
+  cursor: not-allowed;
+}
 .fieldGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -237,7 +243,10 @@
   color: #dc2626;
   font-size: 11px;
   font-weight: 800;
-  line-height: 1.45;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .fieldSuccess {
   color: #16a34a;
