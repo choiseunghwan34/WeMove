@@ -18,7 +18,7 @@
     <select id="selectByEmail" resultType="kr.co.iei.member.model.vo.Member">
         SELECT *
         FROM users
-        WHERE email=#{email}
+        WHERE LOWER(email)=LOWER(#{email})
     </select>
 
     <select id="selectByNickname" resultType="kr.co.iei.member.model.vo.Member">
@@ -33,6 +33,9 @@
             email,
             password,
             nickname,
+            gender,
+            birthyear,
+            phone,
             regionId,
             role,
             status
@@ -42,6 +45,9 @@
             #{email},
             #{password},
             #{nickname},
+            #{gender},
+            #{birthYear},
+            #{phone},
             #{regionId},
             #{role},
             #{status}

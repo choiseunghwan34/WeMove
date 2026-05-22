@@ -219,6 +219,12 @@
   box-shadow: 0 0 0 4px rgba(23, 105, 255, 0.12);
   background: #fff;
 }
+.card input:read-only {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #64748b;
+  cursor: not-allowed;
+}
 .fieldGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -226,6 +232,58 @@
 }
 .fieldGrid > * {
   min-width: 0;
+}
+.fullField {
+  grid-column: 1 / -1;
+}
+.fieldError,
+.fieldSuccess {
+  min-height: 16px;
+  display: block;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fieldSuccess {
+  color: #16a34a;
+}
+.formError {
+  margin: 12px 0 0;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.regionSelectButton {
+  width: 100%;
+  min-width: 0;
+  height: 54px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0 15px;
+  color: #10233f;
+  text-align: left;
+  outline: 0;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+.regionSelectButton:focus {
+  border-color: rgba(23, 105, 255, 0.28);
+  box-shadow: 0 0 0 4px rgba(23, 105, 255, 0.12);
+  background: #fff;
+}
+.regionSelectButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 .signupSection {
   min-width: 0;
@@ -533,6 +591,9 @@
   .choiceList {
     grid-template-columns: 1fr;
   }
+  .fullField {
+    grid-column: auto;
+  }
   .options {
     flex-direction: column;
   }
@@ -635,7 +696,8 @@
   }
 
   .card input,
-  .card select {
+  .card select,
+  .regionSelectButton {
     height: 46px;
     border-radius: 14px;
   }
@@ -751,7 +813,7 @@
 
 .signupLayout {
   width: min(1220px, 100%) !important;
-  grid-template-columns: minmax(0, 520px) !important;
+  grid-template-columns: minmax(0, 620px) !important;
 }
 
 .copy {
@@ -963,4 +1025,131 @@
 
 .metrics span {
   color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* Signup page final spacing pass */
+.copy {
+  left: max(32px, calc(50% - 740px)) !important;
+}
+
+.choiceBlock {
+  gap: 10px !important;
+  margin: 8px 0 18px !important;
+}
+
+.sportToggle {
+  padding: 2px 0 !important;
+}
+
+.sportToggle i {
+  min-width: 52px !important;
+  height: 30px !important;
+  background: #eef4ff !important;
+  color: #1d4ed8 !important;
+}
+
+.choiceListOpen {
+  position: static !important;
+  margin-top: 0 !important;
+  padding: 10px !important;
+  border-radius: 16px !important;
+  background: #f8fbff !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.choiceList {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.choiceChip {
+  min-height: 40px !important;
+  justify-content: flex-start !important;
+  padding: 0 12px !important;
+  border-radius: 12px !important;
+  color: #31445f !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+.choiceChip input {
+  flex: 0 0 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+}
+
+@media (max-width: 1440px) and (min-width: 1121px) {
+  .copy {
+    left: 32px !important;
+    width: 240px !important;
+    max-width: 240px !important;
+  }
+
+  .copy h1 {
+    max-width: 240px !important;
+    font-size: 1.86rem !important;
+  }
+
+  .copy p,
+  .copy .metrics {
+    display: none !important;
+  }
+}
+
+/* Keep the signup card centered while the copy sits as a nearby side accent. */
+@media (min-width: 1121px) {
+  .layout,
+  .signupLayout {
+    width: min(620px, calc(100% - 64px)) !important;
+    grid-template-columns: minmax(0, 620px) !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0 !important;
+  }
+
+  .copy {
+    position: absolute !important;
+    top: 50% !important;
+    right: calc(100% + 28px) !important;
+    left: auto !important;
+    width: clamp(198px, calc((100vw - 620px) / 2 - 52px), 240px) !important;
+    max-width: 240px !important;
+    transform: translateY(-50%) !important;
+    z-index: 3 !important;
+  }
+
+  .copy h1 {
+    max-width: 100% !important;
+    font-size: clamp(1.86rem, 2.15vw, 2.3rem) !important;
+  }
+
+  .copy p {
+    display: block !important;
+    max-width: 100% !important;
+    font-size: 0.9rem !important;
+    line-height: 1.8 !important;
+  }
+
+  .metrics {
+    display: grid !important;
+    gap: 14px !important;
+    margin-top: 34px !important;
+    max-width: 100% !important;
+  }
+
+  .metrics article {
+    margin: 0 0 5px !important;
+  }
+}
+
+@media (min-width: 1441px) {
+  .copy p,
+  .copy .metrics {
+    display: block !important;
+  }
 }
