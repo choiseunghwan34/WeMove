@@ -2,6 +2,7 @@ package kr.co.iei.meeting.controller;
 
 import java.util.List;
 import java.util.Map;
+import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.meeting.model.service.MeetingService;
 import kr.co.iei.meeting.model.vo.MeetingCreateRequest;
 import kr.co.iei.meeting.model.vo.MeetingDetailResponse;
@@ -30,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class MeetingController {
   private final MeetingService meetingService;
+  private final JwtTokenProvider jwtTokenProvider;
 
   @GetMapping
   public ResponseEntity<List<MeetingListResponse>> list(MeetingSearchCondition condition) {
@@ -45,7 +47,8 @@ public class MeetingController {
   public ResponseEntity<Map<String, Long>> create(
       @RequestPart("request") MeetingCreateRequest request,
       @RequestPart(value = "image", required = false) MultipartFile image,
-      @RequestHeader("X-Member-Id") Long userId) {
+      @RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
+    Long userId = jwtTokenProvider.parseUserId(extractBearerToken(authorizationHeader));
     Long meetingId = meetingService.createMeeting(request, image, userId);
     return ResponseEntity.ok(Map.of("meetingId", meetingId));
   }
@@ -68,5 +71,12 @@ public class MeetingController {
       @PathVariable Long meetingId, @RequestBody MeetingStatusUpdateRequest request) {
     meetingService.updateMeetingStatus(meetingId, request);
     return ResponseEntity.ok().build();
+  }
+
+  private String extractBearerToken(String authorizationHeader) {
+    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+      throw new IllegalArgumentException("유효한 인증 토큰이 없습니다.");
+    }
+    return authorizationHeader.substring(7);
   }
 }

@@ -29,6 +29,7 @@ function useImagePreviews(files) {
 
 //텍스트 정규화
 const normalizeText = (value = "") => String(value).trim();
+const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
 
 export default function MeetingCreatePage() {
   //인풋정보
@@ -184,6 +185,18 @@ export default function MeetingCreatePage() {
 
   const handleFileChange = (event) => {
     const nextFiles = Array.from(event.target.files ?? []).slice(0, 1);
+    const [thumbnail] = nextFiles;
+
+    if (thumbnail && thumbnail.size > MAX_THUMBNAIL_SIZE) {
+      alert("대표 사진은 10MB 이하 이미지만 등록할 수 있습니다.");
+      setFiles([]);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
     setFiles(nextFiles);
 
     // 핵심: 브라우저가 이전 파일을 기억하지 못하도록 input 값을 비움
@@ -204,8 +217,17 @@ export default function MeetingCreatePage() {
       alert("운동 종목과 지역을 선택해주세요.");
       return;
     }
-    console.log(form);
-    createMeeting(form)
+    const formData = new FormData();
+    formData.append(
+      "request",
+      new Blob([JSON.stringify(form)], { type: "application/json" }),
+    );
+
+    if (files[0]) {
+      formData.append("image", files[0]);
+    }
+
+    createMeeting(formData)
       .then((res) => {
         console.log(res);
         alert("모임 등록 완료");
@@ -478,7 +500,7 @@ export default function MeetingCreatePage() {
           />
 
           <small className={styles.uploadHint}>
-            대표 썸네일 1장만 등록할 수 있습니다.
+            대표 썸네일 1장만 등록할 수 있습니다. 최대 10MB까지 지원합니다.
           </small>
 
           <button
