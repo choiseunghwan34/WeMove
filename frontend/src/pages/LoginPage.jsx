@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import { login } from "../api/authApi";
+import { getLoginPageStats } from "../api/statsApi";
 import { useAuth } from "../contexts/AuthContext";
 import homeBg from "../assets/images/home-bg.webp";
 import {
@@ -27,6 +28,20 @@ const getLoginErrorMessage = (error) => {
   return "서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인해주세요.";
 };
 
+const formatMetric = (value) => {
+  const numericValue = Number(value ?? 0);
+
+  if (numericValue >= 1000000) {
+    return `${(numericValue / 1000000).toFixed(1)}M`;
+  }
+
+  if (numericValue >= 1000) {
+    return `${(numericValue / 1000).toFixed(1)}K`;
+  }
+
+  return String(numericValue);
+};
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setAuthenticatedAccessToken } = useAuth();
@@ -39,6 +54,11 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [duplicatePromptOpen, setDuplicatePromptOpen] = useState(false);
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    totalMeetings: 0,
+    completedMeetings: 0,
+  });
 
   useEffect(() => {
     const savedLoginId = getRememberedLoginId();
@@ -46,6 +66,36 @@ export default function LoginPage() {
       setForm((current) => ({ ...current, loginId: savedLoginId }));
       setRememberLoginId(true);
     }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadStats = async () => {
+      try {
+        const { data } = await getLoginPageStats();
+        if (active && data) {
+          setStats({
+            totalMembers: data.totalMembers ?? 0,
+            totalMeetings: data.totalMeetings ?? 0,
+            completedMeetings: data.completedMeetings ?? 0,
+          });
+        }
+      } catch {
+        if (active) {
+          setStats({
+            totalMembers: 0,
+            totalMeetings: 0,
+            completedMeetings: 0,
+          });
+        }
+      }
+    };
+
+    loadStats();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const backgroundImage = useMemo(
@@ -142,16 +192,16 @@ export default function LoginPage() {
 
             <div className={styles.metrics}>
               <article>
-                <strong>328+</strong>
+                <strong>{formatMetric(stats.totalMembers)}</strong>
+                <span>회원 수</span>
+              </article>
+              <article>
+                <strong>{formatMetric(stats.totalMeetings)}</strong>
                 <span>생성 모임</span>
               </article>
               <article>
-                <strong>8.9K</strong>
+                <strong>{formatMetric(stats.completedMeetings)}</strong>
                 <span>누적 참여</span>
-              </article>
-              <article>
-                <strong>4.8</strong>
-                <span>평균 만족도</span>
               </article>
             </div>
           </section>

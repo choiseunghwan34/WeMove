@@ -181,6 +181,7 @@ export default function AdminPage() {
   });
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
   const [sportForm, setSportForm] = useState(initialSportForm);
+  const [sportFormError, setSportFormError] = useState("");
   const [updatingMemberId, setUpdatingMemberId] = useState(null);
   const [updatingMeetingId, setUpdatingMeetingId] = useState(null);
   const [updatingSportId, setUpdatingSportId] = useState(null);
@@ -360,6 +361,11 @@ export default function AdminPage() {
     [sports],
   );
 
+  const normalizedSportNames = useMemo(
+    () => new Set(sports.map((sport) => normalizeText(sport.name).toLowerCase())),
+    [sports],
+  );
+
   const filteredMembers = useMemo(() => {
     const keyword = normalizeText(memberKeyword).toLowerCase();
 
@@ -509,6 +515,7 @@ export default function AdminPage() {
   const closeSportModal = () => {
     setIsSportModalOpen(false);
     setSportForm(initialSportForm);
+    setSportFormError("");
   };
 
   const openRegionModal = () => {
@@ -540,19 +547,40 @@ export default function AdminPage() {
   };
 
   const submitSport = async () => {
-    if (!sportForm.name.trim()) {
+    const normalizedName = sportForm.name.trim();
+    const normalizedCategory = sportForm.category.trim();
+
+    if (!normalizedName) {
+      setSportFormError("종목명을 입력해주세요.");
       return;
     }
 
-    await createAdminSport({
-      name: sportForm.name.trim(),
-      category: sportForm.category.trim(),
-      isActive: sportForm.isActive,
-    });
+    if (!normalizedCategory) {
+      setSportFormError("카테고리를 선택해주세요.");
+      return;
+    }
 
-    await loadAdminData();
-    closeSportModal();
-    updatePage("sports", 1);
+    if (normalizedSportNames.has(normalizedName.toLowerCase())) {
+      setSportFormError("이미 존재하는 종목명입니다.");
+      return;
+    }
+
+    try {
+      setSportFormError("");
+      await createAdminSport({
+        name: normalizedName,
+        category: normalizedCategory,
+        isActive: sportForm.isActive,
+      });
+
+      await loadAdminData();
+      closeSportModal();
+      updatePage("sports", 1);
+    } catch (error) {
+      setSportFormError(
+        error?.response?.data?.message ?? "종목을 추가하지 못했습니다.",
+      );
+    }
   };
 
   const handleMemberStatusChange = async (userId, nextStatus) => {
@@ -1068,7 +1096,7 @@ export default function AdminPage() {
               </label>
               <label className={styles.modalField}>
                 <span>카테고리</span>
-                <input
+                <select
                   value={sportForm.category}
                   onChange={(event) =>
                     setSportForm((current) => ({
@@ -1076,8 +1104,14 @@ export default function AdminPage() {
                       category: event.target.value,
                     }))
                   }
-                  placeholder="예: 근력"
-                />
+                >
+                  <option value="">카테고리 선택</option>
+                  {sportCategoryOptions.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className={styles.modalCheck}>
                 <input
@@ -1092,6 +1126,9 @@ export default function AdminPage() {
                 />
                 <span>즉시 사용 가능한 상태로 추가</span>
               </label>
+              {sportFormError ? (
+                <p className={styles.modalErrorText}>{sportFormError}</p>
+              ) : null}
             </div>
           </div>
         </div>

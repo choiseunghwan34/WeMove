@@ -22,6 +22,19 @@
         )
     </insert>
 
+    <select id="countByName" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM sports
+        WHERE LOWER(name) = LOWER(#{name})
+    </select>
+
+    <select id="countByNameExcludingId" resultType="int">
+        SELECT COUNT(*)
+        FROM sports
+        WHERE LOWER(name) = LOWER(#{name})
+          AND sportId != #{sportId}
+    </select>
+
     <update id="updateSport">
         UPDATE sports
         SET

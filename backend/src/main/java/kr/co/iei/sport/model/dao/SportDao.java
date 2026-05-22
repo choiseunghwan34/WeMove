@@ -19,6 +19,19 @@ public class SportDao {
     return sqlSession.insert("sport.insertSport", req);
   }
 
+  public int countByName(String name) {
+    Integer count = sqlSession.selectOne("sport.countByName", name);
+    return count == null ? 0 : count;
+  }
+
+  public int countByNameExcludingId(Long sportId, String name) {
+    Integer count =
+        sqlSession.selectOne(
+            "sport.countByNameExcludingId",
+            Map.of("sportId", sportId, "name", name));
+    return count == null ? 0 : count;
+  }
+
   public int updateSport(Long sportId, SportRequest req) {
     Map<String, Object> p = new HashMap<>();
     p.put("sportId", sportId);

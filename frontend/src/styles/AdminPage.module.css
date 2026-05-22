@@ -431,7 +431,8 @@
   gap: 8px;
 }
 
-.modalField input {
+.modalField input,
+.modalField select {
   width: 100%;
   min-height: 46px;
   border: 1px solid #d1d5db;
@@ -439,6 +440,13 @@
   padding: 0 14px;
   background: #ffffff;
   color: #111827;
+}
+
+.modalErrorText {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .modalCheck {

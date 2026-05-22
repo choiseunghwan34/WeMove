@@ -1,9 +1,11 @@
 package kr.co.iei.sport.controller;
 
 import java.util.List;
+import java.util.Map;
 import kr.co.iei.sport.model.service.SportService;
 import kr.co.iei.sport.model.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,15 +20,25 @@ public class SportController {
   }
 
   @PostMapping("/api/admin/sports")
-  public ResponseEntity<Void> create(@RequestBody SportRequest req) {
-    sportService.createSport(req);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<?> create(@RequestBody SportRequest req) {
+    try {
+      sportService.createSport(req);
+      return ResponseEntity.ok().build();
+    } catch (IllegalArgumentException exception) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("message", exception.getMessage()));
+    }
   }
 
   @PutMapping("/api/admin/sports/{sportId}")
-  public ResponseEntity<Void> update(@PathVariable Long sportId, @RequestBody SportRequest req) {
-    sportService.updateSport(sportId, req);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<?> update(@PathVariable Long sportId, @RequestBody SportRequest req) {
+    try {
+      sportService.updateSport(sportId, req);
+      return ResponseEntity.ok().build();
+    } catch (IllegalArgumentException exception) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("message", exception.getMessage()));
+    }
   }
 
   @DeleteMapping("/api/admin/sports/{sportId}")
