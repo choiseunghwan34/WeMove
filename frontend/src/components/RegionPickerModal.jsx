@@ -7,9 +7,9 @@ const ALL_SIGUNGU = "전체 시군구";
 const ALL_DONG = "전체 읍면동";
 
 const normalizeSelection = (selection = {}) => ({
-  sido: selection.sido ?? ALL_SIDO,
-  sigungu: selection.sigungu ?? ALL_SIGUNGU,
-  dong: selection.dong ?? ALL_DONG,
+  sido: selection?.sido ?? ALL_SIDO,
+  sigungu: selection?.sigungu ?? ALL_SIGUNGU,
+  dong: selection?.dong ?? ALL_DONG,
 });
 
 export default function RegionPickerModal({

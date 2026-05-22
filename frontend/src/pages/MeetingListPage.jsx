@@ -1,15 +1,18 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useRef } from "react";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
+import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import Pagination from "../components/Pagination";
+import SportPickerModal from "../components/SportPickerModal";
 import UiIcon from "../components/UiIcon";
-import { meetings, regions, sports } from "../data/demoData";
-import { meetingImages } from "../data/dashboardData";
-import styles from "../styles/MeetingListPage.module.css";
-import { getMeeting, getMeetings, getTopRegions } from "../api/meetingApi";
 import { useAuth } from "../contexts/AuthContext";
+import { meetings } from "../data/demoData";
+import { getMeetings, getTopRegions } from "../api/meetingApi";
+import { getMember } from "../api/memberApi";
+import { getRegions } from "../api/regionApi";
+import { getSports } from "../api/sportApi";
+import styles from "../styles/MeetingListPage.module.css";
 
 const cx = (...names) =>
   names
@@ -17,12 +20,44 @@ const cx = (...names) =>
     .map((name) => styles[name] || name)
     .join(" ");
 
-const ALL_SPORT = "전체";
 const ALL_REGION = "전체 지역";
+const ALL_SPORT = "전체 종목";
 const ALL_STATUS = "전체 상태";
-
 const PAGE_SIZE = 10;
 const weekdayLabels = ["오늘", "내일", "토", "일"];
+
+const STATUS_MAP = {
+  RECRUITING: "모집중",
+  CLOSED: "모집마감",
+  COMPLETED: "모임완료",
+  CANCELLED: "취소됨",
+};
+
+const normalizeText = (value = "") => String(value).trim();
+
+const normalizeRegion = (region) => ({
+  regionId: region.regionId,
+  sido: normalizeText(region.sido),
+  sigungu: normalizeText(region.sigungu),
+  dong: normalizeText(region.dong),
+});
+
+const normalizeSport = (sport) => ({
+  sportId: sport.sportId,
+  name: sport.name ?? "-",
+  category: sport.category ?? "기타",
+  isActive: sport.isActive ?? true,
+});
+
+const formatRegionLabel = (selection) => {
+  if (!selection) return ALL_REGION;
+
+  const parts = [selection.sido, selection.sigungu, selection.dong]
+    .map(normalizeText)
+    .filter(Boolean);
+
+  return parts.length ? parts.join(" ") : ALL_REGION;
+};
 
 const formatTopRegionLabel = (region) => {
   if (!region || typeof region !== "object") {
@@ -42,51 +77,141 @@ const formatTopRegionLabel = (region) => {
 
 export default function MeetingListPage() {
   const listStartRef = useRef(null);
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [meetingDate, setMeetingDate] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [isSportModalOpen, setIsSportModalOpen] = useState(false);
 
-  const [sport2, setSport2] = useState("전체");
-  const [region2, setRegion2] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [selectedSport, setSelectedSport] = useState(null);
+  const [memberRegionId, setMemberRegionId] = useState(null);
+  const [memberRegionReady, setMemberRegionReady] = useState(false);
   const [status2, setStatus2] = useState("");
   const [keyword2, setKeyword2] = useState("");
   const [meeting2, setMeeting2] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [topRegions, setTopRegions] = useState([]);
-
-  const { user } = useAuth();
-
-  const STATUS_MAP = {
-    RECRUITING: "모집중",
-    CLOSED: "모집마감",
-    COMPLETED: "모임완료",
-    CANCELLED: "취소됨",
-  };
-
-  const fixedSports = sports.map((sport) => sport.name);
-
-  const searchParams = useMemo(() => {
-    return {
-      sportName: sport2,
-      regionId: region2 || null,
-      status: status2,
-      keyword: keyword2,
-      fixedSports: fixedSports,
-      meetingDate: meetingDate,
-      page: currentPage,
-      size: PAGE_SIZE,
-    };
-  }, [
-    sport2,
-    region2,
-    status2,
-    keyword2,
-    fixedSports,
-    meetingDate,
-    currentPage,
-  ]);
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [sportOptions, setSportOptions] = useState([]);
 
   useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const [regionsResponse, sportsResponse] = await Promise.all([
+          getRegions(),
+          getSports(),
+        ]);
+
+        setRegionOptions(
+          Array.isArray(regionsResponse.data)
+            ? regionsResponse.data
+                .map(normalizeRegion)
+                .filter((region) => region.sido && region.sigungu)
+            : [],
+        );
+        setSportOptions(
+          Array.isArray(sportsResponse.data)
+            ? sportsResponse.data.map(normalizeSport).filter((sport) => sport.isActive !== false)
+            : [],
+        );
+      } catch (error) {
+        console.error(error);
+        setRegionOptions([]);
+        setSportOptions([]);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    let active = true;
+
+    const fetchMemberRegion = async () => {
+      if (!isAuthenticated || !user?.memberId) {
+        setMemberRegionId(null);
+        setMemberRegionReady(true);
+        return;
+      }
+
+      setMemberRegionReady(false);
+
+      try {
+        const response = await getMember(user.memberId);
+        if (active) {
+          setMemberRegionId(response.data?.regionId ?? null);
+        }
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setMemberRegionId(null);
+        }
+      } finally {
+        if (active) {
+          setMemberRegionReady(true);
+        }
+      }
+    };
+
+    fetchMemberRegion();
+
+    return () => {
+      active = false;
+    };
+  }, [authLoading, isAuthenticated, user?.memberId]);
+
+  const memberRegion = useMemo(
+    () =>
+      regionOptions.find((region) => region.regionId === memberRegionId) ?? null,
+    [regionOptions, memberRegionId],
+  );
+
+  const regionParams = useMemo(() => {
+    if (!selectedRegion) {
+      return {};
+    }
+
+    if (selectedRegion.regionId) {
+      return { regionId: selectedRegion.regionId };
+    }
+
+    return {
+      sido: selectedRegion.sido || null,
+      sigungu: selectedRegion.sigungu || null,
+      dong: selectedRegion.dong || null,
+    };
+  }, [selectedRegion]);
+
+  const searchParams = useMemo(
+    () => ({
+      ...regionParams,
+      baseRegionId: selectedRegion ? null : memberRegionId,
+      sportId: selectedSport?.sportId ?? null,
+      status: status2,
+      keyword: keyword2,
+      meetingDate,
+      page: currentPage,
+      size: PAGE_SIZE,
+    }),
+    [
+      regionParams,
+      selectedRegion,
+      memberRegionId,
+      selectedSport,
+      status2,
+      keyword2,
+      meetingDate,
+      currentPage,
+    ],
+  );
+
+  useEffect(() => {
+    if (authLoading || !memberRegionReady) return;
+
     const fetchMeetings = async () => {
       try {
         const response = await getMeetings(searchParams);
@@ -96,11 +221,13 @@ export default function MeetingListPage() {
         }
       } catch (error) {
         console.error(error);
+        setMeeting2([]);
+        setTotalCount(0);
       }
     };
 
     fetchMeetings();
-  }, [searchParams]);
+  }, [authLoading, memberRegionReady, searchParams]);
 
   useEffect(() => {
     const fetchTopRegions = async () => {
@@ -116,7 +243,17 @@ export default function MeetingListPage() {
     fetchTopRegions();
   }, []);
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const displayedRegionLabel = selectedRegion
+    ? formatRegionLabel(selectedRegion)
+    : isAuthenticated && memberRegion
+      ? `${memberRegion.sido} ${memberRegion.sigungu} 주변`
+      : ALL_REGION;
+  const displayedSportLabel = selectedSport?.name ?? ALL_SPORT;
+  const mobileSummary = `${displayedRegionLabel} · ${displayedSportLabel} · ${
+    status2 ? STATUS_MAP[status2] || status2 : ALL_STATUS
+  }`;
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -132,12 +269,35 @@ export default function MeetingListPage() {
   };
 
   const resetFilters = () => {
-    setSport2("전체");
-    setRegion2("");
+    setSelectedRegion(null);
+    setSelectedSport(null);
     setStatus2("");
     setKeyword2("");
     setMeetingDate("");
     setCurrentPage(1);
+  };
+
+  const applyRegionSelection = (selection) => {
+    const normalized = {
+      regionId: selection.regionId ?? null,
+      sido: selection.sido ?? "",
+      sigungu: selection.sigungu ?? "",
+      dong: selection.dong ?? "",
+    };
+
+    const hasSelection = Boolean(
+      normalized.regionId || normalized.sido || normalized.sigungu || normalized.dong,
+    );
+
+    setSelectedRegion(hasSelection ? normalized : null);
+    setCurrentPage(1);
+    setIsRegionModalOpen(false);
+  };
+
+  const applySportSelection = (sport) => {
+    setSelectedSport(sport ?? null);
+    setCurrentPage(1);
+    setIsSportModalOpen(false);
   };
 
   return (
@@ -201,43 +361,38 @@ export default function MeetingListPage() {
         <button type="button" onClick={() => setIsFilterOpen(true)}>
           필터 열기
         </button>
-        <span>
-          {sport2} · {region2 || ALL_REGION} · {status2 || "전체 상태"}
-        </span>
+        <span>{mobileSummary}</span>
       </div>
 
       <section className={styles.filterPanel} ref={listStartRef}>
-        <div className={styles.tabs}>
-          {[ALL_SPORT, ...sports.map((item) => item.name)].map((item) => (
-            <button
-              key={item}
-              className={cx("tabButton", sport2 === item && "tabButtonActive")}
-              type="button"
-              onClick={() => {
-                setSport2(item);
-                setCurrentPage(1);
-              }}
-            >
-              {item}
-            </button>
-          ))}
+        <div className={styles.selectionBar}>
+          <strong>
+            {displayedRegionLabel} · {displayedSportLabel}
+          </strong>
+          <span>
+            {selectedRegion
+              ? "선택한 지역 기준으로 조회 중"
+              : isAuthenticated && memberRegion
+                ? "사용자의 지역 기준으로 조회 중"
+                : "전체 지역 기준으로 조회 중"}
+          </span>
         </div>
 
         <div className={styles.filterRow}>
-          <select
-            value={region2}
-            onChange={(event) => {
-              setRegion2(event.target.value);
-              setCurrentPage(1);
-            }}
+          <button
+            type="button"
+            className={styles.pickerButton}
+            onClick={() => setIsRegionModalOpen(true)}
           >
-            <option value="">{ALL_REGION}</option>
-            {regions.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+            지역 조회
+          </button>
+          <button
+            type="button"
+            className={styles.pickerButton}
+            onClick={() => setIsSportModalOpen(true)}
+          >
+            운동 조회
+          </button>
           <select
             value={status2}
             onChange={(event) => {
@@ -279,41 +434,18 @@ export default function MeetingListPage() {
       </section>
 
       <div className={styles.listHead}>
-        <h2>파주시 주변 모임</h2>
+        <h2>모임 리스트</h2>
         <span>총 {totalCount}개</span>
       </div>
 
       <section className={styles.meetingList}>
         {meeting2.length === 0 ? (
-          <div
-            style={{ padding: "80px 0", textAlign: "center", color: "#666" }}
-          >
-            <div style={{ marginRight: "0px" }}>
-              <h3
-                style={{
-                  fontSize: "1.2rem",
-                  marginBottom: "8px",
-                  color: "#333",
-                }}
-              >
-                조건에 맞는 모임이 없습니다
-              </h3>
-              <p>선택하신 지역이나 종목, 날짜를 변경해 보세요.</p>
-              <button
-                type="button"
-                onClick={resetFilters}
-                style={{
-                  marginTop: "16px",
-                  padding: "8px 16px",
-                  backgroundColor: "#f0f0f0",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                검색 조건 초기화
-              </button>
-            </div>
+          <div className={styles.emptyList}>
+            <h3>조건에 맞는 모임이 없습니다</h3>
+            <p>선택하신 지역이나 종목, 날짜를 변경해 보세요.</p>
+            <button type="button" onClick={resetFilters}>
+              검색 조건 초기화
+            </button>
           </div>
         ) : (
           meeting2.map((meeting) => (
@@ -324,7 +456,7 @@ export default function MeetingListPage() {
             >
               <div className={styles.listCardBody}>
                 <img
-                  src={meeting.thumbnailImage}
+                  src={meeting.thumbnailImage || "/src/assets/image/bg1.jpg"}
                   alt={meeting.title}
                   className={styles.listCardImage}
                 />
@@ -365,7 +497,7 @@ export default function MeetingListPage() {
                         name="user"
                         className={styles.dashboardMetaIcon}
                       />
-                      {meeting.approvedCount}/{meeting.maxMembers}명
+                      {meeting.approvedCount || 0}/{meeting.maxMembers}명
                     </span>
                   </div>
                   <div className={styles.host}>
@@ -375,7 +507,7 @@ export default function MeetingListPage() {
                         className={styles.dashboardHostIcon}
                       />
                     </i>
-                    <span>{meeting.meetingHostName} · 매너점수 4.8</span>
+                    <span>{meeting.meetingHostName || "익명"} · 매너점수 4.8</span>
                   </div>
                 </div>
               </div>
@@ -383,9 +515,9 @@ export default function MeetingListPage() {
               <aside>
                 <div className={styles.dateBox}>
                   <span>
-                    {meeting.meetingDate.split("-").slice(1).join(".")}
+                    {meeting.meetingDate ? String(meeting.meetingDate).split("-").slice(1).join(".") : "-"}
                   </span>
-                  <strong>{meeting.startTime.slice(0, 5)}</strong>
+                  <strong>{meeting.startTime ? String(meeting.startTime).slice(0, 5) : "-"}</strong>
                 </div>
                 <button
                   type="button"
@@ -419,41 +551,21 @@ export default function MeetingListPage() {
         variant="sheet"
         eyebrow="모임 필터"
         title="원하는 모임만 빠르게 볼까요?"
-        description="모바일에서도 필터를 한 번에 펼쳐서 고르고, 목록은 넓게 보이도록 정리했습니다."
+        description="지역과 운동 종목을 모달에서 고르고 세부 조건을 조정할 수 있습니다."
         confirmText="필터 적용"
         onClose={() => setIsFilterOpen(false)}
         onConfirm={() => setIsFilterOpen(false)}
       >
-        <div className={styles.sheetSportGrid}>
-          {[ALL_SPORT, ...sports.map((item) => item.name)].map((item) => (
-            <button
-              key={item}
-              className={cx("sheetChip", sport2 === item && "sheetChipActive")}
-              type="button"
-              onClick={() => {
-                setSport2(item);
-                setCurrentPage(1);
-              }}
-            >
-              {item}
-            </button>
-          ))}
+        <div className={styles.sheetPickerGrid}>
+          <button type="button" onClick={() => { setIsFilterOpen(false); setIsRegionModalOpen(true); }}>
+            지역 조회
+          </button>
+          <button type="button" onClick={() => { setIsFilterOpen(false); setIsSportModalOpen(true); }}>
+            운동 조회
+          </button>
         </div>
 
         <div className={styles.sheetFilterFields}>
-          <select
-            value={region2 || ""}
-            onChange={(event) => {
-              setRegion2(event.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="">{ALL_REGION}</option>
-            {regions.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-
           <select
             value={status2}
             onChange={(event) => {
@@ -464,6 +576,8 @@ export default function MeetingListPage() {
             <option value="">전체 상태</option>
             <option value="RECRUITING">모집중</option>
             <option value="CLOSED">모집마감</option>
+            <option value="COMPLETED">모임완료</option>
+            <option value="CANCELLED">취소됨</option>
           </select>
 
           <input
@@ -485,6 +599,24 @@ export default function MeetingListPage() {
           />
         </div>
       </AppModal>
+
+      <MeetingRegionPickerModal
+        open={isRegionModalOpen}
+        regions={regionOptions}
+        initialSelection={selectedRegion}
+        onApply={applyRegionSelection}
+        onClose={() => setIsRegionModalOpen(false)}
+      />
+
+      <SportPickerModal
+        open={isSportModalOpen}
+        sports={sportOptions}
+        selectedSportId={selectedSport?.sportId ?? null}
+        onApply={applySportSelection}
+        onClose={() => setIsSportModalOpen(false)}
+      />
     </DashboardShell>
   );
 }
+
+

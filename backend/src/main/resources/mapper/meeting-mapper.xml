@@ -4,55 +4,64 @@
 
     <select id="selectMeetingList" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
         SELECT
-            m.meetingId,
+            m.meeting_id as meetingId,
             m.title,
-            m.placeName,
-            m.meetingDate,
-            m.startTime,
-            m.maxMembers,
+            m.place_name as placeName,
+            m.meeting_date as meetingDate,
+            m.start_time as startTime,
+            m.max_members as maxMembers,
             m.status,
             m.content,
-            m.thumbnailImage,
+            m.thumbnail_image as thumbnailImage,
             s.name sportName,
             CONCAT(r.sido," ",r.sigungu," ",COALESCE(r.dong,"")) regionName,
             (
                 SELECT nickname
                 FROM users
-                where userId = m.hostUserId
+                where user_id = m.host_user_id
             ) meetingHostName,
             (
                 SELECT COUNT(*)
-                FROM meetingParticipants mp
-                WHERE mp.meetingId=m.meetingId
+                FROM meeting_participants mp
+                WHERE mp.meeting_id=m.meeting_id
                 AND mp.status="APPROVED"
             ) approvedCount
         FROM meetings m
-        JOIN sports s ON m.sportId=s.sportId
-        JOIN regions r ON m.regionId=r.regionId
-        WHERE m.deletedAt IS NULL
+        JOIN sports s ON m.sport_id=s.sport_id
+        JOIN regions r ON m.region_id=r.region_id
+        WHERE m.deleted_at IS NULL
         <choose>
-            <when test='sportName == "전체"'>
+            <when test="sportId != null">
+                AND m.sport_id = #{sportId}
             </when>
-
-            <when test='sportName == "기타"'>
-                <if test="fixedSports != null and fixedSports.size() > 0">
-                    AND s.name NOT IN
-                    <foreach collection="fixedSports" item="sport" open="(" separator="," close=")">
-                        #{sport}
-                    </foreach>
-                </if>
-            </when>
-
-            <otherwise>
+            <when test='sportName != null and sportName != "" and sportName != "전체"'>
                 AND s.name = #{sportName}
-            </otherwise>
+            </when>
         </choose>
         <if test='meetingDate != null and meetingDate != ""'>
-            AND m.meetingDate = #{meetingDate}
+            AND m.meeting_date = #{meetingDate}
         </if>
-        <if test="regionId != null">
-            AND m.regionId=#{regionId}
-        </if>
+        <choose>
+            <when test="regionId != null">
+                AND m.region_id = #{regionId}
+            </when>
+            <when test='dong != null and dong != ""'>
+                AND r.sido = #{sido}
+                AND r.sigungu = #{sigungu}
+                AND r.dong = #{dong}
+            </when>
+            <when test='sigungu != null and sigungu != ""'>
+                AND r.sido = #{sido}
+                AND r.sigungu = #{sigungu}
+            </when>
+            <when test='sido != null and sido != ""'>
+                AND r.sido = #{sido}
+            </when>
+            <when test="baseRegionId != null">
+                AND r.sido = (SELECT br.sido FROM regions br WHERE br.region_id = #{baseRegionId})
+                AND r.sigungu = (SELECT br.sigungu FROM regions br WHERE br.region_id = #{baseRegionId})
+            </when>
+        </choose>
         <if test='status != null and status != ""'>
             AND m.status = #{status}
         </if>
@@ -68,39 +77,59 @@
             OR r.dong LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
-        ORDER BY m.meetingDate ASC, m.startTime ASC
+        ORDER BY
+            CASE WHEN #{baseRegionId} IS NOT NULL AND m.region_id = #{baseRegionId} THEN 0 ELSE 1 END,
+            CASE m.status
+                WHEN 'RECRUITING' THEN 0
+                WHEN 'CLOSED' THEN 1
+                WHEN 'COMPLETED' THEN 2
+                WHEN 'CANCELLED' THEN 3
+                ELSE 4
+            END,
+            m.meeting_date ASC,
+            m.start_time ASC,
+            m.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
 
     <select id="selectMeetingCount" resultType="int">
         SELECT COUNT(*)
         FROM meetings m
-        JOIN sports s ON m.sportId=s.sportId
-        JOIN regions r ON m.regionId=r.regionId
-        WHERE m.deletedAt IS NULL
+        JOIN sports s ON m.sport_id=s.sport_id
+        JOIN regions r ON m.region_id=r.region_id
+        WHERE m.deleted_at IS NULL
         <choose>
-            <when test='sportName == "전체"'>
+            <when test="sportId != null">
+                AND m.sport_id = #{sportId}
             </when>
-
-            <when test='sportName == "기타"'>
-                <if test="fixedSports != null and fixedSports.size() > 0">
-                    AND s.name NOT IN
-                    <foreach collection="fixedSports" item="sport" open="(" separator="," close=")">
-                        #{sport}
-                    </foreach>
-                </if>
-            </when>
-
-            <otherwise>
+            <when test='sportName != null and sportName != "" and sportName != "전체"'>
                 AND s.name = #{sportName}
-            </otherwise>
+            </when>
         </choose>
         <if test='meetingDate != null and meetingDate != ""'>
-            AND m.meetingDate = #{meetingDate}
+            AND m.meeting_date = #{meetingDate}
         </if>
-        <if test="regionId != null">
-            AND m.regionId=#{regionId}
-        </if>
+        <choose>
+            <when test="regionId != null">
+                AND m.region_id = #{regionId}
+            </when>
+            <when test='dong != null and dong != ""'>
+                AND r.sido = #{sido}
+                AND r.sigungu = #{sigungu}
+                AND r.dong = #{dong}
+            </when>
+            <when test='sigungu != null and sigungu != ""'>
+                AND r.sido = #{sido}
+                AND r.sigungu = #{sigungu}
+            </when>
+            <when test='sido != null and sido != ""'>
+                AND r.sido = #{sido}
+            </when>
+            <when test="baseRegionId != null">
+                AND r.sido = (SELECT br.sido FROM regions br WHERE br.region_id = #{baseRegionId})
+                AND r.sigungu = (SELECT br.sigungu FROM regions br WHERE br.region_id = #{baseRegionId})
+            </when>
+        </choose>
         <if test='status != null and status != ""'>
             AND m.status = #{status}
         </if>
@@ -126,40 +155,40 @@
             r.dong AS dong,
             COUNT(*) AS count
         FROM meetings m
-        JOIN regions r ON m.regionId = r.regionId
-        WHERE m.deletedAt IS NULL
+        JOIN regions r ON m.region_id = r.region_id
+        WHERE m.deleted_at IS NULL
         GROUP BY r.sido, r.sigungu, r.dong
-        ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
+        ORDER BY COUNT(*) DESC, MAX(m.created_at) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
         LIMIT 4
     </select>
 
     <select id="selectMeetingDetail" resultType="kr.co.iei.meeting.model.vo.MeetingDetailResponse">
         SELECT
-            m.meetingId,
-            m.hostUserId,
+            m.meeting_id as meetingId,
+            m.host_user_id as hostUserId,
             u.nickname AS hostNickname,
             m.title,
             m.content,
-            m.placeName,
+            m.place_name as placeName,
             m.address,
-            m.meetingDate,
-            m.startTime,
-            m.maxMembers,
+            m.meeting_date as meetingDate,
+            m.start_time as startTime,
+            m.max_members as maxMembers,
             m.status,
             s.name AS sportName,
             CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) AS regionName,
             (
                 SELECT COUNT(*)
-                FROM meetingParticipants mp
+                FROM meeting_participants mp
                 WHERE mp.meeting_id=m.meeting_id
                 AND mp.status="APPROVED"
-            ) approved_count
+            ) approvedCount
         FROM meetings m
-        JOIN users u ON m.hostUserId = u.userId
-        JOIN sports s ON m.sportId = s.sportId
-        JOIN regions r ON m.regionId = r.regionId
-        WHERE m.meetingId = #{meetingId}
-        AND m.deletedAt IS NULL
+        JOIN users u ON m.host_user_id = u.user_id
+        JOIN sports s ON m.sport_id = s.sport_id
+        JOIN regions r ON m.region_id = r.region_id
+        WHERE m.meeting_id = #{meetingId}
+        AND m.deleted_at IS NULL
     </select>
 
     <insert id="insertMeeting" parameterType="kr.co.iei.meeting.model.vo.Meeting" useGeneratedKeys="true" keyProperty="meetingId">
@@ -234,3 +263,4 @@
     </select>
 
 </mapper>
+

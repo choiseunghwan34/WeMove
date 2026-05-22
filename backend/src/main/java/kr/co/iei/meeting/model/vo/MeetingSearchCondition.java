@@ -8,6 +8,10 @@ import java.util.List;
 public class MeetingSearchCondition {
   private Long sportId;
   private Long regionId;
+  private Long baseRegionId;
+  private String sido;
+  private String sigungu;
+  private String dong;
   private String status;
   private String keyword;
   private String sort;
@@ -23,3 +27,5 @@ public class MeetingSearchCondition {
     return (page - 1) * size;
   }
 }
+
+
