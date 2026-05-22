@@ -384,15 +384,6 @@ export default function MeetingCreatePage() {
         </label>
 
         <label>
-          <span>상세 장소</span>
-          <input
-            name="placeName"
-            value={form.placeName}
-            onChange={handleChange}
-            placeholder="예: 야당역 2번 출구 앞"
-          />
-        </label>
-        <label>
           <span>주소</span>
           <input
             name="address"
@@ -401,6 +392,15 @@ export default function MeetingCreatePage() {
             readOnly
             placeholder="주소를 설정하세요."
             style={{cursor: "pointer"}}
+          />
+        </label>
+        <label>
+          <span>상세 주소</span>
+          <input
+            name="placeName"
+            value={form.placeName}
+            onChange={handleChange}
+            placeholder="예: 야당역 2번 출구 앞"
           />
         </label>
         <label>
