@@ -69,6 +69,21 @@ export default function MeetingCreatePage() {
     return `${year}-${month}-${day}`;
   };
 
+  const timeOptions = useMemo(()=>{
+    const options =[];
+    for(let i=0; i < 24; i++){
+      const period =i <12 ? '오전':'오후';
+      const displayHour = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+      const formattedHour = String(displayHour).padStart(2, '0');
+
+      //DB에 들어갈 실제값(24시간제 14:38)
+      const valHour = String(i).padStart(2, '0');
+      options.push({ value: `${valHour}:00`, label: `${period} ${formattedHour}:00` });
+      options.push({ value: `${valHour}:30`, label: `${period} ${formattedHour}:30` });
+    }
+    return options;
+  },[])
+
   //모달 선택 및 상태관리
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
@@ -384,40 +399,32 @@ export default function MeetingCreatePage() {
             min={getTodayString()}
           />
         </label>
-        <label>
-          <span>시작 시간</span>
-          <input
-            name="startTime"
-            value={form.startTime}
-            onChange={handleChange}
-            type={form.startTime ? "time" : "text"}
-            placeholder="시간을 설정하세요"
-            onClick={(e) => {
-              const target = e.target;
-              // 1. 클릭하는 순간 즉시 time 타입으로 변경
-              if (target.type !== "time") {
-                target.type = "time";
-              }
 
-              // 2. 브라우저가 타입을 바꿀 아주 짧은 시간(10ms)을 준 뒤 시간 선택창 강제 호출
-              setTimeout(() => {
-                try {
-                  target.showPicker();
-                } catch (error) {
-                  // Safari 등 구형 브라우저 대비 안전장치
-                }
-              }, 10);
-            }}
-            onBlur={(e) => {
-              //창을 닫았을때 선택된 값이 없다면 다시 텍스트로 복귀
-              if (!e.target.value) {
-                e.target.type = "text";
-              }
-            }}
-            //시간설정30분(1800초)단위로 선택가능하게 제한
-            step="1800"
-          />
-        </label>
+          <label>
+              <span>시작 시간</span>
+              <select
+                  name="startTime"
+                  value={form.startTime}
+                  onChange={handleChange}
+                  /* ✨ 값이 없으면 회색 텍스트, 값이 있으면 진한 텍스트 클래스 적용 */
+                  className={`${styles.timeSelect} ${!form.startTime ? styles.placeholderText : styles.valueText}`}
+              >
+                  <option value="" disabled hidden>
+                      시간을 설정하세요.
+                  </option>
+
+                  {timeOptions.map((time) => (
+                      <option
+                          key={time.value}
+                          value={time.value}
+                          className={styles.timeOption}
+                      >
+                          {time.label}
+                      </option>
+                  ))}
+              </select>
+          </label>
+
         <label>
           <span>모집 인원</span>
           <input

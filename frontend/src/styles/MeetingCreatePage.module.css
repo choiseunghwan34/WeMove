@@ -209,10 +209,6 @@
   transform: translateY(1px);
 }
 
-.placeholderText {
-  color: #9ca3af;
-}
-
 .selectedText {
   color: #111827;
   font-weight: 500;
@@ -291,7 +287,7 @@
   font-weight: 450;
 }
 .placeholderText{
-  color: #757575;
+  color: #9ca3af;
   font-size: 0.95rem;
   font-weight: 300;
 }
@@ -307,3 +303,29 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   시간 선택 셀렉트 박스 커스텀 (화살표 제거)
+========================================================= */
+
+.timeSelect {
+  appearance: none; /* 브라우저 기본 화살표 제거 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* 옵션(드롭다운 리스트) 안의 글씨는 항상 진하게 보이도록 고정 */
+.timeOption {
+  color: #10233f;
+  font-weight: 450;
+}
+
+/* timeSelect 클래스와 placeholderText 클래스가 동시에 있을 때 적용 (띄어쓰기 없음!) */
+.timeSelect.placeholderText {
+  color: #51a1b5;
+  font-size: 0.95rem;
+  font-weight: 330;
+}
+
