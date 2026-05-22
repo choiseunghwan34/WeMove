@@ -138,7 +138,9 @@ export default function SignupPage() {
   const { setAuthenticatedAccessToken } = useAuth();
   const [form, setForm] = useState(initialForm);
   const [regions, setRegions] = useState([]);
-  const [regionSelection, setRegionSelection] = useState(initialRegionSelection);
+  const [regionSelection, setRegionSelection] = useState(
+    initialRegionSelection,
+  );
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [formMessage, setFormMessage] = useState("");
@@ -210,7 +212,8 @@ export default function SignupPage() {
       socket.onerror = () => {
         setFieldErrors((current) => ({
           ...current,
-          email: "이메일 인증 연결을 확인할 수 없습니다. 인증 서버 상태를 확인해주세요.",
+          email:
+            "이메일 인증 연결을 확인할 수 없습니다. 인증 서버 상태를 확인해주세요.",
         }));
       };
     } catch {
@@ -225,7 +228,10 @@ export default function SignupPage() {
     };
   }, [emailVerificationStatus]);
 
-  const regionHierarchy = useMemo(() => buildRegionHierarchy(regions), [regions]);
+  const regionHierarchy = useMemo(
+    () => buildRegionHierarchy(regions),
+    [regions],
+  );
 
   const selectedRegion = useMemo(() => {
     return regions.find(
@@ -247,12 +253,16 @@ export default function SignupPage() {
     const birthYear = Number(form.birthYear);
 
     if (!LOGIN_ID_PATTERN.test(loginId)) {
-      nextErrors.loginId = "아이디는 소문자와 숫자를 조합해 정확히 7자리로 입력해주세요.";
+      nextErrors.loginId =
+        "아이디는 소문자와 숫자를 조합해 정확히 7자리로 입력해주세요.";
     }
 
     if (!EMAIL_PATTERN.test(email)) {
       nextErrors.email = "올바른 이메일 형식으로 입력해주세요.";
-    } else if (emailVerificationStatus !== "verified" || verifiedEmail !== email) {
+    } else if (
+      emailVerificationStatus !== "verified" ||
+      verifiedEmail !== email
+    ) {
       nextErrors.email = "이메일 인증을 완료해주세요.";
     }
 
@@ -266,7 +276,8 @@ export default function SignupPage() {
     }
 
     if (!NICKNAME_PATTERN.test(normalizeText(form.nickname))) {
-      nextErrors.nickname = "닉네임은 한글, 영문, 숫자만 입력해주세요. 공백과 특수문자는 사용할 수 없습니다.";
+      nextErrors.nickname =
+        "닉네임은 한글, 영문, 숫자만 입력해주세요. 공백과 특수문자는 사용할 수 없습니다.";
     }
 
     if (!selectedRegion?.regionId) {
@@ -449,8 +460,8 @@ export default function SignupPage() {
           <span className={styles.eyebrow}>JOIN WEMOVE</span>
           <h1>내 지역에서 시작하는 새로운 운동 루틴</h1>
           <p>
-            기본 정보를 입력하면 내 주변 모임을 훨씬 더 빠르게 찾을 수
-            있습니다. 처음 가입해도 바로 참여 흐름이 이어지도록 설계했습니다.
+            기본 정보를 입력하면 내 주변 모임을 훨씬 더 빠르게 찾을 수 있습니다.
+            처음 가입해도 바로 참여 흐름이 이어지도록 설계했습니다.
           </p>
 
           <div className={styles.metrics}>
@@ -489,7 +500,7 @@ export default function SignupPage() {
                     name="loginId"
                     value={form.loginId}
                     onChange={handleChange}
-                    placeholder="abc1234"
+                    placeholder="영문 소문자와 숫자"
                     autoComplete="username"
                     maxLength={7}
                     disabled={isSubmitting}
@@ -556,7 +567,7 @@ export default function SignupPage() {
                   type="password"
                   value={form.password}
                   onChange={handleChange}
-                  placeholder="Aa1!aaaa"
+                  placeholder="대소문자, 숫자, 특수문자 포함 8자리 이상"
                   autoComplete="new-password"
                   maxLength={8}
                   disabled={isSubmitting}
@@ -671,7 +682,11 @@ export default function SignupPage() {
             </p>
           ) : null}
 
-          <button className={styles.submit} type="submit" disabled={isSubmitting}>
+          <button
+            className={styles.submit}
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "가입 처리 중..." : "가입 완료"}
           </button>
 
