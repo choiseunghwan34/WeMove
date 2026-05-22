@@ -18,9 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
   private static final String REFRESH_KEY_PREFIX = "auth:refresh:";
-  private static final String LOGIN_ID_PATTERN = "^[a-z0-9]{7}$";
+  private static final String LOGIN_ID_PATTERN = "^[a-z0-9]{5,20}$";
   private static final String PASSWORD_PATTERN =
-      "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8}$";
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,16}$";
   private static final String NICKNAME_PATTERN = "^[가-힣a-zA-Z0-9]+$";
 
   private final AuthDao authDao;
@@ -72,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
 
   public void checkLoginId(String loginId) {
     if (loginId == null || !loginId.trim().matches(LOGIN_ID_PATTERN)) {
-      throw new IllegalArgumentException("아이디는 소문자와 숫자를 조합해 정확히 7자리로 입력해주세요.");
+      throw new IllegalArgumentException("아이디는 소문자와 숫자를 조합해 5자 이상 20자 이하로 입력해주세요.");
     }
 
     if (authDao.selectByLoginId(loginId.trim()) != null) {
@@ -170,7 +170,7 @@ public class AuthServiceImpl implements AuthService {
       throw new IllegalArgumentException("회원가입 정보를 입력해주세요.");
     }
     if (req.getPassword() == null || !req.getPassword().matches(PASSWORD_PATTERN)) {
-      throw new IllegalArgumentException("비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해 정확히 8자리로 입력해주세요.");
+      throw new IllegalArgumentException("비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해 8자 이상 16자 이하로 입력해주세요.");
     }
     if (req.getNickname() == null || !req.getNickname().trim().matches(NICKNAME_PATTERN)) {
       throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자만 입력해주세요.");

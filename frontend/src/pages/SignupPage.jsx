@@ -27,9 +27,9 @@ const initialRegionSelection = {
   dong: "전체 읍면동",
 };
 
-const LOGIN_ID_PATTERN = /^[a-z0-9]{7}$/;
+const LOGIN_ID_PATTERN = /^[a-z0-9]{5,20}$/;
 const PASSWORD_PATTERN =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8}$/;
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,16}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]+$/;
 const CURRENT_YEAR = new Date().getFullYear();
@@ -254,7 +254,7 @@ export default function SignupPage() {
 
     if (!LOGIN_ID_PATTERN.test(loginId)) {
       nextErrors.loginId =
-        "아이디는 소문자와 숫자를 조합해 정확히 7자리로 입력해주세요.";
+        "아이디는 소문자와 숫자를 조합해 5자 이상 20자 이하로 입력해주세요.";
     }
 
     if (!EMAIL_PATTERN.test(email)) {
@@ -268,7 +268,7 @@ export default function SignupPage() {
 
     if (!PASSWORD_PATTERN.test(password)) {
       nextErrors.password =
-        "비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해 정확히 8자리로 입력해주세요.";
+        "비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해 8자 이상 16자 이하로 입력해주세요.";
     }
 
     if (form.passwordConfirm !== password) {
@@ -330,7 +330,7 @@ export default function SignupPage() {
     if (!LOGIN_ID_PATTERN.test(loginId)) {
       setFieldErrors((current) => ({
         ...current,
-        loginId: "아이디는 소문자와 숫자를 조합해 정확히 7자리로 입력해주세요.",
+        loginId: "아이디는 소문자와 숫자를 조합해 5자 이상 20자 이하로 입력해주세요.",
       }));
       return;
     }
@@ -500,9 +500,9 @@ export default function SignupPage() {
                     name="loginId"
                     value={form.loginId}
                     onChange={handleChange}
-                    placeholder="영문 소문자와 숫자"
+                    placeholder="영문 소문자와 숫자 5~20자"
                     autoComplete="username"
-                    maxLength={7}
+                    maxLength={20}
                     disabled={isSubmitting}
                   />
                   <button
@@ -567,9 +567,9 @@ export default function SignupPage() {
                   type="password"
                   value={form.password}
                   onChange={handleChange}
-                  placeholder="대소문자, 숫자, 특수문자 포함 8자리 이상"
+                  placeholder="대소문자, 숫자, 특수문자 포함 8~16자"
                   autoComplete="new-password"
-                  maxLength={8}
+                  maxLength={16}
                   disabled={isSubmitting}
                 />
                 <small className={styles.fieldError}>
@@ -586,7 +586,7 @@ export default function SignupPage() {
                   onChange={handleChange}
                   placeholder="비밀번호 다시 입력"
                   autoComplete="new-password"
-                  maxLength={8}
+                  maxLength={16}
                   disabled={isSubmitting}
                 />
                 <small className={styles.fieldError}>
