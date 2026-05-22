@@ -9,6 +9,7 @@ import { meetings, regions, sports } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MeetingListPage.module.css";
 import { getMeeting, getMeetings, getTopRegions } from "../api/meetingApi";
+import { useAuth } from "../contexts/AuthContext";
 
 const cx = (...names) =>
   names
@@ -23,6 +24,22 @@ const ALL_STATUS = "전체 상태";
 const PAGE_SIZE = 10;
 const weekdayLabels = ["오늘", "내일", "토", "일"];
 
+const formatTopRegionLabel = (region) => {
+  if (!region || typeof region !== "object") {
+    return String(region || "");
+  }
+
+  const parts = [
+    region.sido || region.sidoName,
+    region.sigungu || region.sigunguName,
+    region.dong || region.dongName,
+  ].filter(Boolean);
+
+  return parts.length > 0
+    ? parts.join(" ")
+    : region.regionName || region.name || "";
+};
+
 export default function MeetingListPage() {
   const listStartRef = useRef(null);
   const [meetingDate, setMeetingDate] = useState("");
@@ -36,6 +53,8 @@ export default function MeetingListPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [topRegions, setTopRegions] = useState([]);
+
+  const { user } = useAuth();
 
   const STATUS_MAP = {
     RECRUITING: "모집중",
@@ -133,14 +152,20 @@ export default function MeetingListPage() {
               <h3>인기 지역</h3>
             </div>
             <div className={styles.dashboardSimpleList}>
-              {topRegions.map((item, index) => (
-                <div key={`${item.name}-${index}`}>
-                  <span>
-                    {index + 1}. {item.name}
-                  </span>
-                  <strong>{item.count}개</strong>
-                </div>
-              ))}
+              {topRegions.map((item, index) => {
+                const regionLabel = formatTopRegionLabel(item);
+                const meetingCount =
+                  item && typeof item === "object" ? item.count : 0;
+
+                return (
+                  <div key={`${regionLabel}-${index}`}>
+                    <span>
+                      {index + 1}. {regionLabel}
+                    </span>
+                    <strong>{meetingCount}개</strong>
+                  </div>
+                );
+              })}
             </div>
           </section>
 

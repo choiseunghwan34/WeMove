@@ -120,15 +120,16 @@
 
     <select id="selectTopRegions" resultType="map">
         SELECT
-            r.dong AS name,
+            TRIM(CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, ''))) AS name,
+            r.sido AS sido,
+            r.sigungu AS sigungu,
+            r.dong AS dong,
             COUNT(*) AS count
         FROM meetings m
         JOIN regions r ON m.regionId = r.regionId
         WHERE m.deletedAt IS NULL
-          AND r.dong IS NOT NULL
-          AND r.dong != ''
-        GROUP BY r.dong
-        ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.dong ASC
+        GROUP BY r.sido, r.sigungu, r.dong
+        ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
         LIMIT 4
     </select>
 
