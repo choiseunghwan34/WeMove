@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useRef } from "react";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import Pagination from "../components/Pagination";
@@ -23,6 +24,7 @@ const PAGE_SIZE = 10;
 const weekdayLabels = ["오늘", "내일", "토", "일"];
 
 export default function MeetingListPage() {
+  const listStartRef = useRef(null);
   const [meetingDate, setMeetingDate] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -55,7 +57,15 @@ export default function MeetingListPage() {
       page: currentPage,
       size: PAGE_SIZE,
     };
-  }, [sport2, region2, status2, keyword2, fixedSports, meetingDate, currentPage]);
+  }, [
+    sport2,
+    region2,
+    status2,
+    keyword2,
+    fixedSports,
+    meetingDate,
+    currentPage,
+  ]);
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -91,7 +101,15 @@ export default function MeetingListPage() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (!listStartRef.current) {
+      return;
+    }
+
+    const listTop =
+      listStartRef.current.getBoundingClientRect().top + window.scrollY - 8;
+
+    window.scrollTo({ top: listTop, behavior: "smooth" });
   };
 
   const resetFilters = () => {
@@ -163,7 +181,7 @@ export default function MeetingListPage() {
         </span>
       </div>
 
-      <section className={styles.filterPanel}>
+      <section className={styles.filterPanel} ref={listStartRef}>
         <div className={styles.tabs}>
           {[ALL_SPORT, ...sports.map((item) => item.name)].map((item) => (
             <button
