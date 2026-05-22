@@ -9,6 +9,8 @@
             loginId,
             email,
             nickname,
+            phone,
+            profileImage,
             regionId,
             role,
             status
@@ -18,11 +20,15 @@
 
     <update id="updateMember">
         UPDATE users
-        SET
+        <set>
             email=#{request.email},
             nickname=#{request.nickname},
             phone=#{request.phone},
-            regionId=#{request.regionId}
+            regionId=#{request.regionId},
+            <if test="request.profileImage != null and request.profileImage != ''">
+                profileImage=#{request.profileImage},
+            </if>
+        </set>
         WHERE userId=#{memberId}
     </update>
 

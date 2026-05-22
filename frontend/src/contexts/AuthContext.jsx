@@ -6,6 +6,7 @@ import {
   logout as logoutApi,
   refreshSession,
 } from "../api/authApi";
+import { getMe } from "../api/memberApi";
 import { clearAccessToken, setAccessToken } from "../utils/authTokenStore";
 import { parseUserFromAccessToken } from "../utils/jwtPayload";
 
@@ -106,6 +107,45 @@ export function AuthProvider({ children }) {
     };
   }, [accessToken, user]);
 
+  useEffect(() => {
+    if (!accessToken || !user?.memberId) {
+      return undefined;
+    }
+
+    let active = true;
+
+    const hydrateUserProfile = async () => {
+      try {
+        const { data } = await getMe(user.memberId);
+
+        if (!active || !data) {
+          return;
+        }
+
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                nickname: data.nickname ?? current.nickname,
+                profileImage: data.profileImage ?? current.profileImage ?? "",
+                phone: data.phone ?? current.phone ?? "",
+                email: data.email ?? current.email ?? "",
+                regionId: data.regionId ?? current.regionId ?? null,
+              }
+            : current,
+        );
+      } catch {
+        // Keep the token-derived user as-is when profile hydration fails.
+      }
+    };
+
+    hydrateUserProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [accessToken, user?.memberId]);
+
   const applyAccessToken = (nextAccessToken) => {
     const parsedUser = parseUserFromAccessToken(nextAccessToken);
     revocationHandledRef.current = false;
@@ -128,6 +168,16 @@ export function AuthProvider({ children }) {
       loading,
       isAuthenticated: Boolean(accessToken && user),
       setAuthenticatedAccessToken: applyAccessToken,
+      updateUserProfile: (profilePatch) => {
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                ...profilePatch,
+              }
+            : current,
+        );
+      },
       logout: async () => {
         try {
           await logoutApi();

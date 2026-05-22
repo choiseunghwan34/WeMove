@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
+import WeMoveLogo from "../components/WeMoveLogo";
 import { login } from "../api/authApi";
 import { getLoginPageStats } from "../api/statsApi";
 import { useAuth } from "../contexts/AuthContext";
@@ -180,7 +181,7 @@ export default function LoginPage() {
         <div className={styles.layout}>
           <section className={styles.copy}>
             <Link to="/" className={styles.logo}>
-              WeMove
+              <WeMoveLogo tone="light" size="md" />
             </Link>
             <span className={styles.eyebrow}>LOCAL FITNESS COMMUNITY</span>
             <h1>동네 운동을 자연스럽게 이어주는 방법</h1>

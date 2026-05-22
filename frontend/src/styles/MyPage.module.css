@@ -1,20 +1,5 @@
 /* Auto-split from MyPage.jsx. Page/component styles compose shared WeMove design rules. */
 
-.badge {
-  composes: badge from "./WeMoveShared.module.css";
-}
-
-.CLOSED {
-}
-
-.dashboardCompactBody {
-  composes: dashboardCompactBody from "./WeMoveShared.module.css";
-}
-
-.dashboardMiniImage {
-  composes: dashboardMiniImage from "./WeMoveShared.module.css";
-}
-
 .dashboardPanel {
   composes: dashboardPanel from "./WeMoveShared.module.css";
 }
@@ -35,16 +20,13 @@
   composes: dashboardStatGrid from "./WeMoveShared.module.css";
 }
 
-.myList {
-  composes: myList from "./WeMoveShared.module.css";
-}
-
 .pageTabs {
   composes: pageTabs from "./WeMoveShared.module.css";
 }
 
 .profileAvatar {
   composes: profileAvatar from "./WeMoveShared.module.css";
+  overflow: hidden;
 }
 
 .profileCard {
@@ -53,10 +35,6 @@
 
 .profileLeft {
   composes: profileLeft from "./WeMoveShared.module.css";
-}
-
-.success {
-  composes: success from "./WeMoveShared.module.css";
 }
 
 .tabButton {
@@ -71,93 +49,178 @@
   composes: tabsPanel from "./WeMoveShared.module.css";
 }
 
-/* Home-aligned my page polish */
 .profileCard,
 .tabsPanel,
 .dashboardPanel,
-.dashboardStatGrid article,
-.myList article {
-  background: rgba(255, 255, 255, 0.94) !important;
-  border-color: rgba(15, 23, 42, 0.06) !important;
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.045) !important;
-}
-
-.dashboardMiniImage {
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.08) !important;
-}
-
-.myList aside a {
-  border-color: rgba(15, 23, 42, 0.08) !important;
-}
-
-.myList aside a:last-child {
-  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-  color: #fff !important;
-  border-color: transparent !important;
-}
-
-.warning {
-  composes: warning from "./WeMoveShared.module.css";
-}
-
-/* 2026-05-18 neutral my page finish */
-.profileCard,
-.tabsPanel,
-.dashboardPanel,
-.dashboardStatGrid article,
-.myList article {
+.dashboardStatGrid article {
   background: #ffffff !important;
   border: 1px solid #e5e7eb !important;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
 }
 
-.dashboardMiniImage {
-  box-shadow: none !important;
-  border: 1px solid #eef0f3 !important;
+.profileCopy small {
+  display: block;
+  margin-top: 6px;
+  color: #7a8fa7;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.myList aside a {
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  color: #374151 !important;
-  box-shadow: none !important;
-}
-
-.myList aside a:last-child {
-  background: #2563eb !important;
-  border-color: #2563eb !important;
-  color: #fff !important;
-}
-
-/* 2026-05-18 my page density pass */
-.dashboardStatGrid article {
-  min-height: 108px !important;
-  padding: 18px 18px !important;
-}
-
-.myList article {
-  min-height: 156px !important;
-  padding: 16px !important;
-  gap: 14px !important;
-}
-
-.myList h3 {
-  margin: 8px 0 6px !important;
-  font-size: 1.06rem !important;
-  line-height: 1.3 !important;
-}
-
-.myList p {
-  font-size: 0.92rem !important;
-  line-height: 1.55 !important;
-}
-
-.dashboardCompactBody,
-.myList .dashboardCompactBody {
-  gap: 6px !important;
+.profileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .dashboardPanelHead h3 {
   font-size: 1.08rem !important;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.detailCard {
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.detailLabel {
+  display: block;
+  color: #7a8fa7;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.detailValue {
+  display: block;
+  margin-top: 10px;
+  color: #172033;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.noticeCard {
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035);
+}
+
+.noticeCard h2 {
+  margin: 0 0 10px;
+  color: #172033;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.noticeCard p {
+  margin: 0;
+  color: #61758d;
+  line-height: 1.7;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  font-weight: 900;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.18);
+}
+
+.editForm {
+  display: grid;
+  gap: 14px;
+}
+
+.imageEditor {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 12px 0 4px;
+}
+
+.imagePreview {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #dbe3f0;
+  background: #f8fbff;
+}
+
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #dbe3f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #1f4fd1;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.formField {
+  display: grid;
+  gap: 8px;
+}
+
+.formField span {
+  color: #4b6380;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.formField input,
+.formField select {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  color: #111827;
+  outline: 0;
+}
+
+.formField input:focus,
+.formField select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.formError {
+  margin: 0;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
 }

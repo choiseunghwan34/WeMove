@@ -4,10 +4,15 @@ import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.member.model.service.MemberService;
 import kr.co.iei.member.model.vo.*;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
+
 
 @RestController
 @RequestMapping("/api/members")
@@ -21,10 +26,12 @@ public class MemberController {
     return ResponseEntity.ok(memberService.getMe(memberId));
   }
 
-  @PutMapping("/me")
+  @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> updateMe(
-      @RequestParam(defaultValue = "1") Long memberId, @RequestBody MemberUpdateRequest req) {
-    memberService.updateMe(memberId, req);
+      @RequestParam(defaultValue = "1") Long memberId,
+      @RequestPart("request") MemberUpdateRequest req,
+      @RequestPart(value = "image", required = false) MultipartFile image) {
+    memberService.updateMe(memberId, req, image);
     return ResponseEntity.ok().build();
   }
 

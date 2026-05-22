@@ -7,6 +7,7 @@ import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
 import AppModal from "../components/AppModal";
 import RegionPickerModal from "../components/RegionPickerModal";
+import WeMoveLogo from "../components/WeMoveLogo";
 import { useAuth } from "../contexts/AuthContext";
 import homeBg from "../assets/images/home-bg.webp";
 import styles from "../styles/SignupPage.module.css";
@@ -690,7 +691,7 @@ export default function SignupPage() {
       <div className={`${styles.layout} ${styles.signupLayout}`}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>
-            WeMove
+            <WeMoveLogo tone="light" size="md" />
           </Link>
           <span className={styles.eyebrow}>JOIN WEMOVE</span>
           <h1>내 지역에서 시작하는 새로운 운동 루틴</h1>

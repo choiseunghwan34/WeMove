@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import UiIcon from "./UiIcon";
+import defaultUserImage from "../assets/image/Default-user.png";
 import { interestItems, navItems } from "../data/dashboardData";
-import styles from "../styles/DashboardShell.module.css";
 import { useAuth } from "../contexts/AuthContext";
+import styles from "../styles/DashboardShell.module.css";
+import UiIcon from "./UiIcon";
+import WeMoveLogo from "./WeMoveLogo";
 
 export default function DashboardShell({
   active = "",
@@ -16,6 +18,14 @@ export default function DashboardShell({
   const navigate = useNavigate();
   const { user, logout, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isAdmin = user?.role === "ADMIN";
+  const profileImage =
+    typeof user?.profileImage === "string" && user.profileImage.trim()
+      ? user.profileImage.trim()
+      : defaultUserImage;
+  const visibleNavItems = isAdmin
+    ? navItems.filter((item) => item.to === "/" || item.to === "/meetings")
+    : navItems;
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -29,8 +39,7 @@ export default function DashboardShell({
     <div className={styles.dashboardPage}>
       <header className={styles.dashboardHeader}>
         <Link to="/" className={styles.dashboardLogo} onClick={closeMenu}>
-          <span>W</span>
-          <strong>WeMove</strong>
+          <WeMoveLogo tone="dark" size="md" />
         </Link>
 
         <label className={styles.dashboardSearch}>
@@ -41,9 +50,16 @@ export default function DashboardShell({
         <div className={styles.dashboardActions}>
           {loading ? null : user ? (
             <>
-              <span className={styles.dashboardUserName}>
-                {user.nickname || user.loginId}
-              </span>
+              <div className={styles.dashboardUserInfo}>
+                <img
+                  src={profileImage}
+                  alt={user.nickname ? `${user.nickname} 프로필` : "기본 프로필"}
+                  className={styles.dashboardUserAvatar}
+                />
+                <span className={styles.dashboardUserName}>
+                  {user.nickname || user.loginId}
+                </span>
+              </div>
               <button
                 type="button"
                 className={styles.dashboardSignupButton}
@@ -100,7 +116,7 @@ export default function DashboardShell({
           </div>
 
           <nav className={styles.dashboardNav}>
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.to}
@@ -115,28 +131,44 @@ export default function DashboardShell({
                 <span>{item.label}</span>
               </Link>
             ))}
+            {isAdmin ? (
+              <Link
+                to="/admin"
+                className={
+                  active === "관리자페이지"
+                    ? styles.dashboardNavItemActive
+                    : styles.dashboardNavItem
+                }
+                onClick={closeMenu}
+              >
+                <UiIcon name="spark" className={styles.dashboardNavIcon} />
+                <span>관리자페이지</span>
+              </Link>
+            ) : null}
           </nav>
 
-          <section className={styles.dashboardInterestCard}>
-            <div className={styles.dashboardSidebarHead}>
-              <strong>관심 운동</strong>
-            </div>
-            <div className={styles.dashboardInterestList}>
-              {interestItems.map((item) => (
-                <span key={item.label}>
-                  <i>
-                    <UiIcon
-                      name={item.icon}
-                      className={styles.dashboardInterestIcon}
-                    />
-                  </i>
-                  {item.label}
-                </span>
-              ))}
-            </div>
-          </section>
+          {!isAdmin ? (
+            <section className={styles.dashboardInterestCard}>
+              <div className={styles.dashboardSidebarHead}>
+                <strong>관심 운동</strong>
+              </div>
+              <div className={styles.dashboardInterestList}>
+                {interestItems.map((item) => (
+                  <span key={item.label}>
+                    <i>
+                      <UiIcon
+                        name={item.icon}
+                        className={styles.dashboardInterestIcon}
+                      />
+                    </i>
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-          {sidebarExtra}
+          {!isAdmin ? sidebarExtra : null}
         </aside>
 
         <main className={styles.dashboardMain}>
@@ -149,7 +181,7 @@ export default function DashboardShell({
           {children}
         </main>
 
-        <aside className={styles.dashboardAside}>{aside}</aside>
+        <aside className={styles.dashboardAside}>{!isAdmin ? aside : null}</aside>
       </div>
     </div>
   );

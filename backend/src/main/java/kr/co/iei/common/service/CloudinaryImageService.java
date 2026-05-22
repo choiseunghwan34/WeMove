@@ -17,7 +17,18 @@ public class CloudinaryImageService {
   @Value("${cloudinary.meeting-folder:image/meetings}")
   private String meetingFolder;
 
+  @Value("${cloudinary.profile-folder:image/user}")
+  private String profileFolder;
+
   public String uploadMeetingThumbnail(MultipartFile image) {
+    return uploadImage(image, meetingFolder);
+  }
+
+  public String uploadProfileImage(MultipartFile image) {
+    return uploadImage(image, profileFolder);
+  }
+
+  private String uploadImage(MultipartFile image, String folder) {
     if (image == null || image.isEmpty()) {
       return null;
     }
@@ -30,7 +41,7 @@ public class CloudinaryImageService {
               .upload(
                   image.getBytes(),
                   ObjectUtils.asMap(
-                      "folder", meetingFolder,
+                      "folder", folder,
                       "resource_type", "image"));
 
       Object secureUrl = uploadResult.get("secure_url");

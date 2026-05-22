@@ -26,18 +26,6 @@
   font-weight: 800;
   letter-spacing: -0.04em;
 }
-.logo::before {
-  content: "W";
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #0f4fd6, #3f9fff);
-  color: #fff;
-  box-shadow: 0 18px 34px rgba(23, 105, 255, 0.24);
-  font-size: 18px;
-}
 .main-nav {
   display: flex;
   align-items: center;
@@ -69,6 +57,25 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.header-user-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+}
+.header-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  background: #eef4ff;
+  flex-shrink: 0;
 }
 .header-actions a,
 .header-actions button {
@@ -226,6 +233,9 @@
   .header-actions {
     width: 100%;
   }
+  .header-user-info {
+    max-width: 100%;
+  }
   .header-actions a {
     flex: 1;
   }
@@ -236,6 +246,10 @@
 @media (max-width: 520px) {
   .header-actions {
     flex-direction: column;
+  }
+  .header-user-info {
+    width: 100%;
+    justify-content: center;
   }
   .header-actions a {
     width: 100%;
