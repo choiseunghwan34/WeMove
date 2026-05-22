@@ -1,4 +1,6 @@
 import api from "./axiosInstance";
+export const updateMySports = (sportIds) =>
+  api.put("/members/me/sports", { sportIds });
 
 export const getMe = (memberId) =>
   api.get("/members/me", {
