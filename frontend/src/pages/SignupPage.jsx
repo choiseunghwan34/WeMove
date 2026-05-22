@@ -370,10 +370,8 @@ export default function SignupPage() {
 
   const requestEmailVerification = async () => {
     const email = normalizeText(form.email);
-    console.log("[Email Verification] Starting process for:", email);
 
     if (!EMAIL_PATTERN.test(email)) {
-      console.warn("[Email Verification] Invalid email pattern");
       setFieldErrors((current) => ({
         ...current,
         email: "올바른 이메일 형식으로 입력해주세요.",
@@ -385,24 +383,14 @@ export default function SignupPage() {
     setEmailVerificationStatus("pending");
 
     try {
-      console.log("[Email Verification] Checking if email is available...");
-      const checkRes = await api.get("/auth/check-email", { params: { email } });
-      console.log("[Email Verification] Email check response:", checkRes.status, checkRes.data);
-
-      console.log("[Email Verification] Requesting email send...");
-      const sendRes = await api.post("/auth/email/send", { email });
-      console.log("[Email Verification] Email send response:", sendRes.status, sendRes.data);
+      await api.get("/auth/check-email", { params: { email } });
+      await api.post("/auth/email/send", { email });
 
       setFieldErrors((current) => ({
         ...current,
         email: "인증 메일을 보냈습니다. 메일의 인증하기 버튼을 눌러주세요.",
       }));
     } catch (error) {
-      console.error("[Email Verification] Error occurred:", {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message
-      });
       const status = error?.response?.status;
       setEmailVerificationStatus("idle");
       setFieldErrors((current) => ({

@@ -91,16 +91,14 @@ export default function MeetingCreatePage() {
     //운동종목
     getSports()
       .then((res) => {
-        console.log(res);
         setSports(res.data);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
+        setSports([]);
       });
     //지역 ( sido, sigungu, dong)
     getRegions()
       .then((res) => {
-        console.log(res);
         const normalizeRegions = res.data.map((r) => ({
           regionId: r.regionId,
           sido: normalizeText(r.sido),
@@ -109,8 +107,8 @@ export default function MeetingCreatePage() {
         }));
         setRegions(normalizeRegions);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
+        setRegions([]);
       });
   }, []);
   //지역데이터를 계층형으로 변환
@@ -228,13 +226,11 @@ export default function MeetingCreatePage() {
     }
 
     createMeeting(formData)
-      .then((res) => {
-        console.log(res);
+      .then(() => {
         alert("모임 등록 완료");
         navigate("/meetings");
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
         alert("모임 등록 중 오류가 발생했습니다.");
       });
   };
@@ -435,27 +431,6 @@ export default function MeetingCreatePage() {
             <option value="CLOSED">모집마감</option>
           </select>
         </label>
-        {/*
-        <div className={`${styles.full} ${styles.choiceGroup}`}>
-          <span>모임 방식</span>
-          <div>
-            <label><input type="radio" name="meetingType" defaultChecked /> 1회성 모임</label>
-            <label><input type="radio" name="meetingType" /> 정기 모임</label>
-          </div>
-        </div>
-
-
-        <label>
-          <span>반복 주기</span>
-          <select defaultValue="NONE">
-            <option value="NONE">없음</option>
-            <option value="WEEKLY">매주</option>
-            <option value="BIWEEKLY">격주</option>
-            <option value="MONTHLY">매월</option>
-          </select>
-        </label>
-            */}
-
         <label className={styles.full}>
           <span>준비물</span>
           <input
@@ -494,7 +469,6 @@ export default function MeetingCreatePage() {
             className={styles.uploadInput}
             multiple
             ref={fileInputRef}
-            //className={styles.uploadInput}
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
