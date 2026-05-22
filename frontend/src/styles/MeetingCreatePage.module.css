@@ -63,6 +63,44 @@
 .uploadInput {
   composes: uploadInput from "./WeMoveShared.module.css";
 }
+/* =========================================================
+   커스텀 파일 업로드 영역 및 버튼 스타일
+========================================================= */
+
+.fileUploadWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* ⭐️ 버튼이 100%로 늘어나지 않게 왼쪽으로 밀착시킴 */
+  gap: 10px;
+}
+
+.fileUploadLabel {
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.fileUploadButton {
+  /* width 고정 없이 내용물에 맞게 예쁘게 감싸도록 설정 */
+  padding: 0 24px;
+  height: 42px;
+  border: 1px solid #2563eb; /* 통일성을 위한 파란색 테두리 */
+  border-radius: 12px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.fileUploadButton:hover {
+  background: #eff6ff; /* 마우스 오버 시 옅은 파란색 배경 */
+}
+
+.fileUploadButton:active {
+  transform: translateY(1px);
+}
 
 /* Home-aligned form polish */
 .formCard,

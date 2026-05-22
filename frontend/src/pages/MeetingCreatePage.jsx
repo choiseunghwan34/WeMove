@@ -1,9 +1,11 @@
-﻿import {useEffect, useMemo, useState} from "react";
+﻿import {useEffect, useMemo, useRef, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import {regions} from "../data/demoData";
 import styles from "../styles/MeetingCreatePage.module.css";
 import {createMeeting} from "../api/meetingApi.js";
+
 import {getSports} from "../api/sportApi.js";
+import {getRegions} from "../api/regionApi.js";
+
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
 
@@ -25,11 +27,14 @@ function useImagePreviews(files) {
     return previews;
 }
 
+//텍스트 정규화
+const normalizeText = (value = "") => String(value).trim();
+
 export default function MeetingCreatePage() {
     //인풋정보
     const initialForm = {
         sportId: 1,
-        regionId: 2,
+        regionId: null,
         title: "",
         content: "",
         placeName: "",
@@ -46,30 +51,109 @@ export default function MeetingCreatePage() {
         status: "RECRUITING",
     };
     const [form, setForm] = useState(initialForm);
+    const navigate = useNavigate();
+
+    //파일인풋 조작 ref
+    const fileInputRef = useRef(null);
+    const handleCustomBtnClick = () => {
+        fileInputRef.current.click();
+    }
+
+    //오늘 날짜 가져오는 함수
+    
+
+
+    //모달 선택 및 상태관리
+    const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+    const [isSportModalOpen, setIsSportModalOpen] = useState(false);
 
     const [sports, setSports] = useState([]);
-    const [isSportModalOpen, setIsSportModalOpen] = useState(false);
+    const [regions, setRegions] = useState([]);
+
     const [selectedSportName, setSelectedSportName] = useState("");
+    const [selectedRegion, setSelectedRegion] = useState({
+        sido: "",
+        sigungu: "",
+        dong: "",
+    });
+
+    const regionDisplayText = selectedRegion.dong ? `${selectedRegion.sido} ${selectedRegion.sigungu} ${selectedRegion.dong}` : "";
 
     useEffect(() => {
+        //운동종목
         getSports().then((res) => {
             console.log(res);
             setSports(res.data)
         }).catch((err) => {
             console.log(err)
         })
+        //지역 ( sido, sigungu, dong)
+        getRegions().then((res) => {
+            console.log(res);
+            const normalizeRegions = res.data.map(r => ({
+                regionId: r.regionId,
+                sido: normalizeText(r.sido),
+                sigungu: normalizeText(r.sigungu),
+                dong: normalizeText(r.dong),
+            }))
+            setRegions(normalizeRegions);
+        }).catch((err) => {
+            console.log(err)
+        })
     }, []);
+    //지역데이터를 계층형으로 변환
+    const regionHierarchy = useMemo(() => {
+        const grouped = new Map();
+
+        regions.forEach((region) => {
+            if (!grouped.has(region.sido)) {
+                grouped.set(region.sido, new Map());
+            }
+            const sigunguMap = grouped.get(region.sido);
+            if (!sigunguMap.has(region.sigungu)) {
+                sigunguMap.set(region.sigungu, []);
+            }
+            sigunguMap.get(region.sigungu).push(region.dong);
+        })
+        return [...grouped.entries()].sort((left, right) => left[0].localeCompare(right[0], "ko")).map(([sido, sigunguMap]) => ({
+            sido,
+            sigungus: [...sigunguMap.entries()].sort((left, right) => left[0].localeCompare(right[0], "ko"))
+                .map(([sigungu, dongs]) => ({
+                    sigungu,
+                    dongs: [...new Set(dongs)].sort((left, right) => left.localeCompare(right, "ko")),
+                }))
+        }))
+    }, [regions])
+
+
+    //운동종목 적용 모달 핸들러
     const handleSportApply = (selectedDraft) => {
         setForm((prev) => ({...prev, sportId: selectedDraft.sportId}));
         setSelectedSportName(selectedDraft.name);
         setIsSportModalOpen(false);
     };
+    //지역 적용 모달 핸들러
+    const handleRegionApply = (selectedDraft) => {
+        setSelectedRegion({
+            sido: selectedDraft.sido,
+            sigungu: selectedDraft.sigungu,
+            dong: selectedDraft.dong,
+        })
 
-    const navigate = useNavigate();
+        //원본데이터에서 일치하는 객체를 찾아 regionId 추출
+        const matchedRegion = regions.find(r =>
+            r.sido === selectedDraft.sido &&
+            r.sigungu === selectedDraft.sigungu &&
+            r.dong === selectedDraft.dong
+        );
+        if (matchedRegion) {
+            setForm((prev) => ({...prev, regionId: matchedRegion.regionId}));
+        }
+        setIsRegionModalOpen(false);
+    }
 
     const handleChange = (e) => {
         const {name, value} = e.target;
-
         setForm((prev) => ({
             ...prev, [name]: ["sportId", "regionId", "maxMembers"].includes(name)
                 ? Number(value)
@@ -77,13 +161,18 @@ export default function MeetingCreatePage() {
         }));
     };
 
-    //썸네일
+    //썸네일 파일 처리
     const [files, setFiles] = useState([]);
     const previews = useImagePreviews(files);
 
     const handleFileChange = (event) => {
         const nextFiles = Array.from(event.target.files ?? []).slice(0, 4);
         setFiles(nextFiles);
+
+        // 핵심: 브라우저가 이전 파일을 기억하지 못하도록 input 값을 비움
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     };
 
     const removeFile = (targetName) => {
@@ -91,9 +180,14 @@ export default function MeetingCreatePage() {
     };
 
 
-    //모임등록
+    //모임 등록 제출
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (!form.sportId || !form.regionId) {
+            alert("운동 종목과 지역을 선택해주세요.")
+            return;
+        }
         console.log(form);
         createMeeting(form).then((res) => {
             console.log(res)
@@ -101,6 +195,7 @@ export default function MeetingCreatePage() {
             navigate("/meetings");
         }).catch((err) => {
             console.log(err)
+            alert("모임 등록 중 오류가 발생했습니다.")
         })
 
         /*파일 추가시 아래코드사용
@@ -127,8 +222,6 @@ export default function MeetingCreatePage() {
             alert("모임 등록 실패")
         })
         * */
-
-
     }
 
 
@@ -178,8 +271,8 @@ export default function MeetingCreatePage() {
                         placeholder="예: 야당역 5km 러닝 크루 모집"
                     />
                 </label>
-                {/* 운동 종목 선택 영역 (버튼 + 요약 박스 형태) */}
-                <label className={styles.full}>
+                {/* 운동 종목 선택 영역 */}
+                <label>
                     <span>운동 종목</span>
                     <div className={styles.pickerRow}>
                         <button
@@ -191,18 +284,30 @@ export default function MeetingCreatePage() {
                         </button>
                         <div className={styles.pickerSummary}>
                             <span className={styles.pickerLabel}>선택 종목</span>
-                            <span className={selectedSportName? styles.valueText : styles.placeholderText}>{selectedSportName || "운동 종목을 선택해주세요"}</span>
+                            <span
+                                className={selectedSportName ? styles.valueText : styles.placeholderText}>{selectedSportName || "운동 종목을 선택해주세요"}</span>
                         </div>
                     </div>
                 </label>
+                {/* 지역 선택 영역 */}
                 <label>
                     <span>지역</span>
-                    <select name="regionId" value={form.regionId} onChange={handleChange}>
-                        {regions.map((region, index) => (
-                            <option key={index} value={index + 1}>{region}</option>
-                        ))}
-                    </select>
+                    <div className={styles.pickerRow}>
+                        <button
+                            type="button"
+                            className={styles.pickerButton}
+                            onClick={() => setIsRegionModalOpen(true)}
+                        >
+                            지역 조회
+                        </button>
+                        <div className={styles.pickerSummary}>
+                            <span className={styles.pickerLabel}>선택 지역</span>
+                            <span
+                                className={regionDisplayText ? styles.valueText : styles.placeholderText}>{regionDisplayText || "지역을 선택해주세요."}</span>
+                        </div>
+                    </div>
                 </label>
+
                 <label>
                     <span>상세 장소</span>
                     <input
@@ -308,22 +413,23 @@ export default function MeetingCreatePage() {
                     />
                 </label>
 
-                <div className={`${styles.full} ${styles.uploadBlock}`}>
-                    <span className={styles.kicker}>대표 사진 등록</span>
+                <label className={`${styles.full} ${styles.fileUploadWrapper}`}>
+                    <span className={styles.fileUploadLabel}>대표 사진 등록</span>
                     <input
                         type="file"
                         accept="image/*"
                         multiple
-                        className={styles.uploadInput}
+                        ref={fileInputRef}
+                        //className={styles.uploadInput}
                         onChange={handleFileChange}
+                        style={{display: "none"}}
                     />
-                    <small className={styles.uploadHint}>
-                        최대 4장까지 등록할 수 있습니다. 첫 번째 사진이 대표 썸네일처럼
-                        보입니다.
-                    </small>
-                </div>
 
-                {previews.length > 0 ? (
+                    <button type="button" onClick={handleCustomBtnClick} className={styles.fileUploadButton}>파일 선택
+                    </button>
+                </label>
+
+                {previews.length > 0 && (
                     <div className={`${styles.full} ${styles.reviewPreviewGrid}`}>
                         {previews.map((preview) => (
                             <article key={preview.name} className={styles.reviewPreviewCard}>
@@ -344,7 +450,7 @@ export default function MeetingCreatePage() {
                             </article>
                         ))}
                     </div>
-                ) : null}
+                )}
 
                 <div className={`${styles.full} ${styles.formActions}`}>
                     <Link to="/meetings">취소</Link>
@@ -352,13 +458,24 @@ export default function MeetingCreatePage() {
                 </div>
             </form>
 
+            {/*운동 종목 선택 모달*/}
             <SportPickerModal open={isSportModalOpen}
                               sports={sports} // DB에서 가져온 배열 전달
                               initialSelection={{sportId: form.sportId, name: selectedSportName}}
                               onApply={handleSportApply}
                               onClose={() => setIsSportModalOpen(false)}/>
-
-
+            {/*지역 선택 모달*/}
+            <RegionPickerModal open={isRegionModalOpen}
+                               regions={regionHierarchy} // 변환된 계층형 데이터
+                               initialSelection={{
+                                   sido: selectedRegion.sido || "전체 시도",
+                                   sigungu: selectedRegion.sigungu || "전체 시군구",
+                                   dong: selectedRegion.dong || "전체 읍면동"
+                               }}
+                               onApply={handleRegionApply}
+                               onClose={() => {
+                                   setIsRegionModalOpen(false)
+                               }}/>
         </div>
     );
 }
