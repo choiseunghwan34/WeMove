@@ -14,7 +14,7 @@ export default function DashboardShell({
   children,
 }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const closeMenu = () => setIsMenuOpen(false);
@@ -39,7 +39,7 @@ export default function DashboardShell({
         </label>
 
         <div className={styles.dashboardActions}>
-          {user ? (
+          {loading ? null : user ? (
             <>
               <span className={styles.dashboardUserName}>
                 {user.nickname || user.loginId}

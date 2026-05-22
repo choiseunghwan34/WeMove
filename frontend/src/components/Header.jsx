@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -25,7 +25,7 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          {user ? (
+          {loading ? null : user ? (
             <>
               <span className="header-user-name">{user.nickname || user.loginId}</span>
               <button
