@@ -1,5 +1,6 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Header from "./components/Header";
+import { useAuth } from "./contexts/AuthContext";
 import AdminPage from "./pages/AdminPage";
 import ActivityPage from "./pages/ActivityPage";
 import FindAccountPage from "./pages/FindAccountPage";
@@ -13,6 +14,20 @@ import MeetingManagePage from "./pages/MeetingManagePage";
 import MyPage from "./pages/MyPage";
 import ReviewPage from "./pages/ReviewPage";
 import SignupPage from "./pages/SignupPage";
+
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (user?.role !== "ADMIN") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
 
 function LayoutRoutes() {
   const location = useLocation();
@@ -43,7 +58,14 @@ function LayoutRoutes() {
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/meetings/:meetingId/reviews" element={<ReviewPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </main>
     </>

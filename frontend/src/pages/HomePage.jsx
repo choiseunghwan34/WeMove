@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
+import { useAuth } from "../contexts/AuthContext";
 import { meetings, regions, sports } from "../data/demoData";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import styles from "../styles/HomePage.module.css";
@@ -13,19 +14,21 @@ const heroSlides = [
     image: meetingImages[1],
   },
   {
-    title: "퇴근 후 5km, 가볍게 시작",
-    description: "러닝부터 헬스, 풋살까지 동네 루틴을 자연스럽게 이어가세요.",
+    title: "가볍게 시작하는 5km 러닝",
+    description: "러닝부터 헬스, 풋살까지 원하는 운동을 자연스럽게 이어가요.",
     image: meetingImages[2],
   },
   {
-    title: "이번 주말엔 새로운 크루와",
+    title: "이번 주말엔 새로운 운동 모임으로",
     description:
-      "관심 운동과 지역을 고르면 지금 참여 가능한 모임을 바로 볼 수 있어요.",
+      "관심 운동과 지역을 고르면 지금 바로 참여 가능한 모임을 빠르게 볼 수 있어요.",
     image: meetingImages[5],
   },
 ];
 
 export default function HomePage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
   const [activeSlide, setActiveSlide] = useState(0);
   const recruitingMeetings = meetings.filter(
     (meeting) => meeting.status === "RECRUITING",
@@ -60,74 +63,73 @@ export default function HomePage() {
     { user: "헬린이탈출님", detail: "모임을 생성했어요.", time: "15분 전" },
   ];
 
+  const homeAside = isAdmin ? null : (
+    <>
+      <section className={styles.dashboardPanel}>
+        <div className={styles.dashboardPanelHead}>
+          <h3>실시간 인기 모임</h3>
+        </div>
+        <div className={styles.dashboardRankList}>
+          {featuredMeetings.map((meeting, index) => (
+            <Link
+              key={meeting.id}
+              to={`/meetings/${meeting.id}`}
+              className={styles.dashboardRankItem}
+            >
+              <b>{index + 1}</b>
+              <div>
+                <strong>{meeting.title}</strong>
+                <span>{18 - index * 4}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.dashboardPanel}>
+        <div className={styles.dashboardPanelHead}>
+          <h3>이번 주 일정</h3>
+          <Link to="/meetings">전체 일정 보기</Link>
+        </div>
+        <div className={styles.dashboardScheduleList}>
+          {weeklySchedule.map((item) => (
+            <div
+              key={`${item.day}-${item.time}`}
+              className={styles.dashboardScheduleItem}
+            >
+              <span>{item.day}</span>
+              <strong>{item.time}</strong>
+              <p>{item.title}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.dashboardPanel}>
+        <div className={styles.dashboardPanelHead}>
+          <h3>최근 활동</h3>
+        </div>
+        <div className={styles.dashboardActivityList}>
+          {recentActivities.map((activity) => (
+            <div
+              key={activity.user}
+              className={styles.dashboardActivityItem}
+            >
+              <i>{activity.user.slice(0, 1)}</i>
+              <div>
+                <strong>{activity.user}</strong>
+                <p>{activity.detail}</p>
+              </div>
+              <span>{activity.time}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+
   return (
-    <DashboardShell
-      active="홈"
-      aside={
-        <>
-          <section className={styles.dashboardPanel}>
-            <div className={styles.dashboardPanelHead}>
-              <h3>실시간 인기 모임</h3>
-            </div>
-            <div className={styles.dashboardRankList}>
-              {featuredMeetings.map((meeting, index) => (
-                <Link
-                  key={meeting.id}
-                  to={`/meetings/${meeting.id}`}
-                  className={styles.dashboardRankItem}
-                >
-                  <b>{index + 1}</b>
-                  <div>
-                    <strong>{meeting.title}</strong>
-                    <span>{18 - index * 4}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.dashboardPanel}>
-            <div className={styles.dashboardPanelHead}>
-              <h3>이번 주 일정</h3>
-              <Link to="/meetings">전체 일정 보기</Link>
-            </div>
-            <div className={styles.dashboardScheduleList}>
-              {weeklySchedule.map((item) => (
-                <div
-                  key={`${item.day}-${item.time}`}
-                  className={styles.dashboardScheduleItem}
-                >
-                  <span>{item.day}</span>
-                  <strong>{item.time}</strong>
-                  <p>{item.title}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.dashboardPanel}>
-            <div className={styles.dashboardPanelHead}>
-              <h3>최근 활동</h3>
-            </div>
-            <div className={styles.dashboardActivityList}>
-              {recentActivities.map((activity) => (
-                <div
-                  key={activity.user}
-                  className={styles.dashboardActivityItem}
-                >
-                  <i>{activity.user.slice(0, 1)}</i>
-                  <div>
-                    <strong>{activity.user}</strong>
-                    <p>{activity.detail}</p>
-                  </div>
-                  <span>{activity.time}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        </>
-      }
-    >
+    <DashboardShell active="홈" aside={homeAside}>
       <section className={styles.dashboardHeroRow}>
         <div className={styles.dashboardHeroCard}>
           <div className={styles.heroCarousel} aria-hidden="true">
@@ -195,7 +197,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className={styles.heroDots} aria-label="홈 배너 슬라이드">
+            <div className={styles.heroDots} aria-label="메인 배너 슬라이드">
               {heroSlides.map((slide, index) => (
                 <button
                   key={slide.title}

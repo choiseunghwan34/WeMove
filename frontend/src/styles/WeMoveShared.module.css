@@ -6590,3 +6590,10 @@
     0 8px 18px rgba(37, 99, 235, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
+
+.dashboardLogo span {
+  background: url("/wemove-mark.svg") center/cover no-repeat !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28) !important;
+}

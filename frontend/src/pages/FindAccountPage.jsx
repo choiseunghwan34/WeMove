@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import homeBg from "../assets/images/home-bg.webp";
+import WeMoveLogo from "../components/WeMoveLogo";
 import styles from "../styles/FindAccountPage.module.css";
 
 const authBackgrounds = [homeBg];
@@ -33,7 +34,7 @@ export default function FindAccountPage() {
       <div className={styles.layout}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>
-            WeMove
+            <WeMoveLogo tone="light" size="md" />
           </Link>
           <span className={styles.eyebrow}>ACCOUNT SUPPORT</span>
           <h1>아이디와 비밀번호를 빠르게 다시 찾는 방법</h1>

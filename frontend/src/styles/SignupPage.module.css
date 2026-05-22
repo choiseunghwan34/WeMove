@@ -73,16 +73,6 @@
   font-weight: 800;
   letter-spacing: -0.04em;
 }
-.logo::before {
-  content: "W";
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #0f4fd6, #47a0ff);
-  box-shadow: 0 16px 32px rgba(23, 105, 255, 0.26);
-}
 .eyebrow {
   display: inline-flex;
   margin-bottom: 18px;

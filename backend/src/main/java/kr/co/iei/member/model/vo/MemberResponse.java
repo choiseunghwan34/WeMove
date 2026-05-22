@@ -8,6 +8,8 @@ public class MemberResponse {
   private String loginId;
   private String email;
   private String nickname;
+  private String phone;
+  private String profileImage;
   private Long regionId;
   private String role;
   private String status;

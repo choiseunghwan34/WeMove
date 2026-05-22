@@ -8,4 +8,5 @@ public class MemberUpdateRequest {
   private String nickname;
   private String phone;
   private Long regionId;
+  private String profileImage;
 }
