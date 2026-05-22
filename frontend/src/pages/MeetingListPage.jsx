@@ -4,7 +4,7 @@ import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import Pagination from "../components/Pagination";
-import SportPickerModal from "../components/SportPickerModal";
+import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
 import { meetings } from "../data/demoData";
@@ -26,7 +26,12 @@ const ALL_STATUS = "전체 상태";
 const PAGE_SIZE = 10;
 const weekdayLabels = ["오늘", "내일", "토", "일"];
 
-const fixedSports = sports.map((sport) => sport.name);
+const STATUS_MAP = {
+  RECRUITING: "모집중",
+  CLOSED: "모집마감",
+  COMPLETED: "진행완료",
+  CANCELLED: "취소됨",
+};
 
 const normalizeText = (value = "") => String(value).trim();
 
@@ -73,6 +78,7 @@ const formatTopRegionLabel = (region) => {
 export default function MeetingListPage() {
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+
   const [meetingDate, setMeetingDate] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
@@ -80,34 +86,13 @@ export default function MeetingListPage() {
 
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedSport, setSelectedSport] = useState(null);
+
   const [memberRegionId, setMemberRegionId] = useState(null);
   const [memberRegionReady, setMemberRegionReady] = useState(false);
-  const [status2, setStatus2] = useState("");
-  const [keyword2, setKeyword2] = useState("");
-  const [meeting2, setMeeting2] = useState([]);
 
-  const [statusText, setStatusText] = useState("모집중");
-  const [meetingHost, setMeetingHost] = useState("민수");
-  const [displayDate, setDisplayDate] = useState("05.16");
-  const [time, setTime] = useState("20:00");
-
-  const STATUS_MAP = {
-    RECRUITING: "모집중",
-    CLOSED: "모집마감",
-    COMPLETED: "진행완료",
-    CANCLED: "취소됨",
-  };
-
-  const searchParams = useMemo(() => {
-    return {
-      sportName: sport2,
-      regionId: region2,
-      status: status2,
-      keyword: keyword2,
-      fixedSports: fixedSports,
-      meetingDate: meetingDate,
-    };
-  }, [sport2, region2, status2, keyword2, meetingDate]);
+  const [status, setStatus] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [meetingList, setMeetingList] = useState([]);
 
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,6 +115,7 @@ export default function MeetingListPage() {
                 .filter((region) => region.sido && region.sigungu)
             : [],
         );
+
         setSportOptions(
           Array.isArray(sportsResponse.data)
             ? sportsResponse.data
@@ -163,11 +149,13 @@ export default function MeetingListPage() {
 
       try {
         const response = await getMember(user.memberId);
+
         if (active) {
           setMemberRegionId(response.data?.regionId ?? null);
         }
       } catch (error) {
         console.error(error);
+
         if (active) {
           setMemberRegionId(null);
         }
@@ -213,8 +201,8 @@ export default function MeetingListPage() {
       ...regionParams,
       baseRegionId: selectedRegion ? null : memberRegionId,
       sportId: selectedSport?.sportId ?? null,
-      status: status2,
-      keyword: keyword2,
+      status,
+      keyword,
       meetingDate,
       page: currentPage,
       size: PAGE_SIZE,
@@ -224,8 +212,8 @@ export default function MeetingListPage() {
       selectedRegion,
       memberRegionId,
       selectedSport,
-      status2,
-      keyword2,
+      status,
+      keyword,
       meetingDate,
       currentPage,
     ],
@@ -237,13 +225,14 @@ export default function MeetingListPage() {
     const fetchMeetings = async () => {
       try {
         const response = await getMeetings(searchParams);
+
         if (response.data) {
-          setMeeting2(response.data.list || []);
+          setMeetingList(response.data.list || []);
           setTotalCount(response.data.totalCount || 0);
         }
       } catch (error) {
         console.error(error);
-        setMeeting2([]);
+        setMeetingList([]);
         setTotalCount(0);
       }
     };
@@ -272,9 +261,11 @@ export default function MeetingListPage() {
     : isAuthenticated && memberRegion
       ? `${memberRegion.sido} ${memberRegion.sigungu} 주변`
       : ALL_REGION;
+
   const displayedSportLabel = selectedSport?.name ?? ALL_SPORT;
+
   const mobileSummary = `${displayedRegionLabel} · ${displayedSportLabel} · ${
-    status2 ? STATUS_MAP[status2] || status2 : ALL_STATUS
+    status ? STATUS_MAP[status] || status : ALL_STATUS
   }`;
 
   const handlePageChange = (page) => {
@@ -293,18 +284,18 @@ export default function MeetingListPage() {
   const resetFilters = () => {
     setSelectedRegion(null);
     setSelectedSport(null);
-    setStatus2("");
-    setKeyword2("");
+    setStatus("");
+    setKeyword("");
     setMeetingDate("");
     setCurrentPage(1);
   };
 
   const applyRegionSelection = (selection) => {
     const normalized = {
-      regionId: selection.regionId ?? null,
-      sido: selection.sido ?? "",
-      sigungu: selection.sigungu ?? "",
-      dong: selection.dong ?? "",
+      regionId: selection?.regionId ?? null,
+      sido: selection?.sido ?? "",
+      sigungu: selection?.sigungu ?? "",
+      dong: selection?.dong ?? "",
     };
 
     const hasSelection = Boolean(
@@ -411,6 +402,7 @@ export default function MeetingListPage() {
           >
             지역 조회
           </button>
+
           <button
             type="button"
             className={styles.pickerButton}
@@ -418,10 +410,11 @@ export default function MeetingListPage() {
           >
             운동 조회
           </button>
+
           <select
-            value={status2}
+            value={status}
             onChange={(event) => {
-              setStatus2(event.target.value);
+              setStatus(event.target.value);
               setCurrentPage(1);
             }}
           >
@@ -431,6 +424,7 @@ export default function MeetingListPage() {
             <option value="COMPLETED">모임완료</option>
             <option value="CANCELLED">취소됨</option>
           </select>
+
           <input
             type="date"
             value={meetingDate}
@@ -439,14 +433,16 @@ export default function MeetingListPage() {
               setCurrentPage(1);
             }}
           />
+
           <input
-            value={keyword2}
+            value={keyword}
             onChange={(event) => {
-              setKeyword2(event.target.value);
+              setKeyword(event.target.value);
               setCurrentPage(1);
             }}
             placeholder="운동명, 제목, 지역 검색"
           />
+
           <button
             type="button"
             className={styles.resetButton}
@@ -464,7 +460,7 @@ export default function MeetingListPage() {
       </div>
 
       <section className={styles.meetingList}>
-        {meeting2.length === 0 ? (
+        {meetingList.length === 0 ? (
           <div className={styles.emptyList}>
             <h3>조건에 맞는 모임이 없습니다</h3>
             <p>선택하신 지역이나 종목, 날짜를 변경해 보세요.</p>
@@ -473,7 +469,7 @@ export default function MeetingListPage() {
             </button>
           </div>
         ) : (
-          meeting2.map((meeting) => (
+          meetingList.map((meeting) => (
             <Link
               key={meeting.meetingId}
               className={styles.listCard}
@@ -485,6 +481,7 @@ export default function MeetingListPage() {
                   alt={meeting.title}
                   className={styles.listCardImage}
                 />
+
                 <div className={styles.listCardContent}>
                   <div className={styles.listTags}>
                     <span className={styles.badge}>{meeting.sportName}</span>
@@ -500,8 +497,10 @@ export default function MeetingListPage() {
                       {STATUS_MAP[meeting.status] || "알 수 없음"}
                     </span>
                   </div>
+
                   <h3>{meeting.title}</h3>
                   <p>{meeting.content}</p>
+
                   <div className={styles.listMeta}>
                     <span>
                       <UiIcon
@@ -525,6 +524,7 @@ export default function MeetingListPage() {
                       {meeting.approvedCount || 0}/{meeting.maxMembers}명
                     </span>
                   </div>
+
                   <div className={styles.host}>
                     <i>
                       <UiIcon
@@ -555,6 +555,7 @@ export default function MeetingListPage() {
                       : "-"}
                   </strong>
                 </div>
+
                 <button
                   type="button"
                   className={
@@ -602,6 +603,7 @@ export default function MeetingListPage() {
           >
             지역 조회
           </button>
+
           <button
             type="button"
             onClick={() => {
@@ -615,9 +617,9 @@ export default function MeetingListPage() {
 
         <div className={styles.sheetFilterFields}>
           <select
-            value={status2}
+            value={status}
             onChange={(event) => {
-              setStatus2(event.target.value);
+              setStatus(event.target.value);
               setCurrentPage(1);
             }}
           >
@@ -638,9 +640,9 @@ export default function MeetingListPage() {
           />
 
           <input
-            value={keyword2}
+            value={keyword}
             onChange={(event) => {
-              setKeyword2(event.target.value);
+              setKeyword(event.target.value);
               setCurrentPage(1);
             }}
             placeholder="제목, 장소 검색"
