@@ -194,6 +194,42 @@ export default function MeetingCreatePage() {
     }));
   };
 
+  // 카카오 API (리액트 방식 적용)
+  const handleAddressSearch = () => {
+    new window.daum.Postcode({
+      oncomplete: function(data) {
+        let addr = ''; // 주소 변수
+        let extraAddr = ''; // 참고항목 변수
+
+        // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+        if (data.userSelectedType === 'R') { // 도로명 주소
+          addr = data.roadAddress;
+        } else { // 지번 주소
+          addr = data.jibunAddress;
+        }
+
+        // 도로명 타입일 때 참고항목을 조합한다.
+        if (data.userSelectedType === 'R') {
+          if (data.bname !== '' && /[동로가]$/.test(data.bname)) {
+            extraAddr += data.bname;
+          }
+          if (data.buildingName !== '' && data.apartment === 'Y') {
+            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+          }
+          if (extraAddr !== '') {
+            extraAddr = ' (' + extraAddr + ')';
+          }
+        }
+        const fullAddress = addr + extraAddr;
+
+        setForm((prev) => ({
+          ...prev,address: fullAddress }));
+      }
+    }).open();
+  };
+
+
+
   //썸네일 파일 처리
   const [files, setFiles] = useState([]);
   const previews = useImagePreviews(files);
@@ -361,8 +397,10 @@ export default function MeetingCreatePage() {
           <input
             name="address"
             value={form.address}
-            onChange={handleChange}
-            placeholder="예: 경기 파주시 경의로 000"
+            onClick={handleAddressSearch}
+            readOnly
+            placeholder="주소를 설정하세요."
+            style={{cursor: "pointer"}}
           />
         </label>
         <label>
