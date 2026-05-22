@@ -60,7 +60,15 @@ export default function MeetingCreatePage() {
     }
 
     //오늘 날짜 가져오는 함수
-    
+    const getTodayString =()=>{
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+
 
 
     //모달 선택 및 상태관리
@@ -332,7 +340,32 @@ export default function MeetingCreatePage() {
                         name="meetingDate"
                         value={form.meetingDate}
                         onChange={handleChange}
-                        type="date"
+                        type={form.meetingDate ? "date" : "text"}
+                        placeholder="날짜를 설정하세요."
+                        onClick={(e) => {
+                            const target = e.target;
+
+                            // 1. 클릭하는 순간 즉시 date 타입으로 변경
+                            if (target.type !== "date") {
+                                target.type = "date";
+                            }
+
+                            // 2. 브라우저가 타입을 바꿀 아주 짧은 시간(10ms)을 준 뒤 달력 강제 호출
+                            setTimeout(() => {
+                                try {
+                                    target.showPicker();
+                                } catch (error) {
+                                    // Safari 등 구형 브라우저 대비 안전장치
+                                }
+                            }, 10);
+                        }}
+                        onBlur={(e) => {
+                            // 달력을 닫았는데 값이 없으면 다시 text(Placeholder)로 복귀
+                            if (!e.target.value) {
+                                e.target.type = "text";
+                            }
+                        }}
+                        min={getTodayString()}
                     />
                 </label>
                 <label>
@@ -341,9 +374,32 @@ export default function MeetingCreatePage() {
                         name="startTime"
                         value={form.startTime}
                         onChange={handleChange}
-                        type="time"
+                        type={form.startTime ? "time":"text"}
+                        placeholder="시간을 설정하세요"
+                        onClick={(e)=>{
+                            const target = e.target;
+                            // 1. 클릭하는 순간 즉시 time 타입으로 변경
+                            if (target.type !== "time") {
+                                target.type = "time";
+                            }
 
-                    />
+                            // 2. 브라우저가 타입을 바꿀 아주 짧은 시간(10ms)을 준 뒤 시간 선택창 강제 호출
+                            setTimeout(() => {
+                                try {
+                                    target.showPicker();
+                                } catch (error) {
+                                    // Safari 등 구형 브라우저 대비 안전장치
+                                }
+                            }, 10);
+                        }}
+                        onBlur={(e)=>{
+                            //창을 닫았을때 선택된 값이 없다면 다시 텍스트로 복귀
+                            if(!e.target.value){
+                                e.target.type = "text";
+                            }
+                        }}
+                        //시간설정30분(1800초)단위로 선택가능하게 제한
+                        step="1800"/>
                 </label>
                 <label>
                     <span>모집 인원</span>
