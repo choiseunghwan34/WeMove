@@ -2,6 +2,8 @@
 
 .badge {
   composes: badge from "./WeMoveShared.module.css";
+  white-space: nowrap !important;
+  min-width: max-content !important;
 }
 
 .formActions {
@@ -36,8 +38,18 @@
   composes: participantMeta from "./WeMoveShared.module.css";
 }
 
+.participantMeta p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .reviewScore {
   composes: reviewScore from "./WeMoveShared.module.css";
+  white-space: nowrap !important;
+  min-width: max-content !important;
 }
 
 .softPanel {
@@ -105,11 +117,6 @@
 
 .participantActions button:last-child {
   background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-}
-
-.reviewScore {
-  background: #ecfdf3 !important;
-  color: #0f8a62 !important;
 }
 
 /* 2026-05-18 neutral management page finish */

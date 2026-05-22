@@ -1,64 +1,57 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
-import { meetings } from "../data/demoData";
+import { getMeeting } from "../api/meetingApi";
+import {
+  approveParticipant,
+  getParticipants,
+  rejectParticipant,
+} from "../api/participantApi";
 import styles from "../styles/MeetingManagePage.module.css";
-
-const pendingApplicants = [
-  {
-    id: 1,
-    name: "러닝하나",
-    note: "6분 페이스로 편하게 참여 가능합니다.",
-    status: "대기중",
-  },
-  {
-    id: 2,
-    name: "운정조거",
-    note: "처음 참여하지만 꾸준히 달리고 있습니다.",
-    status: "대기중",
-  },
-  {
-    id: 3,
-    name: "파주크루",
-    note: "주말 러닝 모임 경험이 여러 번 있습니다.",
-    status: "대기중",
-  },
-];
-
-const approvedApplicants = [
-  {
-    id: 4,
-    name: "야당러너",
-    note: "이전 모임 2회 참여 · 매너점수 4.8",
-    status: "승인 완료",
-  },
-  {
-    id: 5,
-    name: "주말러닝",
-    note: "지각 없이 꾸준히 참여하는 멤버",
-    status: "승인 완료",
-  },
-];
 
 export default function MeetingManagePage() {
   const { meetingId } = useParams();
-  const meeting =
-    meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
+  const [meeting, setMeeting] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [actionModal, setActionModal] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [meetingRes, participantsRes] = await Promise.all([
+          getMeeting(meetingId),
+          getParticipants(meetingId),
+        ]);
+        setMeeting(meetingRes.data);
+        setParticipants(participantsRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch manage data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [meetingId]);
+
   const closeModal = () => setActionModal(null);
+
+  const pendingApplicants = participants.filter((p) => p.status === "PENDING");
+  const approvedApplicants = participants.filter((p) => p.status === "APPROVED");
 
   const modalCopy =
     {
-      hold: {
-        eyebrow: "신청 보류",
-        title: `${actionModal?.applicant?.name ?? ""}님을 보류할까요?`,
+      reject: {
+        eyebrow: "신청 거절",
+        title: `${actionModal?.applicant?.nickname ?? ""}님을 거절할까요?`,
         description:
-          "참가 메시지를 조금 더 확인한 뒤 승인 여부를 결정할 수 있습니다.",
-        confirmText: "보류 처리",
+          "거절하면 해당 사용자는 이 모임에 다시 신청할 수 없게 됩니다.",
+        confirmText: "거절 처리",
       },
       approve: {
         eyebrow: "참가 승인",
-        title: `${actionModal?.applicant?.name ?? ""}님을 승인할까요?`,
+        title: `${actionModal?.applicant?.nickname ?? ""}님을 승인할까요?`,
         description: "승인하면 참가자 목록에 추가되고 모임 정원에 반영됩니다.",
         confirmText: "승인하기",
       },
@@ -71,13 +64,16 @@ export default function MeetingManagePage() {
       },
     }[actionModal?.type] ?? {};
 
+  if (loading) return <div className={styles.page}>로딩 중...</div>;
+  if (!meeting) return <div className={styles.page}>모임을 찾을 수 없습니다.</div>;
+
   return (
     <div className={styles.page}>
       <div className={styles.pageTitle}>
         <div>
           <h1>신청자 관리</h1>
           <p>
-            {meeting.title}에 참가 신청한 사람들을 확인하고 승인, 보류, 마감
+            {meeting.title}에 참가 신청한 사람들을 확인하고 승인, 거절, 마감
             처리를 한 화면에서 관리하세요.
           </p>
         </div>
@@ -86,19 +82,19 @@ export default function MeetingManagePage() {
       <section className={styles.statGrid}>
         <article>
           <span>전체 신청</span>
-          <strong>7</strong>
+          <strong>{participants.length}</strong>
         </article>
         <article>
           <span>승인 완료</span>
-          <strong>4</strong>
+          <strong>{approvedApplicants.length}</strong>
         </article>
         <article>
           <span>대기 인원</span>
-          <strong>3</strong>
+          <strong>{pendingApplicants.length}</strong>
         </article>
         <article>
           <span>최대 인원</span>
-          <strong>{meeting.max}</strong>
+          <strong>{meeting.maxMembers}</strong>
         </article>
       </section>
 
@@ -106,38 +102,42 @@ export default function MeetingManagePage() {
         <section className={styles.softPanel}>
           <h2>승인 대기</h2>
           <p>
-            참가 메시지와 기본 정보를 보고 바로 승인하거나 보류할 수 있습니다.
+            참가 메시지와 기본 정보를 보고 바로 승인하거나 거절할 수 있습니다.
           </p>
           <div className={styles.participantList}>
-            {pendingApplicants.map((item) => (
-              <article key={item.id} className={styles.participantCard}>
-                <div className={styles.participantHead}>
-                  <div className={styles.participantMeta}>
-                    <strong>{item.name}</strong>
-                    <p>{item.note}</p>
+            {pendingApplicants.length === 0 ? (
+              <div className={styles.emptyState}>대기 중인 신청자가 없습니다.</div>
+            ) : (
+              pendingApplicants.map((item) => (
+                <article key={item.participantId} className={styles.participantCard}>
+                  <div className={styles.participantHead}>
+                    <div className={styles.participantMeta}>
+                      <strong>{item.nickname}</strong>
+                      <p>{item.message || "참가 메시지가 없습니다."}</p>
+                    </div>
+                    <span className={styles.badge}>대기중</span>
                   </div>
-                  <span className={styles.badge}>{item.status}</span>
-                </div>
-                <div className={styles.participantActions}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActionModal({ type: "hold", applicant: item })
-                    }
-                  >
-                    보류
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActionModal({ type: "approve", applicant: item })
-                    }
-                  >
-                    승인
-                  </button>
-                </div>
-              </article>
-            ))}
+                  <div className={styles.participantActions}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActionModal({ type: "reject", applicant: item })
+                      }
+                    >
+                      거절
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActionModal({ type: "approve", applicant: item })
+                      }
+                    >
+                      승인
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </section>
 
@@ -148,20 +148,24 @@ export default function MeetingManagePage() {
             있습니다.
           </p>
           <div className={styles.participantList}>
-            {approvedApplicants.map((item) => (
-              <article key={item.id} className={styles.participantCard}>
-                <div className={styles.participantHead}>
-                  <div className={styles.participantMeta}>
-                    <strong>{item.name}</strong>
-                    <p>{item.note}</p>
+            {approvedApplicants.length === 0 ? (
+              <div className={styles.emptyState}>승인된 참가자가 없습니다.</div>
+            ) : (
+              approvedApplicants.map((item) => (
+                <article key={item.participantId} className={styles.participantCard}>
+                  <div className={styles.participantHead}>
+                    <div className={styles.participantMeta}>
+                      <strong>{item.nickname}</strong>
+                      <p>{item.message || "참가 메시지가 없습니다."}</p>
+                    </div>
+                    <span className={styles.reviewScore}>승인 완료</span>
                   </div>
-                  <span className={styles.reviewScore}>{item.status}</span>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            )}
           </div>
           <div className={styles.formActions}>
-            <Link to={`/meetings/${meeting.id}`}>상세로 돌아가기</Link>
+            <Link to={`/meetings/${meetingId}`}>상세로 돌아가기</Link>
             <button
               type="button"
               onClick={() => setActionModal({ type: "close" })}
@@ -185,11 +189,11 @@ export default function MeetingManagePage() {
         {actionModal?.applicant ? (
           <div className={styles.applicantModalCard}>
             <div className={styles.applicantAvatar}>
-              {actionModal.applicant.name.slice(0, 1)}
+              {(actionModal.applicant.nickname || "").slice(0, 1)}
             </div>
             <div>
-              <strong>{actionModal.applicant.name}</strong>
-              <p>{actionModal.applicant.note}</p>
+              <strong>{actionModal.applicant.nickname}</strong>
+              <p>{actionModal.applicant.message || "참가 메시지가 없습니다."}</p>
             </div>
           </div>
         ) : (

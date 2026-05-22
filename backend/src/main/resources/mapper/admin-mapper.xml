@@ -5,10 +5,10 @@
 
     <select id="selectSummary" resultType="kr.co.iei.admin.model.vo.AdminSummary">
         SELECT
-            (SELECT COUNT(*) FROM users) AS total_members,
-            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS total_meetings,
-            (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pending_reports,
-            (SELECT COUNT(*) FROM sports) AS total_sports
+            (SELECT COUNT(*) FROM users) AS totalMembers,
+            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS totalMeetings,
+            (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pendingReports,
+            (SELECT COUNT(*) FROM sports) AS totalSports
     </select>
 
     <select id="selectMembers" resultType="kr.co.iei.admin.model.vo.AdminMemberResponse">
@@ -19,7 +19,7 @@
             CASE
                 WHEN r.regionId IS NULL THEN NULL
                 ELSE CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong)
-            END AS region_name,
+            END AS regionName,
             u.role,
             u.status
         FROM users u
@@ -41,18 +41,18 @@
         SELECT
             m.meetingId,
             m.title,
-            s.name AS sport_name,
-            s.category AS sport_category,
-            CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong) AS region_name,
+            s.name AS sportName,
+            s.category AS sportCategory,
+            CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong) AS regionName,
             (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
                   AND mp.status = 'APPROVED'
-            ) AS approved_count,
+            ) AS approvedCount,
             m.maxMembers,
             m.status,
-            u.nickname AS host_nickname,
+            u.nickname AS hostNickname,
             m.meetingDate,
             m.startTime
         FROM meetings m
