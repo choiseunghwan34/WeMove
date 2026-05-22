@@ -7,5 +7,7 @@ public interface MemberService {
 
   void updateMe(Long memberId, MemberUpdateRequest request);
 
+  void updateSports(Long memberId, MemberSportsUpdateRequest request);
+
   MemberResponse getMember(Long memberId);
 }

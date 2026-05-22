@@ -258,6 +258,169 @@
   font-weight: 800;
   line-height: 1.5;
 }
+.interestSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid #dbe7f6;
+  border-radius: 16px;
+  background: #f8fbff;
+  color: #44566c;
+  font-size: 13px;
+  font-weight: 800;
+}
+.interestSummary strong {
+  color: #1d4ed8;
+}
+.interestGroupList {
+  display: grid;
+  gap: 14px;
+  max-height: min(42vh, 380px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+}
+.interestGroupList::-webkit-scrollbar {
+  width: 5px;
+}
+.interestGroupList::-webkit-scrollbar-track {
+  background: transparent;
+}
+.interestGroupList::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.45);
+}
+.interestGroup {
+  display: grid;
+  gap: 10px;
+}
+.interestGroup h3 {
+  margin: 0;
+  color: #10233f;
+  font-size: 14px;
+  font-weight: 900;
+}
+.interestChipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.interestChip,
+.interestChipSelected {
+  min-height: 38px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #fff;
+  padding: 0 13px;
+  color: #44566c;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.interestChipSelected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+.interestChip:disabled,
+.interestChipSelected:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.interestError {
+  margin: 0;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 800;
+}
+.nicknameModalBody {
+  display: grid;
+  gap: 16px;
+}
+.nicknameSuggestionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.nicknameSuggestion,
+.nicknameSuggestionSelected {
+  min-height: 38px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #fff;
+  padding: 0 13px;
+  color: #44566c;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.nicknameSuggestionSelected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.nicknameModalField {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  color: #304761;
+  font-size: 13px;
+  font-weight: 900;
+}
+.nicknameModalInline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px;
+  gap: 8px;
+}
+.nicknameModalInline input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  padding: 0 14px;
+  color: #10233f;
+  font-weight: 800;
+  outline: 0;
+}
+.nicknameModalInline input:read-only {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+}
+.nicknameModalInline button {
+  height: 46px;
+  border: 0;
+  border-radius: 14px;
+  background: #10233f;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.nicknameModalInline button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+.nicknameModalError,
+.nicknameModalSuccess {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.nicknameModalError {
+  color: #dc2626;
+}
+.nicknameModalSuccess {
+  color: #16a34a;
+}
 .regionSelectButton {
   width: 100%;
   min-width: 0;

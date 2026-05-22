@@ -50,9 +50,7 @@ public class AuthServiceImpl implements AuthService {
     validateSignupRequest(req);
     checkLoginId(req.getLoginId());
     checkEmail(req.getEmail());
-    if (authDao.selectByNickname(req.getNickname()) != null) {
-      throw new DuplicateResourceException("이미 사용 중인 닉네임입니다.");
-    }
+    checkNickname(req.getNickname());
     if (!emailVerificationService.isVerified(req.getEmail())) {
       throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
     }
@@ -94,6 +92,16 @@ public class AuthServiceImpl implements AuthService {
 
     if (authDao.selectByEmail(email.trim().toLowerCase()) != null) {
       throw new DuplicateResourceException("이미 사용 중인 이메일입니다.");
+    }
+  }
+
+  public void checkNickname(String nickname) {
+    if (nickname == null || !nickname.trim().matches(NICKNAME_PATTERN)) {
+      throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자만 입력해주세요.");
+    }
+
+    if (authDao.selectByNickname(nickname.trim()) != null) {
+      throw new DuplicateResourceException("이미 사용 중인 닉네임입니다.");
     }
   }
 

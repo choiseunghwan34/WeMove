@@ -33,7 +33,10 @@ export default function AppModal({
 
   if (!open) return null;
 
-  const modalClassName = [styles.modal, variant === "sheet" ? styles.sheet : ""]
+  const modalClassName = [
+    styles.modal,
+    variant === "sheet" ? styles.sheet : "",
+  ]
     .filter(Boolean)
     .join(" ");
 

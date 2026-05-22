@@ -9,6 +9,8 @@ public interface AuthService {
 
   void checkEmail(String email);
 
+  void checkNickname(String nickname);
+
   AuthLoginResult login(LoginRequest request);
 
   AuthRefreshResult refresh(String refreshToken);

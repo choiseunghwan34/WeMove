@@ -12,7 +12,7 @@ public class MemberDao {
   private final SqlSession sqlSession;
 
   public MemberResponse selectMemberById(Long id) {
-    return sqlSession.selectOne("member.selectMemberById", id);
+    return sqlSession.selectOne("member.selectMemberById", Map.of("memberId", id));
   }
 
   public int updateMember(Long id, MemberUpdateRequest request) {
@@ -20,5 +20,14 @@ public class MemberDao {
     p.put("memberId", id);
     p.put("request", request);
     return sqlSession.update("member.updateMember", p);
+  }
+
+  public int deleteMemberSports(Long memberId) {
+    return sqlSession.delete("member.deleteMemberSports", Map.of("memberId", memberId));
+  }
+
+  public int insertMemberSport(Long memberId, Long sportId) {
+    return sqlSession.insert(
+        "member.insertMemberSport", Map.of("memberId", memberId, "sportId", sportId));
   }
 }

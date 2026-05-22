@@ -1,16 +1,20 @@
 package kr.co.iei.member.controller;
 
+import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.member.model.service.MemberService;
 import kr.co.iei.member.model.vo.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberController {
   private final MemberService memberService;
+  private final JwtTokenProvider jwtTokenProvider;
 
   @GetMapping("/me")
   public ResponseEntity<MemberResponse> me(@RequestParam(defaultValue = "1") Long memberId) {
@@ -24,8 +28,33 @@ public class MemberController {
     return ResponseEntity.ok().build();
   }
 
+  @PutMapping("/me/sports")
+  public ResponseEntity<Void> updateMySports(
+      @RequestHeader(value = "Authorization", required = false) String authorization,
+      @RequestParam(required = false) Long memberId,
+      @RequestBody MemberSportsUpdateRequest request) {
+    Long resolvedMemberId = resolveMemberId(authorization, memberId);
+    memberService.updateSports(resolvedMemberId, request);
+    return ResponseEntity.ok().build();
+  }
+
   @GetMapping("/{memberId}")
   public ResponseEntity<MemberResponse> member(@PathVariable Long memberId) {
     return ResponseEntity.ok(memberService.getMember(memberId));
+  }
+
+  private Long resolveMemberId(String authorization, Long fallbackMemberId) {
+    if (authorization != null && authorization.startsWith("Bearer ")) {
+      String accessToken = authorization.substring("Bearer ".length());
+      if (jwtTokenProvider.isValid(accessToken)) {
+        return jwtTokenProvider.parseUserId(accessToken);
+      }
+    }
+
+    if (fallbackMemberId != null) {
+      return fallbackMemberId;
+    }
+
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
   }
 }

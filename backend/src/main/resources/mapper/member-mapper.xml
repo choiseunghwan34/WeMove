@@ -26,4 +26,20 @@
         WHERE userId=#{memberId}
     </update>
 
+    <delete id="deleteMemberSports">
+        DELETE FROM userSports
+        WHERE `userId`=#{memberId}
+    </delete>
+
+    <insert id="insertMemberSport">
+        INSERT INTO userSports(
+            `userId`,
+            `sportId`
+        )
+        VALUES(
+            #{memberId},
+            #{sportId}
+        )
+    </insert>
+
 </mapper>

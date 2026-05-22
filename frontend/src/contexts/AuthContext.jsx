@@ -9,7 +9,9 @@ import {
 import { clearAccessToken, setAccessToken } from "../utils/authTokenStore";
 import { parseUserFromAccessToken } from "../utils/jwtPayload";
 
-const AuthContext = createContext(null);
+const AuthContext =
+  globalThis.__WEMOVE_AUTH_CONTEXT__ ??
+  (globalThis.__WEMOVE_AUTH_CONTEXT__ = createContext(null));
 const DUPLICATE_LOGOUT_MESSAGE = "다른 곳에서 로그인 요청이 있어 로그아웃되었습니다.";
 
 export function AuthProvider({ children }) {

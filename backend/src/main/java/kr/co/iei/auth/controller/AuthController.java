@@ -33,6 +33,12 @@ public class AuthController {
     return ResponseEntity.ok().build();
   }
 
+  @GetMapping("/check-nickname")
+  public ResponseEntity<Void> checkNickname(@RequestParam String nickname) {
+    authService.checkNickname(nickname);
+    return ResponseEntity.ok().build();
+  }
+
   @PostMapping("/signup")
   public ResponseEntity<Void> signup(@RequestBody SignupRequest request) {
     authService.signup(request);

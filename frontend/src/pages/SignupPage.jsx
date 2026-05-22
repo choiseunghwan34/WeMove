@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login, signup } from "../api/authApi";
 import api from "../api/axiosInstance";
+import { updateMySports } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
+import { getSports } from "../api/sportApi";
+import AppModal from "../components/AppModal";
 import RegionPickerModal from "../components/RegionPickerModal";
 import { useAuth } from "../contexts/AuthContext";
 import homeBg from "../assets/images/home-bg.webp";
@@ -33,6 +36,7 @@ const PASSWORD_PATTERN =
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]+$/;
 const CURRENT_YEAR = new Date().getFullYear();
+const NICKNAME_DUPLICATE_MESSAGE = "이미 사용 중인 닉네임입니다.";
 const FALLBACK_REGIONS = [
   { regionId: 1, sido: "경기", sigungu: "파주시", dong: "운정동" },
   { regionId: 2, sido: "경기", sigungu: "파주시", dong: "야당동" },
@@ -59,6 +63,10 @@ const formatPhone = (value) => {
     return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6)}`;
   }
 
+  if (digits.length <= 3) {
+    return digits;
+  }
+
   if (digits.length <= 6) {
     return `${digits.slice(0, 3)}-${digits.slice(3)}`;
   }
@@ -71,6 +79,17 @@ const formatPhone = (value) => {
 };
 
 const getPhoneDigits = (phone) => phone.replace(/\D/g, "");
+
+const getNicknameSuggestions = (nickname) => {
+  const base = normalizeText(nickname).replace(/\s/g, "") || "WeMove";
+  const suggestions = new Set();
+
+  while (suggestions.size < 3) {
+    suggestions.add(`${base}${Math.floor(Math.random() * 900) + 100}`);
+  }
+
+  return [...suggestions];
+};
 
 const getRegionLabel = (selection) => {
   const values = [selection.sido, selection.sigungu, selection.dong].filter(
@@ -138,17 +157,33 @@ export default function SignupPage() {
   const { setAuthenticatedAccessToken } = useAuth();
   const [form, setForm] = useState(initialForm);
   const [regions, setRegions] = useState([]);
+  const [sports, setSports] = useState([]);
   const [regionSelection, setRegionSelection] = useState(
     initialRegionSelection,
   );
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [formMessage, setFormMessage] = useState("");
+  const [interestError, setInterestError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingInterests, setIsSavingInterests] = useState(false);
   const [isCheckingLoginId, setIsCheckingLoginId] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [checkedLoginId, setCheckedLoginId] = useState("");
   const [loginIdCheckMessage, setLoginIdCheckMessage] = useState("");
+  const [selectedSportIds, setSelectedSportIds] = useState([]);
+  const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
+  const [nicknameDraft, setNicknameDraft] = useState("");
+  const [nicknameOriginal, setNicknameOriginal] = useState("");
+  const [selectedNicknameSuggestion, setSelectedNicknameSuggestion] =
+    useState("");
+  const [nicknameSuggestions, setNicknameSuggestions] = useState([]);
+  const [nicknameModalMessage, setNicknameModalMessage] = useState("");
+  const [nicknameModalMessageType, setNicknameModalMessageType] =
+    useState("error");
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+  const [isNicknameLocked, setIsNicknameLocked] = useState(false);
   const [emailVerificationStatus, setEmailVerificationStatus] =
     useState("idle");
   const [verifiedEmail, setVerifiedEmail] = useState("");
@@ -161,22 +196,32 @@ export default function SignupPage() {
   useEffect(() => {
     let active = true;
 
-    const loadRegions = async () => {
+    const loadInitialOptions = async () => {
       try {
-        const { data } = await getRegions();
-        const nextRegions = Array.isArray(data) ? data : [];
+        const [regionsResponse, sportsResponse] = await Promise.all([
+          getRegions(),
+          getSports(),
+        ]);
+        const nextRegions = Array.isArray(regionsResponse.data)
+          ? regionsResponse.data
+          : [];
+        const nextSports = Array.isArray(sportsResponse.data)
+          ? sportsResponse.data
+          : [];
 
         if (active) {
           setRegions(nextRegions.length ? nextRegions : FALLBACK_REGIONS);
+          setSports(nextSports.filter((sport) => sport.isActive !== false));
         }
       } catch {
         if (active) {
           setRegions(FALLBACK_REGIONS);
+          setSports([]);
         }
       }
     };
 
-    loadRegions();
+    loadInitialOptions();
     return () => {
       active = false;
     };
@@ -244,6 +289,22 @@ export default function SignupPage() {
   }, [regionSelection, regions]);
 
   const regionLabel = getRegionLabel(regionSelection);
+  const groupedSports = useMemo(() => {
+    const grouped = new Map();
+
+    sports.forEach((sport) => {
+      const category = sport.category || "기타";
+      if (!grouped.has(category)) {
+        grouped.set(category, []);
+      }
+      grouped.get(category).push(sport);
+    });
+
+    return [...grouped.entries()].map(([category, items]) => ({
+      category,
+      sports: items,
+    }));
+  }, [sports]);
 
   const validateForm = () => {
     const nextErrors = {};
@@ -304,9 +365,37 @@ export default function SignupPage() {
     return Object.keys(nextErrors).length === 0;
   };
 
+  const validatePasswordFields = (nextForm = form) => {
+    const password = nextForm.password;
+    const passwordConfirm = nextForm.passwordConfirm;
+    const nextErrors = {};
+
+    if (password && !PASSWORD_PATTERN.test(password)) {
+      nextErrors.password = "대소문자/숫자/특수문자 포함 8~16자입니다.";
+    }
+
+    if (passwordConfirm && passwordConfirm !== password) {
+      nextErrors.passwordConfirm = "비밀번호가 일치하지 않습니다.";
+    }
+
+    setFieldErrors((current) => ({
+      ...current,
+      password: nextErrors.password || "",
+      passwordConfirm: nextErrors.passwordConfirm || "",
+    }));
+
+    return !nextErrors.password && !nextErrors.passwordConfirm;
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    const nextValue = name === "phone" ? formatPhone(value) : value;
+    let nextValue = value;
+
+    if (name === "phone") {
+      nextValue = formatPhone(value);
+    } else if (name === "birthYear") {
+      nextValue = value.replace(/\D/g, "").slice(0, 4);
+    }
 
     if (name === "email") {
       setVerifiedEmail("");
@@ -326,6 +415,93 @@ export default function SignupPage() {
       ...current,
       [name]: "",
     }));
+  };
+
+  const openNicknameDuplicateModal = (
+    message = NICKNAME_DUPLICATE_MESSAGE,
+    baseNickname = form.nickname,
+  ) => {
+    const nickname = normalizeText(baseNickname);
+    setNicknameOriginal(nickname);
+    setNicknameDraft(nickname);
+    setSelectedNicknameSuggestion("");
+    setNicknameSuggestions(getNicknameSuggestions(nickname));
+    setNicknameModalMessage(message);
+    setNicknameModalMessageType("error");
+    setIsNicknameLocked(false);
+    setIsNicknameModalOpen(true);
+  };
+
+  const checkNicknameAvailability = async ({ applyOnSuccess = false } = {}) => {
+    const nickname = normalizeText(nicknameDraft);
+
+    if (!NICKNAME_PATTERN.test(nickname)) {
+      setNicknameModalMessage("닉네임은 한글/영문/숫자만 입력해주세요.");
+      setNicknameModalMessageType("error");
+      return false;
+    }
+
+    setIsCheckingNickname(true);
+
+    try {
+      await api.get("/auth/check-nickname", { params: { nickname } });
+      setNicknameDraft(nickname);
+      setSelectedNicknameSuggestion("");
+      setIsNicknameLocked(true);
+      setNicknameModalMessage("사용 가능한 닉네임입니다.");
+      setNicknameModalMessageType("success");
+
+      if (applyOnSuccess) {
+        setForm((current) => ({ ...current, nickname }));
+        setFieldErrors((current) => ({ ...current, nickname: "" }));
+        setIsNicknameModalOpen(false);
+      }
+
+      return true;
+    } catch (error) {
+      const message =
+        error?.response?.data?.message || NICKNAME_DUPLICATE_MESSAGE;
+      setNicknameModalMessage(message);
+      setNicknameModalMessageType("error");
+      setIsNicknameLocked(false);
+      setNicknameSuggestions(getNicknameSuggestions(nickname));
+      return false;
+    } finally {
+      setIsCheckingNickname(false);
+    }
+  };
+
+  const selectNicknameSuggestion = (nickname) => {
+    if (selectedNicknameSuggestion === nickname) {
+      setNicknameDraft(nicknameOriginal);
+      setSelectedNicknameSuggestion("");
+      setIsNicknameLocked(false);
+      setNicknameModalMessage(NICKNAME_DUPLICATE_MESSAGE);
+      setNicknameModalMessageType("error");
+      return;
+    }
+
+    setNicknameDraft(nickname);
+    setSelectedNicknameSuggestion(nickname);
+    setIsNicknameLocked(true);
+    setNicknameModalMessage("추천 닉네임을 선택했습니다.");
+    setNicknameModalMessageType("success");
+  };
+
+  const applyNicknameDraft = async () => {
+    const nickname = normalizeText(nicknameDraft);
+
+    if (!isNicknameLocked) {
+      const available = await checkNicknameAvailability();
+      if (!available) {
+        return;
+      }
+    }
+
+    setForm((current) => ({ ...current, nickname }));
+    setFieldErrors((current) => ({ ...current, nickname: "" }));
+    setIsNicknameModalOpen(false);
+    await submitSignup(nickname);
   };
 
   const checkLoginId = async () => {
@@ -415,11 +591,12 @@ export default function SignupPage() {
     }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const submitSignup = async (nicknameOverride) => {
     setFormMessage("");
 
-    if (!validateForm()) {
+    const nickname = normalizeText(nicknameOverride ?? form.nickname);
+
+    if (!nicknameOverride && !validateForm()) {
       return;
     }
 
@@ -434,7 +611,7 @@ export default function SignupPage() {
         loginId,
         email,
         password,
-        nickname: normalizeText(form.nickname),
+        nickname,
         regionId: selectedRegion.regionId,
         gender: Number(form.gender),
         birthYear: Number(form.birthYear),
@@ -443,7 +620,10 @@ export default function SignupPage() {
 
       const { data } = await login({ loginId, password, autoLogin: true });
       setAuthenticatedAccessToken(data?.accessToken);
-      navigate("/meetings");
+      setSelectedSportIds([]);
+      setInterestError("");
+      setIsNicknameModalOpen(false);
+      setIsInterestModalOpen(true);
     } catch (error) {
       const message = getSignupErrorMessage(error);
 
@@ -453,11 +633,52 @@ export default function SignupPage() {
         setFieldErrors((current) => ({ ...current, email: message }));
       } else if (message.includes("닉네임")) {
         setFieldErrors((current) => ({ ...current, nickname: message }));
+        openNicknameDuplicateModal(message, nickname);
       } else {
         setFormMessage(message);
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await submitSignup();
+  };
+
+  const toggleInterestSport = (sportId) => {
+    setInterestError("");
+    setSelectedSportIds((current) =>
+      current.includes(sportId)
+        ? current.filter((id) => id !== sportId)
+        : [...current, sportId],
+    );
+  };
+
+  const closeInterestModal = () => {
+    setIsInterestModalOpen(false);
+    navigate("/meetings");
+  };
+
+  const saveInterestSports = async () => {
+    if (!selectedSportIds.length) {
+      setInterestError("관심종목을 1개 이상 선택해주세요.");
+      return;
+    }
+
+    setIsSavingInterests(true);
+    setInterestError("");
+
+    try {
+      await updateMySports(selectedSportIds);
+      closeInterestModal();
+    } catch (error) {
+      setInterestError(
+        error?.response?.data?.message || "관심종목 저장에 실패했습니다.",
+      );
+    } finally {
+      setIsSavingInterests(false);
     }
   };
 
@@ -586,6 +807,12 @@ export default function SignupPage() {
                   type="password"
                   value={form.password}
                   onChange={handleChange}
+                  onBlur={(event) =>
+                    validatePasswordFields({
+                      ...form,
+                      password: event.target.value,
+                    })
+                  }
                   placeholder="대소문자, 숫자, 특수문자 포함 8~16자"
                   autoComplete="new-password"
                   maxLength={16}
@@ -603,6 +830,12 @@ export default function SignupPage() {
                   type="password"
                   value={form.passwordConfirm}
                   onChange={handleChange}
+                  onBlur={(event) =>
+                    validatePasswordFields({
+                      ...form,
+                      passwordConfirm: event.target.value,
+                    })
+                  }
                   placeholder="비밀번호 다시 입력"
                   autoComplete="new-password"
                   maxLength={16}
@@ -668,6 +901,7 @@ export default function SignupPage() {
                   onChange={handleChange}
                   placeholder="출생년도 입력 "
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={4}
                   disabled={isSubmitting}
                 />
@@ -722,6 +956,127 @@ export default function SignupPage() {
         onApply={applyRegion}
         onClose={() => setIsRegionModalOpen(false)}
       />
+
+      <AppModal
+        open={isNicknameModalOpen}
+        eyebrow="닉네임"
+        title="중복된 닉네임입니다"
+        description="추천 닉네임을 선택하거나 새 닉네임을 입력해서 중복확인을 해주세요."
+        confirmText={isSubmitting ? "가입 처리 중..." : "가입 완료"}
+        cancelText="닫기"
+        onConfirm={
+          isCheckingNickname || isSubmitting ? undefined : applyNicknameDraft
+        }
+        onClose={() => setIsNicknameModalOpen(false)}
+      >
+        <div className={styles.nicknameModalBody}>
+          <div className={styles.nicknameSuggestionList}>
+            {nicknameSuggestions.map((nickname) => (
+              <button
+                key={nickname}
+                type="button"
+                className={
+                  nicknameDraft === nickname
+                    ? styles.nicknameSuggestionSelected
+                    : styles.nicknameSuggestion
+                }
+                onClick={() => selectNicknameSuggestion(nickname)}
+              >
+                {nickname}
+              </button>
+            ))}
+          </div>
+
+          <label className={styles.nicknameModalField}>
+            <span>닉네임 직접 입력</span>
+            <div className={styles.nicknameModalInline}>
+              <input
+                value={nicknameDraft}
+                onChange={(event) => {
+                  setNicknameDraft(event.target.value);
+                  setSelectedNicknameSuggestion("");
+                  setIsNicknameLocked(false);
+                  setNicknameModalMessage("");
+                }}
+                readOnly={isNicknameLocked}
+                maxLength={50}
+                disabled={isCheckingNickname}
+              />
+              <button
+                type="button"
+                onClick={() => checkNicknameAvailability()}
+                disabled={isCheckingNickname || isNicknameLocked}
+              >
+                {isCheckingNickname ? "확인중" : "중복확인"}
+              </button>
+            </div>
+          </label>
+
+          {nicknameModalMessage ? (
+            <p
+              className={
+                nicknameModalMessageType === "success"
+                  ? styles.nicknameModalSuccess
+                  : styles.nicknameModalError
+              }
+              role="alert"
+            >
+              {nicknameModalMessage}
+            </p>
+          ) : null}
+        </div>
+      </AppModal>
+
+      <AppModal
+        open={isInterestModalOpen}
+        eyebrow="관심종목"
+        title="관심 운동을 선택해주세요"
+        description="선택한 종목을 기준으로 더 잘 맞는 모임을 찾을 수 있습니다."
+        confirmText={isSavingInterests ? "저장 중..." : "저장하고 시작"}
+        cancelText="나중에"
+        onConfirm={isSavingInterests ? undefined : saveInterestSports}
+        onClose={isSavingInterests ? undefined : closeInterestModal}
+      >
+        <div className={styles.interestSummary}>
+          <strong>{selectedSportIds.length}개 선택</strong>
+          <span>여러 개를 선택할 수 있습니다.</span>
+        </div>
+
+        <div className={styles.interestGroupList}>
+          {groupedSports.map((group) => (
+            <section key={group.category} className={styles.interestGroup}>
+              <h3>{group.category}</h3>
+              <div className={styles.interestChipGrid}>
+                {group.sports.map((sport) => {
+                  const selected = selectedSportIds.includes(sport.sportId);
+
+                  return (
+                    <button
+                      key={sport.sportId}
+                      type="button"
+                      className={
+                        selected
+                          ? styles.interestChipSelected
+                          : styles.interestChip
+                      }
+                      onClick={() => toggleInterestSport(sport.sportId)}
+                      disabled={isSavingInterests}
+                    >
+                      {sport.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        {interestError ? (
+          <p className={styles.interestError} role="alert">
+            {interestError}
+          </p>
+        ) : null}
+      </AppModal>
     </main>
   );
 }
