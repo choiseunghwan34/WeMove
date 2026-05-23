@@ -13,8 +13,8 @@
 .modal {
   position: relative;
   width: min(800px, 100%);
-  max-height: min(82vh, 720px);
-  overflow: auto;
+  max-height: min(92vh, 880px);
+  overflow-y: auto;
   border: 1px solid rgba(219, 231, 247, 0.88);
   border-radius: 30px;
   background:

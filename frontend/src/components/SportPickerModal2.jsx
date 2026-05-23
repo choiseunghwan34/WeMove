@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import AppModal from "./AppModal";
 import styles from "../styles/MeetingPickerModal.module.css";
@@ -78,23 +79,30 @@ export default function SportPickerModal({
           />
         </label>
 
-        <div className={styles.sportList}>
-          {filteredSports.map((sport) => (
-              <button
+        <div className={styles.browser} style={{ gridTemplateColumns: "1fr" }}>
+          <section className={styles.column}>
+            <header className={styles.columnHead}>운동 종목 목록</header>
+            <div className={styles.sportList}>
+              {filteredSports.map((sport) => (
+                <button
                   key={sport.sportId}
                   type="button"
                   className={`${styles.sportCard} ${
-                      sport.sportId === draftSportId ? styles.sportCardCurrent : ""
+                    sport.sportId === draftSportId
+                      ? styles.sportCardCurrent
+                      : ""
                   }`.trim()}
                   onClick={() => setDraftSportId(sport.sportId)}
-              >
-                <strong>{sport.name}</strong>
-                <span>{sport.category || "기타"}</span>
-              </button>
-          ))}
-          {filteredSports.length === 0 ? (
-              <div className={styles.emptyState}>검색 결과가 없습니다.</div>
-          ) : null}
+                >
+                  <strong>{sport.name}</strong>
+                  <span>{sport.category || "기타"}</span>
+                </button>
+              ))}
+              {filteredSports.length === 0 ? (
+                <div className={styles.emptyState}>검색 결과가 없습니다.</div>
+              ) : null}
+            </div>
+          </section>
         </div>
       </AppModal>
   );
