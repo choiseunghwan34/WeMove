@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
-import { getMeeting } from "../api/meetingApi";
+import { getMeeting, updateMeetingStatus } from "../api/meetingApi";
 import {
   approveParticipant,
   getParticipants,
@@ -16,26 +16,50 @@ export default function MeetingManagePage() {
   const [loading, setLoading] = useState(true);
   const [actionModal, setActionModal] = useState(null);
 
+  const fetchData = async () => {
+    try {
+      const [meetingRes, participantsRes] = await Promise.all([
+        getMeeting(meetingId),
+        getParticipants(meetingId),
+      ]);
+      setMeeting(meetingRes.data);
+      setParticipants(participantsRes.data || []);
+    } catch (error) {
+      console.error("Failed to fetch manage data:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
+    const init = async () => {
       setLoading(true);
-      try {
-        const [meetingRes, participantsRes] = await Promise.all([
-          getMeeting(meetingId),
-          getParticipants(meetingId),
-        ]);
-        setMeeting(meetingRes.data);
-        setParticipants(participantsRes.data || []);
-      } catch (error) {
-        console.error("Failed to fetch manage data:", error);
-      } finally {
-        setLoading(false);
-      }
+      await fetchData();
+      setLoading(false);
     };
-    fetchData();
+    init();
   }, [meetingId]);
 
   const closeModal = () => setActionModal(null);
+
+  const handleConfirm = async () => {
+    if (!actionModal) return;
+
+    try {
+      if (actionModal.type === "approve") {
+        await approveParticipant(actionModal.applicant.participantId);
+      } else if (actionModal.type === "reject") {
+        await rejectParticipant(actionModal.applicant.participantId);
+      } else if (actionModal.type === "close") {
+        await updateMeetingStatus(meetingId, { status: "CLOSED" });
+      }
+
+      // 성공 시 데이터 새로고침 및 모달 닫기
+      await fetchData();
+      closeModal();
+    } catch (error) {
+      console.error("Action failed:", error);
+      alert("요청 처리에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
 
   const pendingApplicants = participants.filter((p) => p.status === "PENDING");
   const approvedApplicants = participants.filter((p) => p.status === "APPROVED");
@@ -184,7 +208,7 @@ export default function MeetingManagePage() {
         confirmText={modalCopy.confirmText}
         tone={modalCopy.tone}
         onClose={closeModal}
-        onConfirm={closeModal}
+        onConfirm={handleConfirm}
       >
         {actionModal?.applicant ? (
           <div className={styles.applicantModalCard}>
