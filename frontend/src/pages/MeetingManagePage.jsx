@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import { getMeeting, updateMeetingStatus } from "../api/meetingApi";
@@ -6,6 +6,7 @@ import {
   approveParticipant,
   getParticipants,
   rejectParticipant,
+  cancelApproval,
 } from "../api/participantApi";
 import styles from "../styles/MeetingManagePage.module.css";
 
@@ -22,6 +23,7 @@ export default function MeetingManagePage() {
         getMeeting(meetingId),
         getParticipants(meetingId),
       ]);
+      console.log("[DEBUG] Fetched participants list:", participantsRes.data);
       setMeeting(meetingRes.data);
       setParticipants(participantsRes.data || []);
     } catch (error) {
@@ -50,19 +52,27 @@ export default function MeetingManagePage() {
         await rejectParticipant(actionModal.applicant.participantId);
       } else if (actionModal.type === "close") {
         await updateMeetingStatus(meetingId, { status: "CLOSED" });
+      } else if (actionModal.type === "cancelApproval") {
+        await cancelApproval(actionModal.applicant.participantId);
       }
 
       // 성공 시 데이터 새로고침 및 모달 닫기
       await fetchData();
       closeModal();
     } catch (error) {
-      console.error("Action failed:", error);
+      console.error("[DEBUG] Action failed - Full Error Details:", error);
+      if (error.response) {
+        console.error("[DEBUG] Server Response Status:", error.response.status);
+        console.error("[DEBUG] Server Response Data:", error.response.data);
+      }
       alert("요청 처리에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
   const pendingApplicants = participants.filter((p) => p.status === "PENDING");
   const approvedApplicants = participants.filter((p) => p.status === "APPROVED");
+
+  const isClosed = meeting && (meeting.status === "CLOSED" || meeting.status === "COMPLETED");
 
   const modalCopy =
     {
@@ -84,6 +94,13 @@ export default function MeetingManagePage() {
         title: "이 모임의 모집을 마감할까요?",
         description: "마감 처리 후에는 신규 참가 신청 버튼이 비활성화됩니다.",
         confirmText: "모집 마감 처리",
+        tone: "danger",
+      },
+      cancelApproval: {
+        eyebrow: "승인 취소",
+        title: `${actionModal?.applicant?.nickname ?? ""}님의 승인을 취소할까요?`,
+        description: "승인을 취소하면 해당 신청자는 다시 승인 대기 상태로 이동합니다.",
+        confirmText: "승인 취소",
         tone: "danger",
       },
     }[actionModal?.type] ?? {};
@@ -144,6 +161,7 @@ export default function MeetingManagePage() {
                   <div className={styles.participantActions}>
                     <button
                       type="button"
+                      disabled={isClosed}
                       onClick={() =>
                         setActionModal({ type: "reject", applicant: item })
                       }
@@ -152,6 +170,7 @@ export default function MeetingManagePage() {
                     </button>
                     <button
                       type="button"
+                      disabled={isClosed}
                       onClick={() =>
                         setActionModal({ type: "approve", applicant: item })
                       }
@@ -184,6 +203,16 @@ export default function MeetingManagePage() {
                     </div>
                     <span className={styles.reviewScore}>승인 완료</span>
                   </div>
+                  <div className={styles.participantActions}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActionModal({ type: "cancelApproval", applicant: item })
+                      }
+                    >
+                      승인 취소
+                    </button>
+                  </div>
                 </article>
               ))
             )}
@@ -192,9 +221,10 @@ export default function MeetingManagePage() {
             <Link to={`/meetings/${meetingId}`}>상세로 돌아가기</Link>
             <button
               type="button"
+              disabled={isClosed}
               onClick={() => setActionModal({ type: "close" })}
             >
-              모집 마감 처리
+              {isClosed ? "모집 마감 완료" : "모집 마감 처리"}
             </button>
           </div>
         </section>

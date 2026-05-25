@@ -41,4 +41,10 @@ public class ParticipantController {
     participantService.cancel(participantId);
     return ResponseEntity.ok().build();
   }
+
+  @PatchMapping("/api/participants/{participantId}/cancel-approval")
+  public ResponseEntity<Void> cancelApproval(@PathVariable Long participantId) {
+    participantService.cancelApproval(participantId);
+    return ResponseEntity.ok().build();
+  }
 }
