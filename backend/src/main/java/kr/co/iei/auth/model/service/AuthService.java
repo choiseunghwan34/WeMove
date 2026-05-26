@@ -11,6 +11,10 @@ public interface AuthService {
 
   void checkNickname(String nickname);
 
+  FindLoginIdResponse findLoginId(FindLoginIdRequest request);
+
+  void resetPassword(PasswordResetRequest request);
+
   AuthLoginResult login(LoginRequest request);
 
   AuthRefreshResult refresh(String refreshToken);

@@ -65,4 +65,10 @@
         )
     </insert>
 
+    <update id="updatePassword">
+        UPDATE users
+        SET password=#{password}
+        WHERE userId=#{userId}
+    </update>
+
 </mapper>

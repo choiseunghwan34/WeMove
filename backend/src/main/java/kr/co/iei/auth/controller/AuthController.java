@@ -73,6 +73,25 @@ public class AuthController {
     return ResponseEntity.ok(emailVerificationService.sendVerificationEmail(request.getEmail()));
   }
 
+  @PostMapping("/account/email/send")
+  public ResponseEntity<EmailVerificationSendResponse> sendAccountRecoveryEmail(
+      @RequestBody EmailVerificationRequest request) {
+    return ResponseEntity.ok(
+        emailVerificationService.sendAccountRecoveryEmail(
+            request.getEmail(), request.getPurpose()));
+  }
+
+  @PostMapping("/account/find-login-id")
+  public ResponseEntity<FindLoginIdResponse> findLoginId(@RequestBody FindLoginIdRequest request) {
+    return ResponseEntity.ok(authService.findLoginId(request));
+  }
+
+  @PostMapping("/account/reset-password")
+  public ResponseEntity<Void> resetPassword(@RequestBody PasswordResetRequest request) {
+    authService.resetPassword(request);
+    return ResponseEntity.ok().build();
+  }
+
   @GetMapping(value = "/email/verify", produces = "text/html; charset=UTF-8")
   public ResponseEntity<String> verifyEmail(@RequestParam String token) {
     String email = emailVerificationService.verify(token);

@@ -7,8 +7,11 @@ import java.time.Year;
 import kr.co.iei.auth.model.dao.AuthDao;
 import kr.co.iei.auth.model.vo.AuthLoginResult;
 import kr.co.iei.auth.model.vo.AuthRefreshResult;
+import kr.co.iei.auth.model.vo.FindLoginIdRequest;
+import kr.co.iei.auth.model.vo.FindLoginIdResponse;
 import kr.co.iei.auth.model.vo.LoginRequest;
 import kr.co.iei.auth.model.vo.LoginResponse;
+import kr.co.iei.auth.model.vo.PasswordResetRequest;
 import kr.co.iei.auth.model.vo.SignupRequest;
 import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.common.exception.DuplicateResourceException;
@@ -25,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthServiceImpl implements AuthService {
   private static final String REFRESH_KEY_PREFIX = "auth:refresh:";
   private static final String SESSION_KEY_PREFIX = "auth:session:";
+  private static final String FIND_LOGIN_ID_PURPOSE = "FIND_LOGIN_ID";
+  private static final String RESET_PASSWORD_PURPOSE = "RESET_PASSWORD";
   private static final String LOGIN_ID_PATTERN = "^[a-z0-9]{5,20}$";
   private static final String PASSWORD_PATTERN =
       "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,16}$";
@@ -103,6 +108,55 @@ public class AuthServiceImpl implements AuthService {
     if (authDao.selectByNickname(nickname.trim()) != null) {
       throw new DuplicateResourceException("이미 사용 중인 닉네임입니다.");
     }
+  }
+
+  public FindLoginIdResponse findLoginId(FindLoginIdRequest req) {
+    if (req == null) {
+      throw new IllegalArgumentException("계정 정보를 입력해주세요.");
+    }
+
+    String email = normalizeEmail(req.getEmail());
+    String nickname = req.getNickname() == null ? "" : req.getNickname().trim();
+    if (nickname.isBlank()) {
+      throw new IllegalArgumentException("닉네임을 입력해주세요.");
+    }
+    if (!emailVerificationService.isVerified(email, FIND_LOGIN_ID_PURPOSE)) {
+      throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+    }
+
+    Member member = authDao.selectByEmail(email);
+    if (member == null || !nickname.equals(member.getNickname())) {
+      throw new IllegalArgumentException("일치하는 계정 정보가 없습니다.");
+    }
+
+    return new FindLoginIdResponse(member.getLoginId());
+  }
+
+  public void resetPassword(PasswordResetRequest req) {
+    if (req == null) {
+      throw new IllegalArgumentException("비밀번호 재설정 정보를 입력해주세요.");
+    }
+
+    String loginId = req.getLoginId() == null ? "" : req.getLoginId().trim();
+    String email = normalizeEmail(req.getEmail());
+    String password = req.getPassword();
+
+    if (loginId.isBlank()) {
+      throw new IllegalArgumentException("아이디를 입력해주세요.");
+    }
+    if (password == null || !password.matches(PASSWORD_PATTERN)) {
+      throw new IllegalArgumentException("비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해 8자 이상 16자 이하로 입력해주세요.");
+    }
+    if (!emailVerificationService.isVerified(email, RESET_PASSWORD_PURPOSE)) {
+      throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+    }
+
+    Member member = authDao.selectByLoginId(loginId);
+    if (member == null || !email.equalsIgnoreCase(member.getEmail())) {
+      throw new IllegalArgumentException("일치하는 계정 정보가 없습니다.");
+    }
+
+    authDao.updatePassword(member.getUserId(), passwordUtil.hash(password));
   }
 
   public AuthLoginResult login(LoginRequest req) {
@@ -242,6 +296,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     return phone.replaceAll("\\D", "");
+  }
+
+  private String normalizeEmail(String email) {
+    if (!hasText(email) || !email.contains("@")) {
+      throw new IllegalArgumentException("올바른 이메일 형식으로 입력해주세요.");
+    }
+
+    return email.trim().toLowerCase();
   }
 
   private String refreshKey(Long userId) {

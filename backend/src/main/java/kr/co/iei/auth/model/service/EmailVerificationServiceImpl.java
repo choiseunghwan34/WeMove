@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 public class EmailVerificationServiceImpl implements EmailVerificationService {
   private static final String VERIFY_TOKEN_KEY_PREFIX = "auth:email-verify-token:";
   private static final String VERIFIED_EMAIL_KEY_PREFIX = "auth:email-verified:";
+  private static final String DEFAULT_PURPOSE = "DEFAULT";
+  private static final String FIND_LOGIN_ID_PURPOSE = "FIND_LOGIN_ID";
+  private static final String RESET_PASSWORD_PURPOSE = "RESET_PASSWORD";
   private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
   private static final Duration VERIFIED_TTL = Duration.ofMinutes(30);
 
@@ -43,12 +46,28 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
       throw new DuplicateResourceException("이미 사용 중인 이메일입니다.");
     }
 
+    return sendVerification(normalizedEmail, DEFAULT_PURPOSE);
+  }
+
+  @Override
+  public EmailVerificationSendResponse sendAccountRecoveryEmail(String email, String purpose) {
+    String normalizedEmail = normalizeEmail(email);
+    String normalizedPurpose = normalizePurpose(purpose);
+
+    if (authDao.selectByEmail(normalizedEmail) == null) {
+      throw new IllegalArgumentException("가입된 이메일이 없습니다.");
+    }
+
+    return sendVerification(normalizedEmail, normalizedPurpose);
+  }
+
+  private EmailVerificationSendResponse sendVerification(String normalizedEmail, String purpose) {
     String token = UUID.randomUUID().toString();
     String verificationUrl = verificationBaseUrl + "?token=" + token;
 
     stringRedisTemplate
             .opsForValue()
-            .set(tokenKey(token), normalizedEmail, TOKEN_TTL);
+            .set(tokenKey(token), purpose + "|" + normalizedEmail, TOKEN_TTL);
 
     sendMailIfAvailable(normalizedEmail, verificationUrl);
 
@@ -61,13 +80,17 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
       throw new IllegalArgumentException("이메일 인증 토큰이 없습니다.");
     }
 
-    String email = stringRedisTemplate.opsForValue().get(tokenKey(token));
-    if (email == null || email.isBlank()) {
+    String tokenValue = stringRedisTemplate.opsForValue().get(tokenKey(token));
+    if (tokenValue == null || tokenValue.isBlank()) {
       throw new IllegalArgumentException("이메일 인증 링크가 만료되었거나 올바르지 않습니다.");
     }
 
+    String[] tokenParts = tokenValue.split("\\|", 2);
+    String purpose = tokenParts.length == 2 ? tokenParts[0] : DEFAULT_PURPOSE;
+    String email = tokenParts.length == 2 ? tokenParts[1] : tokenValue;
+
     stringRedisTemplate.delete(tokenKey(token));
-    stringRedisTemplate.opsForValue().set(verifiedKey(email), "true", VERIFIED_TTL);
+    stringRedisTemplate.opsForValue().set(verifiedKey(email, purpose), "true", VERIFIED_TTL);
     webSocketMessageBroadcaster.broadcast(new EmailVerificationEvent("EMAIL_VERIFIED", email, true));
     return email;
   }
@@ -75,7 +98,16 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
   @Override
   public boolean isVerified(String email) {
     String normalizedEmail = normalizeEmail(email);
-    return "true".equals(stringRedisTemplate.opsForValue().get(verifiedKey(normalizedEmail)));
+    return "true".equals(
+        stringRedisTemplate.opsForValue().get(verifiedKey(normalizedEmail, DEFAULT_PURPOSE)));
+  }
+
+  @Override
+  public boolean isVerified(String email, String purpose) {
+    String normalizedEmail = normalizeEmail(email);
+    String normalizedPurpose = normalizePurpose(purpose);
+    return "true".equals(
+        stringRedisTemplate.opsForValue().get(verifiedKey(normalizedEmail, normalizedPurpose)));
   }
 
   private void sendMailIfAvailable(String email, String verificationUrl) {
@@ -123,11 +155,21 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     return email.trim().toLowerCase();
   }
 
+  private String normalizePurpose(String purpose) {
+    String normalizedPurpose = purpose == null ? "" : purpose.trim().toUpperCase();
+    if (FIND_LOGIN_ID_PURPOSE.equals(normalizedPurpose)
+        || RESET_PASSWORD_PURPOSE.equals(normalizedPurpose)) {
+      return normalizedPurpose;
+    }
+
+    throw new IllegalArgumentException("이메일 인증 목적이 올바르지 않습니다.");
+  }
+
   private String tokenKey(String token) {
     return VERIFY_TOKEN_KEY_PREFIX + token;
   }
 
-  private String verifiedKey(String email) {
-    return VERIFIED_EMAIL_KEY_PREFIX + email;
+  private String verifiedKey(String email, String purpose) {
+    return VERIFIED_EMAIL_KEY_PREFIX + purpose + ":" + email;
   }
 }

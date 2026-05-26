@@ -1,29 +1,258 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  findLoginId,
+  resetPassword,
+  sendAccountRecoveryEmail,
+} from "../api/authApi";
 import homeBg from "../assets/images/home-bg.webp";
 import WeMoveLogo from "../components/WeMoveLogo";
+import {
+  EMAIL_PATTERN,
+  normalizeEmail,
+  normalizeText,
+} from "../utils/profileValidation";
 import styles from "../styles/FindAccountPage.module.css";
 
 const authBackgrounds = [homeBg];
+const PASSWORD_PATTERN =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,16}$/;
+const EMAIL_PURPOSE_BY_MODE = {
+  id: "FIND_LOGIN_ID",
+  password: "RESET_PASSWORD",
+};
 
 export default function FindAccountPage() {
   const [mode, setMode] = useState("id");
   const [resultMessage, setResultMessage] = useState("");
+  const [form, setForm] = useState({
+    nickname: "",
+    loginId: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+  });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [emailVerificationStatus, setEmailVerificationStatus] =
+    useState("idle");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [verifiedPurpose, setVerifiedPurpose] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const backgroundImage = useMemo(
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
     [],
   );
 
-  const handleFindId = (event) => {
-    event.preventDefault();
-    setResultMessage(
-      "인증이 완료되었습니다. 가입된 아이디는 wemove_runner 입니다.",
-    );
+  useEffect(() => {
+    if (emailVerificationStatus !== "pending") {
+      return undefined;
+    }
+
+    let socket;
+
+    try {
+      socket = new WebSocket("ws://localhost:8456/ws/email-verifications");
+
+      socket.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          const nextEmail = normalizeEmail(payload.email);
+
+          if (payload.verified && nextEmail) {
+            setVerifiedEmail(nextEmail);
+            setVerifiedPurpose(EMAIL_PURPOSE_BY_MODE[mode]);
+            setForm((current) => ({ ...current, email: nextEmail }));
+            setEmailVerificationStatus("verified");
+            setFieldErrors((current) => ({ ...current, email: "" }));
+          }
+        } catch {
+          // 이메일 인증 이벤트 형식이 맞지 않으면 현재 입력 흐름은 유지합니다.
+        }
+      };
+
+      socket.onerror = () => {
+        setFieldErrors((current) => ({
+          ...current,
+          email: "인증 연결을 확인해주세요.",
+        }));
+      };
+    } catch {
+      setFieldErrors((current) => ({
+        ...current,
+        email: "인증 연결을 시작할 수 없습니다.",
+      }));
+    }
+
+    return () => {
+      socket?.close();
+    };
+  }, [emailVerificationStatus, mode]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    const nextValue = name === "email" ? normalizeEmail(value) : value;
+
+    if (name === "email") {
+      setVerifiedEmail("");
+      setVerifiedPurpose("");
+      setEmailVerificationStatus("idle");
+    }
+
+    setForm((current) => ({
+      ...current,
+      [name]: nextValue,
+    }));
+    setFieldErrors((current) => ({ ...current, [name]: "", submit: "" }));
+    setResultMessage("");
   };
 
-  const handleResetPassword = (event) => {
+  const requestEmailVerification = async () => {
+    const email = normalizeEmail(form.email);
+
+    if (!EMAIL_PATTERN.test(email)) {
+      setFieldErrors((current) => ({
+        ...current,
+        email: "올바른 이메일 형식으로 입력해주세요.",
+      }));
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailVerificationStatus("pending");
+
+    try {
+      await sendAccountRecoveryEmail(email, EMAIL_PURPOSE_BY_MODE[mode]);
+      setFieldErrors((current) => ({
+        ...current,
+        email: "인증 메일을 보냈습니다. 메일의 인증하기 버튼을 눌러주세요.",
+      }));
+    } catch (error) {
+      setEmailVerificationStatus("idle");
+      setFieldErrors((current) => ({
+        ...current,
+        email:
+          error?.response?.data?.message || "이메일 인증 요청에 실패했습니다.",
+      }));
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const ensureVerifiedEmail = () => {
+    const email = normalizeEmail(form.email);
+    if (
+      emailVerificationStatus !== "verified" ||
+      verifiedEmail !== email ||
+      verifiedPurpose !== EMAIL_PURPOSE_BY_MODE[mode]
+    ) {
+      setFieldErrors((current) => ({
+        ...current,
+        email: "이메일 인증을 완료해주세요.",
+      }));
+      return false;
+    }
+
+    return true;
+  };
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setResultMessage("");
+    setFieldErrors({});
+    setEmailVerificationStatus("idle");
+    setVerifiedEmail("");
+    setVerifiedPurpose("");
+  };
+
+  const handleFindId = async (event) => {
     event.preventDefault();
-    setResultMessage("비밀번호 재설정 링크를 이메일로 전송했습니다.");
+
+    if (!ensureVerifiedEmail()) {
+      return;
+    }
+
+    const nickname = normalizeText(form.nickname);
+    if (!nickname) {
+      setFieldErrors((current) => ({
+        ...current,
+        nickname: "닉네임을 입력해주세요.",
+      }));
+      return;
+    }
+
+    setIsSubmitting(true);
+    setResultMessage("");
+
+    try {
+      const { data } = await findLoginId({
+        email: normalizeEmail(form.email),
+        nickname,
+      });
+      setResultMessage(`가입된 아이디는 ${data.loginId} 입니다.`);
+    } catch (error) {
+      setResultMessage("");
+      setFieldErrors((current) => ({
+        ...current,
+        submit:
+          error?.response?.data?.message || "일치하는 계정 정보를 찾지 못했습니다.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async (event) => {
+    event.preventDefault();
+
+    if (!ensureVerifiedEmail()) {
+      return;
+    }
+
+    const loginId = normalizeText(form.loginId);
+    const password = form.password;
+    const passwordConfirm = form.passwordConfirm;
+    const nextErrors = {};
+
+    if (!loginId) {
+      nextErrors.loginId = "아이디를 입력해주세요.";
+    }
+    if (!PASSWORD_PATTERN.test(password)) {
+      nextErrors.password = "대소문자/숫자/특수문자 포함 8~16자입니다.";
+    }
+    if (passwordConfirm !== password) {
+      nextErrors.passwordConfirm = "비밀번호가 일치하지 않습니다.";
+    }
+
+    if (Object.keys(nextErrors).length) {
+      setFieldErrors(nextErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setResultMessage("");
+
+    try {
+      await resetPassword({
+        loginId,
+        email: normalizeEmail(form.email),
+        password,
+      });
+      setResultMessage("비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요.");
+      setForm((current) => ({
+        ...current,
+        password: "",
+        passwordConfirm: "",
+      }));
+    } catch (error) {
+      setFieldErrors((current) => ({
+        ...current,
+        submit:
+          error?.response?.data?.message || "비밀번호 재설정에 실패했습니다.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -70,14 +299,14 @@ export default function FindAccountPage() {
             <button
               type="button"
               className={mode === "id" ? styles.tabActive : styles.tab}
-              onClick={() => setMode("id")}
+              onClick={() => switchMode("id")}
             >
               아이디 찾기
             </button>
             <button
               type="button"
               className={mode === "password" ? styles.tabActive : styles.tab}
-              onClick={() => setMode("password")}
+              onClick={() => switchMode("password")}
             >
               비밀번호 재설정
             </button>
@@ -87,48 +316,146 @@ export default function FindAccountPage() {
             <form className={styles.form} onSubmit={handleFindId}>
               <label>
                 <span>이름 또는 닉네임</span>
-                <input placeholder="러너민수" />
+                <input
+                  name="nickname"
+                  value={form.nickname}
+                  onChange={handleChange}
+                  placeholder="러너민수"
+                />
+                <small className={styles.fieldError}>
+                  {fieldErrors.nickname || "\u00a0"}
+                </small>
               </label>
               <label>
                 <span>가입 이메일</span>
                 <div className={styles.inlineField}>
-                  <input type="email" placeholder="runner@wemove.kr" />
-                  <button type="button">인증</button>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="runner@wemove.kr"
+                    readOnly={emailVerificationStatus === "verified"}
+                  />
+                  <button
+                    type="button"
+                    onClick={requestEmailVerification}
+                    disabled={
+                      isSendingEmail ||
+                      emailVerificationStatus === "verified"
+                    }
+                  >
+                    {emailVerificationStatus === "verified"
+                      ? "완료"
+                      : isSendingEmail
+                        ? "전송중"
+                        : "인증"}
+                  </button>
                 </div>
+                <small
+                  className={
+                    emailVerificationStatus === "verified"
+                      ? styles.fieldSuccess
+                      : styles.fieldError
+                  }
+                >
+                  {emailVerificationStatus === "verified"
+                    ? "이메일 인증이 완료되었습니다."
+                    : fieldErrors.email || "\u00a0"}
+                </small>
               </label>
-              <label>
-                <span>인증번호</span>
-                <input placeholder="6자리 인증번호 입력" />
-              </label>
-              <button className={styles.submit} type="submit">
-                아이디 확인
+              <button className={styles.submit} type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "확인 중..." : "아이디 확인"}
               </button>
             </form>
           ) : (
             <form className={styles.form} onSubmit={handleResetPassword}>
               <label>
                 <span>아이디</span>
-                <input placeholder="wemove_runner" />
+                <input
+                  name="loginId"
+                  value={form.loginId}
+                  onChange={handleChange}
+                  placeholder="wemove_runner"
+                />
+                <small className={styles.fieldError}>
+                  {fieldErrors.loginId || "\u00a0"}
+                </small>
               </label>
               <label>
                 <span>가입 이메일</span>
                 <div className={styles.inlineField}>
-                  <input type="email" placeholder="runner@wemove.kr" />
-                  <button type="button">인증</button>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="runner@wemove.kr"
+                    readOnly={emailVerificationStatus === "verified"}
+                  />
+                  <button
+                    type="button"
+                    onClick={requestEmailVerification}
+                    disabled={
+                      isSendingEmail ||
+                      emailVerificationStatus === "verified"
+                    }
+                  >
+                    {emailVerificationStatus === "verified"
+                      ? "완료"
+                      : isSendingEmail
+                        ? "전송중"
+                        : "인증"}
+                  </button>
                 </div>
+                <small
+                  className={
+                    emailVerificationStatus === "verified"
+                      ? styles.fieldSuccess
+                      : styles.fieldError
+                  }
+                >
+                  {emailVerificationStatus === "verified"
+                    ? "이메일 인증이 완료되었습니다."
+                    : fieldErrors.email || "\u00a0"}
+                </small>
               </label>
               <label>
                 <span>새 비밀번호</span>
-                <input type="password" placeholder="새 비밀번호 입력" />
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="대소문자, 숫자, 특수문자 포함 8~16자"
+                  maxLength={16}
+                />
+                <small className={styles.fieldError}>
+                  {fieldErrors.password || "\u00a0"}
+                </small>
               </label>
               <label>
                 <span>새 비밀번호 확인</span>
-                <input type="password" placeholder="새 비밀번호 다시 입력" />
+                <input
+                  name="passwordConfirm"
+                  type="password"
+                  value={form.passwordConfirm}
+                  onChange={handleChange}
+                  placeholder="새 비밀번호 다시 입력"
+                  maxLength={16}
+                />
+                <small className={styles.fieldError}>
+                  {fieldErrors.passwordConfirm || "\u00a0"}
+                </small>
               </label>
-              <button className={styles.submit} type="submit">
-                재설정 링크 받기
+              <button className={styles.submit} type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "재설정 중..." : "비밀번호 재설정"}
               </button>
             </form>
+          )}
+
+          {fieldErrors.submit && (
+            <p className={styles.formError}>{fieldErrors.submit}</p>
           )}
 
           {resultMessage && (

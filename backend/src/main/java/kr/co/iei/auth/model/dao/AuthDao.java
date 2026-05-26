@@ -34,4 +34,8 @@ public class AuthDao {
   public int insertUserSport(Long userId, Long sportId) {
     return sqlSession.insert("auth.insertUserSport", Map.of("userId", userId, "sportId", sportId));
   }
+
+  public int updatePassword(Long userId, String password) {
+    return sqlSession.update("auth.updatePassword", Map.of("userId", userId, "password", password));
+  }
 }

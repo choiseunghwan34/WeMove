@@ -7,3 +7,8 @@ export const logout = () => api.post("/auth/logout");
 export const checkSessionStatus = () => api.get("/auth/session-status");
 export const sendEmailVerification = (email) =>
   api.post("/auth/email/send", { email });
+export const sendAccountRecoveryEmail = (email, purpose) =>
+  api.post("/auth/account/email/send", { email, purpose });
+export const findLoginId = (data) => api.post("/auth/account/find-login-id", data);
+export const resetPassword = (data) =>
+  api.post("/auth/account/reset-password", data);

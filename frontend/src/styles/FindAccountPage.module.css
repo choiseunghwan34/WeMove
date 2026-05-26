@@ -72,6 +72,13 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.form input:read-only {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
 .tabRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -115,6 +122,37 @@
   box-shadow:
     0 6px 14px rgba(37, 99, 235, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.inlineField button:disabled,
+.submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.fieldError,
+.fieldSuccess {
+  min-height: 16px;
+  display: block;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fieldSuccess {
+  color: #16a34a;
+}
+
+.formError {
+  margin: 12px 0 0;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .resultBox {
