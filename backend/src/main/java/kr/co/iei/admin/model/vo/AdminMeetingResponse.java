@@ -1,6 +1,7 @@
 package kr.co.iei.admin.model.vo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.Data;
 
@@ -17,4 +18,5 @@ public class AdminMeetingResponse {
   private String hostNickname;
   private LocalDate meetingDate;
   private LocalTime startTime;
+  private LocalDateTime createdAt;
 }

@@ -91,10 +91,21 @@ const reportStatusText = {
   REJECTED: "반려됨",
 };
 
+const roleText = {
+  USER: "유저",
+  ADMIN: "관리자",
+};
+
+const memberStatusText = {
+  ACTIVE: "활동중",
+  SUSPENDED: "정지",
+  DELETED: "탈퇴",
+};
+
 const memberStatusOptions = [
-  { value: "ACTIVE", label: "ACTIVE" },
-  { value: "SUSPENDED", label: "SUSPENDED" },
-  { value: "DELETED", label: "DELETED" },
+  { value: "ACTIVE", label: "활동중" },
+  { value: "SUSPENDED", label: "정지" },
+  { value: "DELETED", label: "탈퇴" },
 ];
 
 const meetingStatusOptions = [
@@ -134,6 +145,11 @@ const formatMeetingDate = (meetingDate) => {
 const formatMeetingTime = (startTime) => {
   if (!startTime) return "--:--";
   return String(startTime).slice(0, 5);
+};
+
+const formatCreatedDate = (createdAt) => {
+  if (!createdAt) return "-";
+  return String(createdAt).slice(0, 10);
 };
 
 const paginate = (items, page) => {
@@ -189,6 +205,8 @@ export default function AdminPage() {
   const [updatingMeetingId, setUpdatingMeetingId] = useState(null);
   const [updatingSportId, setUpdatingSportId] = useState(null);
   const [deletingSportId, setDeletingSportId] = useState(null);
+  const [selectedMemberDetail, setSelectedMemberDetail] = useState(null);
+  const [selectedMeetingDetail, setSelectedMeetingDetail] = useState(null);
   const [pages, setPages] = useState({
     members: 1,
     meetings: 1,
@@ -242,14 +260,19 @@ export default function AdminPage() {
       Array.isArray(membersResult.value.data)
     ) {
       setMembers(
-        membersResult.value.data.map((member) => ({
-          id: member.userId,
-          loginId: member.loginId,
-          nickname: member.nickname,
-          region: member.regionName ?? "-",
-          role: member.role ?? "USER",
-          status: member.status ?? "ACTIVE",
-        })),
+        membersResult.value.data
+          .filter((member) => (member.role ?? "USER") !== "ADMIN")
+          .map((member) => ({
+            id: member.userId,
+            loginId: member.loginId,
+            nickname: member.nickname,
+            region: member.regionName ?? "-",
+            role: member.role ?? "USER",
+            status: member.status ?? "ACTIVE",
+            roleText: roleText[member.role] ?? member.role ?? "유저",
+            statusText:
+              memberStatusText[member.status] ?? member.status ?? "활동중",
+          })),
       );
     }
 
@@ -282,6 +305,7 @@ export default function AdminPage() {
           region: meeting.regionName ?? "-",
           meetingDate: formatMeetingDate(meeting.meetingDate),
           startTime: formatMeetingTime(meeting.startTime),
+          createdAt: formatCreatedDate(meeting.createdAt),
           current: meeting.approvedCount ?? 0,
           max: meeting.maxMembers ?? 0,
           status: meeting.status ?? "RECRUITING",
@@ -813,15 +837,19 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {pagedMembers.map((member) => (
-                <tr key={member.id}>
+                <tr
+                  key={member.id}
+                  className={styles.clickableRow}
+                  onClick={() => setSelectedMemberDetail(member)}
+                >
                   <td>{member.id}</td>
                   <td>{member.nickname}</td>
                   <td>{member.loginId}</td>
                   <td>{member.region}</td>
-                  <td>{member.role}</td>
+                  <td>{member.roleText}</td>
                   <td>
                     <span className={cx("badge", badgeToneByMemberStatus(member.status))}>
-                      {member.status}
+                      {member.statusText}
                     </span>
                   </td>
                   <td>
@@ -829,6 +857,7 @@ export default function AdminPage() {
                       className={styles.inlineSelect}
                       value={member.status}
                       disabled={updatingMemberId === member.id}
+                      onClick={(event) => event.stopPropagation()}
                       onChange={(event) =>
                         handleMemberStatusChange(member.id, event.target.value)
                       }
@@ -898,7 +927,11 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {pagedMeetings.map((meeting) => (
-                <tr key={meeting.id}>
+                <tr
+                  key={meeting.id}
+                  className={styles.clickableRow}
+                  onClick={() => setSelectedMeetingDetail(meeting)}
+                >
                   <td>M{String(meeting.id).padStart(3, "0")}</td>
                   <td>
                     <div className={styles.stackCell}>
@@ -915,6 +948,7 @@ export default function AdminPage() {
                     <div className={styles.scheduleCell}>
                       <strong>{meeting.meetingDate}</strong>
                       <span>{meeting.startTime}</span>
+                      <span>등록 {meeting.createdAt}</span>
                     </div>
                   </td>
                   <td>
@@ -930,6 +964,7 @@ export default function AdminPage() {
                       className={styles.inlineSelect}
                       value={meeting.status}
                       disabled={updatingMeetingId === meeting.id}
+                      onClick={(event) => event.stopPropagation()}
                       onChange={(event) =>
                         handleMeetingStatusChange(meeting.id, event.target.value)
                       }
@@ -1207,6 +1242,100 @@ export default function AdminPage() {
         onApply={applyRegionSelection}
         onClose={closeRegionModal}
       />
+
+      <AppModal
+        open={Boolean(selectedMemberDetail)}
+        title="회원 정보"
+        confirmText="닫기"
+        onConfirm={() => setSelectedMemberDetail(null)}
+        onClose={() => setSelectedMemberDetail(null)}
+        hideCancel
+      >
+        {selectedMemberDetail ? (
+          <div className={styles.detailModalGrid}>
+            <div className={styles.detailModalItem}>
+              <span>회원 ID</span>
+              <strong>{selectedMemberDetail.id}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>닉네임</span>
+              <strong>{selectedMemberDetail.nickname}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>로그인 ID</span>
+              <strong>{selectedMemberDetail.loginId}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>지역</span>
+              <strong>{selectedMemberDetail.region}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>권한</span>
+              <strong>{selectedMemberDetail.roleText}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>상태</span>
+              <strong>{selectedMemberDetail.statusText}</strong>
+            </div>
+          </div>
+        ) : null}
+      </AppModal>
+
+      <AppModal
+        open={Boolean(selectedMeetingDetail)}
+        title="모임 정보"
+        confirmText="닫기"
+        onConfirm={() => setSelectedMeetingDetail(null)}
+        onClose={() => setSelectedMeetingDetail(null)}
+        hideCancel
+      >
+        {selectedMeetingDetail ? (
+          <div className={styles.detailModalGrid}>
+            <div className={styles.detailModalItem}>
+              <span>모임 ID</span>
+              <strong>M{String(selectedMeetingDetail.id).padStart(3, "0")}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>제목</span>
+              <strong>{selectedMeetingDetail.title}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>주최자</span>
+              <strong>{selectedMeetingDetail.hostNickname}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>종목</span>
+              <strong>
+                {selectedMeetingDetail.sport} · {selectedMeetingDetail.sportCategory}
+              </strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>지역</span>
+              <strong>{selectedMeetingDetail.region}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>일정</span>
+              <strong>
+                {selectedMeetingDetail.meetingDate} {selectedMeetingDetail.startTime}
+              </strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>등록일</span>
+              <strong>{selectedMeetingDetail.createdAt}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>참가 인원</span>
+              <strong>
+                {selectedMeetingDetail.current}/{selectedMeetingDetail.max}
+              </strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>상태</span>
+              <strong>{selectedMeetingDetail.statusText}</strong>
+            </div>
+          </div>
+        ) : null}
+      </AppModal>
     </div>
   );
 }

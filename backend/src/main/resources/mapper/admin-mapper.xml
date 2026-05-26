@@ -5,7 +5,7 @@
 
     <select id="selectSummary" resultType="kr.co.iei.admin.model.vo.AdminSummary">
         SELECT
-            (SELECT COUNT(*) FROM users) AS total_members,
+            (SELECT COUNT(*) FROM users WHERE role != 'ADMIN') AS total_members,
             (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS total_meetings,
             (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pending_reports,
             (SELECT COUNT(*) FROM sports) AS total_sports
@@ -54,7 +54,8 @@
             m.status,
             u.nickname AS host_nickname,
             m.meetingDate,
-            m.startTime
+            m.startTime,
+            m.createdAt
         FROM meetings m
         JOIN users u ON m.hostUserId = u.userId
         JOIN sports s ON m.sportId = s.sportId
