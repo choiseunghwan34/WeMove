@@ -67,6 +67,7 @@
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 900;
+  border: 1px solid rgba(34, 104, 239, 0.15);
 }
 
 .header h2 {
