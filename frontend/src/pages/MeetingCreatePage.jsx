@@ -1,6 +1,8 @@
 ﻿import { createMeeting } from "../api/meetingApi.js";
 import MeetingFormPage from "./MeetingFormPage.jsx";
 import { useNavigate } from "react-router-dom";
+import {useRef} from "react";
+
 
 export default function MeetingCreatePage() {
   console.log("★★★★ 지금 MeetingCreatePage 파일이 실행되었습니다 ★★★★");
