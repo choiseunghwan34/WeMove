@@ -10,6 +10,8 @@ import styles from "../styles/MeetingDetailPage.module.css";
 const STATUS_MAP = {
   OPEN: "모집중",
   CLOSED: "모집마감",
+  COMPLETED: "모임 완료",
+  CANCELLED: "취소됨",
 };
 
 const MEETING_TYPE_MAP = {
@@ -50,11 +52,17 @@ export default function MeetingDetailPage() {
   const { user, isAuthenticated } = useAuth();
 
   const [meeting, setMeeting] = useState(null);
+  const [participants, setParticipants] = useState([]);
   const [isApplied, setIsApplied] = useState(false);
   const [appliedParticipantId, setAppliedParticipantId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
-  const closeModal = () => setModalType(null);
+  const [applyMessage, setApplyMessage] = useState("");
+  
+  const closeModal = () => {
+    setModalType(null);
+    setApplyMessage("");
+  };
 
   const fetchMeetingDetail = async () => {
     try {
@@ -67,6 +75,8 @@ export default function MeetingDetailPage() {
       setMeeting(meetingData);
 
       const participantsList = participantsRes.data || [];
+      setParticipants(participantsList);
+
       const myParticipant = participantsList.find(
         (p) => p.userId === user?.memberId && (p.status === "PENDING" || p.status === "APPROVED")
       );
@@ -90,9 +100,10 @@ export default function MeetingDetailPage() {
     try {
       await applyMeeting(meetingId, {
         userId: user?.memberId,
-        message: "참가 신청합니다.",
+        message: applyMessage || "참가 신청합니다.",
       });
       closeModal();
+      alert("참가 신청이 성공적으로 완료되었습니다!");
       await fetchMeetingDetail();
     } catch (error) {
       console.error("Failed to apply meeting:", error);
@@ -105,6 +116,7 @@ export default function MeetingDetailPage() {
     try {
       await cancelParticipant(appliedParticipantId);
       closeModal();
+      alert("참가 신청 취소가 완료되었습니다.");
       await fetchMeetingDetail();
     } catch (error) {
       console.error("Failed to cancel participant:", error);
@@ -115,7 +127,7 @@ export default function MeetingDetailPage() {
   if (loading) return <div className={styles.page}>로딩 중...</div>;
   if (!meeting) return <div className={styles.page}>모임을 찾을 수 없습니다.</div>;
 
-  const isClosed = meeting.status === "CLOSED";
+  const isClosed = meeting.status === "CLOSED" || meeting.status === "COMPLETED";
   const isAdmin = isAuthenticated && user && user.role === "ADMIN";
   const isHost = isAuthenticated && user && user.nickname === meeting.meetingHostName;
 
@@ -158,8 +170,8 @@ export default function MeetingDetailPage() {
                 <strong>{meeting.regionName}</strong>
               </article>
               <article>
-                <span>상세 장소</span>
-                <strong>{meeting.placeName}</strong>
+                <span>상세 주소</span>
+                <strong>{meeting.address}</strong>
               </article>
               <article>
                 <span>일시</span>
@@ -186,6 +198,7 @@ export default function MeetingDetailPage() {
             <div className={styles.detailBody}>
               <p>{meeting.content}</p>
               <ul className={styles.detailChecklist}>
+                <li>만나는 장소: {meeting.placeName}</li>
                 <li>모임 방식: {MEETING_TYPE_MAP[meeting.meetingType] || "1회성 모임"}</li>
                 <li>준비물: {meeting.supplies || "편한 운동복, 물, 개인 이어폰"}</li>
                 <li>진행 안내: {meeting.guideText || "시작 10분 전 집결 권장"}</li>
@@ -229,7 +242,15 @@ export default function MeetingDetailPage() {
           <section className={styles.detailPanel}>
             <h3>모임장 정보</h3>
             <div className={styles.hostCard}>
-              <div className={styles.profileAvatar} />
+              {meeting.hostProfileImage ? (
+                <img
+                  src={meeting.hostProfileImage}
+                  alt={meeting.meetingHostName}
+                  className={styles.profileAvatar}
+                />
+              ) : (
+                <div className={styles.profileAvatar} />
+              )}
               <div>
                 <strong>{meeting.meetingHostName || "익명"}</strong>
                 <p>러닝 · 매너점수 4.8 · 응답 빠름</p>
@@ -250,51 +271,68 @@ export default function MeetingDetailPage() {
               </p>
             </div>
             <div className={styles.stickyActions}>
-              {isHost ? (
+              {!isHost && (
+                <>
+                  {!isApplied && (
+                    <button
+                      type="button"
+                      className={styles.primaryButton}
+                      disabled={isClosed || isAdmin}
+                      onClick={handleApplyClick}
+                    >
+                      {isAdmin
+                        ? "관리자 계정은 신청할 수 없습니다"
+                        : isClosed
+                          ? "신청 마감"
+                          : "참가 신청"}
+                    </button>
+                  )}
+
+                  {!isClosed && !isAdmin && isApplied && (
+                    <button
+                      type="button"
+                      className={styles.dangerButton}
+                      onClick={() => setModalType("cancel")}
+                    >
+                      신청 취소
+                    </button>
+                  )}
+                </>
+              )}
+
+              {isAdmin && (
+                <p style={{ margin: 0, color: "#64748b", fontSize: "0.95rem", marginTop: "8px" }}>
+                  관리자는 모임 상세 조회만 가능하며 참가 신청은 할 수 없습니다.
+                </p>
+              )}
+
+              {isHost && (
                 <>
                   <Link
                     to={`/meetings/${meetingId}/edit`}
                     className={styles.primaryButton}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      textDecoration: "none",
+                    }}
                   >
                     모임 수정
                   </Link>
                   <Link
                     to={`/meetings/${meetingId}/manage`}
                     className={styles.secondaryButton}
+                    style={{
+                      marginTop: "8px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      textDecoration: "none",
+                    }}
                   >
                     신청자 관리
                   </Link>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className={styles.primaryButton}
-                    disabled={isClosed || isAdmin}
-                    onClick={handleApplyClick}
-                  >
-                    {isAdmin
-                      ? "관리자 계정은 신청할 수 없습니다"
-                      : isClosed
-                        ? "신청 마감"
-                        : "참가 신청"}
-                  </button>
-
-                  {isAdmin && (
-                    <p style={{ margin: 0, color: "#64748b", fontSize: "0.95rem", marginTop: "8px" }}>
-                      관리자는 모임 상세 조회만 가능하며 참가 신청은 할 수 없습니다.
-                    </p>
-                  )}
-
-                  {!isClosed && !isAdmin && isApplied && (
-                    <button
-                      type="button"
-                      className={styles.secondaryButton}
-                      onClick={() => setModalType("cancel")}
-                    >
-                      신청 취소
-                    </button>
-                  )}
                 </>
               )}
             </div>
@@ -319,10 +357,34 @@ export default function MeetingDetailPage() {
             </span>
             <strong>{meeting.title}</strong>
             <p>
-              {meeting.regionName} · {meeting.placeName}
+              {meeting.regionName} · {meeting.address}
             </p>
           </div>
         </div>
+        
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontWeight: "800", color: "#374151", fontSize: "14px" }}>
+            참가 신청 메시지
+          </label>
+          <textarea
+            placeholder="모임장에게 보낼 간단한 각오나 한 줄 메시지를 직접 적어주세요. (미입력 시 기본 문구로 전송)"
+            value={applyMessage}
+            onChange={(e) => setApplyMessage(e.target.value)}
+            style={{
+              width: "100%",
+              minHeight: "72px",
+              padding: "10px 14px",
+              borderRadius: "14px",
+              border: "1px solid rgba(148, 163, 184, 0.26)",
+              background: "#fafafa",
+              outline: "0",
+              font: "inherit",
+              resize: "none",
+              lineHeight: "1.5"
+            }}
+          />
+        </div>
+
         <dl className={styles.modalInfoList}>
           <div>
             <dt>일시</dt>
@@ -331,16 +393,20 @@ export default function MeetingDetailPage() {
             </dd>
           </div>
           <div>
+            <dt>만나는 장소</dt>
+            <dd>{meeting.placeName}</dd>
+          </div>
+          <div>
             <dt>모임 방식</dt>
             <dd>{MEETING_TYPE_MAP[meeting.meetingType] || "1회성 모임"}</dd>
           </div>
           <div>
             <dt>준비물</dt>
-            <dd>{meeting.supplies || "편한 운동복, 물, 개인 이어폰"}</dd>
+            <dd>편한 운동복, 물, 개인 이어폰</dd>
           </div>
           <div>
             <dt>진행 안내</dt>
-            <dd>{meeting.guideText || "시작 10분 전 집결 권장"}</dd>
+            <dd>시작 10분 전 집결 권장</dd>
           </div>
         </dl>
       </AppModal>

@@ -10,6 +10,29 @@
         AND userId=#{userId}
     </select>
 
+    <select id="selectParticipantByMeetingIdAndUserId" resultType="kr.co.iei.participant.model.vo.MeetingParticipant">
+        SELECT
+            participantId,
+            meetingId,
+            userId,
+            status,
+            message
+        FROM meetingParticipants
+        WHERE meetingId=#{meetingId}
+        AND userId=#{userId}
+    </select>
+
+    <update id="updateParticipantForReapply">
+        UPDATE meetingParticipants
+        SET
+            status=#{status},
+            message=#{message},
+            appliedAt=NOW(),
+            approvedAt=NULL,
+            cancelledAt=NULL
+        WHERE participantId=#{participantId}
+    </update>
+
     <insert id="insertParticipant" parameterType="kr.co.iei.participant.model.vo.MeetingParticipant" useGeneratedKeys="true" keyProperty="participantId">
         INSERT INTO meetingParticipants(
             meetingId,

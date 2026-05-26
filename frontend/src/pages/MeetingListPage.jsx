@@ -564,14 +564,22 @@ export default function MeetingListPage() {
                   </div>
 
                   <div className={styles.host}>
-                    <i>
-                      <UiIcon
-                        name="user"
-                        className={styles.dashboardHostIcon}
+                    {meeting.hostProfileImage ? (
+                      <img
+                        src={meeting.hostProfileImage}
+                        alt={meeting.meetingHostName}
+                        className={styles.dashboardHostAvatar}
                       />
-                    </i>
+                    ) : (
+                      <i>
+                        <UiIcon
+                          name="user"
+                          className={styles.dashboardHostIcon}
+                        />
+                      </i>
+                    )}
                     <span>
-                      {meeting.meetingHostName || "익명"} · 매너점수 4.8
+                      {meeting.meetingHostName || "익명"} 
                     </span>
                   </div>
                 </div>

@@ -21,6 +21,11 @@
                 where userId = m.hostUserId
             ) meetingHostName,
             (
+                SELECT profileImage
+                FROM users
+                where userId = m.hostUserId
+            ) hostProfileImage,
+            (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
@@ -168,6 +173,7 @@
             m.hostUserId as hostUserId,
             u.nickname AS hostNickname,
             u.nickname AS meetingHostName,
+            u.profileImage AS hostProfileImage,
             m.title,
             m.content,
             m.supplies as supplies,

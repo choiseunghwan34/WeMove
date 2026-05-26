@@ -16,6 +16,15 @@ public class ParticipantDao {
         "participant.exists", Map.of("meetingId", meetingId, "userId", userId));
   }
 
+  public MeetingParticipant selectParticipantByMeetingIdAndUserId(Long meetingId, Long userId) {
+    return sqlSession.selectOne(
+        "participant.selectParticipantByMeetingIdAndUserId", Map.of("meetingId", meetingId, "userId", userId));
+  }
+
+  public int updateParticipantForReapply(MeetingParticipant p) {
+    return sqlSession.update("participant.updateParticipantForReapply", p);
+  }
+
   public int insertParticipant(MeetingParticipant p) {
     return sqlSession.insert("participant.insertParticipant", p);
   }
