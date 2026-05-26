@@ -24,6 +24,7 @@ import {
   normalizeEmail,
   normalizeText,
 } from "../utils/profileValidation";
+import { getSportIconName } from "../utils/sportIconMap";
 import styles from "../styles/MyPage.module.css";
 
 const ALL_SIDO = "전체 시도";
@@ -622,6 +623,11 @@ export default function MyPage() {
     }
   };
 
+  const resetInterestSports = () => {
+    setSaveError("");
+    setSelectedSportIds([]);
+  };
+
   return (
     <DashboardShell
       active="마이페이지"
@@ -629,7 +635,7 @@ export default function MyPage() {
       description="내 계정 정보와 관심 지역을 확인하고 프로필을 수정할 수 있습니다."
       sidebarInterestItems={selectedSports.map((sport) => ({
         label: sport.name,
-        icon: "spark",
+        icon: getSportIconName(sport),
       }))}
       aside={
         <>
@@ -745,14 +751,24 @@ export default function MyPage() {
                         {selectedSportIds.length}개 선택
                       </strong>
                     </div>
-                    <button
-                      type="button"
-                      className={styles.uploadButton}
-                      onClick={saveInterestSports}
-                      disabled={savingSports}
-                    >
-                      {savingSports ? "저장 중..." : "저장하기"}
-                    </button>
+                    <div className={styles.interestActions}>
+                      <button
+                        type="button"
+                        className={styles.resetButton}
+                        onClick={resetInterestSports}
+                        disabled={savingSports || selectedSportIds.length === 0}
+                      >
+                        초기화
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.uploadButton}
+                        onClick={saveInterestSports}
+                        disabled={savingSports}
+                      >
+                        {savingSports ? "저장 중..." : "저장하기"}
+                      </button>
+                    </div>
                   </div>
 
                   <div className={styles.interestGroupList}>

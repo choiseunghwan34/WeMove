@@ -167,6 +167,32 @@
   margin-bottom: 14px;
 }
 
+.interestActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resetButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #dbe3f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.resetButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .interestChipGrid {
   display: flex;
   flex-wrap: wrap;

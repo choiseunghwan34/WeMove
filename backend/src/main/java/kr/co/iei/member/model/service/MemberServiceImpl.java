@@ -82,8 +82,8 @@ public class MemberServiceImpl implements MemberService {
     if (memberId == null) {
       throw new IllegalArgumentException("회원 정보가 없습니다.");
     }
-    if (req == null || req.getSportIds() == null || req.getSportIds().isEmpty()) {
-      throw new IllegalArgumentException("관심종목을 1개 이상 선택해주세요.");
+    if (req == null || req.getSportIds() == null) {
+      throw new IllegalArgumentException("관심종목 정보를 입력해주세요.");
     }
 
     List<Long> sportIds =
@@ -91,10 +91,6 @@ public class MemberServiceImpl implements MemberService {
             .filter((sportId) -> sportId != null && sportId > 0)
             .distinct()
             .toList();
-
-    if (sportIds.isEmpty()) {
-      throw new IllegalArgumentException("관심종목을 1개 이상 선택해주세요.");
-    }
 
     memberDao.deleteMemberSports(memberId);
     sportIds.forEach((sportId) -> memberDao.insertMemberSport(memberId, sportId));
