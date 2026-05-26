@@ -16,6 +16,7 @@
             u.userId,
             u.loginId,
             u.nickname,
+            u.profileImage,
             CASE
                 WHEN r.regionId IS NULL THEN NULL
                 ELSE CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong)

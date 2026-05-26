@@ -1,8 +1,15 @@
 import { useState } from "react";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import AppModal from "./components/AppModal";
 import Header from "./components/Header";
 import { useAuth } from "./contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import AdminPage from "./pages/AdminPage";
 import ActivityPage from "./pages/ActivityPage";
 import FindAccountPage from "./pages/FindAccountPage";
@@ -17,6 +24,14 @@ import MyPage from "./pages/MyPage";
 import ReviewPage from "./pages/ReviewPage";
 import SearchPage from "./pages/SearchPage";
 import SignupPage from "./pages/SignupPage";
+
+const ACCESS_WARNING = {
+  title: "접근 권한이 없습니다",
+  adminLogin: "관리자 페이지는 관리자 계정으로 로그인해야 볼 수 있습니다.",
+  adminBlocked: "일반 회원은 관리자 페이지로 이동할 수 없습니다.",
+  userBlocked:
+    "이 메뉴는 일반 회원 전용입니다. 관리자 계정은 관리자 페이지에서 이용해주세요.",
+};
 
 function RouteWarningModal({ title, description, redirectTo }) {
   const navigate = useNavigate();
@@ -50,8 +65,8 @@ function AdminOnlyRoute({ children }) {
   if (!user) {
     return (
       <RouteWarningModal
-        title="접근 권한이 없습니다"
-        description="관리자 페이지는 관리자 계정으로 로그인해야 볼 수 있습니다."
+        title={ACCESS_WARNING.title}
+        description={ACCESS_WARNING.adminLogin}
         redirectTo="/login"
       />
     );
@@ -60,8 +75,8 @@ function AdminOnlyRoute({ children }) {
   if (user.role !== "ADMIN") {
     return (
       <RouteWarningModal
-        title="접근 권한이 없습니다"
-        description="일반 회원은 관리자 페이지로 이동할 수 없습니다."
+        title={ACCESS_WARNING.title}
+        description={ACCESS_WARNING.adminBlocked}
         redirectTo="/"
       />
     );
@@ -80,8 +95,8 @@ function UserOnlyRoute({ children }) {
   if (user?.role === "ADMIN") {
     return (
       <RouteWarningModal
-        title="접근 권한이 없습니다"
-        description="이 메뉴는 일반 회원 전용입니다. 관리자 계정은 관리자 페이지에서 이용해주세요."
+        title={ACCESS_WARNING.title}
+        description={ACCESS_WARNING.userBlocked}
         redirectTo="/admin"
       />
     );
@@ -173,11 +188,13 @@ function LayoutRoutes() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/find-account" element={<FindAccountPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="*" element={<LayoutRoutes />} />
-    </Routes>
+    <ToastProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/find-account" element={<FindAccountPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="*" element={<LayoutRoutes />} />
+      </Routes>
+    </ToastProvider>
   );
 }

@@ -7,6 +7,7 @@ public class AdminMemberResponse {
   private Long userId;
   private String loginId;
   private String nickname;
+  private String profileImage;
   private String regionName;
   private String role;
   private String status;
