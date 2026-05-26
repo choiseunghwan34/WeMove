@@ -1,17 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import styles from "../styles/MeetingCreatePage.module.css";
-import { getSports } from "../api/sportApi.js";
-import { getRegions } from "../api/regionApi.js";
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
-import { useAuth } from "../contexts/AuthContext.jsx";
-import {getMeeting} from "../api/meetingApi.js";
+import {useAuth} from "../contexts/AuthContext.jsx";
 
 const normalizeText = (value = "") => String(value).trim();
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
 
-export default function MeetingFormPage({ initialData, onSubmit, title }) {
+export default function MeetingFormPage({initialData, onSubmit, title}) {
     console.log("★★★★★★ props 확인 ★★★★★★");
     console.log("onSubmit:", onSubmit);
     console.log("title:", title);
@@ -19,27 +16,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const {meetingId} = useParams();
     const isEditMode = !!meetingId;//meetingId가 있으면 TRUE, 없으면 FALSE
 
-    const [initialDataValue, setInitialDataValue] = useState(null);
-    const [loading, setLoading] = useState(isEditMode);
-
-    useEffect(()=>{
-        if(isEditMode){
-            //수정모드일때만 데이터 불러오기
-            getMeeting(meetingId).then((res)=>{
-                console.log(res);
-                setInitialDataValue(res.data);
-                setLoading(false);
-
-            }).catch((err)=>{
-                console.log(err);
-                alert("모임 정보를 불러오지 못했습니다.")
-
-            })
-        }
-    },[meetingId, isEditMode]);
-
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const {isAuthenticated} = useAuth();
     const fileInputRef = useRef(null);
     const inputRefs = useRef({});
 
@@ -59,11 +37,18 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const [isSportModalOpen, setIsSportModalOpen] = useState(false);
 
     const [selectedSportName, setSelectedSportName] = useState("");
-    const [selectedRegion, setSelectedRegion] = useState({ sido: "", sigungu: "", dong: "" });
+    const [selectedRegion, setSelectedRegion] = useState({sido: "", sigungu: "", dong: ""});
 
     // 썸네일 미리보기
     const previews = useMemo(() => {
-        return files.map((file) => ({ name: file.name, url: URL.createObjectURL(file) }));
+        return files.map((file) => {
+            // 1. file이 객체 형태(수정 모드에서 넣은 {name, url})라면 url 그대로 사용
+            if (file.url) {
+                return {name: file.name, url: file.url};
+            }
+            // 2. file이 실제 File 객체라면 createObjectURL 사용
+            return {name: file.name, url: URL.createObjectURL(file)};
+        });
     }, [files]);
 
     useEffect(() => {
@@ -72,16 +57,43 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
 
     // 데이터 로드
     useEffect(() => {
-        getSports().then(res => setSports(res.data)).catch(console.log);
-        getRegions().then(res => {
-            setRegions(res.data.map(r => ({
-                regionId: r.regionId,
-                sido: normalizeText(r.sido),
-                sigungu: normalizeText(r.sigungu),
-                dong: normalizeText(r.dong),
-            })));
-        }).catch(console.log);
-    }, []);
+        //1. 기본 폼 데이터 불러오기(저장된 데이터가 있을때만 실행)
+        if (!initialData) return;
+
+        setForm(prev => ({
+            ...prev,
+            ...initialData
+        }));
+
+        //2. 운동 종목 이름 불러오기
+        if (initialData.sportName && sports.length > 0) {
+            const foundSport = sports.find(s => s.name === initialData.sportName);
+            if (foundSport) {
+                setForm(prev => ({...prev, sportId: foundSport.sportId})); // ID 복구!
+                setSelectedSportName(foundSport.name);
+            }
+        }
+        // 3. 지역 이름 -> ID 매칭
+        if (initialData.regionName && regions.length > 0) {
+            // regionName "서울특별시 성동구 성수동1가"를 가지고 ID 찾기
+            const foundRegion = regions.find(r =>
+                `${r.sido} ${r.sigungu} ${r.dong}` === initialData.regionName
+            );
+            if (foundRegion) {
+                setForm(prev => ({...prev, regionId: foundRegion.regionId})); // ID 복구!
+                const parts = initialData.regionName.split(" ");
+                setSelectedRegion({
+                    sido: parts[0] || "",
+                    sigungu: parts[1] || "",
+                    dong: parts[2] || ""
+                });
+            }
+        }
+        if (initialData.thumbnailImage) {
+            console.log("이미지 url확인: ", initialData.thumbnailImage);
+            setFiles([{name: "기존 썸네일", url: initialData.thumbnailImage}]);
+        }
+    }, [initialData, sports, regions]);
 
     const regionHierarchy = useMemo(() => {
         const grouped = new Map();
@@ -106,8 +118,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
             const p = i < 12 ? '오전' : '오후';
             const h = i === 0 ? 12 : (i > 12 ? i - 12 : i);
             const valH = String(i).padStart(2, '0');
-            options.push({ value: `${valH}:00`, label: `${p} ${String(h).padStart(2, '0')}:00` });
-            options.push({ value: `${valH}:30`, label: `${p} ${String(h).padStart(2, '0')}:30` });
+            options.push({value: `${valH}:00`, label: `${p} ${String(h).padStart(2, '0')}:00`});
+            options.push({value: `${valH}:30`, label: `${p} ${String(h).padStart(2, '0')}:30`});
         }
         return options;
     }, []);
@@ -151,53 +163,74 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const getTodayString = () => new Date().toISOString().split('T')[0];
     const regionDisplayText = selectedRegion.dong ? `${selectedRegion.sido} ${selectedRegion.sigungu} ${selectedRegion.dong}` : "";
 
-    const handleSportApply = (d) => { setForm(p => ({ ...p, sportId: d.sportId })); setSelectedSportName(d.name); setIsSportModalOpen(false); };
+    const handleSportApply = (d) => {
+        setForm(p => ({...p, sportId: d.sportId}));
+        setSelectedSportName(d.name);
+        setIsSportModalOpen(false);
+    };
     const handleRegionApply = (d) => {
-        setSelectedRegion({ sido: d.sido, sigungu: d.sigungu, dong: d.dong });
+        setSelectedRegion({sido: d.sido, sigungu: d.sigungu, dong: d.dong});
         const match = regions.find(r => r.sido === d.sido && r.sigungu === d.sigungu && r.dong === d.dong);
-        if (match) setForm(p => ({ ...p, regionId: match.regionId }));
+        if (match) setForm(p => ({...p, regionId: match.regionId}));
         setIsRegionModalOpen(false);
     };
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(p => ({ ...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value }));
+        const {name, value} = e.target;
+        setForm(p => ({...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value}));
     };
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
-        if (file?.size > MAX_THUMBNAIL_SIZE) { alert("10MB 이하만 가능합니다."); return; }
+        if (file?.size > MAX_THUMBNAIL_SIZE) {
+            alert("10MB 이하만 가능합니다.");
+            return;
+        }
         if (file) setFiles([file]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
-    const removeFile = () => setFiles([]);
+    const removeFile = (nameToRemove) => {
+        setFiles(files.filter(f => f.name !== nameToRemove));
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log("onsubmit 함수확인: ", onSubmit)
         const requiredFields = [
-            { key: "title", label: "모임 제목", refKey: "title" },
-            { key: "address", label: "주소", refKey: "address" },
-            { key: "placeName", label: "상세 주소", refKey: "placeName" },
-            { key: "meetingDate", label: "날짜", refKey: "meetingDate" },
-            { key: "startTime", label: "시작 시간", refKey: "startTime" },
-            { key: "maxMembers", label: "모집 인원", refKey: "maxMembers" },
-            { key: "supplies", label: "준비물", refKey: "supplies" },
-            { key: "guideText", label: "진행 안내", refKey: "guideText" },
-            { key: "content", label: "모임 소개", refKey: "content" }
+            {key: "title", label: "모임 제목", refKey: "title"},
+            {key: "address", label: "주소", refKey: "address"},
+            {key: "placeName", label: "상세 주소", refKey: "placeName"},
+            {key: "meetingDate", label: "날짜", refKey: "meetingDate"},
+            {key: "startTime", label: "시작 시간", refKey: "startTime"},
+            {key: "maxMembers", label: "모집 인원", refKey: "maxMembers"},
+            {key: "supplies", label: "준비물", refKey: "supplies"},
+            {key: "guideText", label: "진행 안내", refKey: "guideText"},
+            {key: "content", label: "모임 소개", refKey: "content"}
         ];
         for (const f of requiredFields) {
             if (!form[f.key] || String(form[f.key]).trim() === "") {
                 alert(`${f.label}을(를) 입력해주세요.`);
                 inputRefs.current[f.refKey]?.focus();
-                inputRefs.current[f.refKey]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                inputRefs.current[f.refKey]?.scrollIntoView({behavior: 'smooth', block: 'center'});
                 return;
             }
         }
-        if (!form.sportId) { alert("운동 종목을 선택해주세요."); setIsSportModalOpen(true); return; }
-        if (!form.regionId) { alert("지역을 선택해주세요."); setIsRegionModalOpen(true); return; }
-        if (!isAuthenticated) { alert("로그인이 필요합니다."); navigate("/login"); return; }
+        if (!form.sportId) {
+            alert("운동 종목을 선택해주세요.");
+            setIsSportModalOpen(true);
+            return;
+        }
+        if (!form.regionId) {
+            alert("지역을 선택해주세요.");
+            setIsRegionModalOpen(true);
+            return;
+        }
+        if (!isAuthenticated) {
+            alert("로그인이 필요합니다.");
+            navigate("/login");
+            return;
+        }
 
         const formData = new FormData();
-        formData.append("request", new Blob([JSON.stringify(form)], { type: "application/json" }));
+        formData.append("request", new Blob([JSON.stringify(form)], {type: "application/json"}));
         if (files.length > 0) formData.append("image", files[0]);
         onSubmit(formData);
     };
@@ -401,26 +434,6 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         <option value="CLOSED">모집마감</option>
                     </select>
                 </label>
-                {/*
-        <div className={`${styles.full} ${styles.choiceGroup}`}>
-          <span>모임 방식</span>
-          <div>
-            <label><input type="radio" name="meetingType" defaultChecked /> 1회성 모임</label>
-            <label><input type="radio" name="meetingType" /> 정기 모임</label>
-          </div>
-        </div>
-
-
-        <label>
-          <span>반복 주기</span>
-          <select defaultValue="NONE">
-            <option value="NONE">없음</option>
-            <option value="WEEKLY">매주</option>
-            <option value="BIWEEKLY">격주</option>
-            <option value="MONTHLY">매월</option>
-          </select>
-        </label>
-            */}
 
                 <label className={styles.full}>
                     <span className={styles.requiredLabel}>준비물</span>
