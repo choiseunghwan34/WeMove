@@ -167,8 +167,13 @@
             m.meetingId as meetingId,
             m.hostUserId as hostUserId,
             u.nickname AS hostNickname,
+            u.nickname AS meetingHostName,
             m.title,
             m.content,
+            m.supplies as supplies,
+            m.guideText as guideText,
+            m.meetingType as meetingType,
+            m.repeatType as repeatType,
 
             m.thumbnailImage,
 

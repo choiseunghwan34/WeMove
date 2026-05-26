@@ -20,4 +20,9 @@ public class MeetingDetailResponse {
   private String status;
   private String sportName;
   private String regionName;
+  private String supplies;
+  private String guideText;
+  private String meetingHostName;
+  private String meetingType;
+  private String repeatType;
 }
