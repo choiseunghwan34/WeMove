@@ -3,19 +3,29 @@ import { Link } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import RegionPickerModal from "../components/RegionPickerModal";
-import { getMe, updateMe } from "../api/memberApi";
+import { sendEmailVerification } from "../api/authApi";
+import {
+  checkMyEmail,
+  checkMyNickname,
+  getMe,
+  getMySports,
+  updateMe,
+  updateMySports,
+} from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
+import { getSports } from "../api/sportApi";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
+import {
+  EMAIL_PATTERN,
+  NICKNAME_PATTERN,
+  formatPhone,
+  getPhoneDigits,
+  normalizeEmail,
+  normalizeText,
+} from "../utils/profileValidation";
 import styles from "../styles/MyPage.module.css";
 
-const cx = (...names) =>
-  names
-    .filter(Boolean)
-    .map((name) => styles[name])
-    .join(" ");
-
-const normalizeText = (value) => String(value ?? "").trim();
 const ALL_SIDO = "전체 시도";
 const ALL_SIGUNGU = "전체 시군구";
 const ALL_DONG = "전체 읍면동";
@@ -25,10 +35,21 @@ export default function MyPage() {
     useAuth();
   const [member, setMember] = useState(null);
   const [regions, setRegions] = useState([]);
+  const [sports, setSports] = useState([]);
+  const [selectedSportIds, setSelectedSportIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingSports, setSavingSports] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [checkedNickname, setCheckedNickname] = useState("");
+  const [nicknameCheckMessage, setNicknameCheckMessage] = useState("");
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+  const [emailVerificationStatus, setEmailVerificationStatus] =
+    useState("idle");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -63,9 +84,16 @@ export default function MyPage() {
       setLoadError("");
 
       try {
-        const [memberResponse, regionsResponse] = await Promise.all([
+        const [
+          memberResponse,
+          regionsResponse,
+          sportsResponse,
+          memberSportsResponse,
+        ] = await Promise.all([
           getMe(user.memberId),
           getRegions(),
+          getSports(),
+          getMySports(user.memberId),
         ]);
 
         if (!active) {
@@ -74,6 +102,16 @@ export default function MyPage() {
 
         setMember(memberResponse.data ?? null);
         setRegions(Array.isArray(regionsResponse.data) ? regionsResponse.data : []);
+        setSports(
+          Array.isArray(sportsResponse.data)
+            ? sportsResponse.data.filter((sport) => sport.isActive !== false)
+            : [],
+        );
+        setSelectedSportIds(
+          Array.isArray(memberSportsResponse.data)
+            ? memberSportsResponse.data.map((sport) => sport.sportId)
+            : [],
+        );
       } catch {
         if (active) {
           setLoadError("회원 정보를 불러오지 못했습니다.");
@@ -105,6 +143,53 @@ export default function MyPage() {
       URL.revokeObjectURL(previewUrl);
     };
   }, [selectedImage]);
+
+  useEffect(() => {
+    if (!isEditOpen || emailVerificationStatus !== "pending") {
+      return undefined;
+    }
+
+    let socket;
+
+    try {
+      socket = new WebSocket("ws://localhost:8456/ws/email-verifications");
+
+      socket.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          const nextEmail = normalizeEmail(payload.email);
+
+          if (payload.verified && nextEmail) {
+            setVerifiedEmail(nextEmail);
+            setForm((current) => ({ ...current, email: nextEmail }));
+            setEmailVerificationStatus("verified");
+            setFieldErrors((current) => ({
+              ...current,
+              email: "",
+            }));
+          }
+        } catch {
+          // 이메일 인증 이벤트 형식이 맞지 않으면 현재 입력 흐름은 유지합니다.
+        }
+      };
+
+      socket.onerror = () => {
+        setFieldErrors((current) => ({
+          ...current,
+          email: "인증 연결을 확인해주세요.",
+        }));
+      };
+    } catch {
+      setFieldErrors((current) => ({
+        ...current,
+        email: "인증 연결을 시작할 수 없습니다.",
+      }));
+    }
+
+    return () => {
+      socket?.close();
+    };
+  }, [emailVerificationStatus, isEditOpen]);
 
   const regionName = useMemo(() => {
     if (!member?.regionId) {
@@ -174,20 +259,35 @@ export default function MyPage() {
         .join(" > ")
     : "지역을 선택해주세요";
 
+  const groupedSports = useMemo(() => {
+    const grouped = new Map();
+
+    sports.forEach((sport) => {
+      const category = sport.category || "기타";
+      if (!grouped.has(category)) {
+        grouped.set(category, []);
+      }
+      grouped.get(category).push(sport);
+    });
+
+    return [...grouped.entries()].map(([category, items]) => ({
+      category,
+      sports: items,
+    }));
+  }, [sports]);
+
+  const selectedSports = useMemo(
+    () => sports.filter((sport) => selectedSportIds.includes(sport.sportId)),
+    [selectedSportIds, sports],
+  );
+
   const profileImage =
     imagePreview || normalizeText(member?.profileImage) || defaultUserImage;
-
-  const detailItems = [
-    { label: "닉네임", value: member?.nickname || "-" },
-    { label: "이메일", value: member?.email || "-" },
-    { label: "휴대폰 번호", value: member?.phone || "미등록" },
-    { label: "관심 지역", value: regionName },
-  ];
 
   const statItems = [
     { label: "내 닉네임", value: member?.nickname || "-" },
     { label: "이메일", value: member?.email || "-" },
-    { label: "휴대폰 번호", value: member?.phone || "미등록" },
+    { label: "휴대폰 번호", value: member?.phone ? formatPhone(member.phone) : "미등록" },
     { label: "관심 지역", value: regionName },
   ];
 
@@ -197,11 +297,16 @@ export default function MyPage() {
     }
 
     setForm({
-      email: normalizeText(member.email),
+      email: normalizeEmail(member.email),
       nickname: normalizeText(member.nickname),
-      phone: normalizeText(member.phone),
+      phone: formatPhone(member.phone),
       regionId: member.regionId ? String(member.regionId) : "",
     });
+    setFieldErrors({});
+    setCheckedNickname(normalizeText(member.nickname));
+    setNicknameCheckMessage("");
+    setEmailVerificationStatus("verified");
+    setVerifiedEmail(normalizeEmail(member.email));
     setSelectedImage(null);
     setImagePreview("");
     setSaveError("");
@@ -222,14 +327,130 @@ export default function MyPage() {
     setSelectedImage(null);
     setImagePreview("");
     setSaveError("");
+    setFieldErrors({});
+    setCheckedNickname("");
+    setNicknameCheckMessage("");
+    setEmailVerificationStatus("idle");
+    setVerifiedEmail("");
   };
 
   const handleFormChange = (event) => {
     const { name, value } = event.target;
+    let nextValue = value;
+
+    if (name === "phone") {
+      nextValue = formatPhone(value);
+    } else if (name === "email") {
+      nextValue = normalizeEmail(value);
+      setEmailVerificationStatus(
+        nextValue && nextValue === normalizeEmail(member?.email)
+          ? "verified"
+          : "idle",
+      );
+      setVerifiedEmail(
+        nextValue && nextValue === normalizeEmail(member?.email)
+          ? nextValue
+          : "",
+      );
+    } else if (name === "nickname") {
+      const nextNickname = normalizeText(value);
+      if (nextNickname === normalizeText(member?.nickname)) {
+        setCheckedNickname(nextNickname);
+        setNicknameCheckMessage("");
+      } else {
+        setCheckedNickname("");
+        setNicknameCheckMessage("");
+      }
+    }
+
     setForm((current) => ({
       ...current,
-      [name]: value,
+      [name]: nextValue,
     }));
+
+    setFieldErrors((current) => ({
+      ...current,
+      [name]: "",
+    }));
+  };
+
+  const checkNickname = async () => {
+    const nickname = normalizeText(form.nickname);
+
+    if (!NICKNAME_PATTERN.test(nickname)) {
+      setNicknameCheckMessage("");
+      setFieldErrors((current) => ({
+        ...current,
+        nickname: "닉네임은 한글/영문/숫자만 입력해주세요.",
+      }));
+      return;
+    }
+
+    if (nickname === normalizeText(member?.nickname)) {
+      setCheckedNickname(nickname);
+      setNicknameCheckMessage("현재 사용 중인 닉네임입니다.");
+      setFieldErrors((current) => ({ ...current, nickname: "" }));
+      return;
+    }
+
+    setIsCheckingNickname(true);
+
+    try {
+      await checkMyNickname(user.memberId, nickname);
+      setCheckedNickname(nickname);
+      setNicknameCheckMessage("사용 가능한 닉네임입니다.");
+      setFieldErrors((current) => ({ ...current, nickname: "" }));
+    } catch (error) {
+      setCheckedNickname("");
+      setNicknameCheckMessage("");
+      setFieldErrors((current) => ({
+        ...current,
+        nickname:
+          error?.response?.data?.message || "닉네임 중복확인에 실패했습니다.",
+      }));
+    } finally {
+      setIsCheckingNickname(false);
+    }
+  };
+
+  const requestEmailVerification = async () => {
+    const email = normalizeEmail(form.email);
+
+    if (!EMAIL_PATTERN.test(email)) {
+      setFieldErrors((current) => ({
+        ...current,
+        email: "올바른 이메일 형식으로 입력해주세요.",
+      }));
+      return;
+    }
+
+    if (email === normalizeEmail(member?.email)) {
+      setVerifiedEmail(email);
+      setEmailVerificationStatus("verified");
+      setFieldErrors((current) => ({ ...current, email: "" }));
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailVerificationStatus("pending");
+
+    try {
+      await checkMyEmail(user.memberId, email);
+      await sendEmailVerification(email);
+      setFieldErrors((current) => ({
+        ...current,
+        email: "인증 메일을 보냈습니다. 메일의 인증하기 버튼을 눌러주세요.",
+      }));
+    } catch (error) {
+      setEmailVerificationStatus("idle");
+      setFieldErrors((current) => ({
+        ...current,
+        email:
+          error?.response?.data?.message || "이메일 인증 요청에 실패했습니다.",
+      }));
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const openRegionModal = () => {
@@ -297,13 +518,37 @@ export default function MyPage() {
   };
 
   const handleSaveProfile = async () => {
-    const email = normalizeText(form.email);
+    const email = normalizeEmail(form.email);
     const nickname = normalizeText(form.nickname);
-    const phone = normalizeText(form.phone);
+    const phone = getPhoneDigits(form.phone);
     const regionId = form.regionId ? Number(form.regionId) : null;
+    const nextErrors = {};
 
-    if (!email || !nickname) {
-      setSaveError("이메일과 닉네임을 입력해주세요.");
+    if (!EMAIL_PATTERN.test(email)) {
+      nextErrors.email = "올바른 이메일 형식으로 입력해주세요.";
+    } else if (
+      email !== normalizeEmail(member?.email) &&
+      (emailVerificationStatus !== "verified" || verifiedEmail !== email)
+    ) {
+      nextErrors.email = "변경할 이메일 인증을 완료해주세요.";
+    }
+
+    if (!NICKNAME_PATTERN.test(nickname)) {
+      nextErrors.nickname = "닉네임은 한글/영문/숫자만 입력해주세요.";
+    } else if (
+      nickname !== normalizeText(member?.nickname) &&
+      checkedNickname !== nickname
+    ) {
+      nextErrors.nickname = "닉네임 중복확인을 완료해주세요.";
+    }
+
+    if (phone && (phone.length < 9 || phone.length > 11)) {
+      nextErrors.phone = "연락처는 숫자 9~11자리로 입력해주세요.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
+      setSaveError("");
       return;
     }
 
@@ -345,6 +590,39 @@ export default function MyPage() {
     }
   };
 
+  const toggleInterestSport = (sportId) => {
+    setSaveError("");
+    setSelectedSportIds((current) =>
+      current.includes(sportId)
+        ? current.filter((id) => id !== sportId)
+        : [...current, sportId],
+    );
+  };
+
+  const saveInterestSports = async () => {
+    if (!selectedSportIds.length) {
+      setSaveError("관심종목을 1개 이상 선택해주세요.");
+      return;
+    }
+
+    setSavingSports(true);
+    setSaveError("");
+
+    try {
+      await updateMySports(selectedSportIds);
+      const { data } = await getMySports(user.memberId);
+      setSelectedSportIds(
+        Array.isArray(data) ? data.map((sport) => sport.sportId) : [],
+      );
+    } catch (error) {
+      setSaveError(
+        error?.response?.data?.message || "관심종목 저장에 실패했습니다.",
+      );
+    } finally {
+      setSavingSports(false);
+    }
+  };
+
   return (
     <DashboardShell
       active="마이페이지"
@@ -363,7 +641,7 @@ export default function MyPage() {
               </div>
               <div>
                 <span>휴대폰 번호</span>
-                <strong>{member?.phone || "미등록"}</strong>
+                <strong>{member?.phone ? formatPhone(member.phone) : "미등록"}</strong>
               </div>
               <div>
                 <span>관심 지역</span>
@@ -411,7 +689,9 @@ export default function MyPage() {
                 <p>
                   {regionName} · {member?.email || "이메일 미설정"}
                 </p>
-                <small>{member?.phone || "휴대폰 번호 미등록"}</small>
+                <small>
+                  {member?.phone ? formatPhone(member.phone) : "휴대폰 번호 미등록"}
+                </small>
               </div>
             </div>
             <button type="button" onClick={openEditModal}>
@@ -441,23 +721,68 @@ export default function MyPage() {
               </section>
 
               <section className={styles.tabsPanel}>
-                <div className={styles.pageTabs}>
-                  <button
-                    className={cx("tabButton", "tabButtonActive")}
-                    type="button"
-                  >
-                    내 정보
-                  </button>
+                <div className={styles.selectedSportBar}>
+                  <span>선택항목</span>
+                  <div className={styles.selectedSportList}>
+                    {selectedSports.length ? (
+                      selectedSports.map((sport) => (
+                        <strong key={sport.sportId}>{sport.name}</strong>
+                      ))
+                    ) : (
+                      <em>선택한 관심종목이 없습니다.</em>
+                    )}
+                  </div>
                 </div>
 
-                <div className={styles.detailGrid}>
-                  {detailItems.map((item) => (
-                    <article key={item.label} className={styles.detailCard}>
-                      <span className={styles.detailLabel}>{item.label}</span>
-                      <strong className={styles.detailValue}>{item.value}</strong>
-                    </article>
-                  ))}
-                </div>
+                <section className={styles.interestPanel}>
+                  <div className={styles.interestPanelHead}>
+                    <div>
+                      <span className={styles.detailLabel}>관심종목</span>
+                      <strong className={styles.detailValue}>
+                        {selectedSportIds.length}개 선택
+                      </strong>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.uploadButton}
+                      onClick={saveInterestSports}
+                      disabled={savingSports}
+                    >
+                      {savingSports ? "저장 중..." : "저장하기"}
+                    </button>
+                  </div>
+
+                  <div className={styles.interestGroupList}>
+                    {groupedSports.map((group) => (
+                      <section key={group.category} className={styles.interestGroup}>
+                        <h3>{group.category}</h3>
+                        <div className={styles.interestChipGrid}>
+                          {group.sports.map((sport) => {
+                            const selected = selectedSportIds.includes(sport.sportId);
+
+                            return (
+                              <button
+                                key={sport.sportId}
+                                type="button"
+                                className={
+                                  selected
+                                    ? styles.interestChipSelected
+                                    : styles.interestChipButton
+                                }
+                                onClick={() => toggleInterestSport(sport.sportId)}
+                                disabled={savingSports}
+                              >
+                                {sport.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+
+                  {saveError ? <p className={styles.formError}>{saveError}</p> : null}
+                </section>
               </section>
             </>
           )}
@@ -493,23 +818,71 @@ export default function MyPage() {
 
           <label className={styles.formField}>
             <span>닉네임</span>
-            <input
-              name="nickname"
-              value={form.nickname}
-              onChange={handleFormChange}
-              placeholder="닉네임을 입력하세요"
-            />
+            <div className={styles.inlineField}>
+              <input
+                name="nickname"
+                value={form.nickname}
+                onChange={handleFormChange}
+                placeholder="닉네임을 입력하세요"
+              />
+              <button
+                type="button"
+                onClick={checkNickname}
+                disabled={saving || isCheckingNickname}
+              >
+                {isCheckingNickname ? "확인중" : "중복확인"}
+              </button>
+            </div>
+            <small
+              className={
+                nicknameCheckMessage ? styles.fieldSuccess : styles.fieldError
+              }
+            >
+              {fieldErrors.nickname || nicknameCheckMessage || "\u00a0"}
+            </small>
           </label>
 
           <label className={styles.formField}>
             <span>이메일</span>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleFormChange}
-              placeholder="이메일을 입력하세요"
-            />
+            <div className={styles.inlineField}>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleFormChange}
+                placeholder="이메일을 입력하세요"
+                readOnly={
+                  emailVerificationStatus === "verified" &&
+                  form.email !== normalizeEmail(member?.email)
+                }
+              />
+              <button
+                type="button"
+                onClick={requestEmailVerification}
+                disabled={
+                  saving ||
+                  isSendingEmail ||
+                  emailVerificationStatus === "verified"
+                }
+              >
+                {emailVerificationStatus === "verified"
+                  ? "완료"
+                  : isSendingEmail
+                    ? "전송중"
+                    : "인증"}
+              </button>
+            </div>
+            <small
+              className={
+                emailVerificationStatus === "verified"
+                  ? styles.fieldSuccess
+                  : styles.fieldError
+              }
+            >
+              {emailVerificationStatus === "verified"
+                ? "이메일 인증이 완료되었습니다."
+                : fieldErrors.email || "\u00a0"}
+            </small>
           </label>
 
           <label className={styles.formField}>
@@ -519,7 +892,12 @@ export default function MyPage() {
               value={form.phone}
               onChange={handleFormChange}
               placeholder="휴대폰 번호를 입력하세요"
+              inputMode="numeric"
+              maxLength={13}
             />
+            <small className={styles.fieldError}>
+              {fieldErrors.phone || "\u00a0"}
+            </small>
           </label>
 
           <label className={styles.formField}>
@@ -544,6 +922,7 @@ export default function MyPage() {
         onApply={applyRegionSelection}
         onClose={closeRegionModal}
       />
+
     </DashboardShell>
   );
 }

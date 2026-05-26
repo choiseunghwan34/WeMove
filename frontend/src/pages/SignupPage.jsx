@@ -9,6 +9,13 @@ import AppModal from "../components/AppModal";
 import RegionPickerModal from "../components/RegionPickerModal";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { useAuth } from "../contexts/AuthContext";
+import {
+  EMAIL_PATTERN,
+  NICKNAME_PATTERN,
+  formatPhone,
+  getPhoneDigits,
+  normalizeText,
+} from "../utils/profileValidation";
 import homeBg from "../assets/images/home-bg.webp";
 import styles from "../styles/SignupPage.module.css";
 
@@ -34,8 +41,6 @@ const initialRegionSelection = {
 const LOGIN_ID_PATTERN = /^[a-z0-9]{5,20}$/;
 const PASSWORD_PATTERN =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,16}$/;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]+$/;
 const CURRENT_YEAR = new Date().getFullYear();
 const NICKNAME_DUPLICATE_MESSAGE = "이미 사용 중인 닉네임입니다.";
 const FALLBACK_REGIONS = [
@@ -46,40 +51,6 @@ const FALLBACK_REGIONS = [
   { regionId: 5, sido: "서울", sigungu: "마포구", dong: "합정동" },
   { regionId: 6, sido: "서울", sigungu: "강남구", dong: "역삼동" },
 ];
-
-const normalizeText = (value = "") => String(value).trim();
-
-const formatPhone = (value) => {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-
-  if (digits.length <= 2) {
-    return digits;
-  }
-
-  if (digits.startsWith("02")) {
-    if (digits.length <= 5) {
-      return `${digits.slice(0, 2)}-${digits.slice(2)}`;
-    }
-
-    return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6)}`;
-  }
-
-  if (digits.length <= 3) {
-    return digits;
-  }
-
-  if (digits.length <= 6) {
-    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  }
-
-  if (digits.length <= 10) {
-    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-};
-
-const getPhoneDigits = (phone) => phone.replace(/\D/g, "");
 
 const getNicknameSuggestions = (nickname) => {
   const base = normalizeText(nickname).replace(/\s/g, "") || "WeMove";

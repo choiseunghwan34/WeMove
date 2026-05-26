@@ -2,6 +2,7 @@ package kr.co.iei.member.model.dao;
 
 import java.util.*;
 import kr.co.iei.member.model.vo.*;
+import kr.co.iei.sport.model.vo.Sport;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,10 @@ public class MemberDao {
 
   public MemberResponse selectMemberById(Long id) {
     return sqlSession.selectOne("member.selectMemberById", Map.of("memberId", id));
+  }
+
+  public List<Sport> selectMemberSports(Long memberId) {
+    return sqlSession.selectList("member.selectMemberSports", Map.of("memberId", memberId));
   }
 
   public int updateMember(Long id, MemberUpdateRequest request) {

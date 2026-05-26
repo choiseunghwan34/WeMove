@@ -3,10 +3,14 @@ package kr.co.iei.member.model.service;
 
 import java.util.List;
 
+import kr.co.iei.auth.model.dao.AuthDao;
+import kr.co.iei.auth.model.service.EmailVerificationService;
+import kr.co.iei.common.exception.DuplicateResourceException;
 import kr.co.iei.common.service.CloudinaryImageService;
 
 import kr.co.iei.member.model.dao.MemberDao;
 import kr.co.iei.member.model.vo.*;
+import kr.co.iei.sport.model.vo.Sport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,19 +22,59 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
+  private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+  private static final String NICKNAME_PATTERN = "^[가-힣a-zA-Z0-9]+$";
+
   private final MemberDao memberDao;
+  private final AuthDao authDao;
+  private final EmailVerificationService emailVerificationService;
   private final CloudinaryImageService cloudinaryImageService;
 
   public MemberResponse getMe(Long memberId) {
     return memberDao.selectMemberById(memberId);
   }
 
+  public List<Sport> getSports(Long memberId) {
+    requireMember(memberId);
+    return memberDao.selectMemberSports(memberId);
+  }
+
   public void updateMe(Long memberId, MemberUpdateRequest req, MultipartFile image) {
+    validateUpdateRequest(memberId, req);
+
     String uploadedProfileImage = cloudinaryImageService.uploadProfileImage(image);
     if (uploadedProfileImage != null) {
       req.setProfileImage(uploadedProfileImage);
     }
     memberDao.updateMember(memberId, req);
+  }
+
+  public void checkNickname(Long memberId, String nickname) {
+    MemberResponse currentMember = requireMember(memberId);
+    String normalizedNickname = normalizeNickname(nickname);
+
+    if (normalizedNickname.equals(currentMember.getNickname())) {
+      return;
+    }
+
+    Member duplicatedMember = authDao.selectByNickname(normalizedNickname);
+    if (duplicatedMember != null && !duplicatedMember.getUserId().equals(memberId)) {
+      throw new DuplicateResourceException("이미 사용 중인 닉네임입니다.");
+    }
+  }
+
+  public void checkEmail(Long memberId, String email) {
+    MemberResponse currentMember = requireMember(memberId);
+    String normalizedEmail = normalizeEmail(email);
+
+    if (normalizedEmail.equalsIgnoreCase(currentMember.getEmail())) {
+      return;
+    }
+
+    Member duplicatedMember = authDao.selectByEmail(normalizedEmail);
+    if (duplicatedMember != null && !duplicatedMember.getUserId().equals(memberId)) {
+      throw new DuplicateResourceException("이미 사용 중인 이메일입니다.");
+    }
   }
 
   @Transactional
@@ -58,5 +102,70 @@ public class MemberServiceImpl implements MemberService {
 
   public MemberResponse getMember(Long memberId) {
     return memberDao.selectMemberById(memberId);
+  }
+
+  private void validateUpdateRequest(Long memberId, MemberUpdateRequest req) {
+    if (req == null) {
+      throw new IllegalArgumentException("수정할 프로필 정보를 입력해주세요.");
+    }
+
+    MemberResponse currentMember = requireMember(memberId);
+    String normalizedEmail = normalizeEmail(req.getEmail());
+    String normalizedNickname = normalizeNickname(req.getNickname());
+    String normalizedPhone = normalizePhone(req.getPhone());
+
+    if (!normalizedPhone.isBlank()
+        && (normalizedPhone.length() < 9 || normalizedPhone.length() > 11)) {
+      throw new IllegalArgumentException("연락처는 숫자 9자리에서 11자리까지 입력해주세요.");
+    }
+
+    req.setEmail(normalizedEmail);
+    req.setNickname(normalizedNickname);
+    req.setPhone(normalizedPhone);
+
+    checkNickname(memberId, normalizedNickname);
+    checkEmail(memberId, normalizedEmail);
+
+    if (!normalizedEmail.equalsIgnoreCase(currentMember.getEmail())
+        && !emailVerificationService.isVerified(normalizedEmail)) {
+      throw new IllegalArgumentException("변경할 이메일 인증을 완료해주세요.");
+    }
+  }
+
+  private MemberResponse requireMember(Long memberId) {
+    if (memberId == null) {
+      throw new IllegalArgumentException("회원 정보가 없습니다.");
+    }
+
+    MemberResponse member = memberDao.selectMemberById(memberId);
+    if (member == null) {
+      throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
+    }
+
+    return member;
+  }
+
+  private String normalizeEmail(String email) {
+    if (email == null || !email.trim().matches(EMAIL_PATTERN)) {
+      throw new IllegalArgumentException("올바른 이메일 형식으로 입력해주세요.");
+    }
+
+    return email.trim().toLowerCase();
+  }
+
+  private String normalizeNickname(String nickname) {
+    if (nickname == null || !nickname.trim().matches(NICKNAME_PATTERN)) {
+      throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자만 입력해주세요.");
+    }
+
+    return nickname.trim();
+  }
+
+  private String normalizePhone(String phone) {
+    if (phone == null) {
+      return "";
+    }
+
+    return phone.replaceAll("\\D", "");
   }
 }

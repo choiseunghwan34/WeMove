@@ -3,8 +3,10 @@ package kr.co.iei.member.controller;
 import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.member.model.service.MemberService;
 import kr.co.iei.member.model.vo.*;
+import kr.co.iei.sport.model.vo.Sport;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,12 +28,31 @@ public class MemberController {
     return ResponseEntity.ok(memberService.getMe(memberId));
   }
 
+  @GetMapping("/me/sports")
+  public ResponseEntity<List<Sport>> mySports(@RequestParam(defaultValue = "1") Long memberId) {
+    return ResponseEntity.ok(memberService.getSports(memberId));
+  }
+
   @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> updateMe(
       @RequestParam(defaultValue = "1") Long memberId,
       @RequestPart("request") MemberUpdateRequest req,
       @RequestPart(value = "image", required = false) MultipartFile image) {
     memberService.updateMe(memberId, req, image);
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/me/check-nickname")
+  public ResponseEntity<Void> checkNickname(
+      @RequestParam(defaultValue = "1") Long memberId, @RequestParam String nickname) {
+    memberService.checkNickname(memberId, nickname);
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/me/check-email")
+  public ResponseEntity<Void> checkEmail(
+      @RequestParam(defaultValue = "1") Long memberId, @RequestParam String email) {
+    memberService.checkEmail(memberId, email);
     return ResponseEntity.ok().build();
   }
 

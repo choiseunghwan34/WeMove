@@ -18,6 +18,18 @@
         WHERE userId=#{memberId}
     </select>
 
+    <select id="selectMemberSports" resultType="kr.co.iei.sport.model.vo.Sport">
+        SELECT
+            s.sportId,
+            s.name,
+            s.category,
+            s.isActive
+        FROM userSports us
+        JOIN sports s ON us.`sportId` = s.sportId
+        WHERE us.`userId`=#{memberId}
+        ORDER BY s.category, s.name
+    </select>
+
     <update id="updateMember">
         UPDATE users
         <set>

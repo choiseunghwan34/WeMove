@@ -7,6 +7,11 @@ export const getMe = (memberId) =>
     params: { memberId },
   });
 
+export const getMySports = (memberId) =>
+  api.get("/members/me/sports", {
+    params: { memberId },
+  });
+
 export const updateMe = (memberId, data, image) => {
   const formData = new FormData();
   formData.append(
@@ -22,5 +27,15 @@ export const updateMe = (memberId, data, image) => {
     params: { memberId },
   });
 };
+
+export const checkMyNickname = (memberId, nickname) =>
+  api.get("/members/me/check-nickname", {
+    params: { memberId, nickname },
+  });
+
+export const checkMyEmail = (memberId, email) =>
+  api.get("/members/me/check-email", {
+    params: { memberId, email },
+  });
 
 export const getMember = (id) => api.get("/members/" + id);
