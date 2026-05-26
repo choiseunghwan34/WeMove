@@ -215,6 +215,22 @@
   font-weight: 700;
 }
 
+.resultHint {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.regionModalList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-height: min(62vh, 560px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
 .emptyState {
   margin: 0;
   color: #64748b;

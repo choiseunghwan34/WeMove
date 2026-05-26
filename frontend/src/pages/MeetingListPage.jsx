@@ -75,15 +75,63 @@ const formatTopRegionLabel = (region) => {
     : region.regionName || region.name || "";
 };
 
+const resolveRegionSelectionFromLabel = (regions, label) => {
+  const normalizedLabel = normalizeText(label);
+  if (!normalizedLabel) {
+    return null;
+  }
+
+  const terms = normalizedLabel.split(/\s+/).filter(Boolean);
+
+  if (terms.length === 1) {
+    return {
+      regionId: null,
+      sido: terms[0],
+      sigungu: "",
+      dong: "",
+    };
+  }
+
+  if (terms.length === 2) {
+    return {
+      regionId: null,
+      sido: terms[0],
+      sigungu: terms[1],
+      dong: "",
+    };
+  }
+
+  const dongName = terms.slice(2).join(" ");
+  const matchedRegion =
+    regions.find(
+      (region) =>
+        normalizeText(region.sido) === terms[0] &&
+        normalizeText(region.sigungu) === terms[1] &&
+        normalizeText(region.dong) === dongName,
+    ) ?? null;
+
+  if (matchedRegion) {
+    return matchedRegion;
+  }
+
+  return {
+    regionId: null,
+    sido: terms[0],
+    sigungu: terms[1],
+    dong: dongName,
+  };
+};
+
 export default function MeetingListPage() {
   const [urlSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const keywordParam = urlSearchParams.get("keyword") ?? "";
+  const regionLabelParam = urlSearchParams.get("regionLabel") ?? "";
   const sportNameParam = urlSearchParams.get("sportName") ?? "";
   const isGlobalSearch =
     urlSearchParams.get("global") === "1" ||
-    Boolean(keywordParam || sportNameParam);
+    Boolean(keywordParam || sportNameParam || regionLabelParam);
 
   const [meetingDate, setMeetingDate] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -97,7 +145,7 @@ export default function MeetingListPage() {
   const [memberRegionReady, setMemberRegionReady] = useState(false);
 
   const [status, setStatus] = useState("");
-  const [keyword, setKeyword] = useState(keywordParam);
+  const [keyword, setKeyword] = useState(regionLabelParam ? "" : keywordParam);
   const [meetingList, setMeetingList] = useState([]);
 
   const [totalCount, setTotalCount] = useState(0);
@@ -229,9 +277,29 @@ export default function MeetingListPage() {
   );
 
   useEffect(() => {
-    setKeyword(keywordParam);
+    setKeyword(regionLabelParam ? "" : keywordParam);
     setCurrentPage(1);
-  }, [keywordParam]);
+  }, [keywordParam, regionLabelParam]);
+
+  useEffect(() => {
+    if (!regionOptions.length) {
+      return;
+    }
+
+    if (!regionLabelParam) {
+      setSelectedRegion(null);
+      return;
+    }
+
+    const resolvedRegion = resolveRegionSelectionFromLabel(
+      regionOptions,
+      regionLabelParam,
+    );
+
+    setSelectedRegion(resolvedRegion);
+    setIsExplicitAll(false);
+    setCurrentPage(1);
+  }, [regionLabelParam, regionOptions]);
 
   useEffect(() => {
     if (!sportOptions.length) {
