@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import AppModal from "./components/AppModal";
+import GlobalMeetingChat from "./components/GlobalMeetingChat";
 import Header from "./components/Header";
 import { useAuth } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
@@ -195,6 +196,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="*" element={<LayoutRoutes />} />
       </Routes>
+      <GlobalMeetingChat />
     </ToastProvider>
   );
 }
