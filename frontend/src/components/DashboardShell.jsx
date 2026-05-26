@@ -11,6 +11,7 @@ export default function DashboardShell({
   active = "",
   title,
   description,
+  sidebarInterestItems,
   sidebarExtra = null,
   aside = null,
   children,
@@ -18,6 +19,7 @@ export default function DashboardShell({
   const navigate = useNavigate();
   const { user, logout, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isInterestExpanded, setIsInterestExpanded] = useState(false);
   const isAdmin = user?.role === "ADMIN";
   const profileImage =
     typeof user?.profileImage === "string" && user.profileImage.trim()
@@ -26,6 +28,11 @@ export default function DashboardShell({
   const visibleNavItems = isAdmin
     ? navItems.filter((item) => item.to === "/" || item.to === "/meetings")
     : navItems;
+  const effectiveInterestItems =
+    sidebarInterestItems === undefined ? interestItems : sidebarInterestItems;
+  const visibleInterestItems = isInterestExpanded
+    ? effectiveInterestItems
+    : effectiveInterestItems.slice(0, 5);
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -153,18 +160,33 @@ export default function DashboardShell({
                 <strong>관심 운동</strong>
               </div>
               <div className={styles.dashboardInterestList}>
-                {interestItems.map((item) => (
-                  <span key={item.label}>
-                    <i>
-                      <UiIcon
-                        name={item.icon}
-                        className={styles.dashboardInterestIcon}
-                      />
-                    </i>
-                    {item.label}
-                  </span>
-                ))}
+                {visibleInterestItems.length ? (
+                  visibleInterestItems.map((item) => (
+                    <span key={item.label}>
+                      <i>
+                        <UiIcon
+                          name={item.icon || "spark"}
+                          className={styles.dashboardInterestIcon}
+                        />
+                      </i>
+                      {item.label}
+                    </span>
+                  ))
+                ) : (
+                  <span>미설정</span>
+                )}
               </div>
+              {effectiveInterestItems.length > 5 ? (
+                <button
+                  type="button"
+                  className={styles.dashboardInterestMore}
+                  onClick={() => setIsInterestExpanded((current) => !current)}
+                >
+                  {isInterestExpanded
+                    ? "접기"
+                    : `더보기 ${effectiveInterestItems.length - 5}개`}
+                </button>
+              ) : null}
             </section>
           ) : null}
 

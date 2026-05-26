@@ -280,7 +280,6 @@ export default function MyPage() {
     () => sports.filter((sport) => selectedSportIds.includes(sport.sportId)),
     [selectedSportIds, sports],
   );
-
   const profileImage =
     imagePreview || normalizeText(member?.profileImage) || defaultUserImage;
 
@@ -628,6 +627,10 @@ export default function MyPage() {
       active="마이페이지"
       title="마이페이지"
       description="내 계정 정보와 관심 지역을 확인하고 프로필을 수정할 수 있습니다."
+      sidebarInterestItems={selectedSports.map((sport) => ({
+        label: sport.name,
+        icon: "spark",
+      }))}
       aside={
         <>
           <section className={styles.dashboardPanel}>
