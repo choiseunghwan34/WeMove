@@ -6,20 +6,39 @@ import java.util.Map;
 import kr.co.iei.auth.exception.DuplicateLoginException;
 import kr.co.iei.auth.model.service.AuthService;
 import kr.co.iei.auth.model.service.EmailVerificationService;
-import kr.co.iei.auth.model.vo.*;
+import kr.co.iei.auth.model.vo.AccessTokenResponse;
+import kr.co.iei.auth.model.vo.AuthLoginResult;
+import kr.co.iei.auth.model.vo.AuthRefreshResult;
+import kr.co.iei.auth.model.vo.EmailVerificationRequest;
+import kr.co.iei.auth.model.vo.EmailVerificationSendResponse;
+import kr.co.iei.auth.model.vo.LoginRequest;
+import kr.co.iei.auth.model.vo.SignupRequest;
 import kr.co.iei.auth.util.AuthCookieUtil;
+import kr.co.iei.auth.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+  private static final String DUPLICATE_LOGOUT_MESSAGE =
+      "다른 곳에서 로그인 요청이 있어 로그아웃되었습니다.";
+  private static final String SESSION_EXPIRED_MESSAGE =
+      "로그인 시간이 만료되어 로그아웃되었습니다. 다시 로그인해주세요.";
+
   private final AuthService authService;
   private final EmailVerificationService emailVerificationService;
   private final AuthCookieUtil authCookieUtil;
+  private final JwtTokenProvider jwtTokenProvider;
 
   @GetMapping("/check-login-id")
   public ResponseEntity<Void> checkLoginId(@RequestParam String loginId) {
@@ -83,7 +102,7 @@ public class AuthController {
           <head><meta charset="UTF-8"><title>WeMove 이메일 인증</title></head>
           <body style="font-family:Arial,sans-serif;padding:32px;color:#10233f">
             <h1>이메일 인증이 완료되었습니다.</h1>
-            <p>%s 주소 인증이 완료되었습니다. 회원가입 화면으로 돌아가 진행해주세요.</p>
+            <p>%s 주소 인증이 완료되었습니다. 회원가입 페이지로 돌아가 진행해주세요.</p>
           </body>
         </html>
         """
@@ -100,7 +119,8 @@ public class AuthController {
       return ResponseEntity.ok(new AccessTokenResponse(result.getAccessToken()));
     } catch (IllegalArgumentException exception) {
       authCookieUtil.clearRefreshTokenCookie(response);
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(null);
     }
   }
 
@@ -115,14 +135,24 @@ public class AuthController {
   }
 
   @GetMapping("/session-status")
-  public ResponseEntity<?> sessionStatus(@RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
+  public ResponseEntity<?> sessionStatus(
+      @RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
     String accessToken = extractBearerToken(authorizationHeader);
+
+    if (accessToken == null || !jwtTokenProvider.isValid(accessToken)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(
+              Map.of(
+                  "code", "SESSION_EXPIRED",
+                  "message", SESSION_EXPIRED_MESSAGE));
+    }
+
     if (!authService.isCurrentSession(accessToken)) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
           .body(
               Map.of(
                   "code", "DUPLICATE_LOGIN_LOGOUT",
-                  "message", "다른 곳에서 로그인 요청이 있어 로그아웃되었습니다."));
+                  "message", DUPLICATE_LOGOUT_MESSAGE));
     }
 
     return ResponseEntity.ok().build();
@@ -132,6 +162,7 @@ public class AuthController {
     if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
       return null;
     }
+
     return authorizationHeader.substring(7);
   }
 }
