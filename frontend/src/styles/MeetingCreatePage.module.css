@@ -329,3 +329,18 @@
   font-weight: 330;
 }
 
+/*필수입력 항목*/
+.requiredLabel::after {
+  content: " *";
+  color: red;
+  font-weight: bold;
+}
+
+/* 필수 항목 안내 문구 스타일 */
+.requiredNotice {
+
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  text-align: left;
+}
