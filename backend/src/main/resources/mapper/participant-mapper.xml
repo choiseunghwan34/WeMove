@@ -5,15 +5,15 @@
 
     <select id="exists" resultType="int">
         SELECT COUNT(*)
-        FROM meeting_participants
-        WHERE meeting_id=#{meetingId}
-        AND user_id=#{userId}
+        FROM meetingParticipants
+        WHERE meetingId=#{meetingId}
+        AND userId=#{userId}
     </select>
 
     <insert id="insertParticipant" parameterType="kr.co.iei.participant.model.vo.MeetingParticipant" useGeneratedKeys="true" keyProperty="participantId">
-        INSERT INTO meeting_participants(
-            meeting_id,
-            user_id,
+        INSERT INTO meetingParticipants(
+            meetingId,
+            userId,
             status,
             message
         )
@@ -27,37 +27,38 @@
 
     <select id="selectParticipants" resultType="kr.co.iei.participant.model.vo.ParticipantResponse">
         SELECT
-            mp.participant_id,
-            mp.meeting_id,
-            mp.user_id,
+            mp.participantId,
+            mp.meetingId,
+            mp.userId,
             u.nickname,
-            mp.status
-        FROM meeting_participants mp
-        JOIN users u ON mp.user_id=u.user_id
-        WHERE mp.meeting_id=#{meetingId}
-        ORDER BY mp.applied_at DESC
+            mp.status,
+            mp.message
+        FROM meetingParticipants mp
+        JOIN users u ON mp.userId=u.userId
+        WHERE mp.meetingId=#{meetingId}
+        ORDER BY mp.appliedAt DESC
     </select>
 
     <update id="updateStatus">
-        UPDATE meeting_participants
+        UPDATE meetingParticipants
         SET
             status=#{status},
-            approved_at=CASE WHEN #{status}="APPROVED" THEN NOW() ELSE approved_at END,
-            cancelled_at=CASE WHEN #{status}="CANCELLED" THEN NOW() ELSE cancelled_at END
-        WHERE participant_id=#{participantId}
+            approvedAt=CASE WHEN #{status}="APPROVED" THEN NOW() ELSE approvedAt END,
+            cancelledAt=CASE WHEN #{status}="CANCELLED" THEN NOW() ELSE cancelledAt END
+        WHERE participantId=#{participantId}
     </update>
 
     <select id="countApprovedByMeetingId" resultType="int">
         SELECT COUNT(*)
-        FROM meeting_participants
-        WHERE meeting_id=#{meetingId}
+        FROM meetingParticipants
+        WHERE meetingId=#{meetingId}
         AND status="APPROVED"
     </select>
 
     <select id="selectMeetingIdByParticipantId" resultType="long">
-        SELECT meeting_id
-        FROM meeting_participants
-        WHERE participant_id=#{participantId}
+        SELECT meetingId
+        FROM meetingParticipants
+        WHERE participantId=#{participantId}
     </select>
 
 </mapper>

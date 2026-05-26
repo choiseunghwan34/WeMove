@@ -5,22 +5,22 @@
 
     <select id="selectReviews" resultType="kr.co.iei.review.model.vo.ReviewResponse">
         SELECT
-            r.review_id,
-            r.writer_id,
+            r.reviewId,
+            r.writerId,
             u.nickname,
             r.rating,
             r.content,
-            r.created_at
+            r.createdAt
         FROM reviews r
-        JOIN users u ON r.writer_id=u.user_id
-        WHERE r.meeting_id=#{meetingId}
-        ORDER BY r.created_at DESC
+        JOIN users u ON r.writerId=u.userId
+        WHERE r.meetingId=#{meetingId}
+        ORDER BY r.createdAt DESC
     </select>
 
     <insert id="insertReview" parameterType="kr.co.iei.review.model.vo.Review">
         INSERT INTO reviews(
-            meeting_id,
-            writer_id,
+            meetingId,
+            writerId,
             rating,
             content
         )

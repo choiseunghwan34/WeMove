@@ -13,10 +13,10 @@
 .modal {
   position: relative;
   width: min(800px, 100%);
-  max-height: min(82vh, 720px);
-  overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+  max-height: min(92vh, 880px);
+  overflow-y: auto;
   border: 1px solid rgba(219, 231, 247, 0.88);
   border-radius: 30px;
   background:
@@ -82,6 +82,7 @@
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 900;
+  border: 1px solid rgba(34, 104, 239, 0.15);
 }
 
 .header h2 {

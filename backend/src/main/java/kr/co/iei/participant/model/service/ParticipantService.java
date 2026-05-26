@@ -13,4 +13,6 @@ public interface ParticipantService {
   void reject(Long participantId);
 
   void cancel(Long participantId);
+
+  void cancelApproval(Long participantId);
 }

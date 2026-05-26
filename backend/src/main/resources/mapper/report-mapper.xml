@@ -5,9 +5,9 @@
 
     <insert id="insertReport" parameterType="kr.co.iei.report.model.vo.Report">
         INSERT INTO reports(
-            reporter_id,
-            meeting_id,
-            target_user_id,
+            reporterId,
+            meetingId,
+            targetUserId,
             reason,
             content
         )
@@ -22,21 +22,21 @@
 
     <select id="selectReports" resultType="kr.co.iei.report.model.vo.ReportResponse">
         SELECT
-            report_id,
-            reporter_id,
+            reportId,
+            reporterId,
             reason,
             status,
-            created_at
+            createdAt
         FROM reports
-        ORDER BY report_id DESC
+        ORDER BY reportId DESC
     </select>
 
     <update id="updateReportStatus">
         UPDATE reports
         SET
             status=#{status},
-            processed_at=NOW()
-        WHERE report_id=#{reportId}
+            processedAt=NOW()
+        WHERE reportId=#{reportId}
     </update>
 
 </mapper>

@@ -9,4 +9,5 @@ public class ParticipantResponse {
   private Long userId;
   private String nickname;
   private String status;
+  private String message;
 }

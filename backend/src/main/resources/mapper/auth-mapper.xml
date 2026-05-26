@@ -56,8 +56,8 @@
 
     <insert id="insertUserSport">
         INSERT INTO userSports(
-            `userId`,
-            `sportId`
+            userId,
+            sportId
         )
         VALUES(
             #{userId},

@@ -1,4 +1,4 @@
-﻿import api from "./axiosInstance";
+import api from "./axiosInstance";
 export const applyMeeting = (m, d) =>
   api.post("/meetings/" + m + "/participants", d);
 export const getParticipants = (m) =>
@@ -9,3 +9,6 @@ export const rejectParticipant = (id) =>
   api.patch("/participants/" + id + "/reject");
 export const cancelParticipant = (id) =>
   api.patch("/participants/" + id + "/cancel");
+export const cancelApproval = (id) =>
+  api.patch("/participants/" + id + "/cancel-approval");
+
