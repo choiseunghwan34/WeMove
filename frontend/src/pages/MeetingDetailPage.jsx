@@ -188,7 +188,7 @@ export default function MeetingDetailPage() {
                 모임 수정
               </Link>
               <Link
-                to={`/meetings/${meeting.id}/manage`}
+                to={`/meetings/${meetingId}/manage`}
                 className={styles.secondaryButton}
               >
                 신청자 관리
