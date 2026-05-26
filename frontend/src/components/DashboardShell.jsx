@@ -11,6 +11,10 @@ export default function DashboardShell({
   active = "",
   title,
   description,
+  headerSearchValue,
+  onHeaderSearchChange,
+  onHeaderSearchSubmit,
+  headerSearchPlaceholder = "모임, 지역, 운동 종목을 검색해보세요",
   sidebarInterestItems,
   sidebarExtra = null,
   aside = null,
@@ -20,7 +24,10 @@ export default function DashboardShell({
   const { user, logout, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInterestExpanded, setIsInterestExpanded] = useState(false);
+  const [internalSearchValue, setInternalSearchValue] = useState("");
   const isAdmin = user?.role === "ADMIN";
+  const searchValue =
+    typeof headerSearchValue === "string" ? headerSearchValue : internalSearchValue;
   const profileImage =
     typeof user?.profileImage === "string" && user.profileImage.trim()
       ? user.profileImage.trim()
@@ -42,6 +49,27 @@ export default function DashboardShell({
     navigate("/login");
   };
 
+  const handleSearchChange = (event) => {
+    if (onHeaderSearchChange) {
+      onHeaderSearchChange(event);
+      return;
+    }
+
+    setInternalSearchValue(event.target.value);
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const keyword = searchValue.trim();
+
+    if (onHeaderSearchSubmit) {
+      onHeaderSearchSubmit(keyword);
+      return;
+    }
+
+    navigate(keyword ? `/search?q=${encodeURIComponent(keyword)}` : "/search");
+  };
+
   return (
     <div className={styles.dashboardPage}>
       <header className={styles.dashboardHeader}>
@@ -49,10 +77,14 @@ export default function DashboardShell({
           <WeMoveLogo tone="dark" size="md" />
         </Link>
 
-        <label className={styles.dashboardSearch}>
+        <form className={styles.dashboardSearch} onSubmit={handleSearchSubmit}>
           <UiIcon name="search" className={styles.dashboardSearchIcon} />
-          <input placeholder="모임, 지역, 운동 종목을 검색해보세요" />
-        </label>
+          <input
+            value={searchValue}
+            onChange={handleSearchChange}
+            placeholder={headerSearchPlaceholder}
+          />
+        </form>
 
         <div className={styles.dashboardActions}>
           {loading ? null : user ? (

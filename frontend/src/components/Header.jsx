@@ -1,12 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import WeMoveLogo from "./WeMoveLogo";
 
 export default function Header() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, loading } = useAuth();
   const isAdmin = user?.role === "ADMIN";
+  const isAdminPage = location.pathname.startsWith("/admin");
   const profileImage =
     typeof user?.profileImage === "string" && user.profileImage.trim()
       ? user.profileImage.trim()
@@ -17,6 +19,31 @@ export default function Header() {
     navigate("/login");
   };
 
+  const handleAdminSectionMove = (section) => {
+    navigate(`/admin#${section}`);
+    window.setTimeout(() => {
+      document.getElementById(section)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  };
+
+  const userNavItems = [
+    { to: "/meetings", label: "모임 찾기" },
+    { to: "/meetings/new", label: "모임 생성" },
+    { to: "/mypage", label: "마이페이지" },
+    ...(isAdmin ? [{ to: "/admin", label: "관리자" }] : []),
+  ];
+
+  const adminNavItems = [
+    { label: "홈", action: () => navigate("/") },
+    { label: "회원 관리", action: () => handleAdminSectionMove("members") },
+    { label: "모임 관리", action: () => handleAdminSectionMove("meetings") },
+    { label: "신고 내역", action: () => handleAdminSectionMove("reports") },
+    { label: "운동 종목", action: () => handleAdminSectionMove("sports") },
+  ];
+
   return (
     <header className="header">
       <div className="inner">
@@ -25,10 +52,22 @@ export default function Header() {
         </Link>
 
         <nav className="main-nav">
-          <Link to="/meetings">모임 찾기</Link>
-          <Link to="/meetings/new">모임 생성</Link>
-          <Link to="/mypage">마이페이지</Link>
-          {isAdmin ? <Link to="/admin">관리자</Link> : null}
+          {isAdminPage
+            ? adminNavItems.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  className="main-nav-button"
+                  onClick={item.action}
+                >
+                  {item.label}
+                </button>
+              ))
+            : userNavItems.map((item) => (
+                <Link key={item.to} to={item.to}>
+                  {item.label}
+                </Link>
+              ))}
         </nav>
 
         <div className="header-actions">
@@ -40,9 +79,7 @@ export default function Header() {
                   alt={user.nickname ? `${user.nickname} 프로필` : "기본 프로필"}
                   className="header-user-avatar"
                 />
-                <span className="header-user-name">
-                  {user.nickname || user.loginId}
-                </span>
+                <span className="header-user-name">{user.nickname || user.loginId}</span>
               </div>
               <button
                 type="button"

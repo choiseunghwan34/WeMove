@@ -219,6 +219,40 @@
   outline: none;
 }
 
+.memberIdentity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.memberIdentity strong {
+  color: #111827;
+  font-size: 0.94rem;
+}
+
+.memberAvatar,
+.detailAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #dbe3ef;
+  background: #f8fafc;
+}
+
+.detailModalProfile {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.detailAvatar {
+  width: 72px;
+  height: 72px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
 .inlineSelect {
   min-width: 138px;
   font-size: 0.9rem;
@@ -517,6 +551,37 @@
   background: #f8fbff !important;
 }
 
+.clickableRow {
+  cursor: pointer;
+}
+
+.detailModalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detailModalItem {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.detailModalItem span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.detailModalItem strong {
+  color: #111827;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 .filterHead button,
 .tableHead button {
   height: 36px;
@@ -567,5 +632,9 @@
   .sportCardControls {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .detailModalGrid {
+    grid-template-columns: 1fr;
   }
 }

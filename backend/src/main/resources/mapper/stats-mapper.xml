@@ -5,9 +5,9 @@
 
     <select id="selectLoginPageStats" resultType="kr.co.iei.stats.model.vo.LoginPageStatsResponse">
         SELECT
-            (SELECT COUNT(*) FROM users) AS totalMembers,
-            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS totalMeetings,
-            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL AND status = 'COMPLETED') AS completedMeetings
+            (SELECT COUNT(*) FROM users WHERE role != 'ADMIN') AS total_members,
+            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS total_meetings,
+            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL AND status = 'COMPLETED') AS completed_meetings
     </select>
 
 </mapper>

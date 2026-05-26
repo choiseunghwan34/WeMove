@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import defaultUserImage from "../assets/image/Default-user.png";
 import AppModal from "../components/AppModal";
 import Pagination from "../components/Pagination";
 import RegionPickerModal from "../components/RegionPickerModal";
@@ -15,6 +17,7 @@ import {
   updateAdminMemberStatus,
   updateAdminSport,
 } from "../api/adminApi";
+import { useToast } from "../contexts/ToastContext";
 import styles from "../styles/AdminPage.module.css";
 
 const cx = (...names) =>
@@ -90,10 +93,21 @@ const reportStatusText = {
   REJECTED: "반려됨",
 };
 
+const roleText = {
+  USER: "유저",
+  ADMIN: "관리자",
+};
+
+const memberStatusText = {
+  ACTIVE: "활동중",
+  SUSPENDED: "정지",
+  DELETED: "탈퇴",
+};
+
 const memberStatusOptions = [
-  { value: "ACTIVE", label: "ACTIVE" },
-  { value: "SUSPENDED", label: "SUSPENDED" },
-  { value: "DELETED", label: "DELETED" },
+  { value: "ACTIVE", label: "활동중" },
+  { value: "SUSPENDED", label: "정지" },
+  { value: "DELETED", label: "탈퇴" },
 ];
 
 const meetingStatusOptions = [
@@ -106,6 +120,12 @@ const meetingStatusOptions = [
 const sportStatusOptions = [
   { value: true, label: "사용중" },
   { value: false, label: "비활성" },
+];
+
+const sportUsageFilters = [
+  { value: "ALL", label: "전체 상태" },
+  { value: "ACTIVE", label: "사용중" },
+  { value: "INACTIVE", label: "비활성" },
 ];
 
 const normalizeText = (value = "") => String(value).trim();
@@ -135,6 +155,11 @@ const formatMeetingTime = (startTime) => {
   return String(startTime).slice(0, 5);
 };
 
+const formatCreatedDate = (createdAt) => {
+  if (!createdAt) return "-";
+  return String(createdAt).slice(0, 10);
+};
+
 const paginate = (items, page) => {
   const start = (page - 1) * PAGE_SIZE;
   return items.slice(start, start + PAGE_SIZE);
@@ -156,9 +181,24 @@ const badgeToneByReportStatus = (status) => {
   return "success";
 };
 
+const includesAllTerms = (sourceText, keyword) => {
+  const normalizedKeyword = normalizeText(keyword).toLowerCase();
+  if (!normalizedKeyword) {
+    return true;
+  }
+
+  const terms = normalizedKeyword.split(/\s+/).filter(Boolean);
+  const searchBase = normalizeText(sourceText).toLowerCase();
+  return terms.every((term) => searchBase.includes(term));
+};
+
 export default function AdminPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState("members");
   const [summary, setSummary] = useState(initialSummary);
+  const [isLoading, setIsLoading] = useState(true);
   const [regions, setRegions] = useState([]);
   const [members, setMembers] = useState([]);
   const [meetings, setMeetings] = useState([]);
@@ -171,6 +211,8 @@ export default function AdminPage() {
     useState(ALL_CATEGORY);
   const [selectedSportCategory, setSelectedSportCategory] =
     useState(ALL_CATEGORY);
+  const [selectedSportUsage, setSelectedSportUsage] = useState("ALL");
+  const [selectedMemberStatus, setSelectedMemberStatus] = useState("ALL");
   const [memberKeyword, setMemberKeyword] = useState("");
   const [meetingKeyword, setMeetingKeyword] = useState("");
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
@@ -186,6 +228,10 @@ export default function AdminPage() {
   const [updatingMeetingId, setUpdatingMeetingId] = useState(null);
   const [updatingSportId, setUpdatingSportId] = useState(null);
   const [deletingSportId, setDeletingSportId] = useState(null);
+  const [selectedMeetingIds, setSelectedMeetingIds] = useState([]);
+  const [bulkMeetingStatus, setBulkMeetingStatus] = useState("RECRUITING");
+  const [selectedMemberDetail, setSelectedMemberDetail] = useState(null);
+  const [selectedMeetingDetail, setSelectedMeetingDetail] = useState(null);
   const [pages, setPages] = useState({
     members: 1,
     meetings: 1,
@@ -197,7 +243,40 @@ export default function AdminPage() {
     setPages((current) => ({ ...current, [tab]: nextPage }));
   };
 
+  const changeTab = (nextTab) => {
+    setActiveTab(nextTab);
+    navigate(`/admin#${nextTab}`);
+    window.setTimeout(() => {
+      document.getElementById(nextTab)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  };
+
+  const toggleMeetingSelection = (meetingId) => {
+    setSelectedMeetingIds((current) =>
+      current.includes(meetingId)
+        ? current.filter((id) => id !== meetingId)
+        : [...current, meetingId],
+    );
+  };
+
+  const toggleCurrentPageMeetings = () => {
+    if (allPagedMeetingsSelected) {
+      setSelectedMeetingIds((current) =>
+        current.filter((id) => !pagedMeetings.some((meeting) => meeting.id === id)),
+      );
+      return;
+    }
+
+    setSelectedMeetingIds((current) => [
+      ...new Set([...current, ...pagedMeetings.map((meeting) => meeting.id)]),
+    ]);
+  };
+
   const loadAdminData = async () => {
+    setIsLoading(true);
     const [
       summaryResult,
       membersResult,
@@ -228,14 +307,23 @@ export default function AdminPage() {
       Array.isArray(membersResult.value.data)
     ) {
       setMembers(
-        membersResult.value.data.map((member) => ({
-          id: member.userId,
-          loginId: member.loginId,
-          nickname: member.nickname,
-          region: member.regionName ?? "-",
-          role: member.role ?? "USER",
-          status: member.status ?? "ACTIVE",
-        })),
+        membersResult.value.data
+          .filter((member) => (member.role ?? "USER") !== "ADMIN")
+          .map((member) => ({
+            id: member.userId,
+            loginId: member.loginId,
+            nickname: member.nickname,
+            profileImage:
+              typeof member.profileImage === "string" && member.profileImage.trim()
+                ? member.profileImage.trim()
+                : defaultUserImage,
+            region: member.regionName ?? "-",
+            role: member.role ?? "USER",
+            status: member.status ?? "ACTIVE",
+            roleText: roleText[member.role] ?? member.role ?? "유저",
+            statusText:
+              memberStatusText[member.status] ?? member.status ?? "활동중",
+          })),
       );
     }
 
@@ -268,6 +356,7 @@ export default function AdminPage() {
           region: meeting.regionName ?? "-",
           meetingDate: formatMeetingDate(meeting.meetingDate),
           startTime: formatMeetingTime(meeting.startTime),
+          createdAt: formatCreatedDate(meeting.createdAt),
           current: meeting.approvedCount ?? 0,
           max: meeting.maxMembers ?? 0,
           status: meeting.status ?? "RECRUITING",
@@ -308,11 +397,21 @@ export default function AdminPage() {
         })),
       );
     }
+
+    setSelectedMeetingIds([]);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     loadAdminData();
   }, []);
+
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (tabs.some((tab) => tab.id === hash)) {
+      setActiveTab(hash);
+    }
+  }, [location.hash]);
 
   const regionHierarchy = useMemo(() => {
     const grouped = new Map();
@@ -367,8 +466,6 @@ export default function AdminPage() {
   );
 
   const filteredMembers = useMemo(() => {
-    const keyword = normalizeText(memberKeyword).toLowerCase();
-
     return members.filter((member) => {
       const matchesRegion = matchesRegionSelection(
         member.region,
@@ -376,25 +473,26 @@ export default function AdminPage() {
         selectedSigungu,
         selectedDong,
       );
-
-      if (!keyword) {
-        return matchesRegion;
-      }
-
+      const matchesStatus =
+        selectedMemberStatus === "ALL" || member.status === selectedMemberStatus;
       const searchBase = [
         member.nickname,
         member.loginId,
         String(member.id),
         member.region,
       ]
-        .join(" ")
-        .toLowerCase();
+        .join(" ");
 
-      return matchesRegion && searchBase.includes(keyword);
+      return (
+        matchesRegion &&
+        matchesStatus &&
+        includesAllTerms(searchBase, memberKeyword)
+      );
     });
   }, [
     members,
     memberKeyword,
+    selectedMemberStatus,
     selectedSido,
     selectedSigungu,
     selectedDong,
@@ -443,10 +541,13 @@ export default function AdminPage() {
     () =>
       sports.filter(
         (sport) =>
-          selectedSportCategory === ALL_CATEGORY ||
-          sport.category === selectedSportCategory,
+          (selectedSportCategory === ALL_CATEGORY ||
+            sport.category === selectedSportCategory) &&
+          (selectedSportUsage === "ALL" ||
+            (selectedSportUsage === "ACTIVE" && sport.isActive) ||
+            (selectedSportUsage === "INACTIVE" && !sport.isActive)),
       ),
-    [sports, selectedSportCategory],
+    [sports, selectedSportCategory, selectedSportUsage],
   );
 
   const memberPageCount = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE));
@@ -466,6 +567,67 @@ export default function AdminPage() {
   const pagedMeetings = paginate(filteredMeetings, meetingPage);
   const pagedReports = paginate(reports, reportPage);
   const pagedSports = paginate(filteredSports, sportPage);
+  const allPagedMeetingsSelected =
+    pagedMeetings.length > 0 &&
+    pagedMeetings.every((meeting) => selectedMeetingIds.includes(meeting.id));
+
+  const memberChartData = useMemo(
+    () => [
+      {
+        label: "활동중 회원",
+        value: members.filter((member) => member.status === "ACTIVE").length,
+        tone: "chartBlue",
+      },
+      {
+        label: "정지 회원",
+        value: members.filter((member) => member.status === "SUSPENDED").length,
+        tone: "chartOrange",
+      },
+      {
+        label: "탈퇴 회원",
+        value: members.filter((member) => member.status === "DELETED").length,
+        tone: "chartSlate",
+      },
+    ],
+    [members],
+  );
+
+  const meetingChartData = useMemo(
+    () => [
+      {
+        label: "모집중 모임",
+        value: meetings.filter((meeting) => meeting.status === "RECRUITING").length,
+        tone: "chartBlue",
+      },
+      {
+        label: "모집완료 모임",
+        value: meetings.filter((meeting) => meeting.status === "CLOSED").length,
+        tone: "chartOrange",
+      },
+      {
+        label: "진행완료 모임",
+        value: meetings.filter((meeting) => meeting.status === "COMPLETED").length,
+        tone: "chartGreen",
+      },
+    ],
+    [meetings],
+  );
+
+  const sportChartData = useMemo(
+    () => [
+      {
+        label: "사용중 종목",
+        value: sports.filter((sport) => sport.isActive).length,
+        tone: "chartGreen",
+      },
+      {
+        label: "비활성 종목",
+        value: sports.filter((sport) => !sport.isActive).length,
+        tone: "chartSlate",
+      },
+    ],
+    [sports],
+  );
 
   const regionSummary = [selectedSido, selectedSigungu, selectedDong]
     .filter(
@@ -588,6 +750,9 @@ export default function AdminPage() {
     try {
       await updateAdminMemberStatus(userId, nextStatus);
       await loadAdminData();
+      toast.success("회원 상태 변경", "선택한 회원 상태를 저장했습니다.");
+    } catch {
+      toast.error("회원 상태 변경 실패", "잠시 후 다시 시도해주세요.");
     } finally {
       setUpdatingMemberId(null);
     }
@@ -598,6 +763,34 @@ export default function AdminPage() {
     try {
       await updateAdminMeetingStatus(meetingId, nextStatus);
       await loadAdminData();
+      toast.success("모임 상태 변경", "모임 상태를 저장했습니다.");
+    } catch {
+      toast.error("모임 상태 변경 실패", "잠시 후 다시 시도해주세요.");
+    } finally {
+      setUpdatingMeetingId(null);
+    }
+  };
+
+  const handleBulkMeetingStatusChange = async () => {
+    if (!selectedMeetingIds.length) {
+      toast.info("선택된 모임 없음", "일괄 변경할 모임을 먼저 선택해주세요.");
+      return;
+    }
+
+    setUpdatingMeetingId("bulk");
+    try {
+      await Promise.all(
+        selectedMeetingIds.map((meetingId) =>
+          updateAdminMeetingStatus(meetingId, bulkMeetingStatus),
+        ),
+      );
+      await loadAdminData();
+      toast.success(
+        "일괄 상태 변경 완료",
+        `${selectedMeetingIds.length}개의 모임 상태를 한 번에 변경했습니다.`,
+      );
+    } catch {
+      toast.error("일괄 상태 변경 실패", "모든 모임 상태를 바꾸지 못했습니다.");
     } finally {
       setUpdatingMeetingId(null);
     }
@@ -612,6 +805,9 @@ export default function AdminPage() {
         isActive: nextActive,
       });
       await loadAdminData();
+      toast.success("종목 상태 변경", "종목 사용 상태를 반영했습니다.");
+    } catch {
+      toast.error("종목 상태 변경 실패", "잠시 후 다시 시도해주세요.");
     } finally {
       setUpdatingSportId(null);
     }
@@ -623,6 +819,9 @@ export default function AdminPage() {
       await deleteAdminSport(sportId);
       await loadAdminData();
       updatePage("sports", 1);
+      toast.success("종목 삭제", "선택한 종목을 목록에서 제거했습니다.");
+    } catch {
+      toast.error("종목 삭제 실패", "삭제 중 문제가 발생했습니다.");
     } finally {
       setDeletingSportId(null);
     }
@@ -657,7 +856,7 @@ export default function AdminPage() {
                 "tabButton",
                 activeTab === tab.id && "tabButtonCurrent",
               )}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => changeTab(tab.id)}
             >
               {tab.label}
             </button>
@@ -758,7 +957,7 @@ export default function AdminPage() {
       </section>
 
       {activeTab === "members" ? (
-        <section className={styles.tableCard}>
+        <section id="members" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>회원 관리</h2>
@@ -792,15 +991,28 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {pagedMembers.map((member) => (
-                <tr key={member.id}>
+                <tr
+                  key={member.id}
+                  className={styles.clickableRow}
+                  onClick={() => setSelectedMemberDetail(member)}
+                >
                   <td>{member.id}</td>
-                  <td>{member.nickname}</td>
+                  <td>
+                    <div className={styles.memberIdentity}>
+                      <img
+                        src={member.profileImage}
+                        alt={`${member.nickname} 프로필`}
+                        className={styles.memberAvatar}
+                      />
+                      <strong>{member.nickname}</strong>
+                    </div>
+                  </td>
                   <td>{member.loginId}</td>
                   <td>{member.region}</td>
-                  <td>{member.role}</td>
+                  <td>{member.roleText}</td>
                   <td>
                     <span className={cx("badge", badgeToneByMemberStatus(member.status))}>
-                      {member.status}
+                      {member.statusText}
                     </span>
                   </td>
                   <td>
@@ -808,6 +1020,7 @@ export default function AdminPage() {
                       className={styles.inlineSelect}
                       value={member.status}
                       disabled={updatingMemberId === member.id}
+                      onClick={(event) => event.stopPropagation()}
                       onChange={(event) =>
                         handleMemberStatusChange(member.id, event.target.value)
                       }
@@ -841,7 +1054,7 @@ export default function AdminPage() {
       ) : null}
 
       {activeTab === "meetings" ? (
-        <section className={styles.tableCard}>
+        <section id="meetings" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>모임 관리</h2>
@@ -877,7 +1090,11 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {pagedMeetings.map((meeting) => (
-                <tr key={meeting.id}>
+                <tr
+                  key={meeting.id}
+                  className={styles.clickableRow}
+                  onClick={() => setSelectedMeetingDetail(meeting)}
+                >
                   <td>M{String(meeting.id).padStart(3, "0")}</td>
                   <td>
                     <div className={styles.stackCell}>
@@ -894,6 +1111,7 @@ export default function AdminPage() {
                     <div className={styles.scheduleCell}>
                       <strong>{meeting.meetingDate}</strong>
                       <span>{meeting.startTime}</span>
+                      <span>등록 {meeting.createdAt}</span>
                     </div>
                   </td>
                   <td>
@@ -909,6 +1127,7 @@ export default function AdminPage() {
                       className={styles.inlineSelect}
                       value={meeting.status}
                       disabled={updatingMeetingId === meeting.id}
+                      onClick={(event) => event.stopPropagation()}
                       onChange={(event) =>
                         handleMeetingStatusChange(meeting.id, event.target.value)
                       }
@@ -942,7 +1161,7 @@ export default function AdminPage() {
       ) : null}
 
       {activeTab === "reports" ? (
-        <section className={styles.tableCard}>
+        <section id="reports" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>신고 내역</h2>
@@ -993,7 +1212,7 @@ export default function AdminPage() {
       ) : null}
 
       {activeTab === "sports" ? (
-        <section className={styles.tableCard}>
+        <section id="sports" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>운동 종목</h2>
@@ -1186,6 +1405,107 @@ export default function AdminPage() {
         onApply={applyRegionSelection}
         onClose={closeRegionModal}
       />
+
+      <AppModal
+        open={Boolean(selectedMemberDetail)}
+        title="회원 정보"
+        confirmText="닫기"
+        onConfirm={() => setSelectedMemberDetail(null)}
+        onClose={() => setSelectedMemberDetail(null)}
+        hideCancel
+      >
+        {selectedMemberDetail ? (
+          <div className={styles.detailModalGrid}>
+            <div className={styles.detailModalProfile}>
+              <img
+                src={selectedMemberDetail.profileImage}
+                alt={`${selectedMemberDetail.nickname} 프로필`}
+                className={styles.detailAvatar}
+              />
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>회원 ID</span>
+              <strong>{selectedMemberDetail.id}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>닉네임</span>
+              <strong>{selectedMemberDetail.nickname}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>로그인 ID</span>
+              <strong>{selectedMemberDetail.loginId}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>지역</span>
+              <strong>{selectedMemberDetail.region}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>권한</span>
+              <strong>{selectedMemberDetail.roleText}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>상태</span>
+              <strong>{selectedMemberDetail.statusText}</strong>
+            </div>
+          </div>
+        ) : null}
+      </AppModal>
+
+      <AppModal
+        open={Boolean(selectedMeetingDetail)}
+        title="모임 정보"
+        confirmText="닫기"
+        onConfirm={() => setSelectedMeetingDetail(null)}
+        onClose={() => setSelectedMeetingDetail(null)}
+        hideCancel
+      >
+        {selectedMeetingDetail ? (
+          <div className={styles.detailModalGrid}>
+            <div className={styles.detailModalItem}>
+              <span>모임 ID</span>
+              <strong>M{String(selectedMeetingDetail.id).padStart(3, "0")}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>제목</span>
+              <strong>{selectedMeetingDetail.title}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>주최자</span>
+              <strong>{selectedMeetingDetail.hostNickname}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>종목</span>
+              <strong>
+                {selectedMeetingDetail.sport} · {selectedMeetingDetail.sportCategory}
+              </strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>지역</span>
+              <strong>{selectedMeetingDetail.region}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>일정</span>
+              <strong>
+                {selectedMeetingDetail.meetingDate} {selectedMeetingDetail.startTime}
+              </strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>등록일</span>
+              <strong>{selectedMeetingDetail.createdAt}</strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>참가 인원</span>
+              <strong>
+                {selectedMeetingDetail.current}/{selectedMeetingDetail.max}
+              </strong>
+            </div>
+            <div className={styles.detailModalItem}>
+              <span>상태</span>
+              <strong>{selectedMeetingDetail.statusText}</strong>
+            </div>
+          </div>
+        ) : null}
+      </AppModal>
     </div>
   );
 }

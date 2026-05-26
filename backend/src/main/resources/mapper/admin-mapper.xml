@@ -5,10 +5,10 @@
 
     <select id="selectSummary" resultType="kr.co.iei.admin.model.vo.AdminSummary">
         SELECT
-            (SELECT COUNT(*) FROM users) AS totalMembers,
-            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS totalMeetings,
-            (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pendingReports,
-            (SELECT COUNT(*) FROM sports) AS totalSports
+            (SELECT COUNT(*) FROM users WHERE role != 'ADMIN') AS total_members,
+            (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS total_meetings,
+            (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pending_reports,
+            (SELECT COUNT(*) FROM sports) AS total_sports
     </select>
 
     <select id="selectMembers" resultType="kr.co.iei.admin.model.vo.AdminMemberResponse">
@@ -16,6 +16,7 @@
             u.userId,
             u.loginId,
             u.nickname,
+            u.profileImage,
             CASE
                 WHEN r.regionId IS NULL THEN NULL
                 ELSE CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong)
@@ -54,7 +55,8 @@
             m.status,
             u.nickname AS hostNickname,
             m.meetingDate,
-            m.startTime
+            m.startTime,
+            m.createdAt
         FROM meetings m
         JOIN users u ON m.hostUserId = u.userId
         JOIN sports s ON m.sportId = s.sportId

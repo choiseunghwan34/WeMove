@@ -33,22 +33,28 @@
   gap: 8px;
   flex-wrap: wrap;
 }
-.main-nav a {
+.main-nav a,
+.main-nav button {
   display: inline-flex;
   align-items: center;
   height: 42px;
   padding: 0 16px;
   border-radius: 999px;
+  border: 0;
+  background: transparent;
   color: #537095;
   font-size: 14px;
   font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
   transition:
     background 0.2s ease,
     color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
-.main-nav a:hover {
+.main-nav a:hover,
+.main-nav button:hover {
   background: rgba(219, 233, 255, 0.85);
   color: var(--color-primary-strong);
   transform: translateY(-1px);
@@ -225,7 +231,8 @@
     overflow-x: auto;
     padding-bottom: 2px;
   }
-  .main-nav a {
+  .main-nav a,
+  .main-nav button {
     flex: 0 0 auto;
     height: 38px;
     padding: 0 14px;
@@ -269,6 +276,7 @@
 }
 
 .main-nav a,
+.main-nav button,
 .header-login,
 .header-signup,
 .footer-links a {
@@ -284,7 +292,8 @@
   letter-spacing: var(--tracking-tight);
 }
 
-.main-nav a {
+.main-nav a,
+.main-nav button {
   height: var(--control-height-md);
   padding: var(--control-padding-md);
   border-radius: var(--control-radius-pill);
