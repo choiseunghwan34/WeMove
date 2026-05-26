@@ -107,7 +107,12 @@ export default function MeetingDetailPage() {
       await fetchMeetingDetail();
     } catch (error) {
       console.error("Failed to apply meeting:", error);
-      alert("참가 신청에 실패했습니다.");
+      const serverMsg = error.response?.data?.message;
+      if (serverMsg && (serverMsg.includes("거절") || serverMsg.includes("REJECTED"))) {
+        alert("모임 참가에 거절 당해 신청하실 수 없습니다.");
+      } else {
+        alert("참가 신청에 실패했습니다.");
+      }
     }
   };
 
