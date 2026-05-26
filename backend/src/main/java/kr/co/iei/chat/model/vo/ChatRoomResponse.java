@@ -8,10 +8,15 @@ import lombok.Data;
 public class ChatRoomResponse {
   private Long meetingId;
   private String title;
+  private String content;
   private String sportName;
   private String regionName;
+  private String placeName;
+  private String address;
   private LocalDate meetingDate;
   private LocalTime startTime;
+  private String status;
+  private String hostNickname;
   private Long lastMessageId;
   private String lastMessage;
   private String lastMessageAt;

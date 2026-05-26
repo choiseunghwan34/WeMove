@@ -7,14 +7,20 @@
         SELECT
             m.meetingId,
             m.title,
+            m.content,
             s.name AS sportName,
             CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, '')) AS regionName,
+            m.placeName,
+            m.address,
             m.meetingDate,
             m.startTime,
+            m.status,
+            u.nickname AS hostNickname,
             lm.messageId AS lastMessageId,
             lm.content AS lastMessage,
             DATE_FORMAT(lm.createdAt, '%Y-%m-%d %H:%i:%s') AS lastMessageAt
         FROM meetings m
+        JOIN users u ON m.hostUserId = u.userId
         JOIN sports s ON m.sportId = s.sportId
         JOIN regions r ON m.regionId = r.regionId
         LEFT JOIN meetingChatMessages lm

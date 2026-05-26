@@ -83,3 +83,30 @@ export const clearRecentSearches = () => {
 
   window.localStorage.removeItem(RECENT_SEARCHES_KEY);
 };
+
+export const pruneStoredSearches = (allowedKeywords) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const allowedSet = new Set(
+    allowedKeywords
+      .map((keyword) => String(keyword ?? "").trim().toLowerCase())
+      .filter(Boolean),
+  );
+
+  if (!allowedSet.size) {
+    return;
+  }
+
+  const nextRecentSearches = getRecentSearches().filter((keyword) =>
+    allowedSet.has(String(keyword ?? "").trim().toLowerCase()),
+  );
+  writeStorage(RECENT_SEARCHES_KEY, nextRecentSearches);
+
+  const popularRecords = readStorage(POPULAR_SEARCHES_KEY, []);
+  const nextPopularRecords = popularRecords.filter((record) =>
+    allowedSet.has(String(record?.keyword ?? "").trim().toLowerCase()),
+  );
+  writeStorage(POPULAR_SEARCHES_KEY, nextPopularRecords);
+};

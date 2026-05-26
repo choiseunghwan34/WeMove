@@ -8,6 +8,11 @@ import styles from "../styles/GlobalMeetingChat.module.css";
 const formatTime = (value) =>
   value ? String(value).replace("T", " ").slice(0, 16) : "";
 
+const formatSchedule = (meetingDate, startTime) =>
+  [meetingDate, startTime ? String(startTime).slice(0, 5) : ""]
+    .filter(Boolean)
+    .join(" ");
+
 export default function GlobalMeetingChat() {
   const { user, isAuthenticated, loading } = useAuth();
   const toast = useToast();
@@ -70,7 +75,7 @@ export default function GlobalMeetingChat() {
     if (shouldNotify) {
       const roomTitle =
         rooms.find((room) => Number(room.meetingId) === Number(message.meetingId))
-          ?.title || "모임톡";
+          ?.title || "무브톡";
       toast.info(roomTitle, `${message.nickname || "참가자"}: ${message.content}`);
     }
   };
@@ -90,12 +95,14 @@ export default function GlobalMeetingChat() {
       const nextRooms = Array.isArray(data) ? data : [];
       setRooms(nextRooms);
       setSelectedMeetingId((current) =>
-        current ?? nextRooms[0]?.meetingId ?? null,
+        nextRooms.some((room) => Number(room.meetingId) === Number(current))
+          ? current
+          : null,
       );
     } catch (requestError) {
       setRooms([]);
       setSelectedMeetingId(null);
-      setError(requestError?.response?.data?.message || "모임톡 목록을 불러오지 못했습니다.");
+      setError(requestError?.response?.data?.message || "무브톡 목록을 불러오지 못했습니다.");
     } finally {
       setLoadingRooms(false);
     }
@@ -249,17 +256,17 @@ export default function GlobalMeetingChat() {
           }
         }}
       >
-        모임톡
+        무브톡
       </button>
 
       {open ? (
-        <section className={styles.panel} aria-label="모임톡">
+        <section className={styles.panel} aria-label="무브톡">
           <header className={styles.panelHeader}>
             <div>
-              <strong>모임톡</strong>
-              <span>승인된 모임 단톡방</span>
+              <strong>무브톡</strong>
+              <span>승인된 모임 대화방</span>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="모임톡 닫기">
+            <button type="button" onClick={() => setOpen(false)} aria-label="무브톡 닫기">
               x
             </button>
           </header>
@@ -281,26 +288,47 @@ export default function GlobalMeetingChat() {
                     onClick={() => setSelectedMeetingId(room.meetingId)}
                   >
                     <strong>{room.title}</strong>
-                    <span>{room.lastMessage || `${room.sportName || "모임"} 톡방`}</span>
+                    <span>
+                      {[room.sportName, room.regionName, room.placeName]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                    <small>
+                      {room.lastMessage ||
+                        formatSchedule(room.meetingDate, room.startTime) ||
+                        room.address ||
+                        "대화 내역 없음"}
+                    </small>
                   </button>
                 ))
               ) : (
-                <p>참여 가능한 모임톡이 없습니다.</p>
+                <p>참여 가능한 무브톡이 없습니다.</p>
               )}
             </aside>
 
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
-                <strong>{selectedRoom?.title || "모임톡"}</strong>
-                <span>
-                  {[selectedRoom?.sportName, selectedRoom?.regionName]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
+                <strong>{selectedRoom?.title || "무브톡을 선택해주세요"}</strong>
+                {selectedRoom ? (
+                  <span>
+                    {[
+                      selectedRoom.sportName,
+                      selectedRoom.regionName,
+                      selectedRoom.placeName,
+                      formatSchedule(selectedRoom.meetingDate, selectedRoom.startTime),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                ) : (
+                  <span>왼쪽 목록에서 대화할 모임을 선택해주세요.</span>
+                )}
               </div>
 
               <div className={styles.messageList} ref={listRef}>
-                {loadingMessages ? (
+                {!selectedMeetingId ? (
+                  <p className={styles.state}>무브톡 방을 선택하면 대화 내역을 볼 수 있습니다.</p>
+                ) : loadingMessages ? (
                   <p className={styles.state}>메시지를 불러오는 중입니다.</p>
                 ) : messages.length ? (
                   messages.map((message) => {

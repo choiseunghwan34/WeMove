@@ -413,7 +413,7 @@ export default function MeetingDetailPage() {
 
       <AppModal
         open={modalType === "chat"}
-        eyebrow="모임 단톡방"
+        eyebrow="무브톡"
         title={meeting.title}
         description="모임장과 승인된 참가자만 메시지를 주고받을 수 있습니다."
         confirmText="닫기"

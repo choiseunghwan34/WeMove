@@ -16,6 +16,7 @@ public class MeetingListResponse {
   private String sportName;
   private String regionName;
   private String content;
+  private String address;
   private String thumbnailImage;
   private String meetingHostName;
 }
