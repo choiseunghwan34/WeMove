@@ -206,7 +206,7 @@ export default function MeetingListPage() {
   const searchParams = useMemo(
     () => ({
       ...regionParams,
-      baseRegionId: selectedRegion || isGlobalSearch ? null : memberRegionId,
+      baseRegionId: selectedRegion || isExplicitAll || isGlobalSearch ? null : memberRegionId,
       sportId: selectedSport?.sportId ?? null,
       status,
       keyword,
