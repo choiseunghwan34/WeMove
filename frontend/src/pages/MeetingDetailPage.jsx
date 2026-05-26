@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
+import { useAuth } from "../contexts/AuthContext";
 import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import styles from "../styles/MeetingDetailPage.module.css";
@@ -33,10 +34,12 @@ const comments = [
 ];
 
 export default function MeetingDetailPage() {
+  const { user } = useAuth();
   const { meetingId } = useParams();
   const meeting =
     meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
   const isClosed = meeting.status === "CLOSED";
+  const isAdmin = user?.role === "ADMIN";
   const [modalType, setModalType] = useState(null);
   const closeModal = () => setModalType(null);
 
@@ -169,30 +172,38 @@ export default function MeetingDetailPage() {
               <button
                 type="button"
                 className={styles.primaryButton}
-                disabled={isClosed}
-                onClick={() => !isClosed && setModalType("apply")}
+                disabled={isClosed || isAdmin}
+                onClick={() => !isClosed && !isAdmin && setModalType("apply")}
               >
-                {isClosed ? "신청 마감" : "참가 신청"}
+                {isAdmin ? "관리자 계정은 신청할 수 없습니다" : isClosed ? "신청 마감" : "참가 신청"}
               </button>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={() => setModalType("cancel")}
-              >
-                신청 취소
-              </button>
-              <Link
-                to={`/meetings/${meeting.id}/edit`}
-                className={styles.secondaryButton}
-              >
-                모임 수정
-              </Link>
-              <Link
-                to={`/meetings/${meeting.id}/manage`}
-                className={styles.secondaryButton}
-              >
-                신청자 관리
-              </Link>
+              {isAdmin ? (
+                <p style={{ margin: 0, color: "#64748b", fontSize: "0.95rem" }}>
+                  관리자는 모임 상세 조회만 가능하며 참가 신청은 할 수 없습니다.
+                </p>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    onClick={() => setModalType("cancel")}
+                  >
+                    신청 취소
+                  </button>
+                  <Link
+                    to={`/meetings/${meeting.id}/edit`}
+                    className={styles.secondaryButton}
+                  >
+                    모임 수정
+                  </Link>
+                  <Link
+                    to={`/meetings/${meeting.id}/manage`}
+                    className={styles.secondaryButton}
+                  >
+                    신청자 관리
+                  </Link>
+                </>
+              )}
             </div>
           </section>
         </aside>

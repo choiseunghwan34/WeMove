@@ -4,29 +4,62 @@ import AppModal from "../components/AppModal";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { login } from "../api/authApi";
 import { getLoginPageStats } from "../api/statsApi";
-import { useAuth } from "../contexts/AuthContext";
 import homeBg from "../assets/images/home-bg.webp";
+import { useAuth } from "../contexts/AuthContext";
+import styles from "../styles/LoginPage.module.css";
+import { parseUserFromAccessToken } from "../utils/jwtPayload";
 import {
   clearRememberedLoginId,
   getRememberedLoginId,
   setRememberedLoginId,
 } from "../utils/rememberedLogin";
-import styles from "../styles/LoginPage.module.css";
 
 const authBackgrounds = [homeBg];
 
+const normalizeServerMessage = (message) => {
+  if (!message) {
+    return "";
+  }
+
+  if (
+    message.includes("Invalid login credentials") ||
+    message.includes("아이디 또는 비밀번호") ||
+    message.includes("비밀번호가 올바르지")
+  ) {
+    return "아이디 또는 비밀번호가 올바르지 않습니다.";
+  }
+
+  if (message.includes("이메일 인증")) {
+    return "이메일 인증을 완료한 뒤 로그인해주세요.";
+  }
+
+  if (message.includes("suspended") || message.includes("정지")) {
+    return "정지된 계정입니다. 관리자에게 문의해주세요.";
+  }
+
+  if (message.includes("deleted") || message.includes("탈퇴")) {
+    return "탈퇴한 계정은 로그인할 수 없습니다.";
+  }
+
+  return message;
+};
+
 const getLoginErrorMessage = (error) => {
-  const serverMessage = error?.response?.data?.message;
+  const serverMessage = normalizeServerMessage(error?.response?.data?.message);
 
   if (serverMessage) {
     return serverMessage;
   }
 
-  if (error?.response) {
+  if (error?.response?.status === 400 || error?.response?.status === 401) {
     return "아이디 또는 비밀번호가 올바르지 않습니다.";
   }
 
-  return "서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인해주세요.";
+  if (error?.response?.status === 403) {
+    return "로그인 조건을 만족하지 않아 접속할 수 없습니다.";
+  }
+
+  return "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
 };
 
 const formatMetric = (value) => {
@@ -46,10 +79,7 @@ const formatMetric = (value) => {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setAuthenticatedAccessToken } = useAuth();
-  const [form, setForm] = useState({
-    loginId: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ loginId: "", password: "" });
   const [rememberLoginId, setRememberLoginId] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -105,6 +135,8 @@ export default function LoginPage() {
   );
 
   const finishLogin = (loginId, nextAccessToken) => {
+    const parsedUser = parseUserFromAccessToken(nextAccessToken);
+
     if (rememberLoginId) {
       setRememberedLoginId(loginId);
     } else {
@@ -112,7 +144,7 @@ export default function LoginPage() {
     }
 
     setAuthenticatedAccessToken(nextAccessToken);
-    navigate("/meetings");
+    navigate(parsedUser?.role === "ADMIN" ? "/admin" : "/");
   };
 
   const requestLogin = async ({ forceLogin = false } = {}) => {
@@ -181,14 +213,13 @@ export default function LoginPage() {
         <div className={styles.layout}>
           <section className={styles.copy}>
             <Link to="/" className={styles.logo}>
-              <WeMoveLogo tone="light" size="md" />
+              <WeMoveLogo tone="dark" size="md" />
             </Link>
             <span className={styles.eyebrow}>LOCAL FITNESS COMMUNITY</span>
             <h1>동네 운동을 자연스럽게 이어주는 방법</h1>
             <p>
-              러닝, 풋살, 실내, 배드민턴까지. 가까운 사람들과 함께 운동 루틴을
-              만들고 모임을 찾고, 참여하고, 관리할 수 있는 지역 기반 운동
-              플랫폼입니다.
+              러닝, 헬스, 풋살, 등산, 배드민턴까지. 가까운 사람들과 함께 움직일 수 있는
+              지역 기반 운동 모임 플랫폼입니다.
             </p>
 
             <div className={styles.metrics}>
@@ -210,7 +241,7 @@ export default function LoginPage() {
           <form className={styles.card} onSubmit={handleSubmit}>
             <div className={styles.cardHead}>
               <span className={styles.cardKicker}>로그인</span>
-              <h2>오늘은 가까운 사람들과 같이 움직여볼까요?</h2>
+              <h2>오늘도 가까운 운동 모임과 같이 움직여볼까요?</h2>
               <p>로그인하고 이번 주 운동 모임을 바로 확인해보세요.</p>
             </div>
 
@@ -266,11 +297,7 @@ export default function LoginPage() {
               </p>
             ) : null}
 
-            <button
-              className={styles.submit}
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <button className={styles.submit} type="submit" disabled={isSubmitting}>
               {isSubmitting ? "로그인 중..." : "로그인"}
             </button>
 
@@ -286,9 +313,9 @@ export default function LoginPage() {
       <AppModal
         open={duplicatePromptOpen}
         title="중복 로그인 안내"
-        description="이미 로그인 중인 사용자가 있습니다. 로그인하시겠습니까?"
-        confirmText="네"
-        cancelText="아니요"
+        description="이미 로그인 중인 계정이 있습니다. 새 기기에서 계속 로그인하시겠습니까?"
+        confirmText="확인"
+        cancelText="취소"
         onConfirm={confirmDuplicateLogin}
         onClose={() => setDuplicatePromptOpen(false)}
       />

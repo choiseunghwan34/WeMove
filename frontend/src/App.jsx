@@ -1,4 +1,6 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import AppModal from "./components/AppModal";
 import Header from "./components/Header";
 import { useAuth } from "./contexts/AuthContext";
 import AdminPage from "./pages/AdminPage";
@@ -15,23 +17,80 @@ import MyPage from "./pages/MyPage";
 import ReviewPage from "./pages/ReviewPage";
 import SignupPage from "./pages/SignupPage";
 
-function AdminRoute({ children }) {
+function RouteWarningModal({ title, description, redirectTo }) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(true);
+
+  const handleConfirm = () => {
+    setOpen(false);
+    navigate(redirectTo, { replace: true });
+  };
+
+  return (
+    <AppModal
+      open={open}
+      title={title}
+      description={description}
+      confirmText="확인"
+      onConfirm={handleConfirm}
+      onClose={handleConfirm}
+      hideCancel
+    />
+  );
+}
+
+function AdminOnlyRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
     return null;
   }
 
-  if (user?.role !== "ADMIN") {
-    return <Navigate to="/" replace />;
+  if (!user) {
+    return (
+      <RouteWarningModal
+        title="접근 권한이 없습니다"
+        description="관리자 페이지는 관리자 계정으로 로그인해야 볼 수 있습니다."
+        redirectTo="/login"
+      />
+    );
+  }
+
+  if (user.role !== "ADMIN") {
+    return (
+      <RouteWarningModal
+        title="접근 권한이 없습니다"
+        description="일반 회원은 관리자 페이지로 이동할 수 없습니다."
+        redirectTo="/"
+      />
+    );
+  }
+
+  return children;
+}
+
+function UserOnlyRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (user?.role === "ADMIN") {
+    return (
+      <RouteWarningModal
+        title="접근 권한이 없습니다"
+        description="이 메뉴는 일반 회원 전용입니다. 관리자 계정은 관리자 페이지에서 이용해주세요."
+        redirectTo="/admin"
+      />
+    );
   }
 
   return children;
 }
 
 function LayoutRoutes() {
-  const location = useLocation();
-  const { pathname } = location;
+  const { pathname } = useLocation();
   const isDashboardRoute =
     pathname === "/" ||
     pathname === "/meetings" ||
@@ -46,26 +105,63 @@ function LayoutRoutes() {
           <Route path="/" element={<HomePage />} />
           <Route path="/meetings" element={<MeetingListPage />} />
           <Route path="/meetings/:meetingId" element={<MeetingDetailPage />} />
-          <Route path="/meetings/new" element={<MeetingCreatePage />} />
+          <Route
+            path="/meetings/new"
+            element={
+              <UserOnlyRoute>
+                <MeetingCreatePage />
+              </UserOnlyRoute>
+            }
+          />
           <Route
             path="/meetings/:meetingId/edit"
-            element={<MeetingEditPage />}
+            element={
+              <UserOnlyRoute>
+                <MeetingEditPage />
+              </UserOnlyRoute>
+            }
           />
           <Route
             path="/meetings/:meetingId/manage"
-            element={<MeetingManagePage />}
+            element={
+              <UserOnlyRoute>
+                <MeetingManagePage />
+              </UserOnlyRoute>
+            }
           />
-          <Route path="/activity" element={<ActivityPage />} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="/meetings/:meetingId/reviews" element={<ReviewPage />} />
+          <Route
+            path="/activity"
+            element={
+              <UserOnlyRoute>
+                <ActivityPage />
+              </UserOnlyRoute>
+            }
+          />
+          <Route
+            path="/mypage"
+            element={
+              <UserOnlyRoute>
+                <MyPage />
+              </UserOnlyRoute>
+            }
+          />
+          <Route
+            path="/meetings/:meetingId/reviews"
+            element={
+              <UserOnlyRoute>
+                <ReviewPage />
+              </UserOnlyRoute>
+            }
+          />
           <Route
             path="/admin"
             element={
-              <AdminRoute>
+              <AdminOnlyRoute>
                 <AdminPage />
-              </AdminRoute>
+              </AdminOnlyRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </>

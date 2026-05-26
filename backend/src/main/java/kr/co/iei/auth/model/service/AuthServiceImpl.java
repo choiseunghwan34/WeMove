@@ -108,7 +108,7 @@ public class AuthServiceImpl implements AuthService {
   public AuthLoginResult login(LoginRequest req) {
     Member member = authDao.selectByLoginId(req.getLoginId());
     if (member == null || !isPasswordMatched(req.getPassword(), member.getPassword())) {
-      throw new IllegalArgumentException("Invalid login credentials.");
+      throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
 
     boolean autoLogin = Boolean.TRUE.equals(req.getAutoLogin());

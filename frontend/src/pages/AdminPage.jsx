@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import Pagination from "../components/Pagination";
 import RegionPickerModal from "../components/RegionPickerModal";
@@ -157,6 +158,8 @@ const badgeToneByReportStatus = (status) => {
 };
 
 export default function AdminPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("members");
   const [summary, setSummary] = useState(initialSummary);
   const [regions, setRegions] = useState([]);
@@ -195,6 +198,17 @@ export default function AdminPage() {
 
   const updatePage = (tab, nextPage) => {
     setPages((current) => ({ ...current, [tab]: nextPage }));
+  };
+
+  const changeTab = (nextTab) => {
+    setActiveTab(nextTab);
+    navigate(`/admin#${nextTab}`);
+    window.setTimeout(() => {
+      document.getElementById(nextTab)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
   };
 
   const loadAdminData = async () => {
@@ -313,6 +327,13 @@ export default function AdminPage() {
   useEffect(() => {
     loadAdminData();
   }, []);
+
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (tabs.some((tab) => tab.id === hash)) {
+      setActiveTab(hash);
+    }
+  }, [location.hash]);
 
   const regionHierarchy = useMemo(() => {
     const grouped = new Map();
@@ -657,7 +678,7 @@ export default function AdminPage() {
                 "tabButton",
                 activeTab === tab.id && "tabButtonCurrent",
               )}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => changeTab(tab.id)}
             >
               {tab.label}
             </button>
@@ -758,7 +779,7 @@ export default function AdminPage() {
       </section>
 
       {activeTab === "members" ? (
-        <section className={styles.tableCard}>
+        <section id="members" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>회원 관리</h2>
@@ -841,7 +862,7 @@ export default function AdminPage() {
       ) : null}
 
       {activeTab === "meetings" ? (
-        <section className={styles.tableCard}>
+        <section id="meetings" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>모임 관리</h2>
@@ -942,7 +963,7 @@ export default function AdminPage() {
       ) : null}
 
       {activeTab === "reports" ? (
-        <section className={styles.tableCard}>
+        <section id="reports" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>신고 내역</h2>
@@ -993,7 +1014,7 @@ export default function AdminPage() {
       ) : null}
 
       {activeTab === "sports" ? (
-        <section className={styles.tableCard}>
+        <section id="sports" className={styles.tableCard}>
           <div className={styles.tableHead}>
             <div>
               <h2>운동 종목</h2>
