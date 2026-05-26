@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import { getMeeting, updateMeetingStatus } from "../api/meetingApi";
 import {
@@ -8,10 +8,13 @@ import {
   rejectParticipant,
   cancelApproval,
 } from "../api/participantApi";
+import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/MeetingManagePage.module.css";
 
 export default function MeetingManagePage() {
   const { meetingId } = useParams();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [meeting, setMeeting] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,21 +27,34 @@ export default function MeetingManagePage() {
         getParticipants(meetingId),
       ]);
       console.log("[DEBUG] Fetched participants list:", participantsRes.data);
-      setMeeting(meetingRes.data);
+
+      const meetingData = meetingRes.data;
+
+      // 비로그인 상태이거나, 로그인 유저가 이 모임의 호스트가 아니라면 경고 후 상세로 리다이렉션
+      if (!user || user.nickname !== meetingData.hostNickname) {
+        alert("이 모임의 관리자(호스트)만 접근할 수 있는 페이지입니다.");
+        navigate(`/meetings/${meetingId}`, { replace: true });
+        return;
+      }
+
+      setMeeting(meetingData);
       setParticipants(participantsRes.data || []);
     } catch (error) {
       console.error("Failed to fetch manage data:", error);
+      navigate("/meetings", { replace: true });
     }
   };
 
   useEffect(() => {
+    if (authLoading) return; // 세션 정보가 복원되는 중(로딩)일 때는 검증 및 데이터 조회 일시 유예
+
     const init = async () => {
       setLoading(true);
       await fetchData();
       setLoading(false);
     };
     init();
-  }, [meetingId]);
+  }, [meetingId, user, authLoading]);
 
   const closeModal = () => setActionModal(null);
 
