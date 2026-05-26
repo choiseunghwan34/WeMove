@@ -54,6 +54,13 @@ export default function MeetingManagePage() {
         await updateMeetingStatus(meetingId, { status: "CLOSED" });
       } else if (actionModal.type === "cancelApproval") {
         await cancelApproval(actionModal.applicant.participantId);
+      } else if (actionModal.type === "reopen") {
+        // 대안 A: 최대 정원과 현재 승인 완료 인원 대조 검증 (호스트 포함 +1)
+        if ((approvedApplicants.length + 1) >= meeting.maxMembers) {
+          closeModal();
+          return;
+        }
+        await updateMeetingStatus(meetingId, { status: "RECRUITING" });
       }
 
       // 성공 시 데이터 새로고침 및 모달 닫기
@@ -82,6 +89,7 @@ export default function MeetingManagePage() {
         description:
           "거절하면 해당 사용자는 이 모임에 다시 신청할 수 없게 됩니다.",
         confirmText: "거절 처리",
+        tone: "danger",
       },
       approve: {
         eyebrow: "참가 승인",
@@ -103,6 +111,21 @@ export default function MeetingManagePage() {
         confirmText: "승인 취소",
         tone: "danger",
       },
+      reopen: (approvedApplicants.length + 1) >= (meeting?.maxMembers ?? 0)
+        ? {
+            eyebrow: "모집 재개 불가",
+            title: "모집을 재개할 수 없습니다",
+            description: `현재 확정 인원(${approvedApplicants.length + 1}명)이 최대 정원(${meeting?.maxMembers ?? 0}명)에 도달하여 모집을 재개할 수 없습니다.\n추가 신청을 받으려면 승인된 참가자를 취소하여 자리를 확보하거나 모임 정원을 늘려주세요.`,
+            confirmText: "확인",
+            tone: "danger",
+            hideCancel: true,
+          }
+        : {
+            eyebrow: "모집 재개",
+            title: "이 모임의 모집을 재개할까요?",
+            description: "모집을 재개하면 신규 참가 신청자들이 다시 신청을 보낼 수 있게 됩니다.",
+            confirmText: "모집 재개",
+          },
     }[actionModal?.type] ?? {};
 
   if (loading) return <div className={styles.page}>로딩 중...</div>;
@@ -126,8 +149,8 @@ export default function MeetingManagePage() {
           <strong>{participants.length}</strong>
         </article>
         <article>
-          <span>승인 완료</span>
-          <strong>{approvedApplicants.length}</strong>
+          <span>확정 인원</span>
+          <strong>{approvedApplicants.length + 1}</strong>
         </article>
         <article>
           <span>대기 인원</span>
@@ -161,6 +184,7 @@ export default function MeetingManagePage() {
                   <div className={styles.participantActions}>
                     <button
                       type="button"
+                      className={styles.rejectBtn}
                       disabled={isClosed}
                       onClick={() =>
                         setActionModal({ type: "reject", applicant: item })
@@ -170,6 +194,7 @@ export default function MeetingManagePage() {
                     </button>
                     <button
                       type="button"
+                      className={styles.approveBtn}
                       disabled={isClosed}
                       onClick={() =>
                         setActionModal({ type: "approve", applicant: item })
@@ -191,41 +216,77 @@ export default function MeetingManagePage() {
             있습니다.
           </p>
           <div className={styles.participantList}>
-            {approvedApplicants.length === 0 ? (
-              <div className={styles.emptyState}>승인된 참가자가 없습니다.</div>
-            ) : (
-              approvedApplicants.map((item) => (
-                <article key={item.participantId} className={styles.participantCard}>
-                  <div className={styles.participantHead}>
-                    <div className={styles.participantMeta}>
-                      <strong>{item.nickname}</strong>
-                      <p>{item.message || "참가 메시지가 없습니다."}</p>
-                    </div>
-                    <span className={styles.reviewScore}>승인 완료</span>
-                  </div>
-                  <div className={styles.participantActions}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActionModal({ type: "cancelApproval", applicant: item })
-                      }
+            {/* 모임장(호스트) 카드 상시 고정 노출 (게스트 카드와 크기 일체화) */}
+            <article className={`${styles.participantCard} ${styles.hostCard}`}>
+              <div className={styles.participantHead}>
+                <div className={styles.participantMeta}>
+                  <strong className={styles.hostNickname}>
+                    <svg
+                      className={styles.hostCrownIcon}
+                      viewBox="0 0 24 24"
                     >
-                      승인 취소
-                    </button>
+                      <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
+                    </svg>
+                    {meeting.hostNickname}
+                  </strong>
+                  <p>모임을 개설한 호스트입니다.</p>
+                </div>
+                <span className={`${styles.reviewScore} ${styles.hostBadge}`}>모임장</span>
+              </div>
+              {/* 다른 카드들과 세로 크기(높이)를 완벽하게 일치시키기 위한 투명 가상 액션 블록 */}
+              <div className={`${styles.participantActions} ${styles.hiddenActions}`}>
+                <button type="button" className={styles.cancelBtn}>승인 취소</button>
+              </div>
+            </article>
+
+            {approvedApplicants.map((item) => (
+              <article key={item.participantId} className={styles.participantCard}>
+                <div className={styles.participantHead}>
+                  <div className={styles.participantMeta}>
+                    <strong>{item.nickname}</strong>
+                    <p>{item.message || "참가 메시지가 없습니다."}</p>
                   </div>
-                </article>
-              ))
-            )}
+                  <span className={styles.reviewScore}>승인 완료</span>
+                </div>
+                <div className={styles.participantActions}>
+                  <button
+                    type="button"
+                    className={styles.cancelBtn}
+                    onClick={() =>
+                      setActionModal({ type: "cancelApproval", applicant: item })
+                    }
+                  >
+                    승인 취소
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
           <div className={styles.formActions}>
             <Link to={`/meetings/${meetingId}`}>상세로 돌아가기</Link>
-            <button
-              type="button"
-              disabled={isClosed}
-              onClick={() => setActionModal({ type: "close" })}
-            >
-              {isClosed ? "모집 마감 완료" : "모집 마감 처리"}
-            </button>
+            {meeting.status === "CLOSED" ? (
+              <button
+                type="button"
+                className={styles.approveBtn}
+                onClick={() => setActionModal({ type: "reopen" })}
+              >
+                모집 재개
+              </button>
+            ) : meeting.status === "COMPLETED" || meeting.status === "CANCELLED" ? (
+              <button
+                type="button"
+                disabled
+              >
+                모집 완료
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setActionModal({ type: "close" })}
+              >
+                모집 마감 처리
+              </button>
+            )}
           </div>
         </section>
       </div>
@@ -237,6 +298,7 @@ export default function MeetingManagePage() {
         description={modalCopy.description}
         confirmText={modalCopy.confirmText}
         tone={modalCopy.tone}
+        hideCancel={modalCopy.hideCancel}
         onClose={closeModal}
         onConfirm={handleConfirm}
       >
@@ -252,11 +314,13 @@ export default function MeetingManagePage() {
           </div>
         ) : (
           <div className={styles.applicantModalCard}>
-            <div className={styles.applicantAvatar}>마</div>
+            <div className={styles.applicantAvatar}>
+              {actionModal?.type === "reopen" ? "재" : "마"}
+            </div>
             <div>
               <strong>{meeting.title}</strong>
               <p>
-                현재 승인 완료 {approvedApplicants.length}명, 대기 인원{" "}
+                현재 확정 인원 {approvedApplicants.length + 1}명, 대기 인원{" "}
                 {pendingApplicants.length}명입니다.
               </p>
             </div>

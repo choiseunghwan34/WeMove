@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
@@ -531,7 +531,7 @@ export default function MeetingListPage() {
                         name="user"
                         className={styles.dashboardMetaIcon}
                       />
-                      {meeting.approvedCount || 0}/{meeting.maxMembers}명
+                      {(meeting.approvedCount || 0) + 1}/{meeting.maxMembers}명
                     </span>
                   </div>
 
