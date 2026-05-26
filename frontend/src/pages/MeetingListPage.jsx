@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
@@ -76,8 +76,13 @@ const formatTopRegionLabel = (region) => {
 };
 
 export default function MeetingListPage() {
+  const [urlSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const keywordParam = urlSearchParams.get("keyword") ?? "";
+  const sportNameParam = urlSearchParams.get("sportName") ?? "";
+  const isGlobalSearch =
+    urlSearchParams.get("global") === "1" || Boolean(keywordParam || sportNameParam);
 
   const [meetingDate, setMeetingDate] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -91,7 +96,7 @@ export default function MeetingListPage() {
   const [memberRegionReady, setMemberRegionReady] = useState(false);
 
   const [status, setStatus] = useState("");
-  const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState(keywordParam);
   const [meetingList, setMeetingList] = useState([]);
 
   const [totalCount, setTotalCount] = useState(0);
@@ -199,7 +204,7 @@ export default function MeetingListPage() {
   const searchParams = useMemo(
     () => ({
       ...regionParams,
-      baseRegionId: selectedRegion ? null : memberRegionId,
+      baseRegionId: selectedRegion || isGlobalSearch ? null : memberRegionId,
       sportId: selectedSport?.sportId ?? null,
       status,
       keyword,
@@ -211,6 +216,7 @@ export default function MeetingListPage() {
       regionParams,
       selectedRegion,
       memberRegionId,
+      isGlobalSearch,
       selectedSport,
       status,
       keyword,
@@ -218,6 +224,27 @@ export default function MeetingListPage() {
       currentPage,
     ],
   );
+
+  useEffect(() => {
+    setKeyword(keywordParam);
+    setCurrentPage(1);
+  }, [keywordParam]);
+
+  useEffect(() => {
+    if (!sportOptions.length) {
+      return;
+    }
+
+    if (!sportNameParam) {
+      setSelectedSport(null);
+      return;
+    }
+
+    const matchedSport =
+      sportOptions.find((sport) => sport.name === sportNameParam) ?? null;
+    setSelectedSport(matchedSport);
+    setCurrentPage(1);
+  }, [sportNameParam, sportOptions]);
 
   useEffect(() => {
     if (authLoading || !memberRegionReady) return;

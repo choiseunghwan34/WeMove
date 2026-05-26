@@ -15,6 +15,7 @@ import MeetingListPage from "./pages/MeetingListPage";
 import MeetingManagePage from "./pages/MeetingManagePage";
 import MyPage from "./pages/MyPage";
 import ReviewPage from "./pages/ReviewPage";
+import SearchPage from "./pages/SearchPage";
 import SignupPage from "./pages/SignupPage";
 
 function RouteWarningModal({ title, description, redirectTo }) {
@@ -94,6 +95,7 @@ function LayoutRoutes() {
   const isDashboardRoute =
     pathname === "/" ||
     pathname === "/meetings" ||
+    pathname === "/search" ||
     pathname === "/activity" ||
     pathname === "/mypage";
 
@@ -104,6 +106,7 @@ function LayoutRoutes() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/meetings" element={<MeetingListPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/meetings/:meetingId" element={<MeetingDetailPage />} />
           <Route
             path="/meetings/new"
