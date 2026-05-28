@@ -249,6 +249,7 @@ export default function GlobalMeetingChat() {
       <button
         type="button"
         className={styles.floatingButton}
+        aria-label="무브톡 열기"
         onClick={() => {
           setOpen((current) => !current);
           if (!open) {
@@ -256,7 +257,11 @@ export default function GlobalMeetingChat() {
           }
         }}
       >
-        무브톡
+        <span aria-hidden="true" className={styles.floatingIcon}>
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M5.5 5.7c1.5-1.4 3.7-2.2 6.5-2.2 5 0 8.5 2.9 8.5 7.1s-3.5 7.1-8.5 7.1c-.8 0-1.6-.1-2.3-.2l-4.1 2.7c-.5.3-1.1-.1-.9-.7l1.1-3.5c-1.5-1.3-2.3-3.2-2.3-5.4 0-1.9.7-3.6 2-4.9Z" />
+          </svg>
+        </span>
       </button>
 
       {open ? (

@@ -3,26 +3,42 @@
   right: 24px;
   bottom: 24px;
   z-index: 1100;
-  min-width: 86px;
-  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
   border: 0;
   border-radius: 999px;
   background: #2563eb;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 900;
   box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28);
   cursor: pointer;
+}
+
+.floatingIcon,
+.floatingIcon svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+.floatingIcon svg {
+  fill: #fff;
 }
 
 .panel {
   position: fixed;
   right: 24px;
-  bottom: 84px;
+  bottom: 92px;
   z-index: 1100;
-  width: min(720px, calc(100vw - 32px));
-  height: min(620px, calc(100vh - 124px));
+  width: min(860px, calc(100vw - 32px));
+  height: min(560px, calc(100vh - 140px));
+  min-width: 520px;
+  min-height: 360px;
+  max-width: min(860px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 140px));
   overflow: hidden;
+  resize: both;
   border: 1px solid #dbe3ef;
   border-radius: 18px;
   background: #fff;
@@ -68,7 +84,7 @@
 
 .panelBody {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
   height: calc(100% - 67px);
   min-height: 0;
 }
@@ -97,7 +113,7 @@
   display: grid;
   gap: 4px;
   width: 100%;
-  min-height: 68px;
+  min-height: 78px;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #fff;
@@ -123,14 +139,13 @@
 
 .room span,
 .roomActive span {
-  display: -webkit-box;
   overflow: hidden;
   color: #64748b;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .room small,
@@ -298,8 +313,12 @@
 
   .panel {
     right: 16px;
-    bottom: 74px;
-    height: min(620px, calc(100vh - 96px));
+    bottom: 82px;
+    height: min(560px, calc(100vh - 112px));
+    min-width: 320px;
+    min-height: 420px;
+    max-width: calc(100vw - 32px);
+    max-height: min(560px, calc(100vh - 112px));
   }
 
   .panelBody {
