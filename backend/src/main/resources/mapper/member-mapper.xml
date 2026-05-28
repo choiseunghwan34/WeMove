@@ -60,4 +60,66 @@
         )
     </insert>
 
+    <select id="selectHostedActivityMeetings"
+            resultType="kr.co.iei.member.model.vo.MemberActivityMeetingResponse">
+        SELECT
+            m.meetingId AS meetingId,
+            m.title,
+            m.placeName AS placeName,
+            m.meetingDate AS meetingDate,
+            m.startTime AS startTime,
+            m.maxMembers AS maxMembers,
+            m.status,
+            m.thumbnailImage AS thumbnailImage,
+            m.createdAt AS createdAt,
+            s.name AS sportName,
+            u.nickname AS hostNickname,
+            CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, '')) AS regionName,
+            (
+                SELECT COUNT(*)
+                FROM meetingParticipants mp
+                WHERE mp.meetingId = m.meetingId
+                  AND mp.status = 'APPROVED'
+            ) AS approvedCount
+        FROM meetings m
+        JOIN sports s ON m.sportId = s.sportId
+        JOIN regions r ON m.regionId = r.regionId
+        JOIN users u ON m.hostUserId = u.userId
+        WHERE m.hostUserId = #{memberId}
+          AND m.deletedAt IS NULL
+        ORDER BY m.meetingDate DESC, m.startTime DESC, m.createdAt DESC
+    </select>
+
+    <select id="selectParticipantActivityMeetings"
+            resultType="kr.co.iei.member.model.vo.MemberActivityMeetingResponse">
+        SELECT
+            m.meetingId AS meetingId,
+            m.title,
+            m.placeName AS placeName,
+            m.meetingDate AS meetingDate,
+            m.startTime AS startTime,
+            m.maxMembers AS maxMembers,
+            m.status,
+            m.thumbnailImage AS thumbnailImage,
+            m.createdAt AS createdAt,
+            s.name AS sportName,
+            u.nickname AS hostNickname,
+            mp.status AS participationStatus,
+            CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, '')) AS regionName,
+            (
+                SELECT COUNT(*)
+                FROM meetingParticipants mp2
+                WHERE mp2.meetingId = m.meetingId
+                  AND mp2.status = 'APPROVED'
+            ) AS approvedCount
+        FROM meetingParticipants mp
+        JOIN meetings m ON mp.meetingId = m.meetingId
+        JOIN sports s ON m.sportId = s.sportId
+        JOIN regions r ON m.regionId = r.regionId
+        JOIN users u ON m.hostUserId = u.userId
+        WHERE mp.userId = #{memberId}
+          AND m.deletedAt IS NULL
+        ORDER BY m.meetingDate DESC, m.startTime DESC, m.createdAt DESC
+    </select>
+
 </mapper>

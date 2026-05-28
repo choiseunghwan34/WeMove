@@ -19,4 +19,6 @@ public interface MemberService {
   void updateSports(Long memberId, MemberSportsUpdateRequest request);
 
   MemberResponse getMember(Long memberId);
+
+  MemberActivityResponse getActivity(Long memberId);
 }

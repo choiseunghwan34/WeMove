@@ -12,6 +12,11 @@ export const getMySports = (memberId) =>
     params: { memberId },
   });
 
+export const getMyActivity = (memberId) =>
+  api.get("/members/me/activity", {
+    params: memberId ? { memberId } : undefined,
+  });
+
 export const updateMe = (memberId, data, image) => {
   const formData = new FormData();
   formData.append(
