@@ -333,38 +333,50 @@ export default function MeetingDetailPage() {
             <div className={styles.stickyActions}>
               {!isHost && (
                 <>
-                  {!isApplied && (
-                    <>
-                      <button
-                        type="button"
-                        className={styles.primaryButton}
-                        disabled={isClosed || isAdmin || isRejected}
-                        onClick={handleApplyClick}
-                      >
-                        {isAdmin
-                          ? "관리자 계정은 신청할 수 없습니다"
-                          : isRejected
-                            ? "신청 불가"
-                            : isClosed
-                              ? "신청 마감"
-                              : "참가 신청"}
-                      </button>
-                      {isRejected && (
-                        <p style={{ margin: 0, color: "#ef4444", fontSize: "0.85rem", marginTop: "8px", fontWeight: "700", lineHeight: "1.4", wordBreak: "keep-all" }}>
-                          * 신청이 거절되어 재신청이 불가능한 모임입니다.
-                        </p>
-                      )}
-                    </>
-                  )}
-
-                  {!isClosed && !isAdmin && isApplied && (
+                  {(meeting.status === "COMPLETED" || meeting.status === "CANCELLED") ? (
                     <button
                       type="button"
-                      className={styles.dangerButton}
-                      onClick={() => setModalType("cancel")}
+                      className={styles.primaryButton}
+                      disabled
                     >
-                      신청 취소
+                      {meeting.status === "COMPLETED" ? "모임 완료" : "취소됨"}
                     </button>
+                  ) : (
+                    <>
+                      {!isApplied && (
+                        <>
+                          <button
+                            type="button"
+                            className={styles.primaryButton}
+                            disabled={meeting.status === "CLOSED" || isAdmin || isRejected}
+                            onClick={handleApplyClick}
+                          >
+                            {isAdmin
+                              ? "관리자 계정은 신청할 수 없습니다"
+                              : isRejected
+                                ? "신청 불가"
+                                : meeting.status === "CLOSED"
+                                  ? "신청 마감"
+                                  : "참가 신청"}
+                          </button>
+                          {isRejected && (
+                            <p style={{ margin: 0, color: "#ef4444", fontSize: "0.85rem", marginTop: "8px", fontWeight: "700", lineHeight: "1.4", wordBreak: "keep-all" }}>
+                              * 신청이 거절되어 재신청이 불가능한 모임입니다.
+                            </p>
+                          )}
+                        </>
+                      )}
+
+                      {!isAdmin && isApplied && (
+                        <button
+                          type="button"
+                          className={styles.dangerButton}
+                          onClick={() => setModalType("cancel")}
+                        >
+                          신청 취소
+                        </button>
+                      )}
+                    </>
                   )}
                 </>
               )}
