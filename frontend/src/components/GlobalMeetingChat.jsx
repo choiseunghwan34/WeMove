@@ -36,6 +36,7 @@ export default function GlobalMeetingChat() {
   const [roomsCollapsed, setRoomsCollapsed] = useState(false);
   const panelRef = useRef(null);
   const listRef = useRef(null);
+  const messageInputRef = useRef(null);
   const socketMapRef = useRef(new Map());
   const activeMeetingIdRef = useRef(null);
   const openRef = useRef(false);
@@ -271,6 +272,9 @@ export default function GlobalMeetingChat() {
       setError(requestError?.response?.data?.message || "메시지 전송에 실패했습니다.");
     } finally {
       setSending(false);
+      window.requestAnimationFrame(() => {
+        messageInputRef.current?.focus();
+      });
     }
   };
 
@@ -470,6 +474,7 @@ export default function GlobalMeetingChat() {
 
               <form className={styles.messageForm} onSubmit={submitMessage}>
                 <input
+                  ref={messageInputRef}
                   value={messageInput}
                   onChange={(event) => setMessageInput(event.target.value)}
                   placeholder="메시지 입력"
