@@ -556,23 +556,41 @@ export default function MeetingListPage() {
       </section>
 
       <div className={styles.listHead}>
-        <h2>
-          {displayedRegionLabel === ALL_REGION
-            ? "전체 지역"
-            : displayedRegionLabel}{" "}
-          모임
-        </h2>
-        <span>총 {totalCount}개</span>
+        <div className={styles.listHeadCopy}>
+          <span className={styles.listEyebrow}>LIVE MEETINGS</span>
+          <h2>
+            {displayedRegionLabel === ALL_REGION
+              ? "전체 지역"
+              : displayedRegionLabel}{" "}
+            모임
+          </h2>
+          <p>지금 열려 있는 모임을 한눈에 비교하고 바로 참여 요청까지 이어가세요.</p>
+        </div>
+        <div className={styles.listHeadCount}>
+          <span className={styles.listCountLabel}>RESULT</span>
+          <strong>{totalCount}</strong>
+        </div>
       </div>
 
       <section className={styles.meetingList}>
         {meetingList.length === 0 ? (
           <div className={styles.emptyList}>
+            <div className={styles.emptyIconWrap}>
+              <UiIcon name="search" className={styles.emptyIcon} />
+            </div>
+            <span className={styles.emptyEyebrow}>NO MATCH FOUND</span>
             <h3>조건에 맞는 모임이 없습니다</h3>
-            <p>선택하신 지역이나 종목, 날짜를 변경해 보세요.</p>
-            <button type="button" onClick={resetFilters}>
-              검색 조건 초기화
-            </button>
+            <p>지역, 종목, 날짜를 조금만 넓혀보면 바로 참여할 수 있는 모임이 더 잘 보여요.</p>
+            <div className={styles.emptyActions}>
+              <button type="button" onClick={resetFilters}>
+                <UiIcon name="refresh" className={styles.emptyButtonIcon} />
+                검색 조건 초기화
+              </button>
+              <Link to="/search" className={styles.emptyLink}>
+                <UiIcon name="spark" className={styles.emptyButtonIcon} />
+                통합 검색으로 둘러보기
+              </Link>
+            </div>
           </div>
         ) : (
           meetingList.map((meeting) => (

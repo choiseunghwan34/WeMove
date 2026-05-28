@@ -112,15 +112,61 @@
 .listHead {
   composes: listHead from "./WeMoveShared.module.css";
   position: relative;
-  justify-content: flex-end;
+  align-items: flex-end;
+  justify-content: space-between;
   min-height: 32px;
+  gap: 18px;
 }
 
-.listHead h2 {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
+.listHeadCopy {
+  display: grid;
+  gap: 6px;
+}
+
+.listEyebrow {
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.listHeadCopy h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.7rem, 2.1vw, 2.35rem);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+}
+
+.listHeadCopy p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.listHeadCount {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  min-width: 108px;
+  padding: 14px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), #eef5ff);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.08);
+}
+
+.listCountLabel {
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.listHeadCount strong {
+  color: #0f172a;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  line-height: 1;
 }
 
 .listMeta {
@@ -523,30 +569,90 @@
 }
 
 .emptyList {
-  padding: 80px 0;
-  color: #666;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 52px 28px;
+  border: 1px dashed rgba(37, 99, 235, 0.2);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top, rgba(96, 165, 250, 0.12), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98));
   text-align: center;
 }
 
+.emptyIconWrap {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.emptyIcon {
+  width: 28px;
+  height: 28px;
+  color: #2563eb;
+}
+
+.emptyEyebrow {
+  color: #2563eb;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
 .emptyList h3 {
-  margin: 0 0 8px;
-  color: #333;
-  font-size: 1.2rem;
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.25rem, 1.7vw, 1.6rem);
+  line-height: 1.2;
 }
 
 .emptyList p {
   margin: 0;
+  max-width: 480px;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.emptyList button,
+.emptyLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 800;
 }
 
 .emptyList button {
-  margin-top: 16px;
-  padding: 8px 16px;
   border: 0;
-  border-radius: 6px;
-  background-color: #f0f0f0;
-  color: #374151;
-  font-weight: 800;
-  cursor: pointer;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.16);
+}
+
+.emptyLink {
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  color: #1e40af;
+}
+
+.emptyButtonIcon {
+  width: 16px;
+  height: 16px;
 }
 
 .sheetPickerGrid {
@@ -584,6 +690,16 @@
 }
 
 @media (max-width: 720px) {
+  .listHead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .listHeadCount {
+    justify-items: start;
+    width: 100%;
+  }
+
   .selectionBar {
     align-items: flex-start;
     flex-direction: column;

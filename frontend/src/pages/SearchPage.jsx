@@ -6,6 +6,7 @@ import { getPopularKeywords, recordSearchKeyword } from "../api/searchApi";
 import { getSports } from "../api/sportApi";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
+import UiIcon from "../components/UiIcon";
 import {
   clearRecentSearches,
   getRecentSearches,
@@ -145,6 +146,31 @@ const formatMeetingSchedule = (meetingDate, startTime) => {
 
   return `${meetingDate}${weekday ? ` (${weekday})` : ""} ${timeText}`;
 };
+
+function SearchEmptyState({
+  icon,
+  eyebrow,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}) {
+  return (
+    <div className={styles.emptyBlock}>
+      <div className={styles.emptyBlockIconWrap}>
+        <UiIcon name={icon} className={styles.emptyBlockIcon} />
+      </div>
+      <span className={styles.emptyBlockEyebrow}>{eyebrow}</span>
+      <strong>{title}</strong>
+      <p>{description}</p>
+      {actionLabel ? (
+        <button type="button" className={styles.emptyBlockButton} onClick={onAction}>
+          {actionLabel}
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 export default function SearchPage() {
   const navigate = useNavigate();
@@ -404,6 +430,20 @@ export default function SearchPage() {
               ? `총 ${totalResultCount}개의 관련 결과를 찾았습니다.`
               : "모임명, 지역명, 운동 종목명으로 검색할 수 있습니다."}
           </span>
+          <div className={styles.searchStats}>
+            <div className={styles.searchStat}>
+              <span>모임</span>
+              <strong>{meetingTotalCount}</strong>
+            </div>
+            <div className={styles.searchStat}>
+              <span>지역</span>
+              <strong>{regionResults.length}</strong>
+            </div>
+            <div className={styles.searchStat}>
+              <span>운동</span>
+              <strong>{sportResults.length}</strong>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -440,7 +480,12 @@ export default function SearchPage() {
                 </button>
               ))
             ) : (
-              <p className={styles.emptyState}>아직 저장된 최근 검색어가 없습니다.</p>
+              <SearchEmptyState
+                icon="refresh"
+                eyebrow="EMPTY HISTORY"
+                title="아직 저장된 최근 검색어가 없습니다"
+                description="검색을 한 번 시작하면 여기에서 바로 이어서 다시 찾아볼 수 있어요."
+              />
             )}
           </div>
         </article>
@@ -466,7 +511,12 @@ export default function SearchPage() {
                 </button>
               ))
             ) : (
-              <p className={styles.emptyState}>아직 검색된 내용이 없습니다.</p>
+              <SearchEmptyState
+                icon="spark"
+                eyebrow="TREND WAITING"
+                title="아직 집계된 인기 검색어가 없습니다"
+                description="조금 더 검색 데이터가 쌓이면 지금 많이 찾는 키워드를 여기서 바로 보여드릴게요."
+              />
             )}
           </div>
         </article>
@@ -517,7 +567,14 @@ export default function SearchPage() {
                   </Link>
                 ))
               ) : (
-                <p className={styles.emptyState}>관련 모임이 없습니다.</p>
+                <SearchEmptyState
+                  icon="search"
+                  eyebrow="MEETING GAP"
+                  title="관련 모임이 아직 보이지 않습니다"
+                  description="검색어를 조금 넓히거나 목록 페이지에서 전체 모임 흐름을 함께 살펴보세요."
+                  actionLabel="모임 찾기로 이동"
+                  onAction={() => navigate("/meetings")}
+                />
               )}
             </div>
           </section>
@@ -561,7 +618,12 @@ export default function SearchPage() {
                   </button>
                 ))
               ) : (
-                <p className={styles.emptyState}>관련 지역이 없습니다.</p>
+                <SearchEmptyState
+                  icon="location"
+                  eyebrow="REGION GAP"
+                  title="관련 지역 결과가 없습니다"
+                  description="동 이름 대신 시·군·구 단위로 넓혀 검색하면 더 많은 후보를 찾을 수 있어요."
+                />
               )}
             </div>
           </section>
@@ -590,7 +652,12 @@ export default function SearchPage() {
                   </button>
                 ))
               ) : (
-                <p className={styles.emptyState}>관련 운동이 없습니다.</p>
+                <SearchEmptyState
+                  icon="dumbbell"
+                  eyebrow="SPORT GAP"
+                  title="관련 운동 결과가 없습니다"
+                  description="운동 이름이 정확하지 않다면 카테고리나 지역 조합으로 먼저 찾아보는 것도 좋아요."
+                />
               )}
             </div>
           </section>

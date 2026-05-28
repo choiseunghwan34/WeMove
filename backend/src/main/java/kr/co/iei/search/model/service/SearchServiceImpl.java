@@ -17,7 +17,6 @@ public class SearchServiceImpl implements SearchService {
   private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
   private static final String POPULAR_KEY_PREFIX = "search:popular:";
   private static final String DEDUPE_KEY_PREFIX = "search:dedupe:";
-  private static final Duration DEDUPE_TTL = Duration.ofMinutes(5);
   private static final int MAX_LIMIT = 20;
 
   private final StringRedisTemplate stringRedisTemplate;
@@ -36,9 +35,10 @@ public class SearchServiceImpl implements SearchService {
     }
 
     String popularKey = todayPopularKey();
+    Duration dedupeTtl = durationUntilTomorrow();
     stringRedisTemplate.opsForZSet().incrementScore(popularKey, normalizedKeyword, 1D);
-    stringRedisTemplate.expire(popularKey, durationUntilTomorrow());
-    stringRedisTemplate.opsForValue().set(dedupeKey, "1", DEDUPE_TTL);
+    stringRedisTemplate.expire(popularKey, dedupeTtl);
+    stringRedisTemplate.opsForValue().set(dedupeKey, "1", dedupeTtl);
   }
 
   @Override
