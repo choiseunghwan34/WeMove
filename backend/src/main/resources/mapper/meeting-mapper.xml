@@ -180,12 +180,8 @@
             m.guideText as guideText,
             m.meetingType as meetingType,
             m.repeatType as repeatType,
-
             m.thumbnailImage,
-
-
             m.placeName as placeName,
-
             m.address,
             m.meetingDate as meetingDate,
             m.startTime as startTime,

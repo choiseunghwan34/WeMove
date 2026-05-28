@@ -54,6 +54,7 @@ export default function MeetingDetailPage() {
   const [meeting, setMeeting] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [isApplied, setIsApplied] = useState(false);
+  const [isRejected, setIsRejected] = useState(false);
   const [appliedParticipantId, setAppliedParticipantId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
@@ -82,6 +83,11 @@ export default function MeetingDetailPage() {
       );
       setIsApplied(!!myParticipant);
       setAppliedParticipantId(myParticipant ? myParticipant.participantId : null);
+
+      const isRejectedUser = participantsList.some(
+        (p) => p.userId === user?.memberId && p.status === "REJECTED"
+      );
+      setIsRejected(isRejectedUser);
     } catch (error) {
       console.error("Failed to fetch meeting detail:", error);
     }
@@ -166,7 +172,6 @@ export default function MeetingDetailPage() {
                 </span>
               </div>
               <h1>{meeting.title}</h1>
-              <p>{meeting.content}</p>
             </div>
 
             <div className={styles.detailSummary}>
@@ -202,11 +207,24 @@ export default function MeetingDetailPage() {
             </div>
             <div className={styles.detailBody}>
               <p>{meeting.content}</p>
+              <div className={styles.detailDivider} />
               <ul className={styles.detailChecklist}>
-                <li>만나는 장소: {meeting.placeName}</li>
-                <li>모임 방식: {MEETING_TYPE_MAP[meeting.meetingType] || "1회성 모임"}</li>
-                <li>준비물: {meeting.supplies || "편한 운동복, 물, 개인 이어폰"}</li>
-                <li>진행 안내: {meeting.guideText || "시작 10분 전 집결 권장"}</li>
+                <li>
+                  <strong className={styles.checkLabel}>만나는 장소</strong>
+                  <span className={styles.checkValue}>{meeting.placeName}</span>
+                </li>
+                <li>
+                  <strong className={styles.checkLabel}>모임 방식</strong>
+                  <span className={styles.checkValue}>{MEETING_TYPE_MAP[meeting.meetingType] || "1회성 모임"}</span>
+                </li>
+                <li>
+                  <strong className={styles.checkLabel}>준비물</strong>
+                  <span className={styles.checkValue}>{meeting.supplies || "편한 운동복, 물, 개인 이어폰"}</span>
+                </li>
+                <li>
+                  <strong className={styles.checkLabel}>진행 안내</strong>
+                  <span className={styles.checkValue}>{meeting.guideText || "시작 10분 전 집결 권장"}</span>
+                </li>
               </ul>
             </div>
           </section>
@@ -279,18 +297,27 @@ export default function MeetingDetailPage() {
               {!isHost && (
                 <>
                   {!isApplied && (
-                    <button
-                      type="button"
-                      className={styles.primaryButton}
-                      disabled={isClosed || isAdmin}
-                      onClick={handleApplyClick}
-                    >
-                      {isAdmin
-                        ? "관리자 계정은 신청할 수 없습니다"
-                        : isClosed
-                          ? "신청 마감"
-                          : "참가 신청"}
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className={styles.primaryButton}
+                        disabled={isClosed || isAdmin || isRejected}
+                        onClick={handleApplyClick}
+                      >
+                        {isAdmin
+                          ? "관리자 계정은 신청할 수 없습니다"
+                          : isRejected
+                            ? "신청 불가"
+                            : isClosed
+                              ? "신청 마감"
+                              : "참가 신청"}
+                      </button>
+                      {isRejected && (
+                        <p style={{ margin: 0, color: "#ef4444", fontSize: "0.85rem", marginTop: "8px", fontWeight: "700", lineHeight: "1.4", wordBreak: "keep-all" }}>
+                          * 신청이 거절되어 재신청이 불가능한 모임입니다.
+                        </p>
+                      )}
+                    </>
                   )}
 
                   {!isClosed && !isAdmin && isApplied && (
@@ -407,11 +434,11 @@ export default function MeetingDetailPage() {
           </div>
           <div>
             <dt>준비물</dt>
-            <dd>편한 운동복, 물, 개인 이어폰</dd>
+            <dd>{meeting.supplies || "편한 운동복, 물, 개인 이어폰"}</dd>
           </div>
           <div>
             <dt>진행 안내</dt>
-            <dd>시작 10분 전 집결 권장</dd>
+            <dd>{meeting.guideText || "시작 10분 전 집결 권장"}</dd>
           </div>
         </dl>
       </AppModal>
