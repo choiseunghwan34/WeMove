@@ -263,7 +263,7 @@ export default function FindAccountPage() {
       <div className={styles.layout}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>
-            <WeMoveLogo tone="light" size="md" />
+            <WeMoveLogo tone="dark" size="md" />
           </Link>
           <span className={styles.eyebrow}>ACCOUNT SUPPORT</span>
           <h1>아이디와 비밀번호를 빠르게 다시 찾는 방법</h1>

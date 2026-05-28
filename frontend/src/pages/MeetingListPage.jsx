@@ -596,7 +596,13 @@ export default function MeetingListPage() {
           meetingList.map((meeting) => (
             <Link
               key={meeting.meetingId}
-              className={styles.listCard}
+              className={cx(
+                "listCard",
+                meeting.status === "RECRUITING" && "listCardRecruiting",
+                meeting.status === "COMPLETED" && "listCardCompleted",
+                (meeting.status === "CLOSED" || meeting.status === "CANCELLED") &&
+                  "listCardClosed",
+              )}
               to={`/meetings/${meeting.meetingId}`}
             >
               <div className={styles.listCardBody}>
@@ -682,11 +688,20 @@ export default function MeetingListPage() {
 
                 <button
                   type="button"
-                  className={
-                    meeting.status === "CLOSED" ? styles.actionClosed : ""
-                  }
+                  className={cx(
+                    meeting.status === "CLOSED" && "actionClosed",
+                    meeting.status === "RECRUITING" && "actionRecruiting",
+                    meeting.status === "COMPLETED" && "actionCompleted",
+                    meeting.status === "CANCELLED" && "actionCancelled",
+                  )}
                 >
-                  {meeting.status === "CLOSED" ? "마감" : "참가 신청"}
+                  {meeting.status === "CLOSED"
+                    ? "마감"
+                    : meeting.status === "COMPLETED"
+                      ? "종료"
+                      : meeting.status === "CANCELLED"
+                        ? "취소됨"
+                        : "참가 신청"}
                 </button>
               </aside>
             </Link>

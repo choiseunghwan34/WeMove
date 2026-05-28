@@ -40,6 +40,7 @@ export default function DashboardShell({
   const visibleInterestItems = isInterestExpanded
     ? effectiveInterestItems
     : effectiveInterestItems.slice(0, 5);
+  const introEyebrow = active || "DISCOVER";
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -228,8 +229,23 @@ export default function DashboardShell({
         <main className={styles.dashboardMain}>
           {(title || description) && (
             <section className={styles.dashboardPageIntro}>
+              <span className={styles.dashboardPageEyebrow}>{introEyebrow}</span>
               {title ? <h1>{title}</h1> : null}
               {description ? <p>{description}</p> : null}
+              <div className={styles.dashboardIntroMeta}>
+                <span>
+                  <UiIcon name="spark" className={styles.dashboardIntroIcon} />
+                  지역 기반 추천
+                </span>
+                <span>
+                  <UiIcon name="compass" className={styles.dashboardIntroIcon} />
+                  빠른 탐색 흐름
+                </span>
+                <span>
+                  <UiIcon name="heart" className={styles.dashboardIntroIcon} />
+                  참여 중심 커뮤니티
+                </span>
+              </div>
             </section>
           )}
           {children}

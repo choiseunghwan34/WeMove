@@ -60,6 +60,47 @@
   composes: dashboardPageIntro from "./WeMoveShared.module.css";
 }
 
+.dashboardPageEyebrow {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 999px;
+  background: rgba(239, 246, 255, 0.92);
+  color: #2563eb;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.dashboardIntroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dashboardIntroMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.dashboardIntroIcon {
+  width: 15px;
+  height: 15px;
+  color: #2563eb;
+}
+
 .dashboardSearch {
   composes: dashboardSearch from "./WeMoveShared.module.css";
   flex: 0 1 920px;
@@ -101,14 +142,17 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
-  padding: 6px 12px 6px 6px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 6px 14px 6px 6px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), #f8fbff);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
 }
 
 .dashboardUserName {
   composes: dashboardUserName from "./WeMoveShared.module.css";
+  color: #0f172a;
+  font-weight: 800;
 }
 
 .mobileMenuButton {
@@ -399,6 +443,45 @@
   cursor: pointer;
 }
 
+.dashboardHeader {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(15, 23, 42, 0.07) !important;
+  box-shadow:
+    0 18px 38px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
+}
+
+.dashboardSearch {
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.dashboardSearch input {
+  color: #0f172a !important;
+}
+
+.dashboardPageIntro {
+  padding: 18px 22px 20px !important;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.98));
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.045);
+}
+
+.dashboardPageIntro h1 {
+  font-size: clamp(2rem, 2.8vw, 2.8rem) !important;
+  line-height: 1.02 !important;
+}
+
+.dashboardPageIntro p {
+  max-width: 760px;
+  color: #64748b !important;
+  font-size: 0.96rem;
+}
+
 .dashboardNavItem .dashboardNavIcon {
   color: #64748b;
 }
@@ -501,6 +584,16 @@
 }
 
 @media (max-width: 720px) {
+  .dashboardPageIntro {
+    padding: 16px 16px 18px !important;
+    border-radius: 22px;
+  }
+
+  .dashboardIntroMeta {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
   .dashboardHeader {
     background: #ffffff !important;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06) !important;
