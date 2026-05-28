@@ -32,8 +32,8 @@ public class MeetingDao {
     return sqlSession.insert("meeting.insertMeeting", m);
   }
 
-  public int updateMeeting(Meeting m) {
-    return sqlSession.update("meeting.updateMeeting", m);
+  public int updateMeeting(MeetingUpdateRequest request) {
+    return sqlSession.update("meeting.updateMeeting", request);
   }
 
   public int softDeleteMeeting(Long id) {
@@ -48,6 +48,7 @@ public class MeetingDao {
   public Integer selectMaxMembers(Long id) {
     return sqlSession.selectOne("meeting.selectMaxMembers", id);
   }
+
 
 
 }

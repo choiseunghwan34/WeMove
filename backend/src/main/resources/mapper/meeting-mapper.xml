@@ -231,9 +231,11 @@
                 #{status})
     </insert>
 
-    <update id="updateMeeting">
+    <update id="updateMeeting" parameterType="kr.co.iei.meeting.model.vo.MeetingUpdateRequest">
         UPDATE meetings
-        <set>
+        SET
+            sportId = #{sportId},
+            regionId = #{regionId},
             title = #{title},
             content = #{content},
             placeName = #{placeName},
@@ -244,13 +246,9 @@
             status = #{status},
             supplies = #{supplies},
             guideText = #{guideText},
-            <if test="thumbnailImage != null">
-                thumbnailImage = #{thumbnailImage},
-            </if>
+            thumbnailImage = #{thumbnailImage, jdbcType=VARCHAR},
             updatedAt = NOW()
-        </set>
         WHERE meetingId = #{meetingId}
-        AND deletedAt IS NULL
     </update>
 
     <update id="softDeleteMeeting">

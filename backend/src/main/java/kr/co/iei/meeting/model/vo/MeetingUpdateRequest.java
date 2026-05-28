@@ -8,8 +8,13 @@ import lombok.Data;
 
 @Data
 public class MeetingUpdateRequest {
+  private Long meetingId;
+  private Long hostUserId;
+  private Long sportId;
+  private Long regionId;
   private String title;
   private String content;
+  private String thumbnailImage;
   private String placeName;
   private String address;
   private LocalDate meetingDate;
@@ -18,4 +23,8 @@ public class MeetingUpdateRequest {
   private String status;
   private String guideText;
   private String supplies;
+  private LocalDateTime deletedAt;
+
+  private Boolean isImageRemoved;//사진 삭제 여부 체크용
+
 }

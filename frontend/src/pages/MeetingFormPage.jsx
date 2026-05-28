@@ -75,44 +75,43 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     // 데이터 로드
     useEffect(() => {
         //1. 기본 폼 데이터 불러오기(저장된 데이터가 있을때만 실행)
-        if (!initialData) return;
+        if (!initialData || sports.length === 0 || regions.length === 0) return;
 
-        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0,5): "";
+        const foundSport = sports.find(s => s.name === initialData.sportName);
+        const foundRegion = regions.find(r =>
+            `${r.sido} ${r.sigungu} ${r.dong}` === initialData.regionName);
 
         setForm(prev => ({
             ...prev,
             ...initialData,
             startTime: formattedStartTime,
+            sportId: foundSport? foundSport.sportId : prev.sportId,
+            regionId: foundRegion? foundRegion.regionId : prev.regionId,
+
         }));
 
-        //2. 운동 종목 이름 불러오기
-        if (initialData.sportName && sports.length > 0) {
-            const foundSport = sports.find(s => s.name === initialData.sportName);
-            if (foundSport) {
-                setForm(prev => ({...prev, sportId: foundSport.sportId})); // ID 복구!
-                setSelectedSportName(foundSport.name);
-            }
+        //모달 표시용 이름 동기화
+        if(initialData.sportName){
+            setSelectedSportName(initialData.sportName);
         }
-        // 3. 지역 이름 -> ID 매칭
-        if (initialData.regionName && regions.length > 0) {
-            // regionName "서울특별시 성동구 성수동1가"를 가지고 ID 찾기
-            const foundRegion = regions.find(r =>
-                `${r.sido} ${r.sigungu} ${r.dong}` === initialData.regionName
-            );
-            if (foundRegion) {
-                setForm(prev => ({...prev, regionId: foundRegion.regionId})); // ID 복구!
-                const parts = initialData.regionName.split(" ");
-                setSelectedRegion({
-                    sido: parts[0] || "",
-                    sigungu: parts[1] || "",
-                    dong: parts[2] || ""
-                });
-            }
+        if(initialData.regionName){
+            const parts = initialData.regionName.split(" ");
+            setSelectedRegion({
+                sido: parts[0] || "",
+                sigungu: parts[1] || "",
+                dong: parts[2] || "",
+            })
         }
         if (initialData.thumbnailImage) {
             console.log("이미지 url확인: ", initialData.thumbnailImage);
             setFiles([{name: "기존 썸네일", url: initialData.thumbnailImage}]);
         }
+
+        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0,5): "";
+
+
+
+
     }, [initialData, sports, regions]);
 
     const regionHierarchy = useMemo(() => {
@@ -218,6 +217,16 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const removeFile = (nameToRemove) => {
         setFiles(files.filter(f => f.name !== nameToRemove));
     };
+    const handleRemoveImage =()=>{
+        if (files.length > 0) {
+            removeFile(files[0].name);
+        }
+        setForm(prev=>({
+            ...prev,
+            thumbnailImage: null,
+            isImageRemoved: true,
+        }))
+    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -549,7 +558,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                                     <span>{preview.name}</span>
                                     <button
                                         type="button"
-                                        onClick={() => removeFile(preview.name)}
+                                        onClick={handleRemoveImage}
                                     >
                                         삭제
                                     </button>
