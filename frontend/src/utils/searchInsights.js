@@ -25,11 +25,17 @@ const writeStorage = (key, value) => {
   window.localStorage.setItem(key, JSON.stringify(value));
 };
 
-export const getRecentSearches = () => readStorage(RECENT_SEARCHES_KEY, []);
+const isValidKeyword = (value) => {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return Boolean(normalized) && normalized !== "null" && normalized !== "undefined";
+};
+
+export const getRecentSearches = () =>
+  readStorage(RECENT_SEARCHES_KEY, []).filter(isValidKeyword);
 
 export const registerSearchKeyword = (keyword) => {
   const normalizedKeyword = String(keyword ?? "").trim();
-  if (!normalizedKeyword) {
+  if (!isValidKeyword(normalizedKeyword)) {
     return;
   }
 
@@ -67,13 +73,15 @@ export const pruneStoredSearches = (allowedKeywords) => {
   }
 
   const nextRecentSearches = getRecentSearches().filter((keyword) =>
-    allowedSet.has(String(keyword ?? "").trim().toLowerCase()),
+    allowedSet.has(String(keyword ?? "").trim().toLowerCase()) &&
+    isValidKeyword(keyword),
   );
   writeStorage(RECENT_SEARCHES_KEY, nextRecentSearches);
 
   const popularRecords = readStorage(POPULAR_SEARCHES_KEY, []);
   const nextPopularRecords = popularRecords.filter((record) =>
-    allowedSet.has(String(record?.keyword ?? "").trim().toLowerCase()),
+    allowedSet.has(String(record?.keyword ?? "").trim().toLowerCase()) &&
+    isValidKeyword(record?.keyword),
   );
   writeStorage(POPULAR_SEARCHES_KEY, nextPopularRecords);
 };

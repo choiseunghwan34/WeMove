@@ -36,6 +36,15 @@ const defaultRecommendedKeywords = [
 
 const normalizeText = (value = "") => String(value).trim();
 
+const sanitizeSearchKeyword = (value = "") => {
+  const normalized = normalizeText(value);
+  if (!normalized || normalized.toLowerCase() === "null" || normalized.toLowerCase() === "undefined") {
+    return "";
+  }
+
+  return normalized;
+};
+
 const formatRegionName = (region) =>
   [region.sido, region.sigungu, region.dong]
     .map(normalizeText)
@@ -181,7 +190,7 @@ function SearchEmptyState({
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = normalizeText(searchParams.get("q"));
+  const query = sanitizeSearchKeyword(searchParams.get("q"));
   const [keyword, setKeyword] = useState(query);
   const [meetingResults, setMeetingResults] = useState([]);
   const [meetingTotalCount, setMeetingTotalCount] = useState(0);
@@ -207,7 +216,18 @@ export default function SearchPage() {
       try {
         const { data } = await getPopularKeywords(8);
         if (active) {
-          setPopularKeywords(Array.isArray(data) ? data : []);
+          setPopularKeywords(
+            Array.isArray(data)
+              ? data
+                  .map((item) => normalizeText(item))
+                  .filter(
+                    (item) =>
+                      item &&
+                      item.toLowerCase() !== "null" &&
+                      item.toLowerCase() !== "undefined",
+                  )
+              : [],
+          );
         }
       } catch {
         if (active) {
@@ -341,7 +361,18 @@ export default function SearchPage() {
         await recordSearchKeyword(query);
         const { data } = await getPopularKeywords(8);
         if (active) {
-          setPopularKeywords(Array.isArray(data) ? data : []);
+          setPopularKeywords(
+            Array.isArray(data)
+              ? data
+                  .map((item) => normalizeText(item))
+                  .filter(
+                    (item) =>
+                      item &&
+                      item.toLowerCase() !== "null" &&
+                      item.toLowerCase() !== "undefined",
+                  )
+              : [],
+          );
         }
       } catch {
         // Keep the previous popular keywords if sync fails.
@@ -391,7 +422,7 @@ export default function SearchPage() {
   }, [allRegionNames, allSportKeywords, popularKeywords, query]);
 
   const submitSearch = (nextKeyword) => {
-    const normalizedKeyword = normalizeText(nextKeyword);
+    const normalizedKeyword = sanitizeSearchKeyword(nextKeyword);
     if (!normalizedKeyword) {
       setSearchParams({});
       return;
@@ -401,8 +432,13 @@ export default function SearchPage() {
   };
 
   const triggerKeywordSearch = (nextKeyword) => {
-    setKeyword(nextKeyword);
-    submitSearch(nextKeyword);
+    const normalizedKeyword = sanitizeSearchKeyword(nextKeyword);
+    if (!normalizedKeyword) {
+      return;
+    }
+
+    setKeyword(normalizedKeyword);
+    submitSearch(normalizedKeyword);
   };
 
   const hasNoResults =
