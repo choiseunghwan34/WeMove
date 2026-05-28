@@ -12,6 +12,7 @@
             m.maxMembers as maxMembers,
             m.status,
             m.content,
+            m.address,
             m.thumbnailImage as thumbnailImage,
             s.name sportName,
             CONCAT(r.sido," ",r.sigungu," ",COALESCE(r.dong,"")) regionName,
@@ -69,6 +70,8 @@
             AND (
             m.title LIKE CONCAT('%', #{keyword}, '%')
             OR m.content LIKE CONCAT('%', #{keyword}, '%')
+            OR m.placeName LIKE CONCAT('%', #{keyword}, '%')
+            OR m.address LIKE CONCAT('%', #{keyword}, '%')
 
             OR s.name LIKE CONCAT('%', #{keyword}, '%')
 
@@ -137,6 +140,8 @@
             AND (
             m.title LIKE CONCAT('%', #{keyword}, '%')
             OR m.content LIKE CONCAT('%', #{keyword}, '%')
+            OR m.placeName LIKE CONCAT('%', #{keyword}, '%')
+            OR m.address LIKE CONCAT('%', #{keyword}, '%')
 
             OR s.name LIKE CONCAT('%', #{keyword}, '%')
 

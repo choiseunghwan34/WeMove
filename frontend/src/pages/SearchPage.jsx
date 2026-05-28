@@ -8,6 +8,7 @@ import {
   clearRecentSearches,
   getPopularSearches,
   getRecentSearches,
+  pruneStoredSearches,
   registerSearchKeyword,
 } from "../utils/searchInsights";
 import styles from "../styles/SearchPage.module.css";
@@ -22,15 +23,6 @@ const meetingStatusText = {
 };
 
 const weekdayLabels = ["일", "월", "화", "수", "목", "금", "토"];
-
-const defaultRecommendedKeywords = [
-  "러닝",
-  "풋살",
-  "배드민턴",
-  "주말 모임",
-  "강남",
-  "한강",
-];
 
 const formatRegionName = (region) =>
   [region.sido, region.sigungu, region.dong]
@@ -104,6 +96,27 @@ const formatMeetingSchedule = (meetingDate, startTime) => {
   return `${meetingDate}${weekday ? ` (${weekday})` : ""} ${timeText}`;
 };
 
+const extractMeetingKeywords = (meeting) =>
+  [
+    meeting.title,
+    meeting.sportName,
+    meeting.regionName,
+    meeting.placeName,
+    meeting.address,
+  ]
+    .map(normalizeText)
+    .filter(Boolean);
+
+const uniqueKeywords = (keywords) =>
+  keywords
+    .map(normalizeText)
+    .filter(Boolean)
+    .filter(
+      (value, index, array) =>
+        array.findIndex((item) => item.toLowerCase() === value.toLowerCase()) ===
+        index,
+    );
+
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -115,6 +128,7 @@ export default function SearchPage() {
   const [sportResults, setSportResults] = useState([]);
   const [allRegionNames, setAllRegionNames] = useState([]);
   const [allSportKeywords, setAllSportKeywords] = useState([]);
+  const [allMeetingKeywords, setAllMeetingKeywords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [recentKeywords, setRecentKeywords] = useState(() => getRecentSearches());
   const [popularKeywords, setPopularKeywords] = useState(() => getPopularSearches());
@@ -122,6 +136,74 @@ export default function SearchPage() {
   useEffect(() => {
     setKeyword(query);
   }, [query]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadSearchSources = async () => {
+      try {
+        const [regionResponse, sportResponse, countResponse] = await Promise.all([
+          getRegions(),
+          getSports(),
+          getMeetings({ page: 1, size: 1 }),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        const totalCount = Number(countResponse.data?.totalCount ?? 0);
+        const meetingResponse =
+          totalCount > 0
+            ? await getMeetings({ page: 1, size: totalCount })
+            : { data: { list: [] } };
+
+        if (!active) {
+          return;
+        }
+
+        const regionList = Array.isArray(regionResponse.data) ? regionResponse.data : [];
+        const sportList = Array.isArray(sportResponse.data) ? sportResponse.data : [];
+        const meetingList = Array.isArray(meetingResponse.data?.list)
+          ? meetingResponse.data.list
+          : [];
+
+        const nextRegionNames = regionList
+          .map((region) => formatRegionName(region))
+          .filter(Boolean);
+        const nextSportKeywords = sportList
+          .filter((sport) => sport.isActive !== false)
+          .flatMap((sport) => [sport.name, sport.category])
+          .map(normalizeText)
+          .filter(Boolean);
+        const nextMeetingKeywords = meetingList.flatMap(extractMeetingKeywords);
+        const allowedKeywords = uniqueKeywords([
+          ...nextMeetingKeywords,
+          ...nextSportKeywords,
+          ...nextRegionNames,
+        ]);
+
+        pruneStoredSearches(allowedKeywords);
+        setRecentKeywords(getRecentSearches());
+        setPopularKeywords(getPopularSearches());
+        setAllRegionNames(nextRegionNames);
+        setAllSportKeywords(nextSportKeywords);
+        setAllMeetingKeywords(nextMeetingKeywords);
+      } catch {
+        if (active) {
+          setAllRegionNames([]);
+          setAllSportKeywords([]);
+          setAllMeetingKeywords([]);
+        }
+      }
+    };
+
+    loadSearchSources();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -151,17 +233,6 @@ export default function SearchPage() {
         const regionList = Array.isArray(regionResponse.data) ? regionResponse.data : [];
         const sportList = Array.isArray(sportResponse.data) ? sportResponse.data : [];
         const normalizedQuery = query.toLowerCase();
-        const regionNames = regionList
-          .map((region) => formatRegionName(region))
-          .filter(Boolean);
-        const sportKeywords = sportList
-          .filter((sport) => sport.isActive !== false)
-          .flatMap((sport) => [sport.name, sport.category])
-          .map(normalizeText)
-          .filter(Boolean);
-
-        setAllRegionNames(regionNames);
-        setAllSportKeywords(sportKeywords);
         setMeetingResults(meetingResponse.data?.list ?? []);
         setMeetingTotalCount(meetingResponse.data?.totalCount ?? 0);
         setRegionResults(
@@ -240,23 +311,43 @@ export default function SearchPage() {
 
   const recommendedKeywords = useMemo(() => {
     const source = [
-      ...popularKeywords,
+      ...allMeetingKeywords,
       ...allSportKeywords,
       ...allRegionNames,
-      ...defaultRecommendedKeywords,
     ];
 
-    return source
-      .map(normalizeText)
-      .filter(Boolean)
-      .filter(
-        (value, index, array) =>
-          array.findIndex((item) => item.toLowerCase() === value.toLowerCase()) ===
-          index,
-      )
+    return uniqueKeywords(source)
       .filter((value) => value.toLowerCase() !== query.toLowerCase())
       .slice(0, 8);
-  }, [allRegionNames, allSportKeywords, popularKeywords, query]);
+  }, [allMeetingKeywords, allRegionNames, allSportKeywords, query]);
+
+  const dataKeywordSet = useMemo(
+    () =>
+      new Set(
+        uniqueKeywords([
+          ...allMeetingKeywords,
+          ...allSportKeywords,
+          ...allRegionNames,
+        ]).map((value) => value.toLowerCase()),
+      ),
+    [allMeetingKeywords, allRegionNames, allSportKeywords],
+  );
+
+  const visibleRecentKeywords = useMemo(
+    () =>
+      recentKeywords.filter((item) =>
+        dataKeywordSet.has(normalizeText(item).toLowerCase()),
+      ),
+    [dataKeywordSet, recentKeywords],
+  );
+
+  const visiblePopularKeywords = useMemo(() => {
+    const storedDataKeywords = popularKeywords.filter((item) =>
+      dataKeywordSet.has(normalizeText(item).toLowerCase()),
+    );
+
+    return uniqueKeywords([...storedDataKeywords, ...recommendedKeywords]).slice(0, 8);
+  }, [dataKeywordSet, popularKeywords, recommendedKeywords]);
 
   const submitSearch = (nextKeyword) => {
     const normalizedKeyword = normalizeText(nextKeyword);
@@ -327,7 +418,7 @@ export default function SearchPage() {
               <h2>최근 검색어</h2>
               <p>최근에 찾아본 키워드를 다시 눌러 빠르게 이어서 검색할 수 있습니다.</p>
             </div>
-            {recentKeywords.length ? (
+            {visibleRecentKeywords.length ? (
               <button
                 type="button"
                 className={styles.linkButton}
@@ -341,8 +432,8 @@ export default function SearchPage() {
             ) : null}
           </div>
           <div className={styles.chipList}>
-            {recentKeywords.length ? (
-              recentKeywords.map((item) => (
+            {visibleRecentKeywords.length ? (
+              visibleRecentKeywords.map((item) => (
                 <button
                   key={item}
                   type="button"
@@ -366,8 +457,8 @@ export default function SearchPage() {
             </div>
           </div>
           <div className={styles.chipList}>
-            {popularKeywords.length ? (
-              popularKeywords.map((item, index) => (
+            {visiblePopularKeywords.length ? (
+              visiblePopularKeywords.map((item, index) => (
                 <button
                   key={item}
                   type="button"

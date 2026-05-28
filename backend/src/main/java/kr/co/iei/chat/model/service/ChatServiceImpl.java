@@ -1,0 +1,84 @@
+package kr.co.iei.chat.model.service;
+
+import java.util.List;
+import kr.co.iei.chat.model.dao.ChatDao;
+import kr.co.iei.chat.model.vo.ChatMessage;
+import kr.co.iei.chat.model.vo.ChatMessageEvent;
+import kr.co.iei.chat.model.vo.ChatMessageRequest;
+import kr.co.iei.chat.model.vo.ChatMessageResponse;
+import kr.co.iei.chat.model.vo.ChatRoomResponse;
+import kr.co.iei.chat.websocket.MeetingChatBroadcaster;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
+@Service
+@RequiredArgsConstructor
+public class ChatServiceImpl implements ChatService {
+  private static final int MESSAGE_LIMIT = 100;
+  private static final int MAX_CONTENT_LENGTH = 1000;
+
+  private final ChatDao chatDao;
+  private final MeetingChatBroadcaster meetingChatBroadcaster;
+
+  @Override
+  public List<ChatRoomResponse> getRooms(Long userId) {
+    if (userId == null) {
+      throw new IllegalArgumentException("로그인이 필요합니다.");
+    }
+    return chatDao.selectChatRooms(userId);
+  }
+
+  @Override
+  public List<ChatMessageResponse> getMessages(Long meetingId, Long userId) {
+    assertCanAccess(meetingId, userId);
+    return chatDao.selectMessages(meetingId, MESSAGE_LIMIT);
+  }
+
+  @Override
+  @Transactional
+  public ChatMessageResponse createMessage(
+      Long meetingId, Long userId, ChatMessageRequest request) {
+    assertCanAccess(meetingId, userId);
+
+    String content = request == null ? "" : normalizeContent(request.getContent());
+    if (content.isBlank()) {
+      throw new IllegalArgumentException("메시지를 입력해주세요.");
+    }
+    if (content.length() > MAX_CONTENT_LENGTH) {
+      throw new IllegalArgumentException("메시지는 1000자 이하로 입력해주세요.");
+    }
+
+    ChatMessage message = new ChatMessage();
+    message.setMeetingId(meetingId);
+    message.setUserId(userId);
+    message.setContent(content);
+    message.setMessageType("TEXT");
+    chatDao.insertMessage(message);
+
+    ChatMessageResponse savedMessage = chatDao.selectMessage(message.getMessageId());
+    meetingChatBroadcaster.broadcast(
+        meetingId, new ChatMessageEvent("CHAT_MESSAGE_CREATED", savedMessage));
+    return savedMessage;
+  }
+
+  @Override
+  public boolean canAccess(Long meetingId, Long userId) {
+    if (meetingId == null || userId == null) {
+      return false;
+    }
+    return chatDao.canAccessMeetingChat(meetingId, userId);
+  }
+
+  private void assertCanAccess(Long meetingId, Long userId) {
+    if (!canAccess(meetingId, userId)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "승인된 모임 참가자만 단톡방을 사용할 수 있습니다.");
+    }
+  }
+
+  private String normalizeContent(String content) {
+    return String.valueOf(content == null ? "" : content).trim();
+  }
+}

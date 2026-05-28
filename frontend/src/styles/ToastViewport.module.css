@@ -1,7 +1,7 @@
 .viewport {
   position: fixed;
   right: 24px;
-  bottom: 24px;
+  top: 24px;
   z-index: 1200;
   display: grid;
   gap: 12px;
@@ -74,7 +74,7 @@
   .viewport {
     right: 16px;
     left: 16px;
-    bottom: 16px;
+    top: 16px;
     width: auto;
   }
 }

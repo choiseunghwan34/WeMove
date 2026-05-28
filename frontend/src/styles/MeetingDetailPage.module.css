@@ -214,6 +214,133 @@
   line-height: 1.7;
 }
 
+.chatBox {
+  display: grid;
+  gap: 12px;
+}
+
+.chatList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: min(46vh, 420px);
+  overflow-y: auto;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #f9fafb;
+}
+
+.chatList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chatList::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.chatMessage,
+.chatMessageMine {
+  max-width: 78%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.chatMessageMine {
+  align-self: flex-end;
+  border-color: rgba(37, 99, 235, 0.18);
+  background: #eff6ff;
+}
+
+.chatMessage div,
+.chatMessageMine div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.chatMessage strong,
+.chatMessageMine strong {
+  color: #10233d;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.chatMessage span,
+.chatMessageMine span {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.chatMessage p,
+.chatMessageMine p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.chatState {
+  margin: auto;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.chatError {
+  margin: 0;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.chatForm {
+  display: grid;
+  grid-template-columns: 1fr 84px;
+  gap: 8px;
+}
+
+.chatForm input {
+  min-width: 0;
+  height: 44px;
+  border: 1px solid #dbe3ee;
+  border-radius: 14px;
+  padding: 0 14px;
+  color: #10233d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.chatForm input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.chatForm button {
+  height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.chatForm button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
 @media (max-width: 720px) {
   .modalMeetingCard {
     grid-template-columns: 82px 1fr;
@@ -222,6 +349,11 @@
   .modalMeetingCard img {
     width: 82px;
     height: 78px;
+  }
+
+  .chatMessage,
+  .chatMessageMine {
+    max-width: 92%;
   }
 }
 
