@@ -22,6 +22,11 @@
                 where userId = m.hostUserId
             ) meetingHostName,
             (
+                SELECT profileImage
+                FROM users
+                where userId = m.hostUserId
+            ) hostProfileImage,
+            (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
@@ -172,14 +177,27 @@
             m.meetingId as meetingId,
             m.hostUserId as hostUserId,
             u.nickname AS hostNickname,
+            u.nickname AS meetingHostName,
+            u.profileImage AS hostProfileImage,
+            u.createdAt AS hostCreatedAt,
+            SUBSTRING_INDEX(
+                (
+                    SELECT GROUP_CONCAT(s.name ORDER BY s.sportId ASC SEPARATOR ' · ')
+                    FROM userSports us
+                    JOIN sports s ON us.sportId = s.sportId
+                    WHERE us.userId = m.hostUserId
+                ),
+                ' · ',
+                2
+            ) AS hostSports,
             m.title,
             m.content,
-
+            m.supplies as supplies,
+            m.guideText as guideText,
+            m.meetingType as meetingType,
+            m.repeatType as repeatType,
             m.thumbnailImage,
-
-
             m.placeName as placeName,
-
             m.address,
             m.meetingDate as meetingDate,
             m.startTime as startTime,

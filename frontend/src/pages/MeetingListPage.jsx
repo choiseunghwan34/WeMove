@@ -254,7 +254,10 @@ export default function MeetingListPage() {
   const searchParams = useMemo(
     () => ({
       ...regionParams,
-      baseRegionId: selectedRegion || isGlobalSearch ? null : memberRegionId,
+      baseRegionId:
+        selectedRegion || isExplicitAll || isGlobalSearch
+          ? null
+          : memberRegionId,
       sportId: selectedSport?.sportId ?? null,
       status,
       keyword,
@@ -564,7 +567,9 @@ export default function MeetingListPage() {
               : displayedRegionLabel}{" "}
             모임
           </h2>
-          <p>지금 열려 있는 모임을 한눈에 비교하고 바로 참여 요청까지 이어가세요.</p>
+          <p>
+            지금 열려 있는 모임을 한눈에 비교하고 바로 참여 요청까지 이어가세요.
+          </p>
         </div>
         <div className={styles.listHeadCount}>
           <span className={styles.listCountLabel}>RESULT</span>
@@ -580,7 +585,10 @@ export default function MeetingListPage() {
             </div>
             <span className={styles.emptyEyebrow}>NO MATCH FOUND</span>
             <h3>조건에 맞는 모임이 없습니다</h3>
-            <p>지역, 종목, 날짜를 조금만 넓혀보면 바로 참여할 수 있는 모임이 더 잘 보여요.</p>
+            <p>
+              지역, 종목, 날짜를 조금만 넓혀보면 바로 참여할 수 있는 모임이 더
+              잘 보여요.
+            </p>
             <div className={styles.emptyActions}>
               <button type="button" onClick={resetFilters}>
                 <UiIcon name="refresh" className={styles.emptyButtonIcon} />
@@ -600,7 +608,8 @@ export default function MeetingListPage() {
                 "listCard",
                 meeting.status === "RECRUITING" && "listCardRecruiting",
                 meeting.status === "COMPLETED" && "listCardCompleted",
-                (meeting.status === "CLOSED" || meeting.status === "CANCELLED") &&
+                (meeting.status === "CLOSED" ||
+                  meeting.status === "CANCELLED") &&
                   "listCardClosed",
               )}
               to={`/meetings/${meeting.meetingId}`}
@@ -656,15 +665,21 @@ export default function MeetingListPage() {
                   </div>
 
                   <div className={styles.host}>
-                    <i>
-                      <UiIcon
-                        name="user"
-                        className={styles.dashboardHostIcon}
+                    {meeting.hostProfileImage ? (
+                      <img
+                        src={meeting.hostProfileImage}
+                        alt={meeting.meetingHostName}
+                        className={styles.dashboardHostAvatar}
                       />
-                    </i>
-                    <span>
-                      {meeting.meetingHostName || "익명"} · 매너점수 4.8
-                    </span>
+                    ) : (
+                      <i>
+                        <UiIcon
+                          name="user"
+                          className={styles.dashboardHostIcon}
+                        />
+                      </i>
+                    )}
+                    <span>{meeting.meetingHostName || "익명"}</span>
                   </div>
                 </div>
               </div>
@@ -688,17 +703,18 @@ export default function MeetingListPage() {
 
                 <button
                   type="button"
-                  className={cx(
-                    meeting.status === "CLOSED" && "actionClosed",
-                    meeting.status === "RECRUITING" && "actionRecruiting",
-                    meeting.status === "COMPLETED" && "actionCompleted",
-                    meeting.status === "CANCELLED" && "actionCancelled",
-                  )}
+                  className={
+                    ["CLOSED", "COMPLETED", "CANCELLED"].includes(
+                      meeting.status,
+                    )
+                      ? styles.actionClosed
+                      : ""
+                  }
                 >
                   {meeting.status === "CLOSED"
-                    ? "마감"
+                    ? "모집마감"
                     : meeting.status === "COMPLETED"
-                      ? "종료"
+                      ? "진행완료"
                       : meeting.status === "CANCELLED"
                         ? "취소됨"
                         : "참가 신청"}

@@ -19,4 +19,5 @@ public class MeetingListResponse {
   private String address;
   private String thumbnailImage;
   private String meetingHostName;
+  private String hostProfileImage;
 }

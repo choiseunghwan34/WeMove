@@ -94,6 +94,7 @@ export default function MeetingManagePage() {
 
   const pendingApplicants = participants.filter((p) => p.status === "PENDING");
   const approvedApplicants = participants.filter((p) => p.status === "APPROVED");
+  const totalActiveApplicants = participants.filter((p) => p.status === "PENDING" || p.status === "APPROVED");
 
   const isClosed = meeting && (meeting.status === "CLOSED" || meeting.status === "COMPLETED");
 
@@ -162,7 +163,7 @@ export default function MeetingManagePage() {
       <section className={styles.statGrid}>
         <article>
           <span>전체 신청</span>
-          <strong>{participants.length}</strong>
+          <strong>{totalActiveApplicants.length}</strong>
         </article>
         <article>
           <span>확정 인원</span>

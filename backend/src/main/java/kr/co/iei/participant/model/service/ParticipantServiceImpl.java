@@ -16,14 +16,25 @@ public class ParticipantServiceImpl implements ParticipantService {
 
   @Transactional
   public void apply(Long meetingId, ParticipantRequest req) {
-    Integer e = participantDao.exists(meetingId, req.getUserId());
-    if (e != null && e > 0) throw new IllegalArgumentException("이미 신청한 모임입니다.");
-    MeetingParticipant p = new MeetingParticipant();
-    p.setMeetingId(meetingId);
-    p.setUserId(req.getUserId());
-    p.setMessage(req.getMessage());
-    p.setStatus("PENDING");
-    participantDao.insertParticipant(p);
+    MeetingParticipant existing = participantDao.selectParticipantByMeetingIdAndUserId(meetingId, req.getUserId());
+    if (existing != null) {
+      if ("PENDING".equals(existing.getStatus()) || "APPROVED".equals(existing.getStatus())) {
+        throw new IllegalArgumentException("이미 신청한 모임입니다.");
+      }
+      if ("REJECTED".equals(existing.getStatus())) {
+        throw new IllegalArgumentException("거절된 모임에는 다시 신청할 수 없습니다.");
+      }
+      existing.setStatus("PENDING");
+      existing.setMessage(req.getMessage());
+      participantDao.updateParticipantForReapply(existing);
+    } else {
+      MeetingParticipant p = new MeetingParticipant();
+      p.setMeetingId(meetingId);
+      p.setUserId(req.getUserId());
+      p.setMessage(req.getMessage());
+      p.setStatus("PENDING");
+      participantDao.insertParticipant(p);
+    }
   }
 
   public List<ParticipantResponse> getParticipants(Long meetingId) {
