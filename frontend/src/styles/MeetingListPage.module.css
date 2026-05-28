@@ -477,6 +477,7 @@
 
 .filterPanel {
   padding: 18px 18px 16px !important;
+  margin-bottom: 0 !important;
 }
 
 .listCard {

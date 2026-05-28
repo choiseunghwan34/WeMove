@@ -641,3 +641,14 @@
   cursor: not-allowed !important;
   transform: none !important;
 }
+
+.detailCover .detailSubtitle {
+  width: 100%;
+  max-width: none;
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  word-break: keep-all;
+}

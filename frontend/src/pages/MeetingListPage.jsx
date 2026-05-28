@@ -525,7 +525,6 @@ export default function MeetingListPage() {
             <option value="RECRUITING">모집중</option>
             <option value="CLOSED">모집마감</option>
             <option value="COMPLETED">모임완료</option>
-            <option value="CANCELLED">취소됨</option>
           </select>
 
           <input
