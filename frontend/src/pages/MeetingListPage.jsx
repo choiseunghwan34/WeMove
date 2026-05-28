@@ -206,7 +206,10 @@ export default function MeetingListPage() {
   const searchParams = useMemo(
     () => ({
       ...regionParams,
-      baseRegionId: selectedRegion || isExplicitAll || isGlobalSearch ? null : memberRegionId,
+      baseRegionId:
+        selectedRegion || isExplicitAll || isGlobalSearch
+          ? null
+          : memberRegionId,
       sportId: selectedSport?.sportId ?? null,
       status,
       keyword,
@@ -578,9 +581,7 @@ export default function MeetingListPage() {
                         />
                       </i>
                     )}
-                    <span>
-                      {meeting.meetingHostName || "익명"} 
-                    </span>
+                    <span>{meeting.meetingHostName || "익명"}</span>
                   </div>
                 </div>
               </div>
@@ -605,10 +606,20 @@ export default function MeetingListPage() {
                 <button
                   type="button"
                   className={
-                    meeting.status === "CLOSED" ? styles.actionClosed : ""
+                    ["CLOSED", "COMPLETED", "CANCELLED"].includes(
+                      meeting.status,
+                    )
+                      ? styles.actionClosed
+                      : ""
                   }
                 >
-                  {meeting.status === "CLOSED" ? "마감" : "참가 신청"}
+                  {meeting.status === "CLOSED"
+                    ? "모집마감"
+                    : meeting.status === "COMPLETED"
+                      ? "진행완료"
+                      : meeting.status === "CANCELLED"
+                        ? "취소됨"
+                        : "참가 신청"}
                 </button>
               </aside>
             </Link>
