@@ -22,11 +22,13 @@ public class MeetingDetailResponse {
   private String regionName;
   private String supplies;
   private String guideText;
+
   private String meetingHostName;
   private String meetingType;
   private String repeatType;
   private String hostProfileImage;
   private String hostSports;
   private LocalDateTime hostCreatedAt;
+
 }
 

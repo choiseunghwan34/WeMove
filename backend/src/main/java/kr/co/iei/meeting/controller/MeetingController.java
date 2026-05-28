@@ -61,8 +61,11 @@ public class MeetingController {
 
   @PutMapping("/{meetingId}")
   public ResponseEntity<Void> update(
-      @PathVariable Long meetingId, @RequestBody MeetingUpdateRequest request) {
-    meetingService.updateMeeting(meetingId, request);
+      @PathVariable Long meetingId,
+      @RequestPart(value = "request") MeetingUpdateRequest request,
+      @RequestPart(value = "image", required = false) MultipartFile image) {
+    System.out.println("★ 컨트롤러에서 받은 request: " + request);
+    meetingService.updateMeeting(meetingId, request, image);
     return ResponseEntity.ok().build();
   }
 

@@ -25,6 +25,7 @@ public class MeetingServiceImpl implements MeetingService {
   private final MeetingDao meetingDao;
   private final CloudinaryImageService cloudinaryImageService;
 
+
   public Map<String, Object> getMeetings(MeetingSearchCondition c) {
     List<MeetingListResponse> list = meetingDao.selectMeetingList(c);
     int totalCount = meetingDao.selectMeetingCount(c);
@@ -67,8 +68,17 @@ public class MeetingServiceImpl implements MeetingService {
     return meeting.getMeetingId();
   }
 
-  public void updateMeeting(Long meetingId, MeetingUpdateRequest request) {
-    meetingDao.updateMeeting(meetingId, request);
+  @Override
+  public void updateMeeting(Long meetingId, MeetingUpdateRequest request, MultipartFile image) {
+    request.setMeetingId(meetingId);
+
+    if(Boolean.TRUE.equals(request.getIsImageRemoved())){
+      request.setThumbnailImage(null);
+    }else if(image != null && !image.isEmpty()){
+      request.setThumbnailImage(cloudinaryImageService.uploadMeetingThumbnail(image));
+    }
+    System.out.println("★ DB 호출 직전 request의 thumbnailImage 값: " + request.getThumbnailImage());
+    meetingDao.updateMeeting(request);
   }
 
   public void deleteMeeting(Long meetingId) {
