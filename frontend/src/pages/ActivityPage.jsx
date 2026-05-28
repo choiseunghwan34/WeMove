@@ -88,6 +88,14 @@ const getMonthLabel = (date) =>
 
 const getDateKey = (dateLike) => {
   if (!dateLike) return "";
+
+  if (dateLike instanceof Date) {
+    const year = dateLike.getFullYear();
+    const month = String(dateLike.getMonth() + 1).padStart(2, "0");
+    const day = String(dateLike.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   return String(dateLike).slice(0, 10);
 };
 
@@ -105,7 +113,7 @@ const buildCalendarDays = (monthDate, meetingsByDate) => {
 
   for (let day = 1; day <= lastDate; day += 1) {
     const date = new Date(year, month, day);
-    const dateKey = date.toISOString().slice(0, 10);
+    const dateKey = getDateKey(date);
     items.push({
       key: dateKey,
       dateKey,
@@ -117,6 +125,34 @@ const buildCalendarDays = (monthDate, meetingsByDate) => {
   return items;
 };
 
+const formatCalendarStamp = (dateLike, timeLike) => {
+  const base = dateLike ? new Date(dateLike) : new Date();
+  const [hours = "00", minutes = "00"] = String(timeLike || "00:00")
+    .slice(0, 5)
+    .split(":");
+  base.setHours(Number(hours), Number(minutes), 0, 0);
+  return base.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+};
+
+const buildGoogleCalendarUrl = (meeting) => {
+  const start = formatCalendarStamp(meeting.meetingDate, meeting.startTime);
+  const endDate = new Date(meeting.meetingDate || new Date());
+  const [hours = "00", minutes = "00"] = String(meeting.startTime || "00:00")
+    .slice(0, 5)
+    .split(":");
+  endDate.setHours(Number(hours), Number(minutes), 0, 0);
+  endDate.setHours(endDate.getHours() + 2);
+  const end = endDate.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: meeting.title,
+    dates: `${start}/${end}`,
+    details: `${meeting.sport} · ${meeting.region}`,
+    location: `${meeting.region} ${meeting.place}`.trim(),
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
 export default function ActivityPage() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -126,7 +162,7 @@ export default function ActivityPage() {
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
   const [selectedDateKey, setSelectedDateKey] = useState(() =>
-    new Date().toISOString().slice(0, 10),
+    getDateKey(new Date()),
   );
   const [activityData, setActivityData] = useState({
     hostedMeetings: [],
@@ -248,7 +284,11 @@ export default function ActivityPage() {
     () => buildCalendarDays(selectedMonth, meetingsByDate),
     [selectedMonth, meetingsByDate],
   );
+  const todayKey = getDateKey(new Date());
   const selectedDateMeetings = meetingsByDate.get(selectedDateKey) ?? [];
+  const selectedAgendaCalendarUrl = selectedDateMeetings.length
+    ? buildGoogleCalendarUrl(selectedDateMeetings[0])
+    : "";
   const selectedDateLabel = selectedDateKey
     ? selectedDateKey.replaceAll("-", ".")
     : "날짜를 선택해주세요";
@@ -343,6 +383,18 @@ export default function ActivityPage() {
               <div className={styles.calendarMonthControls}>
                 <button
                   type="button"
+                  onClick={() => {
+                    const today = new Date();
+                    setSelectedMonth(
+                      new Date(today.getFullYear(), today.getMonth(), 1),
+                    );
+                    setSelectedDateKey(todayKey);
+                  }}
+                >
+                  오늘
+                </button>
+                <button
+                  type="button"
                   onClick={() =>
                     setSelectedMonth(
                       (current) =>
@@ -385,7 +437,9 @@ export default function ActivityPage() {
                         className={
                           item.dateKey === selectedDateKey
                             ? styles.calendarCellActive
-                            : styles.calendarCell
+                            : item.dateKey === todayKey
+                              ? styles.calendarCellToday
+                              : styles.calendarCell
                         }
                         onClick={() => setSelectedDateKey(item.dateKey)}
                       >
@@ -403,8 +457,20 @@ export default function ActivityPage() {
 
               <section className={styles.calendarAgenda}>
                 <div className={styles.calendarAgendaHead}>
-                  <strong>{selectedDateLabel}</strong>
-                  <span>{selectedDateMeetings.length}개 일정</span>
+                  <div>
+                    <strong>{selectedDateLabel}</strong>
+                    <span>{selectedDateMeetings.length}개 일정</span>
+                  </div>
+                  {selectedAgendaCalendarUrl ? (
+                    <a
+                      href={selectedAgendaCalendarUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.calendarAgendaAction}
+                    >
+                      구글 캘린더 추가
+                    </a>
+                  ) : null}
                 </div>
                 <div className={styles.calendarAgendaList}>
                   {selectedDateMeetings.length ? (

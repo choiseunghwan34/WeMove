@@ -141,6 +141,7 @@
 }
 
 .calendarCell,
+.calendarCellToday,
 .calendarCellActive,
 .calendarCellEmpty {
   min-height: 66px;
@@ -148,6 +149,7 @@
 }
 
 .calendarCell,
+.calendarCellToday,
 .calendarCellActive {
   display: grid;
   justify-items: center;
@@ -158,10 +160,16 @@
 }
 
 .calendarCell strong,
+.calendarCellToday strong,
 .calendarCellActive strong {
   color: #111827;
   font-size: 0.95rem;
   font-weight: 900;
+}
+
+.calendarCellToday {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #f8fbff 0%, #eff6ff 100%);
 }
 
 .calendarCellActive {
@@ -197,6 +205,11 @@
   margin-bottom: 14px;
 }
 
+.calendarAgendaHead > div {
+  display: grid;
+  gap: 6px;
+}
+
 .calendarAgendaHead strong {
   color: #111827;
   font-size: 1rem;
@@ -207,6 +220,21 @@
   color: #64748b;
   font-size: 0.84rem;
   font-weight: 800;
+}
+
+.calendarAgendaAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .calendarAgendaList {
@@ -352,8 +380,13 @@
   }
 
   .calendarCell,
+  .calendarCellToday,
   .calendarCellActive,
   .calendarCellEmpty {
     min-height: 58px;
+  }
+
+  .calendarAgendaAction {
+    width: 100%;
   }
 }
