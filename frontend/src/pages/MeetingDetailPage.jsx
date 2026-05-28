@@ -1,14 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
-import { createChatMessage, getChatMessages } from "../api/chatApi";
 import { useAuth } from "../contexts/AuthContext";
-import { useToast } from "../contexts/ToastContext";
-import { meetings } from "../data/demoData";
-import { meetingImages } from "../data/dashboardData";
-import { getAccessToken } from "../utils/authTokenStore";
 import { getMeeting } from "../api/meetingApi";
 import {
   getParticipants,
@@ -78,9 +71,6 @@ const formatJoinDate = (dateStr) => {
 };
 
 export default function MeetingDetailPage() {
-  const { user } = useAuth();
-  const toast = useToast();
-
   const { meetingId } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
@@ -92,160 +82,6 @@ export default function MeetingDetailPage() {
   const [appliedParticipantId, setAppliedParticipantId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatError, setChatError] = useState("");
-  const [isChatLoading, setIsChatLoading] = useState(false);
-  const [isChatSending, setIsChatSending] = useState(false);
-  const chatListRef = useRef(null);
-  const closeModal = () => setModalType(null);
-  const shareUrl = `${window.location.origin}/meetings/${meetingId}`;
-  const shareTitle = `${meeting.title} | WeMove`;
-  const shareText = `${meeting.title} · ${meeting.region} · 2026.${meeting.displayDate} ${meeting.time}`;
-
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      }
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        return;
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("링크 복사 완료", "모임 링크를 클립보드에 복사했습니다.");
-    } catch {
-      toast.error("공유 실패", "브라우저에서 링크 복사를 지원하지 않습니다.");
-    }
-  };
-
-  const appendChatMessage = (message) => {
-    if (!message?.messageId) {
-      return;
-    }
-
-    setChatMessages((current) =>
-      current.some((item) => item.messageId === message.messageId)
-        ? current
-        : [...current, message],
-    );
-  };
-
-  useEffect(() => {
-    if (modalType !== "chat") {
-      return undefined;
-    }
-
-    let active = true;
-    setIsChatLoading(true);
-    setChatError("");
-
-    getChatMessages(meetingId)
-      .then(({ data }) => {
-        if (active) {
-          setChatMessages(Array.isArray(data) ? data : []);
-        }
-      })
-      .catch((error) => {
-        if (active) {
-          setChatMessages([]);
-          setChatError(
-            error?.response?.data?.message ||
-              "승인된 모임 참가자만 단톡방을 사용할 수 있습니다.",
-          );
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setIsChatLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [meetingId, modalType]);
-
-  useEffect(() => {
-    if (modalType !== "chat") {
-      return undefined;
-    }
-
-    const token = getAccessToken();
-    if (!token) {
-      return undefined;
-    }
-
-    const socket = new WebSocket(
-      `ws://localhost:8456/ws/meeting-chat?meetingId=${encodeURIComponent(
-        meetingId,
-      )}&token=${encodeURIComponent(token)}`,
-    );
-
-    socket.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload.type === "CHAT_MESSAGE_CREATED") {
-          appendChatMessage(payload.message);
-        }
-      } catch {
-        // 채팅 외 형식의 메시지는 무시합니다.
-      }
-    };
-
-    socket.onclose = (event) => {
-      if (event.code !== 1000 && event.code !== 1001) {
-        setChatError(
-          "채팅 연결이 종료되었습니다. 권한 또는 로그인 상태를 확인해주세요.",
-        );
-      }
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, [meetingId, modalType]);
-
-  useEffect(() => {
-    if (!chatListRef.current) {
-      return;
-    }
-
-    chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
-  }, [chatMessages]);
-
-  const submitChatMessage = async (event) => {
-    event.preventDefault();
-
-    const content = chatInput.trim();
-    if (!content || isChatSending) {
-      return;
-    }
-
-    setIsChatSending(true);
-    setChatError("");
-
-    try {
-      const { data } = await createChatMessage(meetingId, content);
-      appendChatMessage(data);
-      setChatInput("");
-    } catch (error) {
-      setChatError(
-        error?.response?.data?.message || "메시지 전송에 실패했습니다.",
-      );
-    } finally {
-      setIsChatSending(false);
-    }
-  };
-
   const [applyMessage, setApplyMessage] = useState("");
 
   const closeModal = () => {
@@ -601,21 +437,6 @@ export default function MeetingDetailPage() {
 
               {isHost && (
                 <>
-                  <button
-                    type="button"
-                    className={styles.secondaryButton}
-                    onClick={() => setModalType("cancel")}
-                  >
-                    신청 취소
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.secondaryButton}
-                    onClick={() => setModalType("chat")}
-                  >
-                    단톡방
-                  </button>
-
                   <Link
                     to={`/meetings/${meetingId}/edit`}
                     className={styles.primaryButton}
@@ -763,71 +584,6 @@ export default function MeetingDetailPage() {
           <p>
             이미 승인된 일정이라면 모임장에게 간단한 사유를 남기는 것이 좋아요.
           </p>
-        </div>
-      </AppModal>
-
-      <AppModal
-        open={modalType === "chat"}
-        eyebrow="무브톡"
-        title={meeting.title}
-        description="모임장과 승인된 참가자만 메시지를 주고받을 수 있습니다."
-        confirmText="닫기"
-        onClose={closeModal}
-        onConfirm={closeModal}
-        hideCancel
-      >
-        <div className={styles.chatBox}>
-          <div className={styles.chatList} ref={chatListRef}>
-            {isChatLoading ? (
-              <p className={styles.chatState}>메시지를 불러오는 중입니다.</p>
-            ) : chatMessages.length ? (
-              chatMessages.map((message) => {
-                const isMine =
-                  Number(message.userId) === Number(user?.memberId);
-
-                return (
-                  <article
-                    key={message.messageId}
-                    className={
-                      isMine ? styles.chatMessageMine : styles.chatMessage
-                    }
-                  >
-                    <div>
-                      <strong>{message.nickname || "알 수 없음"}</strong>
-                      <span>
-                        {message.createdAt
-                          ? String(message.createdAt)
-                              .replace("T", " ")
-                              .slice(0, 16)
-                          : ""}
-                      </span>
-                    </div>
-                    <p>{message.content}</p>
-                  </article>
-                );
-              })
-            ) : (
-              <p className={styles.chatState}>아직 메시지가 없습니다.</p>
-            )}
-          </div>
-
-          {chatError ? <p className={styles.chatError}>{chatError}</p> : null}
-
-          <form className={styles.chatForm} onSubmit={submitChatMessage}>
-            <input
-              value={chatInput}
-              onChange={(event) => setChatInput(event.target.value)}
-              maxLength={1000}
-              placeholder="메시지 입력"
-              disabled={isChatLoading || Boolean(chatError)}
-            />
-            <button
-              type="submit"
-              disabled={isChatLoading || Boolean(chatError) || isChatSending}
-            >
-              전송
-            </button>
-          </form>
         </div>
       </AppModal>
     </div>
