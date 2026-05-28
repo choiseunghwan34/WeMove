@@ -282,7 +282,14 @@ export default function MyPage() {
     [selectedSportIds, sports],
   );
   const profileImage =
-    imagePreview || normalizeText(member?.profileImage) || defaultUserImage;
+    imagePreview ||
+    (typeof member?.profileImage === "string" && member.profileImage.trim()
+      ? member.profileImage.trim()
+      : "") ||
+    (typeof user?.profileImage === "string" && user.profileImage.trim()
+      ? user.profileImage.trim()
+      : "") ||
+    defaultUserImage;
 
   const statItems = [
     { label: "내 닉네임", value: member?.nickname || "-" },
