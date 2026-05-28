@@ -59,17 +59,21 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     }, [previews]);
 
     useEffect(() => {
-        getSports().then((res)=>{
+        getSports().then((res) => {
             setSports(res.data);
-        }).catch((err)=>{console.log(err)});
-        getRegions().then((res)=>{
-            setRegions(res.data.map(r=>({
+        }).catch((err) => {
+            console.log(err)
+        });
+        getRegions().then((res) => {
+            setRegions(res.data.map(r => ({
                 regionId: r.regionId,
                 sido: normalizeText(r.sido),
                 sigungu: normalizeText(r.sigungu),
                 dong: normalizeText(r.dong),
             })));
-        }).catch((err)=>{console.log(err)});
+        }).catch((err) => {
+            console.log(err)
+        });
     }, []);
 
     // 데이터 로드
@@ -85,16 +89,16 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             ...prev,
             ...initialData,
             startTime: formattedStartTime,
-            sportId: foundSport? foundSport.sportId : prev.sportId,
-            regionId: foundRegion? foundRegion.regionId : prev.regionId,
+            sportId: foundSport ? foundSport.sportId : prev.sportId,
+            regionId: foundRegion ? foundRegion.regionId : prev.regionId,
 
         }));
 
         //모달 표시용 이름 동기화
-        if(initialData.sportName){
+        if (initialData.sportName) {
             setSelectedSportName(initialData.sportName);
         }
-        if(initialData.regionName){
+        if (initialData.regionName) {
             const parts = initialData.regionName.split(" ");
             setSelectedRegion({
                 sido: parts[0] || "",
@@ -107,9 +111,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             setFiles([{name: "기존 썸네일", url: initialData.thumbnailImage}]);
         }
 
-        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0,5): "";
-
-
+        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0, 5) : "";
 
 
     }, [initialData, sports, regions]);
@@ -217,11 +219,11 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const removeFile = (nameToRemove) => {
         setFiles(files.filter(f => f.name !== nameToRemove));
     };
-    const handleRemoveImage =()=>{
+    const handleRemoveImage = () => {
         if (files.length > 0) {
             removeFile(files[0].name);
         }
-        setForm(prev=>({
+        setForm(prev => ({
             ...prev,
             thumbnailImage: null,
             isImageRemoved: true,
@@ -296,14 +298,14 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             <div className={styles.pageTitle}>
                 <div>
                     <h1>{title}</h1>
-                    <p>{isEditMode? "참가 예정인 사람들도 헷갈리지 않도록, 바뀐 정보가 한눈에 보이게 정리해두세요." :"제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는 모임 페이지를 만들 수 있습니다."}
+                    <p>{isEditMode ? "참가 예정인 사람들도 헷갈리지 않도록, 바뀐 정보가 한눈에 보이게 정리해두세요." : "제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는 모임 페이지를 만들 수 있습니다."}
 
                     </p>
                 </div>
             </div>
 
             <section className={styles.formIntro}>
-                <h2>{isEditMode? "기존 흐름은 유지하고, 필요한 부분만 정확하게 다듬어보세요.":"좋은 모임은 한눈에 이해되는 정보에서 시작됩니다."}</h2>
+                <h2>{isEditMode ? "기존 흐름은 유지하고, 필요한 부분만 정확하게 다듬어보세요." : "좋은 모임은 한눈에 이해되는 정보에서 시작됩니다."}</h2>
                 <p>
                     참가자는 제목과 썸네일, 장소, 분위기를 먼저 봅니다. 처음 보는 사람도
                     바로 감을 잡을 수 있게 간결하고 선명하게 구성해보세요.
@@ -510,22 +512,31 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                 </label>
 
                 <label className={styles.full}>
+                    <span className={styles.requiredLabel}>모임 소개</span>
+                    <input
+                        name="content"
+                        value={form.content}
+                        onChange={handleChange}
+                        placeholder="모임 분위기 등 간단한 모임 소개를 적어주세요."
+                    />
+                </label>
+
+                <label className={styles.full}>
                     <span className={styles.requiredLabel}>진행 안내</span>
                     <textarea
                         name="guideText"
                         value={form.guideText}
                         onChange={handleChange}
-                        placeholder="시작 10분 전 집결을 권장합니다. 간단한 인사와 스트레칭 후 함께 이동합니다."
-                    />
-                </label>
+                        placeholder="[진행 안내 사항을 적어주세요.]
 
-                <label className={styles.full}>
-                    <span className={styles.requiredLabel}>모임 소개</span>
-                    <textarea
-                        name="content"
-                        value={form.content}
-                        onChange={handleChange}
-                        placeholder="모임 분위기, 참가 대상, 준비물, 진행 방식, 초보 가능 여부를 적어주세요."
+- 집결 시간:
+모임 시작 10분 전
+
+- 주의사항:
+우천 시 모임 취소 여부는 당일 오전 00시에 공지합니다.
+늦으시는 분들은 채팅을 통해 연락 부탁드립니다.
+운동 중 개인 부상에 대해서는 본인 책임이 크니 무리하지 마세요!
+당일 뵙겠습니다!"
                     />
                 </label>
 
@@ -580,7 +591,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
 
                 <div className={`${styles.full} ${styles.formActions}`}>
                     <Link to="/meetings">취소</Link>
-                    <button type="submit">{isEditMode? "모임 수정" : "모임 등록"}</button>
+                    <button type="submit">{isEditMode ? "모임 수정" : "모임 등록"}</button>
                 </div>
             </form>
 

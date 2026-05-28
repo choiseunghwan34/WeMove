@@ -417,7 +417,7 @@
 }
 
 .formCard textarea {
-  min-height: 148px;
+  min-height: 300px !important;
   padding-top: 14px;
 }
 
