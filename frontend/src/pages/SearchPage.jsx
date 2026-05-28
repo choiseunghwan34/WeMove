@@ -10,7 +10,6 @@ import UiIcon from "../components/UiIcon";
 import {
   clearRecentSearches,
   getRecentSearches,
-  pruneStoredSearches,
   registerSearchKeyword,
 } from "../utils/searchInsights";
 import styles from "../styles/SearchPage.module.css";
@@ -150,28 +149,6 @@ const formatMeetingSchedule = (meetingDate, startTime) => {
   return `${meetingDate}${weekday ? ` (${weekday})` : ""} ${timeText}`;
 };
 
-const extractMeetingKeywords = (meeting) =>
-  [
-    meeting.title,
-    meeting.sportName,
-    meeting.regionName,
-    meeting.placeName,
-    meeting.address,
-  ]
-    .map(normalizeText)
-    .filter(Boolean);
-
-const uniqueKeywords = (keywords) =>
-  keywords
-    .map(normalizeText)
-    .filter(Boolean)
-    .filter(
-      (value, index, array) =>
-        array.findIndex(
-          (item) => item.toLowerCase() === value.toLowerCase(),
-        ) === index,
-    );
-
 function SearchEmptyState({
   icon,
   eyebrow,
@@ -212,7 +189,6 @@ export default function SearchPage() {
   const [sportResults, setSportResults] = useState([]);
   const [allRegionNames, setAllRegionNames] = useState([]);
   const [allSportKeywords, setAllSportKeywords] = useState([]);
-  const [allMeetingKeywords, setAllMeetingKeywords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [recentKeywords, setRecentKeywords] = useState(() =>
@@ -227,69 +203,6 @@ export default function SearchPage() {
   useEffect(() => {
     let active = true;
 
-    const loadSearchSources = async () => {
-      try {
-        const [regionResponse, sportResponse, countResponse] =
-          await Promise.all([
-            getRegions(),
-            getSports(),
-            getMeetings({ page: 1, size: 1 }),
-          ]);
-
-        if (!active) {
-          return;
-        }
-
-        const totalCount = Number(countResponse.data?.totalCount ?? 0);
-        const meetingResponse =
-          totalCount > 0
-            ? await getMeetings({ page: 1, size: totalCount })
-            : { data: { list: [] } };
-
-        if (!active) {
-          return;
-        }
-
-        const regionList = Array.isArray(regionResponse.data)
-          ? regionResponse.data
-          : [];
-        const sportList = Array.isArray(sportResponse.data)
-          ? sportResponse.data
-          : [];
-        const meetingList = Array.isArray(meetingResponse.data?.list)
-          ? meetingResponse.data.list
-          : [];
-
-        const nextRegionNames = regionList
-          .map((region) => formatRegionName(region))
-          .filter(Boolean);
-        const nextSportKeywords = sportList
-          .filter((sport) => sport.isActive !== false)
-          .flatMap((sport) => [sport.name, sport.category])
-          .map(normalizeText)
-          .filter(Boolean);
-        const nextMeetingKeywords = meetingList.flatMap(extractMeetingKeywords);
-        const allowedKeywords = uniqueKeywords([
-          ...nextMeetingKeywords,
-          ...nextSportKeywords,
-          ...nextRegionNames,
-        ]);
-
-        pruneStoredSearches(allowedKeywords);
-        setRecentKeywords(getRecentSearches());
-        setPopularKeywords(getPopularSearches());
-        setAllRegionNames(nextRegionNames);
-        setAllSportKeywords(nextSportKeywords);
-        setAllMeetingKeywords(nextMeetingKeywords);
-      } catch {
-        if (active) {
-          setAllRegionNames([]);
-          setAllSportKeywords([]);
-          setAllMeetingKeywords([]);
-        }
-      }
-    };
-
     const loadPopularKeywords = async () => {
       try {
         const { data } = await getPopularKeywords(8);
@@ -302,8 +215,6 @@ export default function SearchPage() {
         }
       }
     };
-
-    loadSearchSources();
 
     loadPopularKeywords();
     return () => {
@@ -344,6 +255,17 @@ export default function SearchPage() {
           ? sportResponse.data
           : [];
         const normalizedQuery = query.toLowerCase();
+        const regionNames = regionList
+          .map((region) => formatRegionName(region))
+          .filter(Boolean);
+        const sportKeywords = sportList
+          .filter((sport) => sport.isActive !== false)
+          .flatMap((sport) => [sport.name, sport.category])
+          .map(normalizeText)
+          .filter(Boolean);
+
+        setAllRegionNames(regionNames);
+        setAllSportKeywords(sportKeywords);
         setMeetingResults(meetingResponse.data?.list ?? []);
         setMeetingTotalCount(meetingResponse.data?.totalCount ?? 0);
         setRegionResults(
@@ -449,46 +371,24 @@ export default function SearchPage() {
 
   const recommendedKeywords = useMemo(() => {
     const source = [
-      ...allMeetingKeywords,
+      ...popularKeywords,
       ...allSportKeywords,
       ...allRegionNames,
+      ...defaultRecommendedKeywords,
     ];
 
-    return uniqueKeywords(source)
+    return source
+      .map(normalizeText)
+      .filter(Boolean)
+      .filter(
+        (value, index, array) =>
+          array.findIndex(
+            (item) => item.toLowerCase() === value.toLowerCase(),
+          ) === index,
+      )
       .filter((value) => value.toLowerCase() !== query.toLowerCase())
       .slice(0, 8);
-  }, [allMeetingKeywords, allRegionNames, allSportKeywords, query]);
-
-  const dataKeywordSet = useMemo(
-    () =>
-      new Set(
-        uniqueKeywords([
-          ...allMeetingKeywords,
-          ...allSportKeywords,
-          ...allRegionNames,
-        ]).map((value) => value.toLowerCase()),
-      ),
-    [allMeetingKeywords, allRegionNames, allSportKeywords],
-  );
-
-  const visibleRecentKeywords = useMemo(
-    () =>
-      recentKeywords.filter((item) =>
-        dataKeywordSet.has(normalizeText(item).toLowerCase()),
-      ),
-    [dataKeywordSet, recentKeywords],
-  );
-
-  const visiblePopularKeywords = useMemo(() => {
-    const storedDataKeywords = popularKeywords.filter((item) =>
-      dataKeywordSet.has(normalizeText(item).toLowerCase()),
-    );
-
-    return uniqueKeywords([
-      ...storedDataKeywords,
-      ...recommendedKeywords,
-    ]).slice(0, 8);
-  }, [dataKeywordSet, popularKeywords, recommendedKeywords]);
+  }, [allRegionNames, allSportKeywords, popularKeywords, query]);
 
   const submitSearch = (nextKeyword) => {
     const normalizedKeyword = normalizeText(nextKeyword);
@@ -582,7 +482,7 @@ export default function SearchPage() {
                 있습니다.
               </p>
             </div>
-            {visibleRecentKeywords.length ? (
+            {recentKeywords.length ? (
               <button
                 type="button"
                 className={styles.linkButton}
@@ -596,8 +496,8 @@ export default function SearchPage() {
             ) : null}
           </div>
           <div className={styles.chipList}>
-            {visibleRecentKeywords.length ? (
-              visibleRecentKeywords.map((item) => (
+            {recentKeywords.length ? (
+              recentKeywords.map((item) => (
                 <button
                   key={item}
                   type="button"
@@ -626,8 +526,8 @@ export default function SearchPage() {
             </div>
           </div>
           <div className={styles.chipList}>
-            {visiblePopularKeywords.length ? (
-              visiblePopularKeywords.map((item, index) => (
+            {popularKeywords.length ? (
+              popularKeywords.map((item, index) => (
                 <button
                   key={item}
                   type="button"
