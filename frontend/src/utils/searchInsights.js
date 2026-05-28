@@ -1,7 +1,5 @@
 const RECENT_SEARCHES_KEY = "wemove:recent-searches";
-const POPULAR_SEARCHES_KEY = "wemove:popular-searches";
 const MAX_RECENT_SEARCHES = 6;
-const MAX_POPULAR_SEARCHES = 8;
 
 const safeParse = (value, fallback) => {
   try {
@@ -29,15 +27,6 @@ const writeStorage = (key, value) => {
 
 export const getRecentSearches = () => readStorage(RECENT_SEARCHES_KEY, []);
 
-export const getPopularSearches = () => {
-  const records = readStorage(POPULAR_SEARCHES_KEY, []);
-
-  return records
-    .sort((left, right) => right.count - left.count)
-    .slice(0, MAX_POPULAR_SEARCHES)
-    .map((record) => record.keyword);
-};
-
 export const registerSearchKeyword = (keyword) => {
   const normalizedKeyword = String(keyword ?? "").trim();
   if (!normalizedKeyword) {
@@ -51,28 +40,6 @@ export const registerSearchKeyword = (keyword) => {
   writeStorage(
     RECENT_SEARCHES_KEY,
     recentSearches.slice(0, MAX_RECENT_SEARCHES),
-  );
-
-  const popularRecords = readStorage(POPULAR_SEARCHES_KEY, []);
-  const nextPopularRecords = [...popularRecords];
-  const existingIndex = nextPopularRecords.findIndex(
-    (item) => item.keyword === normalizedKeyword,
-  );
-
-  if (existingIndex >= 0) {
-    nextPopularRecords[existingIndex] = {
-      ...nextPopularRecords[existingIndex],
-      count: nextPopularRecords[existingIndex].count + 1,
-    };
-  } else {
-    nextPopularRecords.push({ keyword: normalizedKeyword, count: 1 });
-  }
-
-  writeStorage(
-    POPULAR_SEARCHES_KEY,
-    nextPopularRecords
-      .sort((left, right) => right.count - left.count)
-      .slice(0, MAX_POPULAR_SEARCHES * 2),
   );
 };
 

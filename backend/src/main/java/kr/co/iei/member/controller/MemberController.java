@@ -33,6 +33,14 @@ public class MemberController {
     return ResponseEntity.ok(memberService.getSports(memberId));
   }
 
+  @GetMapping("/me/activity")
+  public ResponseEntity<MemberActivityResponse> myActivity(
+      @RequestHeader(value = "Authorization", required = false) String authorization,
+      @RequestParam(required = false) Long memberId) {
+    Long resolvedMemberId = resolveMemberId(authorization, memberId);
+    return ResponseEntity.ok(memberService.getActivity(resolvedMemberId));
+  }
+
   @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> updateMe(
       @RequestParam(defaultValue = "1") Long memberId,

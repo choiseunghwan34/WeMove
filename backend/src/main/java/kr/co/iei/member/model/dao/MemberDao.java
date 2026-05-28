@@ -35,4 +35,13 @@ public class MemberDao {
     return sqlSession.insert(
         "member.insertMemberSport", Map.of("memberId", memberId, "sportId", sportId));
   }
+
+  public List<MemberActivityMeetingResponse> selectHostedActivityMeetings(Long memberId) {
+    return sqlSession.selectList("member.selectHostedActivityMeetings", Map.of("memberId", memberId));
+  }
+
+  public List<MemberActivityMeetingResponse> selectParticipantActivityMeetings(Long memberId) {
+    return sqlSession.selectList(
+        "member.selectParticipantActivityMeetings", Map.of("memberId", memberId));
+  }
 }

@@ -2,18 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getMeetings } from "../api/meetingApi";
 import { getRegions } from "../api/regionApi";
+import { getPopularKeywords, recordSearchKeyword } from "../api/searchApi";
 import { getSports } from "../api/sportApi";
+import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
+import UiIcon from "../components/UiIcon";
 import {
   clearRecentSearches,
-  getPopularSearches,
   getRecentSearches,
   pruneStoredSearches,
   registerSearchKeyword,
 } from "../utils/searchInsights";
 import styles from "../styles/SearchPage.module.css";
 
-const normalizeText = (value = "") => String(value).trim();
+const REGION_PREVIEW_LIMIT = 100;
 
 const meetingStatusText = {
   RECRUITING: "모집중",
@@ -23,6 +25,17 @@ const meetingStatusText = {
 };
 
 const weekdayLabels = ["일", "월", "화", "수", "목", "금", "토"];
+
+const defaultRecommendedKeywords = [
+  "러닝",
+  "헬스",
+  "배드민턴",
+  "주말 모임",
+  "강남",
+  "한강",
+];
+
+const normalizeText = (value = "") => String(value).trim();
 
 const formatRegionName = (region) =>
   [region.sido, region.sigungu, region.dong]
@@ -51,22 +64,61 @@ const buildRegionCandidates = (region) => {
     {
       key: `sido:${sido}`,
       label: sido,
-      searchText: sido,
       level: "sido",
+      sido,
+      sigungu,
+      dong,
     },
     {
       key: `sigungu:${sido}:${sigungu}`,
       label: [sido, sigungu].filter(Boolean).join(" "),
-      searchText: [sido, sigungu].filter(Boolean).join(" "),
       level: "sigungu",
+      sido,
+      sigungu,
+      dong,
     },
     {
       key: `dong:${region.regionId}`,
       label: fullName,
-      searchText: [sido, sigungu, dong, fullName].filter(Boolean).join(" "),
       level: "dong",
+      sido,
+      sigungu,
+      dong,
     },
   ].filter((candidate) => normalizeText(candidate.label));
+};
+
+const matchesRegionCandidate = (candidate, keyword) => {
+  const terms = normalizeText(keyword)
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!terms.length) {
+    return true;
+  }
+
+  const sidoText = normalizeText(candidate.sido).toLowerCase();
+  const parentText = [candidate.sido, candidate.sigungu]
+    .map(normalizeText)
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const fullText = [candidate.sido, candidate.sigungu, candidate.dong]
+    .map(normalizeText)
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (candidate.level === "sido") {
+    return terms.every((term) => sidoText.includes(term));
+  }
+
+  if (candidate.level === "sigungu") {
+    return terms.every((term) => parentText.includes(term));
+  }
+
+  return terms.every((term) => fullText.includes(term));
 };
 
 const getRegionMatchScore = (candidate, keyword) => {
@@ -90,7 +142,9 @@ const formatMeetingSchedule = (meetingDate, startTime) => {
   }
 
   const date = new Date(`${meetingDate}T00:00:00`);
-  const weekday = Number.isNaN(date.getTime()) ? "" : weekdayLabels[date.getDay()];
+  const weekday = Number.isNaN(date.getTime())
+    ? ""
+    : weekdayLabels[date.getDay()];
   const timeText = String(startTime ?? "").slice(0, 5) || "--:--";
 
   return `${meetingDate}${weekday ? ` (${weekday})` : ""} ${timeText}`;
@@ -113,9 +167,39 @@ const uniqueKeywords = (keywords) =>
     .filter(Boolean)
     .filter(
       (value, index, array) =>
-        array.findIndex((item) => item.toLowerCase() === value.toLowerCase()) ===
-        index,
+        array.findIndex(
+          (item) => item.toLowerCase() === value.toLowerCase(),
+        ) === index,
     );
+
+function SearchEmptyState({
+  icon,
+  eyebrow,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}) {
+  return (
+    <div className={styles.emptyBlock}>
+      <div className={styles.emptyBlockIconWrap}>
+        <UiIcon name={icon} className={styles.emptyBlockIcon} />
+      </div>
+      <span className={styles.emptyBlockEyebrow}>{eyebrow}</span>
+      <strong>{title}</strong>
+      <p>{description}</p>
+      {actionLabel ? (
+        <button
+          type="button"
+          className={styles.emptyBlockButton}
+          onClick={onAction}
+        >
+          {actionLabel}
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 export default function SearchPage() {
   const navigate = useNavigate();
@@ -130,8 +214,11 @@ export default function SearchPage() {
   const [allSportKeywords, setAllSportKeywords] = useState([]);
   const [allMeetingKeywords, setAllMeetingKeywords] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [recentKeywords, setRecentKeywords] = useState(() => getRecentSearches());
-  const [popularKeywords, setPopularKeywords] = useState(() => getPopularSearches());
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [recentKeywords, setRecentKeywords] = useState(() =>
+    getRecentSearches(),
+  );
+  const [popularKeywords, setPopularKeywords] = useState([]);
 
   useEffect(() => {
     setKeyword(query);
@@ -142,11 +229,12 @@ export default function SearchPage() {
 
     const loadSearchSources = async () => {
       try {
-        const [regionResponse, sportResponse, countResponse] = await Promise.all([
-          getRegions(),
-          getSports(),
-          getMeetings({ page: 1, size: 1 }),
-        ]);
+        const [regionResponse, sportResponse, countResponse] =
+          await Promise.all([
+            getRegions(),
+            getSports(),
+            getMeetings({ page: 1, size: 1 }),
+          ]);
 
         if (!active) {
           return;
@@ -162,8 +250,12 @@ export default function SearchPage() {
           return;
         }
 
-        const regionList = Array.isArray(regionResponse.data) ? regionResponse.data : [];
-        const sportList = Array.isArray(sportResponse.data) ? sportResponse.data : [];
+        const regionList = Array.isArray(regionResponse.data)
+          ? regionResponse.data
+          : [];
+        const sportList = Array.isArray(sportResponse.data)
+          ? sportResponse.data
+          : [];
         const meetingList = Array.isArray(meetingResponse.data?.list)
           ? meetingResponse.data.list
           : [];
@@ -198,8 +290,22 @@ export default function SearchPage() {
       }
     };
 
+    const loadPopularKeywords = async () => {
+      try {
+        const { data } = await getPopularKeywords(8);
+        if (active) {
+          setPopularKeywords(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        if (active) {
+          setPopularKeywords([]);
+        }
+      }
+    };
+
     loadSearchSources();
 
+    loadPopularKeywords();
     return () => {
       active = false;
     };
@@ -220,18 +326,23 @@ export default function SearchPage() {
       setLoading(true);
 
       try {
-        const [meetingResponse, regionResponse, sportResponse] = await Promise.all([
-          getMeetings({ keyword: query, page: 1, size: 8 }),
-          getRegions(),
-          getSports(),
-        ]);
+        const [meetingResponse, regionResponse, sportResponse] =
+          await Promise.all([
+            getMeetings({ keyword: query, page: 1, size: 8 }),
+            getRegions(),
+            getSports(),
+          ]);
 
         if (!active) {
           return;
         }
 
-        const regionList = Array.isArray(regionResponse.data) ? regionResponse.data : [];
-        const sportList = Array.isArray(sportResponse.data) ? sportResponse.data : [];
+        const regionList = Array.isArray(regionResponse.data)
+          ? regionResponse.data
+          : [];
+        const sportList = Array.isArray(sportResponse.data)
+          ? sportResponse.data
+          : [];
         const normalizedQuery = query.toLowerCase();
         setMeetingResults(meetingResponse.data?.list ?? []);
         setMeetingTotalCount(meetingResponse.data?.totalCount ?? 0);
@@ -239,7 +350,7 @@ export default function SearchPage() {
           regionList
             .flatMap((region) => buildRegionCandidates(region))
             .filter((candidate) =>
-              keywordMatchesTerms(candidate.searchText, normalizedQuery),
+              matchesRegionCandidate(candidate, normalizedQuery),
             )
             .filter(
               (candidate, index, array) =>
@@ -259,15 +370,14 @@ export default function SearchPage() {
             .map((candidate) => ({
               regionId: candidate.key,
               name: candidate.label,
-            }))
-            .slice(0, 8),
+            })),
         );
         setSportResults(
           sportList
             .filter((sport) => sport.isActive !== false)
             .filter((sport) =>
               [sport.name, sport.category].some((value) =>
-                normalizeText(value).toLowerCase().includes(normalizedQuery),
+                keywordMatchesTerms(value, normalizedQuery),
               ),
             )
             .slice(0, 8),
@@ -301,12 +411,40 @@ export default function SearchPage() {
 
     registerSearchKeyword(query);
     setRecentKeywords(getRecentSearches());
-    setPopularKeywords(getPopularSearches());
+
+    let active = true;
+
+    const syncPopularKeyword = async () => {
+      try {
+        await recordSearchKeyword(query);
+        const { data } = await getPopularKeywords(8);
+        if (active) {
+          setPopularKeywords(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        // Keep the previous popular keywords if sync fails.
+      }
+    };
+
+    syncPopularKeyword();
+    return () => {
+      active = false;
+    };
   }, [query]);
 
   const totalResultCount = useMemo(
     () => meetingTotalCount + regionResults.length + sportResults.length,
     [meetingTotalCount, regionResults.length, sportResults.length],
+  );
+
+  const visibleRegionResults = useMemo(
+    () => regionResults.slice(0, REGION_PREVIEW_LIMIT),
+    [regionResults],
+  );
+
+  const hiddenRegionCount = Math.max(
+    0,
+    regionResults.length - REGION_PREVIEW_LIMIT,
   );
 
   const recommendedKeywords = useMemo(() => {
@@ -346,7 +484,10 @@ export default function SearchPage() {
       dataKeywordSet.has(normalizeText(item).toLowerCase()),
     );
 
-    return uniqueKeywords([...storedDataKeywords, ...recommendedKeywords]).slice(0, 8);
+    return uniqueKeywords([
+      ...storedDataKeywords,
+      ...recommendedKeywords,
+    ]).slice(0, 8);
   }, [dataKeywordSet, popularKeywords, recommendedKeywords]);
 
   const submitSearch = (nextKeyword) => {
@@ -365,7 +506,11 @@ export default function SearchPage() {
   };
 
   const hasNoResults =
-    query && !loading && meetingTotalCount === 0 && !regionResults.length && !sportResults.length;
+    query &&
+    !loading &&
+    meetingTotalCount === 0 &&
+    !regionResults.length &&
+    !sportResults.length;
 
   return (
     <DashboardShell
@@ -381,8 +526,8 @@ export default function SearchPage() {
           <span className={styles.eyebrow}>UNIFIED SEARCH</span>
           <h1>모임, 지역, 운동을 한 번에 찾아보세요</h1>
           <p>
-            검색어를 입력하면 관련 모임과 지역, 운동 종목을 함께 보여주고
-            모임 찾기 화면으로 자연스럽게 이어집니다.
+            검색어를 입력하면 관련 모임과 지역, 운동 종목을 함께 보여주고 모임
+            찾기 화면으로 자연스럽게 이어집니다.
           </p>
         </div>
 
@@ -396,18 +541,34 @@ export default function SearchPage() {
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
-            placeholder="예: 파주 러닝, 종로구 풋살, 배드민턴"
+            placeholder="예: 파주 러닝, 경기, 배드민턴"
           />
           <button type="submit">검색</button>
         </form>
 
         <div className={styles.searchMeta}>
-          <strong>{query ? `"${query}" 검색 결과` : "검색어를 입력해보세요"}</strong>
+          <strong>
+            {query ? `"${query}" 검색 결과` : "검색어를 입력해보세요"}
+          </strong>
           <span>
             {query
               ? `총 ${totalResultCount}개의 관련 결과를 찾았습니다.`
               : "모임명, 지역명, 운동 종목명으로 검색할 수 있습니다."}
           </span>
+          <div className={styles.searchStats}>
+            <div className={styles.searchStat}>
+              <span>모임</span>
+              <strong>{meetingTotalCount}</strong>
+            </div>
+            <div className={styles.searchStat}>
+              <span>지역</span>
+              <strong>{regionResults.length}</strong>
+            </div>
+            <div className={styles.searchStat}>
+              <span>운동</span>
+              <strong>{sportResults.length}</strong>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -416,7 +577,10 @@ export default function SearchPage() {
           <div className={styles.sectionHead}>
             <div>
               <h2>최근 검색어</h2>
-              <p>최근에 찾아본 키워드를 다시 눌러 빠르게 이어서 검색할 수 있습니다.</p>
+              <p>
+                최근에 찾아본 키워드를 다시 눌러 빠르게 이어서 검색할 수
+                있습니다.
+              </p>
             </div>
             {visibleRecentKeywords.length ? (
               <button
@@ -444,7 +608,12 @@ export default function SearchPage() {
                 </button>
               ))
             ) : (
-              <p className={styles.emptyState}>아직 저장된 최근 검색어가 없습니다.</p>
+              <SearchEmptyState
+                icon="refresh"
+                eyebrow="EMPTY HISTORY"
+                title="아직 저장된 최근 검색어가 없습니다"
+                description="검색을 한 번 시작하면 여기에서 바로 이어서 다시 찾아볼 수 있어요."
+              />
             )}
           </div>
         </article>
@@ -453,7 +622,7 @@ export default function SearchPage() {
           <div className={styles.sectionHead}>
             <div>
               <h2>인기 검색어</h2>
-              <p>이 브라우저에서 많이 검색한 키워드를 위주로 정리했습니다.</p>
+              <p>오늘 서비스 전체에서 많이 검색된 키워드 순으로 표시합니다.</p>
             </div>
           </div>
           <div className={styles.chipList}>
@@ -470,7 +639,12 @@ export default function SearchPage() {
                 </button>
               ))
             ) : (
-              <p className={styles.emptyState}>인기 검색어는 검색이 쌓이면 자동으로 보입니다.</p>
+              <SearchEmptyState
+                icon="spark"
+                eyebrow="TREND WAITING"
+                title="아직 집계된 인기 검색어가 없습니다"
+                description="조금 더 검색 데이터가 쌓이면 지금 많이 찾는 키워드를 여기서 바로 보여드릴게요."
+              />
             )}
           </div>
         </article>
@@ -496,7 +670,9 @@ export default function SearchPage() {
                 <button
                   type="button"
                   className={styles.linkButton}
-                  onClick={() => navigate(`/meetings?keyword=${encodeURIComponent(query)}`)}
+                  onClick={() =>
+                    navigate(`/meetings?keyword=${encodeURIComponent(query)}`)
+                  }
                 >
                   전체 모임 보기
                 </button>
@@ -513,15 +689,29 @@ export default function SearchPage() {
                   >
                     <div className={styles.meetingTags}>
                       <span>{meeting.sportName}</span>
-                      <span>{meetingStatusText[meeting.status] ?? "상태 확인 필요"}</span>
+                      <span>
+                        {meetingStatusText[meeting.status] ?? "상태 확인 필요"}
+                      </span>
                     </div>
                     <strong>{meeting.title}</strong>
                     <p>{meeting.regionName}</p>
-                    <small>{formatMeetingSchedule(meeting.meetingDate, meeting.startTime)}</small>
+                    <small>
+                      {formatMeetingSchedule(
+                        meeting.meetingDate,
+                        meeting.startTime,
+                      )}
+                    </small>
                   </Link>
                 ))
               ) : (
-                <p className={styles.emptyState}>관련 모임이 없습니다.</p>
+                <SearchEmptyState
+                  icon="search"
+                  eyebrow="MEETING GAP"
+                  title="관련 모임이 아직 보이지 않습니다"
+                  description="검색어를 조금 넓히거나 목록 페이지에서 전체 모임 흐름을 함께 살펴보세요."
+                  actionLabel="모임 찾기로 이동"
+                  onAction={() => navigate("/meetings")}
+                />
               )}
             </div>
           </section>
@@ -532,24 +722,47 @@ export default function SearchPage() {
                 <h2>관련 지역</h2>
                 <p>검색어가 포함된 지역명입니다.</p>
               </div>
+              {hiddenRegionCount > 0 ? (
+                <button
+                  type="button"
+                  className={styles.linkButton}
+                  onClick={() => setIsRegionModalOpen(true)}
+                >
+                  전체 {regionResults.length}개 보기
+                </button>
+              ) : null}
             </div>
 
+            {hiddenRegionCount > 0 ? (
+              <p className={styles.resultHint}>
+                상위 {REGION_PREVIEW_LIMIT}개만 먼저 보여주고 있습니다. 나머지{" "}
+                {hiddenRegionCount}개는 전체 보기에서 확인할 수 있습니다.
+              </p>
+            ) : null}
+
             <div className={styles.chipList}>
-              {regionResults.length ? (
-                regionResults.map((region) => (
+              {visibleRegionResults.length ? (
+                visibleRegionResults.map((region) => (
                   <button
                     key={`${region.regionId}-${region.name}`}
                     type="button"
                     className={styles.resultChip}
                     onClick={() =>
-                      navigate(`/meetings?keyword=${encodeURIComponent(region.name)}&global=1`)
+                      navigate(
+                        `/meetings?regionLabel=${encodeURIComponent(region.name)}&global=1`,
+                      )
                     }
                   >
                     {region.name}
                   </button>
                 ))
               ) : (
-                <p className={styles.emptyState}>관련 지역이 없습니다.</p>
+                <SearchEmptyState
+                  icon="location"
+                  eyebrow="REGION GAP"
+                  title="관련 지역 결과가 없습니다"
+                  description="동 이름 대신 시·군·구 단위로 넓혀 검색하면 더 많은 후보를 찾을 수 있어요."
+                />
               )}
             </div>
           </section>
@@ -570,7 +783,9 @@ export default function SearchPage() {
                     type="button"
                     className={styles.resultChip}
                     onClick={() =>
-                      navigate(`/meetings?sportName=${encodeURIComponent(sport.name)}&global=1`)
+                      navigate(
+                        `/meetings?sportName=${encodeURIComponent(sport.name)}&global=1`,
+                      )
                     }
                   >
                     <strong>{sport.name}</strong>
@@ -578,7 +793,12 @@ export default function SearchPage() {
                   </button>
                 ))
               ) : (
-                <p className={styles.emptyState}>관련 운동이 없습니다.</p>
+                <SearchEmptyState
+                  icon="dumbbell"
+                  eyebrow="SPORT GAP"
+                  title="관련 운동 결과가 없습니다"
+                  description="운동 이름이 정확하지 않다면 카테고리나 지역 조합으로 먼저 찾아보는 것도 좋아요."
+                />
               )}
             </div>
           </section>
@@ -588,7 +808,10 @@ export default function SearchPage() {
               <div className={styles.sectionHead}>
                 <div>
                   <h2>추천 키워드</h2>
-                  <p>검색 결과가 없어서 다른 키워드를 바로 시도할 수 있게 준비했습니다.</p>
+                  <p>
+                    검색 결과가 없어서 다른 키워드를 바로 시도할 수 있게
+                    준비했습니다.
+                  </p>
                 </div>
               </div>
               <div className={styles.chipList}>
@@ -607,6 +830,34 @@ export default function SearchPage() {
           ) : null}
         </div>
       )}
+
+      <AppModal
+        open={isRegionModalOpen}
+        title="지역 검색 전체 결과"
+        description={`"${query}" 검색과 관련된 지역 ${regionResults.length}개를 확인할 수 있습니다.`}
+        confirmText="닫기"
+        onConfirm={() => setIsRegionModalOpen(false)}
+        onClose={() => setIsRegionModalOpen(false)}
+        hideCancel
+      >
+        <div className={styles.regionModalList}>
+          {regionResults.map((region) => (
+            <button
+              key={`modal-${region.regionId}-${region.name}`}
+              type="button"
+              className={styles.resultChip}
+              onClick={() => {
+                setIsRegionModalOpen(false);
+                navigate(
+                  `/meetings?regionLabel=${encodeURIComponent(region.name)}&global=1`,
+                );
+              }}
+            >
+              {region.name}
+            </button>
+          ))}
+        </div>
+      </AppModal>
     </DashboardShell>
   );
 }

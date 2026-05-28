@@ -75,15 +75,63 @@ const formatTopRegionLabel = (region) => {
     : region.regionName || region.name || "";
 };
 
+const resolveRegionSelectionFromLabel = (regions, label) => {
+  const normalizedLabel = normalizeText(label);
+  if (!normalizedLabel) {
+    return null;
+  }
+
+  const terms = normalizedLabel.split(/\s+/).filter(Boolean);
+
+  if (terms.length === 1) {
+    return {
+      regionId: null,
+      sido: terms[0],
+      sigungu: "",
+      dong: "",
+    };
+  }
+
+  if (terms.length === 2) {
+    return {
+      regionId: null,
+      sido: terms[0],
+      sigungu: terms[1],
+      dong: "",
+    };
+  }
+
+  const dongName = terms.slice(2).join(" ");
+  const matchedRegion =
+    regions.find(
+      (region) =>
+        normalizeText(region.sido) === terms[0] &&
+        normalizeText(region.sigungu) === terms[1] &&
+        normalizeText(region.dong) === dongName,
+    ) ?? null;
+
+  if (matchedRegion) {
+    return matchedRegion;
+  }
+
+  return {
+    regionId: null,
+    sido: terms[0],
+    sigungu: terms[1],
+    dong: dongName,
+  };
+};
+
 export default function MeetingListPage() {
   const [urlSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const keywordParam = urlSearchParams.get("keyword") ?? "";
+  const regionLabelParam = urlSearchParams.get("regionLabel") ?? "";
   const sportNameParam = urlSearchParams.get("sportName") ?? "";
   const isGlobalSearch =
     urlSearchParams.get("global") === "1" ||
-    Boolean(keywordParam || sportNameParam);
+    Boolean(keywordParam || sportNameParam || regionLabelParam);
 
   const [meetingDate, setMeetingDate] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -97,7 +145,7 @@ export default function MeetingListPage() {
   const [memberRegionReady, setMemberRegionReady] = useState(false);
 
   const [status, setStatus] = useState("");
-  const [keyword, setKeyword] = useState(keywordParam);
+  const [keyword, setKeyword] = useState(regionLabelParam ? "" : keywordParam);
   const [meetingList, setMeetingList] = useState([]);
 
   const [totalCount, setTotalCount] = useState(0);
@@ -229,9 +277,29 @@ export default function MeetingListPage() {
   );
 
   useEffect(() => {
-    setKeyword(keywordParam);
+    setKeyword(regionLabelParam ? "" : keywordParam);
     setCurrentPage(1);
-  }, [keywordParam]);
+  }, [keywordParam, regionLabelParam]);
+
+  useEffect(() => {
+    if (!regionOptions.length) {
+      return;
+    }
+
+    if (!regionLabelParam) {
+      setSelectedRegion(null);
+      return;
+    }
+
+    const resolvedRegion = resolveRegionSelectionFromLabel(
+      regionOptions,
+      regionLabelParam,
+    );
+
+    setSelectedRegion(resolvedRegion);
+    setIsExplicitAll(false);
+    setCurrentPage(1);
+  }, [regionLabelParam, regionOptions]);
 
   useEffect(() => {
     if (!sportOptions.length) {
@@ -488,29 +556,53 @@ export default function MeetingListPage() {
       </section>
 
       <div className={styles.listHead}>
-        <h2>
-          {displayedRegionLabel === ALL_REGION
-            ? "전체 지역"
-            : displayedRegionLabel}{" "}
-          모임
-        </h2>
-        <span>총 {totalCount}개</span>
+        <div className={styles.listHeadCopy}>
+          <span className={styles.listEyebrow}>LIVE MEETINGS</span>
+          <h2>
+            {displayedRegionLabel === ALL_REGION
+              ? "전체 지역"
+              : displayedRegionLabel}{" "}
+            모임
+          </h2>
+          <p>지금 열려 있는 모임을 한눈에 비교하고 바로 참여 요청까지 이어가세요.</p>
+        </div>
+        <div className={styles.listHeadCount}>
+          <span className={styles.listCountLabel}>RESULT</span>
+          <strong>{totalCount}</strong>
+        </div>
       </div>
 
       <section className={styles.meetingList}>
         {meetingList.length === 0 ? (
           <div className={styles.emptyList}>
+            <div className={styles.emptyIconWrap}>
+              <UiIcon name="search" className={styles.emptyIcon} />
+            </div>
+            <span className={styles.emptyEyebrow}>NO MATCH FOUND</span>
             <h3>조건에 맞는 모임이 없습니다</h3>
-            <p>선택하신 지역이나 종목, 날짜를 변경해 보세요.</p>
-            <button type="button" onClick={resetFilters}>
-              검색 조건 초기화
-            </button>
+            <p>지역, 종목, 날짜를 조금만 넓혀보면 바로 참여할 수 있는 모임이 더 잘 보여요.</p>
+            <div className={styles.emptyActions}>
+              <button type="button" onClick={resetFilters}>
+                <UiIcon name="refresh" className={styles.emptyButtonIcon} />
+                검색 조건 초기화
+              </button>
+              <Link to="/search" className={styles.emptyLink}>
+                <UiIcon name="spark" className={styles.emptyButtonIcon} />
+                통합 검색으로 둘러보기
+              </Link>
+            </div>
           </div>
         ) : (
           meetingList.map((meeting) => (
             <Link
               key={meeting.meetingId}
-              className={styles.listCard}
+              className={cx(
+                "listCard",
+                meeting.status === "RECRUITING" && "listCardRecruiting",
+                meeting.status === "COMPLETED" && "listCardCompleted",
+                (meeting.status === "CLOSED" || meeting.status === "CANCELLED") &&
+                  "listCardClosed",
+              )}
               to={`/meetings/${meeting.meetingId}`}
             >
               <div className={styles.listCardBody}>
@@ -596,11 +688,20 @@ export default function MeetingListPage() {
 
                 <button
                   type="button"
-                  className={
-                    meeting.status === "CLOSED" ? styles.actionClosed : ""
-                  }
+                  className={cx(
+                    meeting.status === "CLOSED" && "actionClosed",
+                    meeting.status === "RECRUITING" && "actionRecruiting",
+                    meeting.status === "COMPLETED" && "actionCompleted",
+                    meeting.status === "CANCELLED" && "actionCancelled",
+                  )}
                 >
-                  {meeting.status === "CLOSED" ? "마감" : "참가 신청"}
+                  {meeting.status === "CLOSED"
+                    ? "마감"
+                    : meeting.status === "COMPLETED"
+                      ? "종료"
+                      : meeting.status === "CANCELLED"
+                        ? "취소됨"
+                        : "참가 신청"}
                 </button>
               </aside>
             </Link>

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import { createChatMessage, getChatMessages } from "../api/chatApi";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { meetings } from "../data/demoData";
 import { meetingImages } from "../data/dashboardData";
 import { getAccessToken } from "../utils/authTokenStore";
@@ -37,6 +38,7 @@ const comments = [
 
 export default function MeetingDetailPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const { meetingId } = useParams();
   const meeting =
     meetings.find((item) => String(item.id) === meetingId) ?? meetings[0];
@@ -50,6 +52,33 @@ export default function MeetingDetailPage() {
   const [isChatSending, setIsChatSending] = useState(false);
   const chatListRef = useRef(null);
   const closeModal = () => setModalType(null);
+  const shareUrl = `${window.location.origin}/meetings/${meetingId}`;
+  const shareTitle = `${meeting.title} | WeMove`;
+  const shareText = `${meeting.title} · ${meeting.region} · 2026.${meeting.displayDate} ${meeting.time}`;
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      }
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("링크 복사 완료", "모임 링크를 클립보드에 복사했습니다.");
+    } catch {
+      toast.error("공유 실패", "브라우저에서 링크 복사를 지원하지 않습니다.");
+    }
+  };
 
   const appendChatMessage = (message) => {
     if (!message?.messageId) {
@@ -305,6 +334,14 @@ export default function MeetingDetailPage() {
                   : isClosed
                     ? "신청 마감"
                     : "참가 신청"}
+              </button>
+
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={handleShare}
+              >
+                공유하기
               </button>
 
               {isAdmin ? (

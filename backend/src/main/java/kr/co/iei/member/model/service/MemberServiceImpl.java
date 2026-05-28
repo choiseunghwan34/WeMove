@@ -2,6 +2,7 @@ package kr.co.iei.member.model.service;
 
 
 import java.util.List;
+import java.util.Comparator;
 
 import kr.co.iei.auth.model.dao.AuthDao;
 import kr.co.iei.auth.model.service.EmailVerificationService;
@@ -100,6 +101,49 @@ public class MemberServiceImpl implements MemberService {
     return memberDao.selectMemberById(memberId);
   }
 
+  public MemberActivityResponse getActivity(Long memberId) {
+    requireMember(memberId);
+
+    List<MemberActivityMeetingResponse> hostedMeetings =
+        memberDao.selectHostedActivityMeetings(memberId).stream()
+            .sorted(activityMeetingComparator())
+            .toList();
+
+    List<MemberActivityMeetingResponse> participantMeetings =
+        memberDao.selectParticipantActivityMeetings(memberId).stream()
+            .sorted(activityMeetingComparator())
+            .toList();
+
+    List<MemberActivityMeetingResponse> approvedMeetings =
+        participantMeetings.stream()
+            .filter(
+                meeting ->
+                    "APPROVED".equals(meeting.getParticipationStatus())
+                        && !"COMPLETED".equals(meeting.getStatus())
+                        && !"CANCELLED".equals(meeting.getStatus()))
+            .toList();
+
+    List<MemberActivityMeetingResponse> pendingMeetings =
+        participantMeetings.stream()
+            .filter(meeting -> "PENDING".equals(meeting.getParticipationStatus()))
+            .toList();
+
+    List<MemberActivityMeetingResponse> completedMeetings =
+        participantMeetings.stream()
+            .filter(
+                meeting ->
+                    "APPROVED".equals(meeting.getParticipationStatus())
+                        && "COMPLETED".equals(meeting.getStatus()))
+            .toList();
+
+    return MemberActivityResponse.builder()
+        .hostedMeetings(hostedMeetings)
+        .approvedMeetings(approvedMeetings)
+        .pendingMeetings(pendingMeetings)
+        .completedMeetings(completedMeetings)
+        .build();
+  }
+
   private void validateUpdateRequest(Long memberId, MemberUpdateRequest req) {
     if (req == null) {
       throw new IllegalArgumentException("수정할 프로필 정보를 입력해주세요.");
@@ -163,5 +207,17 @@ public class MemberServiceImpl implements MemberService {
     }
 
     return phone.replaceAll("\\D", "");
+  }
+
+  private Comparator<MemberActivityMeetingResponse> activityMeetingComparator() {
+    return Comparator.comparing(
+            MemberActivityMeetingResponse::getMeetingDate,
+            Comparator.nullsLast(Comparator.reverseOrder()))
+        .thenComparing(
+            MemberActivityMeetingResponse::getStartTime,
+            Comparator.nullsLast(Comparator.reverseOrder()))
+        .thenComparing(
+            MemberActivityMeetingResponse::getCreatedAt,
+            Comparator.nullsLast(Comparator.reverseOrder()));
   }
 }

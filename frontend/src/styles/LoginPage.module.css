@@ -825,3 +825,12 @@
   flex: 0 0 16px;
   accent-color: #2563eb;
 }
+
+.card {
+  border-radius: 32px !important;
+}
+
+.card input:focus,
+.card select:focus {
+  transform: translateY(-1px);
+}
