@@ -283,6 +283,7 @@
 
 .message,
 .messageMine {
+  width: fit-content;
   max-width: 78%;
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
@@ -294,6 +295,10 @@
   align-self: flex-end;
   border-color: rgba(37, 99, 235, 0.18);
   background: #eff6ff;
+}
+
+.message {
+  align-self: flex-start;
 }
 
 .message div,

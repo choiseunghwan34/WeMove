@@ -111,6 +111,138 @@
   composes: dashboardUserName from "./WeMoveShared.module.css";
 }
 
+.dashboardNotification {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dashboardNotificationButton {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #24415f;
+  padding: 0;
+  cursor: pointer;
+}
+
+.dashboardNotificationButton svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
+.dashboardNotificationBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.dashboardNotificationMenu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 120;
+  width: min(340px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid #dbe3ef;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 22px 54px rgba(15, 23, 42, 0.18);
+}
+
+.dashboardNotificationHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dashboardNotificationHead strong {
+  color: #10233d;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.dashboardNotificationHead span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dashboardNotificationList {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.dashboardNotificationItem {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.dashboardNotificationItem + .dashboardNotificationItem {
+  border-top: 1px solid #eef2f7;
+}
+
+.dashboardNotificationItem strong {
+  overflow: hidden;
+  color: #10233d;
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboardNotificationItem p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.dashboardNotificationItem time {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dashboardNotificationEmpty {
+  margin: 0;
+  padding: 22px 12px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .mobileMenuButton {
   display: none;
 }
@@ -196,6 +328,21 @@
     max-width: none !important;
     min-width: 0 !important;
     order: initial !important;
+  }
+
+  .dashboardNotificationButton {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .dashboardNotificationButton svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .dashboardNotificationMenu {
+    right: 0;
+    width: min(320px, calc(100vw - 28px));
   }
 
   .dashboardUserInfo {

@@ -3,6 +3,7 @@ import { createChatMessage, getChatMessages, getChatRooms } from "../api/chatApi
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { getAccessToken } from "../utils/authTokenStore";
+import { publishNotification } from "../utils/notificationEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
 
 const formatTime = (value) =>
@@ -86,7 +87,14 @@ export default function GlobalMeetingChat() {
       const roomTitle =
         rooms.find((room) => Number(room.meetingId) === Number(message.meetingId))
           ?.title || "무브톡";
-      toast.info(roomTitle, `${message.nickname || "참가자"}: ${message.content}`);
+      const notificationMessage = `${message.nickname || "참가자"}: ${message.content}`;
+      toast.info(roomTitle, notificationMessage);
+      publishNotification({
+        type: "chat",
+        title: roomTitle,
+        message: notificationMessage,
+        createdAt: message.createdAt,
+      });
     }
   };
 
