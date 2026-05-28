@@ -26,4 +26,7 @@ public class MeetingDetailResponse {
   private String meetingType;
   private String repeatType;
   private String hostProfileImage;
+  private String hostSports;
+  private LocalDateTime hostCreatedAt;
 }
+

@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { getMeeting } from "../api/meetingApi";
 import { getParticipants, applyMeeting, cancelParticipant } from "../api/participantApi";
 import { meetingImages } from "../data/dashboardData";
+import UiIcon from "../components/UiIcon";
 import styles from "../styles/MeetingDetailPage.module.css";
 
 const STATUS_MAP = {
@@ -45,6 +46,25 @@ const comments = [
     time: "25분 전",
   },
 ];
+
+const formatJoinDate = (dateStr) => {
+  if (!dateStr) return "2026.03";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      const parts = dateStr.split(/[-T.]/);
+      if (parts.length >= 2) {
+        return `${parts[0]}.${parts[1]}`;
+      }
+      return "2026.03";
+    }
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    return `${year}.${month}`;
+  } catch (e) {
+    return "2026.03";
+  }
+};
 
 export default function MeetingDetailPage() {
   const { meetingId } = useParams();
@@ -137,6 +157,17 @@ export default function MeetingDetailPage() {
 
   if (loading) return <div className={styles.page}>로딩 중...</div>;
   if (!meeting) return <div className={styles.page}>모임을 찾을 수 없습니다.</div>;
+
+  const getHostSportsText = () => {
+    return meeting.hostSports && meeting.hostSports.trim()
+      ? meeting.hostSports.trim()
+      : "운동 관심 유저";
+  };
+
+  const getHostJoinDateText = () => {
+    const joinDate = formatJoinDate(meeting.hostCreatedAt);
+    return `가입일 ${joinDate}`;
+  };
 
   const isClosed = meeting.status === "CLOSED" || meeting.status === "COMPLETED";
   const isAdmin = isAuthenticated && user && user.role === "ADMIN";
@@ -272,11 +303,17 @@ export default function MeetingDetailPage() {
                   className={styles.profileAvatar}
                 />
               ) : (
-                <div className={styles.profileAvatar} />
+                <span className={styles.profileAvatarFallback}>
+                  <UiIcon
+                    name="user"
+                    className={styles.dashboardHostIcon}
+                  />
+                </span>
               )}
               <div>
                 <strong>{meeting.meetingHostName || "익명"}</strong>
-                <p>러닝 · 매너점수 4.8 · 응답 빠름</p>
+                <p className={styles.hostSportsText}>{getHostSportsText()}</p>
+                <p className={styles.hostJoinDateText}>{getHostJoinDateText()}</p>
               </div>
             </div>
             <div className={styles.sideInfo}>
@@ -399,7 +436,7 @@ export default function MeetingDetailPage() {
             참가 신청 메시지
           </label>
           <textarea
-            placeholder="모임장에게 보낼 간단한 각오나 한 줄 메시지를 직접 적어주세요. (미입력 시 기본 문구로 전송)"
+            placeholder="모임장에게 보낼 간단한 각오나 한 줄 메시지를 적어주세요. (미입력 시 기본 문구로 전송)"
             value={applyMessage}
             onChange={(e) => setApplyMessage(e.target.value)}
             style={{

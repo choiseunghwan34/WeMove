@@ -81,6 +81,56 @@
 
 .hostCard {
   composes: hostCard from "./WeMoveShared.module.css";
+  padding: 12px 0 12px 10px;
+  gap: 8px;
+}
+
+.hostCard > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.hostCard .hostSportsText {
+  margin: 0;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.05em;
+}
+
+.hostCard .hostJoinDateText {
+  margin: 0;
+  color: #647c98;
+  font-size: 13px;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.profileAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.profileAvatarFallback {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #dbe8ff, #ddf4ff);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dashboardHostIcon {
+  width: 24px;
+  height: 24px;
+  color: #2268ef;
 }
 
 .page {
