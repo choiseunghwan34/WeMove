@@ -80,7 +80,15 @@
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
                   AND mp.status = 'APPROVED'
-            ) AS approvedCount
+            ) + CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM meetingParticipants hostMp
+                    WHERE hostMp.meetingId = m.meetingId
+                      AND hostMp.userId = m.hostUserId
+                      AND hostMp.status = 'APPROVED'
+                ) THEN 0 ELSE 1
+            END AS approvedCount
         FROM meetings m
         JOIN sports s ON m.sportId = s.sportId
         JOIN regions r ON m.regionId = r.regionId
@@ -111,13 +119,22 @@
                 FROM meetingParticipants mp2
                 WHERE mp2.meetingId = m.meetingId
                   AND mp2.status = 'APPROVED'
-            ) AS approvedCount
+            ) + CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM meetingParticipants hostMp
+                    WHERE hostMp.meetingId = m.meetingId
+                      AND hostMp.userId = m.hostUserId
+                      AND hostMp.status = 'APPROVED'
+                ) THEN 0 ELSE 1
+            END AS approvedCount
         FROM meetingParticipants mp
         JOIN meetings m ON mp.meetingId = m.meetingId
         JOIN sports s ON m.sportId = s.sportId
         JOIN regions r ON m.regionId = r.regionId
         JOIN users u ON m.hostUserId = u.userId
         WHERE mp.userId = #{memberId}
+          AND m.hostUserId != #{memberId}
           AND m.deletedAt IS NULL
         ORDER BY m.meetingDate DESC, m.startTime DESC, m.createdAt DESC
     </select>

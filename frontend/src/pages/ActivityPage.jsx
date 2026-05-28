@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import UiIcon from "../components/UiIcon";
-import { useAuth } from "../contexts/AuthContext";
 import { getMyActivity } from "../api/memberApi";
+import { updateMeetingStatus } from "../api/meetingApi";
+import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/ActivityPage.module.css";
 
@@ -31,7 +34,8 @@ const buildRelativeText = (dateValue) => {
     return String(dateValue).slice(0, 10);
   }
 
-  const diffMs = target.setHours(0, 0, 0, 0) - new Date(today.setHours(0, 0, 0, 0));
+  const diffMs =
+    target.setHours(0, 0, 0, 0) - new Date(today.setHours(0, 0, 0, 0));
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return "오늘";
@@ -55,8 +59,65 @@ const normalizeMeeting = (meeting) => ({
   maxMembers: Number(meeting.maxMembers ?? meeting.max ?? 0),
   status: meeting.status ?? "RECRUITING",
   statusText: meeting.statusText ?? meeting.status ?? "",
+  participationStatus: meeting.participationStatus ?? meeting.status ?? "",
   image: getMeetingThumbnail(meeting),
 });
+
+const getParticipationLabel = (status) => {
+  switch (status) {
+    case "PENDING":
+      return "대기";
+    case "APPROVED":
+      return "예정";
+    case "COMPLETED":
+      return "완료";
+    default:
+      return "활동";
+  }
+};
+
+const getHostedStatusLabel = (status) => {
+  switch (status) {
+    case "RECRUITING":
+      return "모집중";
+    case "CLOSED":
+      return "마감";
+    case "COMPLETED":
+      return "완료";
+    case "CANCELLED":
+      return "취소됨";
+    default:
+      return "상태";
+  }
+};
+
+const getToneClassByParticipation = (status) => {
+  switch (status) {
+    case "PENDING":
+      return styles.toneWaiting;
+    case "APPROVED":
+      return styles.toneScheduled;
+    case "COMPLETED":
+      return styles.toneCompleted;
+    default:
+      return "";
+  }
+};
+
+const getToneClassByHostedStatus = (status) => {
+  switch (status) {
+    case "RECRUITING":
+      return styles.toneHostedRecruiting;
+    case "CLOSED":
+      return styles.toneHostedClosed;
+    case "COMPLETED":
+      return styles.toneHostedCompleted;
+    case "CANCELLED":
+      return styles.toneHostedCancelled;
+    default:
+      return "";
+  }
+};
 
 const buildFeedItems = ({ hostedMeetings, approvedMeetings, pendingMeetings }) => {
   const feed = [
@@ -74,7 +135,7 @@ const buildFeedItems = ({ hostedMeetings, approvedMeetings, pendingMeetings }) =
     })),
     ...pendingMeetings.slice(0, 2).map((meeting) => ({
       key: `pending-${meeting.id}`,
-      title: `${meeting.title} 참여 요청을 기다리는 중이에요.`,
+      title: `${meeting.title} 신청 결과를 기다리는 중이에요.`,
       meta: `${meeting.sport} · ${meeting.region}`,
       time: buildRelativeText(meeting.meetingDate),
     })),
@@ -149,21 +210,23 @@ const buildGoogleCalendarUrl = (meeting) => {
     dates: `${start}/${end}`,
     details: `${meeting.sport} · ${meeting.region}`,
     location: `${meeting.region} ${meeting.place}`.trim(),
+    sf: "true",
+    output: "xml",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
 export default function ActivityPage() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [manageModalMeeting, setManageModalMeeting] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
-  const [selectedDateKey, setSelectedDateKey] = useState(() =>
-    getDateKey(new Date()),
-  );
+  const [selectedDateKey, setSelectedDateKey] = useState(() => getDateKey(new Date()));
   const [activityData, setActivityData] = useState({
     hostedMeetings: [],
     approvedMeetings: [],
@@ -171,35 +234,31 @@ export default function ActivityPage() {
     completedMeetings: [],
   });
 
-  useEffect(() => {
-    if (authLoading) {
-      return;
-    }
+  const loadActivity = useCallback(
+    async ({ showLoading = true } = {}) => {
+      if (authLoading) {
+        return;
+      }
 
-    if (!isAuthenticated || !user?.nickname) {
-      setActivityData({
-        hostedMeetings: [],
-        approvedMeetings: [],
-        pendingMeetings: [],
-        completedMeetings: [],
-      });
-      setLoading(false);
-      return;
-    }
+      if (!isAuthenticated || !user?.nickname) {
+        setActivityData({
+          hostedMeetings: [],
+          approvedMeetings: [],
+          pendingMeetings: [],
+          completedMeetings: [],
+        });
+        setLoading(false);
+        return;
+      }
 
-    let active = true;
-
-    const fetchActivity = async () => {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setLoadError("");
 
       try {
         const response = await getMyActivity(user.memberId);
         const payload = response.data ?? {};
-
-        if (!active) {
-          return;
-        }
 
         setActivityData({
           hostedMeetings: Array.isArray(payload.hostedMeetings)
@@ -217,22 +276,21 @@ export default function ActivityPage() {
         });
       } catch (error) {
         console.error(error);
-        if (active) {
-          setLoadError("내 활동 정보를 불러오지 못했습니다.");
-        }
+        setLoadError("내 활동 정보를 불러오지 못했습니다.");
       } finally {
-        if (active) {
+        if (showLoading) {
           setLoading(false);
         }
       }
-    };
+    },
+    [authLoading, isAuthenticated, user?.memberId, user?.nickname],
+  );
 
-    fetchActivity();
-
-    return () => {
-      active = false;
-    };
-  }, [authLoading, isAuthenticated, user?.memberId]);
+  useEffect(() => {
+    if (!authLoading) {
+      loadActivity();
+    }
+  }, [authLoading, loadActivity]);
 
   const activityItems = useMemo(
     () => [
@@ -244,21 +302,50 @@ export default function ActivityPage() {
     [activityData],
   );
 
-  const activityFeed = useMemo(
-    () => buildFeedItems(activityData),
-    [activityData],
-  );
-
+  const activityFeed = useMemo(() => buildFeedItems(activityData), [activityData]);
   const scheduleItems = activityData.approvedMeetings.slice(0, 4);
-  const visibleMeetings = activityData.approvedMeetings.length
-    ? activityData.approvedMeetings
-    : activityData.pendingMeetings;
-  const calendarMeetings = useMemo(
-    () => [...activityData.approvedMeetings, ...activityData.completedMeetings],
-    [activityData],
-  );
+  const scheduledMeetings = activityData.approvedMeetings;
+  const waitingMeetings = activityData.pendingMeetings;
+  const completedMeetings = activityData.completedMeetings;
+  const hostedMeetings = activityData.hostedMeetings;
+  const canCancelManagedMeeting =
+    manageModalMeeting &&
+    !["COMPLETED", "CANCELLED"].includes(manageModalMeeting.status);
+
+  const calendarMeetings = useMemo(() => {
+    const grouped = new Map();
+
+    const appendMeeting = (meeting, origin) => {
+      if (!meeting?.id || !meeting.meetingDate) {
+        return;
+      }
+
+      const existing = grouped.get(meeting.id);
+      const next = existing
+        ? {
+            ...existing,
+            origin:
+              existing.origin === "hosted" || origin === "hosted"
+                ? "hosted"
+                : existing.origin,
+          }
+        : { ...meeting, origin };
+
+      grouped.set(meeting.id, next);
+    };
+
+    activityData.hostedMeetings.forEach((meeting) => appendMeeting(meeting, "hosted"));
+    activityData.approvedMeetings.forEach((meeting) => appendMeeting(meeting, "approved"));
+    activityData.completedMeetings.forEach((meeting) =>
+      appendMeeting(meeting, "completed"),
+    );
+
+    return Array.from(grouped.values());
+  }, [activityData]);
+
   const meetingsByDate = useMemo(() => {
     const grouped = new Map();
+
     calendarMeetings.forEach((meeting) => {
       const dateKey = getDateKey(meeting.meetingDate);
       if (!dateKey) {
@@ -280,6 +367,7 @@ export default function ActivityPage() {
 
     return grouped;
   }, [calendarMeetings]);
+
   const calendarDays = useMemo(
     () => buildCalendarDays(selectedMonth, meetingsByDate),
     [selectedMonth, meetingsByDate],
@@ -294,11 +382,35 @@ export default function ActivityPage() {
     : "날짜를 선택해주세요";
   const weekLabels = ["일", "월", "화", "수", "목", "금", "토"];
 
+  const handleOpenManageModal = (meeting) => {
+    setManageModalMeeting(meeting);
+  };
+
+  const handleCloseManageModal = () => {
+    setManageModalMeeting(null);
+  };
+
+  const handleCancelHostedMeeting = async () => {
+    if (!manageModalMeeting) {
+      return;
+    }
+
+    try {
+      await updateMeetingStatus(manageModalMeeting.id, { status: "CANCELLED" });
+      toast.success("모임이 취소되었습니다.", "내 활동 목록이 갱신되었습니다.");
+      setManageModalMeeting(null);
+      await loadActivity({ showLoading: false });
+    } catch (error) {
+      console.error(error);
+      toast.error("모임 취소 실패", "모임 상태를 변경하지 못했습니다.");
+    }
+  };
+
   return (
     <DashboardShell
-      active="내 활동"
+      active="내활동"
       title="내 활동"
-      description="참여 중인 모임, 승인 대기, 내가 만든 모임 흐름을 한곳에서 확인할 수 있습니다."
+      description="참여 중인 모임, 승인 대기 모임, 내가 만든 모임을 한 번에 확인할 수 있습니다."
       aside={
         <>
           <section className={styles.dashboardPanel}>
@@ -353,8 +465,8 @@ export default function ActivityPage() {
     >
       {!isAuthenticated && !authLoading ? (
         <section className={styles.emptyStateCard}>
-          <h2>로그인 후 내 활동을 볼 수 있어요</h2>
-          <p>참여 요청한 모임과 내가 만든 모임을 한 화면에서 확인할 수 있습니다.</p>
+          <h2>로그인하면 내 활동을 볼 수 있어요</h2>
+          <p>참여 요청, 모임 생성, 완료 기록을 한 화면에서 확인할 수 있습니다.</p>
           <Link to="/login" className={styles.emptyStateAction}>
             로그인하러 가기
           </Link>
@@ -377,7 +489,7 @@ export default function ActivityPage() {
               <div>
                 <h2>내 일정 캘린더</h2>
                 <p className={styles.dashboardSectionCopy}>
-                  승인된 일정과 완료한 모임을 날짜별로 한눈에 확인할 수 있습니다.
+                  승인된 일정과 내가 만든 모임을 날짜별로 바로 확인할 수 있습니다.
                 </p>
               </div>
               <div className={styles.calendarMonthControls}>
@@ -474,22 +586,74 @@ export default function ActivityPage() {
                 </div>
                 <div className={styles.calendarAgendaList}>
                   {selectedDateMeetings.length ? (
-                    selectedDateMeetings.map((meeting) => (
-                      <Link
-                        key={`agenda-${meeting.id}`}
-                        to={`/meetings/${meeting.id}`}
-                        className={styles.calendarAgendaItem}
-                      >
-                        <div>
-                          <span>{meeting.sport}</span>
-                          <strong>{meeting.title}</strong>
-                          <p>
-                            {meeting.place} · {String(meeting.startTime || "").slice(0, 5)}
-                          </p>
-                        </div>
-                        <b>{meeting.status === "COMPLETED" ? "완료" : "예정"}</b>
-                      </Link>
-                    ))
+                    selectedDateMeetings.map((meeting) =>
+                      meeting.origin === "hosted" ? (
+                        <button
+                          key={`agenda-${meeting.id}`}
+                          type="button"
+                          className={[
+                            styles.calendarAgendaItem,
+                            styles.toneHostedRecruiting,
+                            meeting.status === "CLOSED"
+                              ? styles.toneHostedClosed
+                              : meeting.status === "COMPLETED"
+                                ? styles.toneHostedCompleted
+                                : meeting.status === "CANCELLED"
+                                  ? styles.toneHostedCancelled
+                                  : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          onClick={() => handleOpenManageModal(meeting)}
+                        >
+                          <div>
+                            <span>{meeting.sport}</span>
+                            <strong>{meeting.title}</strong>
+                            <p>
+                              {meeting.place} · {String(meeting.startTime || "").slice(0, 5)}
+                            </p>
+                          </div>
+                          <b className={styles.hostedAgendaTone}>
+                            내가 만든 · {getHostedStatusLabel(meeting.status)}
+                          </b>
+                        </button>
+                      ) : (
+                        <Link
+                          key={`agenda-${meeting.id}`}
+                          to={`/meetings/${meeting.id}`}
+                          className={[
+                            styles.calendarAgendaItem,
+                            meeting.status === "COMPLETED"
+                              ? styles.toneCompleted
+                              : meeting.participationStatus === "PENDING"
+                                ? styles.toneWaiting
+                                : styles.toneScheduled,
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          <div>
+                            <span>{meeting.sport}</span>
+                            <strong>{meeting.title}</strong>
+                            <p>
+                              {meeting.place} · {String(meeting.startTime || "").slice(0, 5)}
+                            </p>
+                          </div>
+                          <b
+                            className={[
+                              styles.calendarAgendaTone,
+                              meeting.status === "COMPLETED"
+                                ? styles.badgeCompleted
+                                : styles.badgeScheduled,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          >
+                            {meeting.status === "COMPLETED" ? "완료" : "예정"}
+                          </b>
+                        </Link>
+                      ),
+                    )
                   ) : (
                     <div className={styles.emptyMessage}>
                       선택한 날짜에는 등록된 일정이 없습니다.
@@ -502,7 +666,7 @@ export default function ActivityPage() {
 
           {loadError ? (
             <section className={styles.emptyStateCard}>
-              <h2>내 활동을 불러오지 못했습니다</h2>
+              <h2>내 활동 정보를 불러오지 못했습니다</h2>
               <p>{loadError}</p>
             </section>
           ) : loading ? (
@@ -511,67 +675,296 @@ export default function ActivityPage() {
               <p>참여 정보와 생성한 모임을 정리하고 있어요.</p>
             </section>
           ) : (
-            <section className={styles.dashboardPanel}>
-              <div className={styles.dashboardSectionHead}>
-                <div>
-                  <h2>
-                    {activityData.approvedMeetings.length
-                      ? "참여 예정 모임"
-                      : activityData.pendingMeetings.length
-                        ? "참여 대기 모임"
-                        : "최근 참여 모임"}
-                  </h2>
-                  <p className={styles.dashboardSectionCopy}>
-                    실제 참여 상태를 기준으로 가장 먼저 확인해야 할 모임을 보여줍니다.
-                  </p>
-                </div>
-                <Link to="/meetings">모임 더 보기</Link>
-              </div>
-
-              <div className={styles.dashboardCompactList}>
-                {visibleMeetings.length ? (
-                  visibleMeetings.slice(0, 4).map((meeting) => (
-                    <Link
-                      key={meeting.id}
-                      to={`/meetings/${meeting.id}`}
-                      className={styles.dashboardCompactCard}
-                    >
-                      <div className={styles.dashboardCompactBody}>
-                        <img
-                          src={meeting.image}
-                          alt={meeting.title}
-                          className={styles.dashboardMiniImage}
-                        />
-                        <div>
-                          <div className={styles.dashboardMeetingBadges}>
-                            <span>{meeting.sport}</span>
-                            <span className={styles.dashboardStatusBadge}>
-                              {meeting.participationStatus === "PENDING"
-                                ? "승인 대기"
-                                : meeting.statusText}
-                            </span>
-                          </div>
-                          <h3>{meeting.title}</h3>
-                          <p>
-                            {meeting.place} · {formatMeetingDateTime(meeting)}
-                          </p>
-                        </div>
-                      </div>
-                      <strong>
-                        {meeting.approvedCount}/{meeting.maxMembers}명
-                      </strong>
-                    </Link>
-                  ))
-                ) : (
-                  <div className={styles.emptyMessage}>
-                    아직 참여 중이거나 대기 중인 모임이 없습니다.
+            <>
+              <section className={styles.activityBuckets}>
+                <article className={styles.activityBucketCard}>
+                  <div className={styles.activityBucketHead}>
+                    <div>
+                      <h2>예정 모임</h2>
+                      <p>승인이 끝나 곧 참여할 모임입니다.</p>
+                    </div>
+                    <span>{scheduledMeetings.length}개</span>
                   </div>
-                )}
-              </div>
-            </section>
+                  <div className={styles.activityBucketList}>
+                    {scheduledMeetings.length ? (
+                      scheduledMeetings.slice(0, 3).map((meeting) => (
+                        <Link
+                          key={`scheduled-${meeting.id}`}
+                          to={`/meetings/${meeting.id}`}
+                          className={[
+                            styles.activityMeetingCard,
+                            styles.toneScheduled,
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          <div>
+                            <div className={styles.dashboardMeetingBadges}>
+                              <span>{meeting.sport}</span>
+                              <span
+                                className={[
+                                  styles.dashboardStatusBadge,
+                                  styles.badgeScheduled,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
+                                {getParticipationLabel(
+                                  meeting.participationStatus || "APPROVED",
+                                )}
+                              </span>
+                            </div>
+                            <strong>{meeting.title}</strong>
+                            <p>
+                              {meeting.place} · {formatMeetingDateTime(meeting)}
+                            </p>
+                          </div>
+                          <b className={styles.cardCountTone}>
+                            {meeting.approvedCount}/{meeting.maxMembers}명
+                          </b>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className={styles.emptyMessage}>
+                        예정된 모임이 아직 없습니다.
+                      </div>
+                    )}
+                  </div>
+                </article>
+
+                <article className={styles.activityBucketCard}>
+                  <div className={styles.activityBucketHead}>
+                    <div>
+                      <h2>대기 모임</h2>
+                      <p>신청은 했지만 승인 결과를 기다리는 모임입니다.</p>
+                    </div>
+                    <span>{waitingMeetings.length}개</span>
+                  </div>
+                  <div className={styles.activityBucketList}>
+                    {waitingMeetings.length ? (
+                      waitingMeetings.slice(0, 3).map((meeting) => (
+                        <Link
+                          key={`waiting-${meeting.id}`}
+                          to={`/meetings/${meeting.id}`}
+                          className={[
+                            styles.activityMeetingCard,
+                            styles.toneWaiting,
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          <div>
+                            <div className={styles.dashboardMeetingBadges}>
+                              <span>{meeting.sport}</span>
+                              <span
+                                className={[
+                                  styles.dashboardStatusBadge,
+                                  styles.badgeWaiting,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
+                                {getParticipationLabel(
+                                  meeting.participationStatus || "PENDING",
+                                )}
+                              </span>
+                            </div>
+                            <strong>{meeting.title}</strong>
+                            <p>
+                              {meeting.place} · {formatMeetingDateTime(meeting)}
+                            </p>
+                          </div>
+                          <b className={styles.cardCountTone}>
+                            {meeting.approvedCount}/{meeting.maxMembers}명
+                          </b>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className={styles.emptyMessage}>
+                        대기 중인 모임이 없습니다.
+                      </div>
+                    )}
+                  </div>
+                </article>
+
+                <article className={styles.activityBucketCard}>
+                  <div className={styles.activityBucketHead}>
+                    <div>
+                      <h2>완료 모임</h2>
+                      <p>참여가 끝나 리뷰나 회고를 할 수 있는 모임입니다.</p>
+                    </div>
+                    <span>{completedMeetings.length}개</span>
+                  </div>
+                  <div className={styles.activityBucketList}>
+                    {completedMeetings.length ? (
+                      completedMeetings.slice(0, 3).map((meeting) => (
+                        <Link
+                          key={`completed-${meeting.id}`}
+                          to={`/meetings/${meeting.id}`}
+                          className={[
+                            styles.activityMeetingCard,
+                            styles.toneCompleted,
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          <div>
+                            <div className={styles.dashboardMeetingBadges}>
+                              <span>{meeting.sport}</span>
+                              <span
+                                className={[
+                                  styles.dashboardStatusBadge,
+                                  styles.badgeCompleted,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
+                                {getParticipationLabel(
+                                  meeting.participationStatus || "COMPLETED",
+                                )}
+                              </span>
+                            </div>
+                            <strong>{meeting.title}</strong>
+                            <p>
+                              {meeting.place} · {formatMeetingDateTime(meeting)}
+                            </p>
+                          </div>
+                          <b className={styles.cardCountTone}>
+                            {meeting.approvedCount}/{meeting.maxMembers}명
+                          </b>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className={styles.emptyMessage}>
+                        완료한 모임이 아직 없습니다.
+                      </div>
+                    )}
+                  </div>
+                </article>
+              </section>
+
+              <section className={styles.dashboardPanel}>
+                <div className={styles.dashboardSectionHead}>
+                  <div>
+                    <h2>내가 만든 모임</h2>
+                    <p className={styles.dashboardSectionCopy}>
+                      카드를 누르면 상태를 확인하고 모임 취소까지 바로 할 수 있습니다.
+                    </p>
+                  </div>
+                  <span>{hostedMeetings.length}개</span>
+                </div>
+
+                <div className={styles.hostMeetingList}>
+                  {hostedMeetings.length ? (
+                    hostedMeetings.slice(0, 6).map((meeting) => (
+                      <button
+                        key={`hosted-${meeting.id}`}
+                        type="button"
+                        className={[
+                          styles.hostMeetingCard,
+                          getToneClassByHostedStatus(meeting.status),
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        onClick={() => handleOpenManageModal(meeting)}
+                      >
+                        <div className={styles.hostMeetingHeader}>
+                          <div>
+                            <div className={styles.dashboardMeetingBadges}>
+                              <span>{meeting.sport}</span>
+                              <span
+                                className={[
+                                  styles.dashboardStatusBadge,
+                                  styles.badgeHosted,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                              >
+                                {getHostedStatusLabel(meeting.status)}
+                              </span>
+                            </div>
+                            <strong>{meeting.title}</strong>
+                            <p>
+                              {meeting.place} · {formatMeetingDateTime(meeting)}
+                            </p>
+                          </div>
+                          <span className={styles.hostMeetingAction}>관리하기</span>
+                        </div>
+                        <div className={styles.hostMeetingMeta}>
+                          <span>{meeting.region}</span>
+                          <span>
+                            {meeting.approvedCount}/{meeting.maxMembers}명
+                          </span>
+                          <b className={styles.hostMeetingMetaTone}>
+                            {getHostedStatusLabel(meeting.status)}
+                          </b>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className={styles.emptyMessage}>
+                      아직 내가 만든 모임이 없습니다.
+                    </div>
+                  )}
+                </div>
+              </section>
+            </>
           )}
         </>
       ) : null}
+
+      <AppModal
+        open={Boolean(manageModalMeeting)}
+        variant="sheet"
+        tone="danger"
+        eyebrow="모임 상태 관리"
+        title={manageModalMeeting?.title ?? ""}
+        description={
+          manageModalMeeting
+            ? `${manageModalMeeting.region} · ${formatMeetingDateTime(manageModalMeeting)}`
+            : ""
+        }
+        confirmText="모임 취소"
+        cancelText="닫기"
+        onConfirm={canCancelManagedMeeting ? handleCancelHostedMeeting : undefined}
+        onClose={handleCloseManageModal}
+      >
+        {manageModalMeeting ? (
+          <div className={styles.manageModalBody}>
+            <div className={styles.manageModalMeta}>
+              <span>현재 상태</span>
+              <strong>{getHostedStatusLabel(manageModalMeeting.status)}</strong>
+              <p>
+                {manageModalMeeting.approvedCount}/{manageModalMeeting.maxMembers}명 참여
+              </p>
+            </div>
+            <div className={styles.manageModalMeta}>
+              <span>모임 정보</span>
+              <strong>{manageModalMeeting.sport}</strong>
+              <p>
+                {manageModalMeeting.place} · {manageModalMeeting.region}
+              </p>
+            </div>
+            <Link
+              to={`/meetings/${manageModalMeeting.id}`}
+              className={styles.manageModalLink}
+              onClick={handleCloseManageModal}
+            >
+              모임 상세 보기
+            </Link>
+            {canCancelManagedMeeting ? (
+              <p className={styles.manageModalNotice}>
+                모임을 취소하면 참가자 목록에서도 더 이상 진행 중인 일정으로 보이지
+                않습니다.
+              </p>
+            ) : (
+              <p className={styles.manageModalNotice}>
+                완료되었거나 이미 취소된 모임이라 상태만 확인할 수 있습니다.
+              </p>
+            )}
+          </div>
+        ) : null}
+      </AppModal>
     </DashboardShell>
   );
 }

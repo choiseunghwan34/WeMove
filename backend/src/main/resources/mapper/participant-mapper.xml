@@ -72,7 +72,17 @@
     </update>
 
     <select id="countApprovedByMeetingId" resultType="int">
-        SELECT COUNT(*)
+        SELECT COUNT(*) + CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM meetings m
+                JOIN meetingParticipants hostMp
+                  ON hostMp.meetingId = m.meetingId
+                 AND hostMp.userId = m.hostUserId
+                 AND hostMp.status = 'APPROVED'
+                WHERE m.meetingId = #{meetingId}
+            ) THEN 0 ELSE 1
+        END
         FROM meetingParticipants
         WHERE meetingId=#{meetingId}
         AND status="APPROVED"

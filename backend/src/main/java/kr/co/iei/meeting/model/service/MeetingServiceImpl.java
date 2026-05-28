@@ -15,6 +15,8 @@ import kr.co.iei.meeting.model.vo.MeetingListResponse;
 import kr.co.iei.meeting.model.vo.MeetingSearchCondition;
 import kr.co.iei.meeting.model.vo.MeetingStatusUpdateRequest;
 import kr.co.iei.meeting.model.vo.MeetingUpdateRequest;
+import kr.co.iei.participant.model.dao.ParticipantDao;
+import kr.co.iei.participant.model.vo.MeetingParticipant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class MeetingServiceImpl implements MeetingService {
   private final MeetingDao meetingDao;
+  private final ParticipantDao participantDao;
   private final CloudinaryImageService cloudinaryImageService;
 
 
@@ -65,6 +68,13 @@ public class MeetingServiceImpl implements MeetingService {
     meeting.setGuideText(request.getGuideText());
 
     meetingDao.insertMeeting(meeting);
+
+    MeetingParticipant hostParticipant = new MeetingParticipant();
+    hostParticipant.setMeetingId(meeting.getMeetingId());
+    hostParticipant.setUserId(userId);
+    hostParticipant.setStatus("APPROVED");
+    participantDao.insertParticipant(hostParticipant);
+
     return meeting.getMeetingId();
   }
 

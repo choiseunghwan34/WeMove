@@ -49,6 +49,10 @@ public class MeetingDao {
     return sqlSession.selectOne("meeting.selectMaxMembers", id);
   }
 
+  public Long selectHostUserId(Long id) {
+    return sqlSession.selectOne("meeting.selectHostUserId", id);
+  }
+
 
 
 }

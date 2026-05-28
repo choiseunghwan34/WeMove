@@ -50,7 +50,15 @@
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
                   AND mp.status = 'APPROVED'
-            ) AS approvedCount,
+            ) + CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM meetingParticipants hostMp
+                    WHERE hostMp.meetingId = m.meetingId
+                      AND hostMp.userId = m.hostUserId
+                      AND hostMp.status = 'APPROVED'
+                ) THEN 0 ELSE 1
+            END AS approvedCount,
             m.maxMembers,
             m.status,
             u.nickname AS hostNickname,

@@ -16,6 +16,11 @@ public class ParticipantServiceImpl implements ParticipantService {
 
   @Transactional
   public void apply(Long meetingId, ParticipantRequest req) {
+    Long hostUserId = meetingDao.selectHostUserId(meetingId);
+    if (hostUserId != null && hostUserId.equals(req.getUserId())) {
+      throw new IllegalArgumentException("주최자는 자신의 모임에 참여 신청할 수 없습니다.");
+    }
+
     MeetingParticipant existing = participantDao.selectParticipantByMeetingIdAndUserId(meetingId, req.getUserId());
     if (existing != null) {
       if ("PENDING".equals(existing.getStatus()) || "APPROVED".equals(existing.getStatus())) {
@@ -47,7 +52,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
     Integer approved = participantDao.countApprovedByMeetingId(meetingId);
     Integer max = meetingDao.selectMaxMembers(meetingId);
-    if (approved != null && max != null && (approved + 1) >= max)
+    if (approved != null && max != null && approved >= max)
       meetingDao.updateMeetingStatus(meetingId, "CLOSED");
   }
 
@@ -66,7 +71,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     if (meetingId != null) {
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
-      if (approved != null && max != null && (approved + 1) < max) {
+      if (approved != null && max != null && approved < max) {
         meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
       }
     }
