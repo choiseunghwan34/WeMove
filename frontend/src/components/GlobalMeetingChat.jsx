@@ -13,6 +13,13 @@ const formatSchedule = (meetingDate, startTime) =>
     .filter(Boolean)
     .join(" ");
 
+const PANEL_DEFAULT_WIDTH = 860;
+const PANEL_DEFAULT_HEIGHT = 560;
+const PANEL_MIN_WIDTH = 520;
+const PANEL_MIN_HEIGHT = 360;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
 export default function GlobalMeetingChat() {
   const { user, isAuthenticated, loading } = useAuth();
   const toast = useToast();
@@ -25,6 +32,9 @@ export default function GlobalMeetingChat() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [panelSize, setPanelSize] = useState(null);
+  const [roomsCollapsed, setRoomsCollapsed] = useState(false);
+  const panelRef = useRef(null);
   const listRef = useRef(null);
   const socketMapRef = useRef(new Map());
   const activeMeetingIdRef = useRef(null);
@@ -218,6 +228,26 @@ export default function GlobalMeetingChat() {
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages]);
 
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const closeOnOutsidePointerDown = (event) => {
+      if (panelRef.current?.contains(event.target)) {
+        return;
+      }
+
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
+    };
+  }, [open]);
+
   if (loading || !isAuthenticated) {
     return null;
   }
@@ -244,28 +274,94 @@ export default function GlobalMeetingChat() {
     }
   };
 
+  const startPanelResize = (event, direction) => {
+    event.preventDefault();
+
+    const rect = panelRef.current?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = rect.width;
+    const startHeight = rect.height;
+
+    const resizePanel = (moveEvent) => {
+      const maxWidth = Math.min(PANEL_DEFAULT_WIDTH, window.innerWidth - 32);
+      const maxHeight = Math.min(PANEL_DEFAULT_HEIGHT, window.innerHeight - 48);
+
+      setPanelSize({
+        width: direction.includes("left")
+          ? clamp(startWidth + startX - moveEvent.clientX, PANEL_MIN_WIDTH, maxWidth)
+          : startWidth,
+        height: direction.includes("top")
+          ? clamp(startHeight + startY - moveEvent.clientY, PANEL_MIN_HEIGHT, maxHeight)
+          : startHeight,
+      });
+    };
+
+    const stopResize = () => {
+      window.removeEventListener("pointermove", resizePanel);
+      window.removeEventListener("pointerup", stopResize);
+    };
+
+    window.addEventListener("pointermove", resizePanel);
+    window.addEventListener("pointerup", stopResize);
+  };
+
   return (
     <>
-      <button
-        type="button"
-        className={styles.floatingButton}
-        aria-label="무브톡 열기"
-        onClick={() => {
-          setOpen((current) => !current);
-          if (!open) {
+      {!open ? (
+        <button
+          type="button"
+          className={styles.floatingButton}
+          aria-label="무브톡 열기"
+          onClick={() => {
+            setOpen(true);
             loadRooms();
-          }
-        }}
-      >
-        <span aria-hidden="true" className={styles.floatingIcon}>
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M5.5 5.7c1.5-1.4 3.7-2.2 6.5-2.2 5 0 8.5 2.9 8.5 7.1s-3.5 7.1-8.5 7.1c-.8 0-1.6-.1-2.3-.2l-4.1 2.7c-.5.3-1.1-.1-.9-.7l1.1-3.5c-1.5-1.3-2.3-3.2-2.3-5.4 0-1.9.7-3.6 2-4.9Z" />
-          </svg>
-        </span>
-      </button>
+          }}
+        >
+          <span aria-hidden="true" className={styles.floatingIcon}>
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M5.5 5.7c1.5-1.4 3.7-2.2 6.5-2.2 5 0 8.5 2.9 8.5 7.1s-3.5 7.1-8.5 7.1c-.8 0-1.6-.1-2.3-.2l-4.1 2.7c-.5.3-1.1-.1-.9-.7l1.1-3.5c-1.5-1.3-2.3-3.2-2.3-5.4 0-1.9.7-3.6 2-4.9Z" />
+            </svg>
+          </span>
+        </button>
+      ) : null}
 
       {open ? (
-        <section className={styles.panel} aria-label="무브톡">
+        <section
+          ref={panelRef}
+          className={styles.panel}
+          aria-label="무브톡"
+          style={
+            panelSize
+              ? {
+                  width: `${panelSize.width}px`,
+                  height: `${panelSize.height}px`,
+                }
+              : undefined
+          }
+        >
+          <button
+            type="button"
+            className={styles.resizeLeft}
+            aria-label="무브톡 가로 크기 조절"
+            onPointerDown={(event) => startPanelResize(event, "left")}
+          />
+          <button
+            type="button"
+            className={styles.resizeTop}
+            aria-label="무브톡 세로 크기 조절"
+            onPointerDown={(event) => startPanelResize(event, "top")}
+          />
+          <button
+            type="button"
+            className={styles.resizeTopLeft}
+            aria-label="무브톡 크기 조절"
+            onPointerDown={(event) => startPanelResize(event, "top-left")}
+          />
           <header className={styles.panelHeader}>
             <div>
               <strong>무브톡</strong>
@@ -276,7 +372,13 @@ export default function GlobalMeetingChat() {
             </button>
           </header>
 
-          <div className={styles.panelBody}>
+          <div
+            className={
+              roomsCollapsed
+                ? `${styles.panelBody} ${styles.panelBodyCollapsed}`
+                : styles.panelBody
+            }
+          >
             <aside className={styles.roomList}>
               {loadingRooms ? (
                 <p>불러오는 중</p>
@@ -310,6 +412,14 @@ export default function GlobalMeetingChat() {
                 <p>참여 가능한 무브톡이 없습니다.</p>
               )}
             </aside>
+            <button
+              type="button"
+              className={styles.roomToggle}
+              aria-label={roomsCollapsed ? "모임방 모음 펼치기" : "모임방 모음 숨기기"}
+              onClick={() => setRoomsCollapsed((current) => !current)}
+            >
+              {roomsCollapsed ? "›" : "‹"}
+            </button>
 
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
