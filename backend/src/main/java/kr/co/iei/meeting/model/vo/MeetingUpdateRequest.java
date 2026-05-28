@@ -1,6 +1,9 @@
 package kr.co.iei.meeting.model.vo;
 
+import java.sql.Time;
 import java.time.*;
+import java.util.TimeZone;
+
 import lombok.Data;
 
 @Data
@@ -13,4 +16,6 @@ public class MeetingUpdateRequest {
   private LocalTime startTime;
   private Integer maxMembers;
   private String status;
+  private String guideText;
+  private String supplies;
 }

@@ -13,7 +13,7 @@ public interface MeetingService {
 
   Long createMeeting(MeetingCreateRequest request, MultipartFile image, Long userId);
 
-  void updateMeeting(Long meetingId, MeetingUpdateRequest request);
+  void updateMeeting(Long meetingId, MeetingUpdateRequest request, MultipartFile image);
 
   void deleteMeeting(Long meetingId);
 

@@ -5,6 +5,7 @@ import kr.co.iei.meeting.model.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,11 +32,8 @@ public class MeetingDao {
     return sqlSession.insert("meeting.insertMeeting", m);
   }
 
-  public int updateMeeting(Long id, MeetingUpdateRequest req) {
-    Map<String, Object> p = new HashMap<>();
-    p.put("meetingId", id);
-    p.put("request", req);
-    return sqlSession.update("meeting.updateMeeting", p);
+  public int updateMeeting(Meeting m) {
+    return sqlSession.update("meeting.updateMeeting", m);
   }
 
   public int softDeleteMeeting(Long id) {
@@ -50,4 +48,6 @@ public class MeetingDao {
   public Integer selectMaxMembers(Long id) {
     return sqlSession.selectOne("meeting.selectMaxMembers", id);
   }
+
+
 }

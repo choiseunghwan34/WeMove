@@ -67,8 +67,30 @@ public class MeetingServiceImpl implements MeetingService {
     return meeting.getMeetingId();
   }
 
-  public void updateMeeting(Long meetingId, MeetingUpdateRequest request) {
-    meetingDao.updateMeeting(meetingId, request);
+  @Override
+  public void updateMeeting(Long meetingId, MeetingUpdateRequest request, MultipartFile image) {
+    // 1. 수정용 객체(VO)를 생성하거나, 기존 데이터를 조회해서 set해도 됩니다.
+    // 여기서는 request의 값을 담을 객체를 만듭니다.
+    Meeting meeting = new Meeting();
+    meeting.setMeetingId(meetingId);
+    meeting.setTitle(request.getTitle());
+    meeting.setContent(request.getContent());
+    meeting.setPlaceName(request.getPlaceName());
+    meeting.setAddress(request.getAddress());
+    meeting.setMeetingDate(request.getMeetingDate());
+    meeting.setStartTime(request.getStartTime());
+    meeting.setMaxMembers(request.getMaxMembers());
+    meeting.setStatus(request.getStatus());
+    meeting.setSupplies(request.getSupplies());
+    meeting.setGuideText(request.getGuideText());
+
+    // 2. 이미지가 있을 때만 경로를 set
+    if (image != null && !image.isEmpty()) {
+      meeting.setThumbnailImage(cloudinaryImageService.uploadMeetingThumbnail(image));
+    }
+
+    // 3. DAO에 객체째로 던집니다.
+    meetingDao.updateMeeting(meeting);
   }
 
   public void deleteMeeting(Long meetingId) {

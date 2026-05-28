@@ -10,6 +10,7 @@ export default function MeetingEditPage() {
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //1.기존 데이터 불러오기
   useEffect(()=>{
     getMeeting(meetingId).then((res)=>{
       console.log(res.data);
@@ -28,7 +29,6 @@ export default function MeetingEditPage() {
       console.log(res);
       alert("모임이 수정되었습니다.");
       navigate(`/meetings/${meetingId}`); //해당 모임의 상세페이지로 이동
-
   }).catch((err)=>{
     console.log(err);
     if(err.response?.status === 401){
@@ -38,8 +38,8 @@ export default function MeetingEditPage() {
     alert("모임 수정 중 오류가 발생했습니다.")}
     });
   }
-  //로딩 중일때
-  if(loading){
+  //데이터를 가져오는 중일 때
+  if(!initialData){
     return (
         <div>모임 정보를 불러오는 중...</div>
     )

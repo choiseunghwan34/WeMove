@@ -4,6 +4,8 @@ import styles from "../styles/MeetingCreatePage.module.css";
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
 import {useAuth} from "../contexts/AuthContext.jsx";
+import {getSports} from "../api/sportApi.js";
+import {getRegions} from "../api/regionApi.js";
 
 const normalizeText = (value = "") => String(value).trim();
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
@@ -39,6 +41,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const [selectedSportName, setSelectedSportName] = useState("");
     const [selectedRegion, setSelectedRegion] = useState({sido: "", sigungu: "", dong: ""});
 
+
     // 썸네일 미리보기
     const previews = useMemo(() => {
         return files.map((file) => {
@@ -55,14 +58,31 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         return () => previews.forEach((item) => URL.revokeObjectURL(item.url));
     }, [previews]);
 
+    useEffect(() => {
+        getSports().then((res)=>{
+            setSports(res.data);
+        }).catch((err)=>{console.log(err)});
+        getRegions().then((res)=>{
+            setRegions(res.data.map(r=>({
+                regionId: r.regionId,
+                sido: normalizeText(r.sido),
+                sigungu: normalizeText(r.sigungu),
+                dong: normalizeText(r.dong),
+            })));
+        }).catch((err)=>{console.log(err)});
+    }, []);
+
     // 데이터 로드
     useEffect(() => {
         //1. 기본 폼 데이터 불러오기(저장된 데이터가 있을때만 실행)
         if (!initialData) return;
 
+        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0,5): "";
+
         setForm(prev => ({
             ...prev,
-            ...initialData
+            ...initialData,
+            startTime: formattedStartTime,
         }));
 
         //2. 운동 종목 이름 불러오기
@@ -169,9 +189,17 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         setIsSportModalOpen(false);
     };
     const handleRegionApply = (d) => {
+        // 1. 선택된 정보를 상태에 저장 (화면 표시용)
         setSelectedRegion({sido: d.sido, sigungu: d.sigungu, dong: d.dong});
-        const match = regions.find(r => r.sido === d.sido && r.sigungu === d.sigungu && r.dong === d.dong);
-        if (match) setForm(p => ({...p, regionId: match.regionId}));
+        // 2. 평탄화된 regions 리스트에서 ID를 찾음
+        const match = regions.find(r =>
+            r.sido === d.sido &&
+            r.sigungu === d.sigungu &&
+            r.dong === d.dong
+        );
+        if (match) {
+            setForm(p => ({...p, regionId: match.regionId}));
+        }
         setIsRegionModalOpen(false);
     };
     const handleChange = (e) => {
@@ -194,6 +222,24 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log("onsubmit 함수확인: ", onSubmit)
+
+        let finalForm = {...form};
+        // sportName은 있는데 sportId가 없다면 매칭
+        if (!finalForm.sportId && selectedSportName) {
+            const s = sports.find(x => x.name === selectedSportName);
+            if (s) finalForm.sportId = s.sportId;
+        }
+
+        // regionName(이름)은 있는데 regionId가 없다면 매칭
+        if (!finalForm.regionId && selectedRegion.sido) {
+            const r = regions.find(x =>
+                x.sido === selectedRegion.sido &&
+                x.sigungu === selectedRegion.sigungu &&
+                x.dong === selectedRegion.dong
+            );
+            if (r) finalForm.regionId = r.regionId;
+        }
+
         const requiredFields = [
             {key: "title", label: "모임 제목", refKey: "title"},
             {key: "address", label: "주소", refKey: "address"},
@@ -240,16 +286,15 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         <div className={styles.page}>
             <div className={styles.pageTitle}>
                 <div>
-                    <h1>모임 만들기</h1>
-                    <p>
-                        제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는
-                        모임 페이지를 만들 수 있습니다.
+                    <h1>{title}</h1>
+                    <p>{isEditMode? "참가 예정인 사람들도 헷갈리지 않도록, 바뀐 정보가 한눈에 보이게 정리해두세요." :"제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는 모임 페이지를 만들 수 있습니다."}
+
                     </p>
                 </div>
             </div>
 
             <section className={styles.formIntro}>
-                <h2>좋은 모임은 한눈에 이해되는 정보에서 시작됩니다.</h2>
+                <h2>{isEditMode? "기존 흐름은 유지하고, 필요한 부분만 정확하게 다듬어보세요.":"좋은 모임은 한눈에 이해되는 정보에서 시작됩니다."}</h2>
                 <p>
                     참가자는 제목과 썸네일, 장소, 분위기를 먼저 봅니다. 처음 보는 사람도
                     바로 감을 잡을 수 있게 간결하고 선명하게 구성해보세요.
@@ -261,7 +306,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                     </article>
                     <article>
                         <span>사진 등록 팁</span>
-                        <strong>실제 분위기가 잘 보이는 밝은 운동 사진 1~4장 선택</strong>
+                        <strong>실제 분위기가 잘 보이는 밝은 운동 사진 선택</strong>
                     </article>
                     <article>
                         <span>소개 작성 팁</span>
@@ -516,7 +561,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
 
                 <div className={`${styles.full} ${styles.formActions}`}>
                     <Link to="/meetings">취소</Link>
-                    <button type="submit">모임 등록</button>
+                    <button type="submit">{isEditMode? "모임 수정" : "모임 등록"}</button>
                 </div>
             </form>
 
@@ -525,7 +570,11 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             <SportPickerModal
                 open={isSportModalOpen}
                 sports={sports} // DB에서 가져온 배열 전달
-                initialSelection={{sportId: form.sportId, name: selectedSportName}}
+                initialSelection={{
+                    category: sports.find(s => s.sportId === form.sportId)?.category || "전체 분류",
+                    sportId: form.sportId,
+                    name: selectedSportName
+                }}
                 onApply={handleSportApply}
                 onClose={() => setIsSportModalOpen(false)}
             />
