@@ -276,7 +276,7 @@
 
     <update id="softDeleteMeeting">
         UPDATE meetings
-        SET status = 'CANCLLED',
+        SET status = 'CANCELLED',
             deletedAt = NOW()
         WHERE meetingId = #{meetingId}
     </update>
