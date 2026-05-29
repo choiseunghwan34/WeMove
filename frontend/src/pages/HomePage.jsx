@@ -27,6 +27,35 @@ const heroSlides = [
   },
 ];
 
+const formatMeetingDateTime = (dateStr, timeStr) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+
+  // 1. 날짜가 오늘인지 확인
+  const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
+
+  // 2. 요일 배열
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const dayName = dayNames[date.getDay()];
+
+  // 3. 시간(HH:mm)과 오전/오후 구분
+  const hour = parseInt(timeStr.substring(0, 2), 10);
+  const ampm = hour < 12 ? "오전" : "오후";
+
+  // 12시간제 변환 (13시 -> 1시)
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  const displayMinute = timeStr.substring(3, 5);
+  const shortTime = `${ampm} ${displayHour}:${displayMinute}`;
+
+  // 4. 날짜 포맷
+  const dateDisplay = isToday ? "오늘" : `${date.getMonth() + 1}.${date.getDate()}`;
+
+  return `${dateDisplay}(${dayName}) ${shortTime}`;
+};
+
 export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
@@ -326,11 +355,8 @@ export default function HomePage() {
                     {meeting.regionName}
                   </span>
                   <span>
-                    <UiIcon
-                      name="calendar"
-                      className={styles.dashboardMetaIcon}
-                    />{" "}
-                    오늘(금) {meeting.startTime}
+                    <UiIcon name="calendar" className={styles.dashboardMetaIcon} />{" "}
+                    {formatMeetingDateTime(meeting.meetingDate, meeting.startTime)}
                   </span>
                   <span>
                     <UiIcon name="user" className={styles.dashboardMetaIcon} />{" "}
