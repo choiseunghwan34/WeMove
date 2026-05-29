@@ -41,8 +41,8 @@ export default function HomePage() {
 //메인페이지 모임목록조회
   useEffect(() => {
     getMainMeetings().then((res)=>{
-      console.log(res.data);
-      setMeetings(res.data?.list || []);
+      console.log("서버응답전체: " ,res.data);
+      setMeetings(Array.isArray(res.data) ? res.data : []);
     }).catch((err)=>{
       console.log(err);
       alert("모임 데이터 로드 실패")
@@ -86,8 +86,8 @@ export default function HomePage() {
         <div className={styles.dashboardRankList}>
           {featuredMeetings.map((meeting, index) => (
             <Link
-              key={meeting.id}
-              to={`/meetings/${meeting.id}`}
+              key={meeting.meetingId}
+              to={`/meetings/${meeting.meetingId}`}
               className={styles.dashboardRankItem}
             >
               <b>{index + 1}</b>
@@ -292,7 +292,6 @@ export default function HomePage() {
               <button type="button">모집중</button>
               <button type="button">마감임박</button>
               <button type="button">초보 환영</button>
-              <button type="button">정기 모임</button>
             </div>
           </div>
           <Link to="/meetings">전체 보기</Link>
@@ -302,18 +301,18 @@ export default function HomePage() {
           {featuredMeetings.map((meeting) => (
             <article key={meeting.meetingId} className={styles.dashboardMeetingCard}>
               <img
-                src={thumbnailImage[meeting.meetingId]}
+                  src={meeting.thumbnailImage || "/src/assets/image/bg1.jpg"}
                 alt={meeting.title}
                 className={styles.dashboardMeetingImage}
               />
               <div className={styles.dashboardMeetingBody}>
                 <div className={styles.dashboardMeetingBadges}>
-                  <span>{meeting.sportId}</span>
+                  <span>{meeting.sportName}</span>
                   <span className={styles.dashboardStatusBadge}>
                     {meeting.status}
                   </span>
                   <span>
-                    {meeting.current < meeting.maxMembers ? "초보 환영" : "정기 모임"}
+                    {meeting.approvedCount < meeting.maxMembers ? "초보 환영" : "정기 모임"}
                   </span>
                 </div>
                 <h3>{meeting.title}</h3>
@@ -324,23 +323,23 @@ export default function HomePage() {
                       name="location"
                       className={styles.dashboardMetaIcon}
                     />{" "}
-                    {meeting.place}
+                    {meeting.regionName}
                   </span>
                   <span>
                     <UiIcon
                       name="calendar"
                       className={styles.dashboardMetaIcon}
                     />{" "}
-                    오늘(금) {meeting.time}
+                    오늘(금) {meeting.startTime}
                   </span>
                   <span>
                     <UiIcon name="user" className={styles.dashboardMetaIcon} />{" "}
-                    {meeting.current} / {meeting.max}명
+                    {meeting.approvedCount} / {meeting.maxMembers}명
                   </span>
                 </div>
                 <div className={styles.dashboardMeetingFooter}>
                   <div className={styles.dashboardHostMeta}>
-                    <strong>{meeting.host}</strong>
+                    <strong>{meeting.meetingHostName}</strong>
                     <span>매너점수 4.8 (후기 18)</span>
                   </div>
                   <div className={styles.dashboardMeetingActions}>
@@ -364,7 +363,7 @@ export default function HomePage() {
                         className={styles.dashboardActionIcon}
                       />
                     </button>
-                    <Link to={`/meetings/${meeting.id}`}>참가 신청</Link>
+                    <Link to={`/meetings/${meeting.meetingId}`}>참가 신청</Link>
                   </div>
                 </div>
               </div>
