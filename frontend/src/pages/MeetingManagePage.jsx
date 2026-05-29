@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
+import UserProfileDetailModal from "../components/UserProfileDetailModal";
 import { getMeeting, updateMeetingStatus } from "../api/meetingApi";
 import {
   approveParticipant,
@@ -19,6 +20,9 @@ export default function MeetingManagePage() {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionModal, setActionModal] = useState(null);
+  
+  const [hostMember, setHostMember] = useState(null);
+  const [selectedUserProfileUser, setSelectedUserProfileUser] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -41,6 +45,19 @@ export default function MeetingManagePage() {
       const allParticipants = participantsRes.data || [];
       const pureGuests = allParticipants.filter((p) => Number(p.userId) !== Number(meetingData.hostUserId));
       setParticipants(pureGuests);
+
+      // 호스트 프로필 정보 세팅 (참가 신청 모달 연동을 위해 상세 쿼리 조립 대조)
+      const host = allParticipants.find((p) => Number(p.userId) === Number(meetingData.hostUserId));
+      setHostMember(host || {
+        userId: meetingData.hostUserId,
+        nickname: meetingData.hostNickname,
+        profileImage: meetingData.hostProfileImage,
+        createdAt: meetingData.hostCreatedAt,
+        sports: meetingData.hostSports,
+        gender: null,
+        birthYear: null,
+        regionName: meetingData.regionName
+      });
     } catch (error) {
       console.error("Failed to fetch manage data:", error);
       navigate("/meetings", { replace: true });
@@ -195,7 +212,17 @@ export default function MeetingManagePage() {
                 <article key={item.participantId} className={styles.participantCard}>
                   <div className={styles.participantHead}>
                     <div className={styles.participantMeta}>
-                      <strong>{item.nickname}</strong>
+                      <div className={styles.clickableName} onClick={() => setSelectedUserProfileUser(item)}>
+                        <img
+                          src={item.profileImage || "/src/assets/image/default-user.png"}
+                          alt={item.nickname}
+                          className={styles.cardAvatar}
+                          onError={(e) => {
+                            e.target.src = "/src/assets/image/default-user.png";
+                          }}
+                        />
+                        <strong>{item.nickname}</strong>
+                      </div>
                       <p>{item.message || "참가 메시지가 없습니다."}</p>
                     </div>
                     <span className={styles.badge}>대기중</span>
@@ -239,18 +266,30 @@ export default function MeetingManagePage() {
             <article className={`${styles.participantCard} ${styles.hostCard}`}>
               <div className={styles.participantHead}>
                 <div className={styles.participantMeta}>
-                  <strong className={styles.hostNickname}>
-                    <svg
-                      className={styles.hostCrownIcon}
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
-                    </svg>
-                    {meeting.hostNickname}
-                  </strong>
+                  <div className={styles.clickableName} onClick={() => setSelectedUserProfileUser(hostMember)}>
+                    <img
+                      src={meeting.hostProfileImage || "/src/assets/image/default-user.png"}
+                      alt={meeting.hostNickname}
+                      className={styles.cardAvatar}
+                      onError={(e) => {
+                        e.target.src = "/src/assets/image/default-user.png";
+                      }}
+                    />
+                    <strong className={styles.hostNickname}>
+                      {meeting.hostNickname}
+                    </strong>
+                  </div>
                   <p>모임을 개설한 호스트입니다.</p>
                 </div>
-                <span className={`${styles.reviewScore} ${styles.hostBadge}`}>모임장</span>
+                <span className={`${styles.reviewScore} ${styles.hostBadge}`}>
+                  <svg
+                    className={styles.hostCrownIcon}
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
+                  </svg>
+                  모임장
+                </span>
               </div>
               {/* 다른 카드들과 세로 크기(높이)를 완벽하게 일치시키기 위한 투명 가상 액션 블록 */}
               <div className={`${styles.participantActions} ${styles.hiddenActions}`}>
@@ -262,7 +301,17 @@ export default function MeetingManagePage() {
               <article key={item.participantId} className={styles.participantCard}>
                 <div className={styles.participantHead}>
                   <div className={styles.participantMeta}>
-                    <strong>{item.nickname}</strong>
+                    <div className={styles.clickableName} onClick={() => setSelectedUserProfileUser(item)}>
+                      <img
+                        src={item.profileImage || "/src/assets/image/default-user.png"}
+                        alt={item.nickname}
+                        className={styles.cardAvatar}
+                        onError={(e) => {
+                          e.target.src = "/src/assets/image/default-user.png";
+                        }}
+                      />
+                      <strong>{item.nickname}</strong>
+                    </div>
                     <p>{item.message || "참가 메시지가 없습니다."}</p>
                   </div>
                   <span className={styles.reviewScore}>승인 완료</span>
@@ -346,6 +395,14 @@ export default function MeetingManagePage() {
           </div>
         )}
       </AppModal>
+
+      {/* 👥 공통 유저 상세 프로필 모달 */}
+      <UserProfileDetailModal
+        open={Boolean(selectedUserProfileUser)}
+        onClose={() => setSelectedUserProfileUser(null)}
+        user={selectedUserProfileUser}
+        loginUser={user}
+      />
     </div>
   );
 }
