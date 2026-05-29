@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import { useAuth } from "../contexts/AuthContext";
@@ -83,6 +83,34 @@ export default function MeetingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
   const [applyMessage, setApplyMessage] = useState("");
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+
+  const approvedParticipants = useMemo(() => {
+    return participants.filter((p) => p.status === "APPROVED");
+  }, [participants]);
+
+  const sortedApprovedParticipants = useMemo(() => {
+    if (!meeting || approvedParticipants.length === 0) return [];
+    
+    // 호스트를 찾기 위해 userId 및 nickname 모두 검사하여 가장 매끄럽게 매칭
+    const hostMember = approvedParticipants.find(
+      (p) => 
+        Number(p.userId) === Number(meeting.hostUserId) || 
+        p.nickname === meeting.meetingHostName
+    );
+    
+    const guestMembers = approvedParticipants.filter(
+      (p) => 
+        Number(p.userId) !== Number(meeting.hostUserId) && 
+        p.nickname !== meeting.meetingHostName
+    );
+    
+    return hostMember ? [hostMember, ...guestMembers] : approvedParticipants;
+  }, [meeting, approvedParticipants]);
+
+  const previewAvatars = useMemo(() => {
+    return sortedApprovedParticipants.slice(0, 3);
+  }, [sortedApprovedParticipants]);
 
   const closeModal = () => {
     setModalType(null);
@@ -337,13 +365,89 @@ export default function MeetingDetailPage() {
                 <b>{STATUS_MAP[meeting.status] || "모집중"}</b>
               </p>
               <p>
-                <span>현재 참가자</span>
-                <b>{meeting.approvedCount || 1}명</b>
-              </p>
-              <p>
                 <span>최대 인원</span>
                 <b>{meeting.maxMembers}명</b>
               </p>
+
+              {/* 👥 현재 참가자 아코디언 드롭다운 트리거 카드 */}
+              <div 
+                className={cx("participantToggle", isAccordionOpen && "open")}
+                onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+              >
+                <div className={styles.participantLabelGroup}>
+                  <strong className={styles.participantLabelTitle}>현재 참가자</strong>
+                  <span className={styles.participantLabelSub}>클릭하여 멤버 확인</span>
+                </div>
+                <div className={styles.participantActionGroup}>
+                  {/* 겹쳐진 아바타 그룹 */}
+                  <div className={styles.avatarGroup}>
+                    {previewAvatars.map((item) => (
+                      <img
+                        key={item.participantId || item.userId}
+                        src={item.profileImage || "/src/assets/image/default-user.png"}
+                        alt={item.nickname}
+                        className={styles.miniAvatar}
+                        onError={(e) => {
+                          e.target.src = "/src/assets/image/default-user.png";
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className={styles.participantCountText}>
+                    {approvedParticipants.length}명
+                  </span>
+                  <svg 
+                    className={cx("chevronIcon", isAccordionOpen && "open")}
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 👥 아코디언 참가자 리스트 패널 */}
+              <div className={cx("accordionPanel", isAccordionOpen && "open")}>
+                <div className={styles.accordionList}>
+                  {sortedApprovedParticipants.map((item) => {
+                    const isUserHost = 
+                      Number(item.userId) === Number(meeting.hostUserId) || 
+                      item.nickname === meeting.meetingHostName;
+
+                    return (
+                      <div key={item.participantId || item.userId} className={styles.accordionItem}>
+                        <div className={styles.accordionUserWrap}>
+                          <img
+                            src={item.profileImage || "/src/assets/image/default-user.png"}
+                            alt={item.nickname}
+                            className={styles.accordionAvatar}
+                            onError={(e) => {
+                              e.target.src = "/src/assets/image/default-user.png";
+                            }}
+                          />
+                          <span className={styles.accordionNickname}>{item.nickname}</span>
+                        </div>
+                        {isUserHost && (
+                          <span className={styles.accordionHostBadge}>
+                            <svg className={styles.accordionHostCrown} viewBox="0 0 24 24">
+                              <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
+                            </svg>
+                            모임장
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {/* 5명 초과 시 페이드아웃 효과 데코레이션 */}
+                  {sortedApprovedParticipants.length > 5 && (
+                    <div className={styles.fadeEffect} />
+                  )}
+                </div>
+              </div>
             </div>
             <div className={styles.stickyActions}>
               {!isHost && (

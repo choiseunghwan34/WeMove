@@ -55,11 +55,15 @@
             mp.userId,
             u.nickname,
             mp.status,
-            mp.message
+            mp.message,
+            u.profileImage
         FROM meetingParticipants mp
         JOIN users u ON mp.userId=u.userId
         WHERE mp.meetingId=#{meetingId}
-        ORDER BY mp.appliedAt DESC
+        ORDER BY 
+            CASE WHEN mp.status = 'APPROVED' THEN 0 ELSE 1 END,
+            mp.approvedAt ASC,
+            mp.appliedAt DESC
     </select>
 
     <update id="updateStatus">

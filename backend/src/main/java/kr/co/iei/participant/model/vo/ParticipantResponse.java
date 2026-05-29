@@ -10,4 +10,5 @@ public class ParticipantResponse {
   private String nickname;
   private String status;
   private String message;
+  private String profileImage;
 }
