@@ -401,5 +401,11 @@
 .customReasonInput::placeholder {
   font-size: 13px !important; /* 아래 textarea 플레이스홀더 크기와 동일화 */
   font-weight: 500 !important; /* 아래 textarea 플레이스홀더 굵기와 동일화 */
-  color: #94a3b8 !important; /* 아래 textarea 플레이스홀더 색상과 동일화 */
+  color: #475569 !important; /* 아래 textarea 플레이스홀더 색상과 100% 동일하게 통일 */
+}
+
+.formField textarea::placeholder {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #475569 !important; /* 상세내용 플레이스홀더 색상 명시 고정 */
 }

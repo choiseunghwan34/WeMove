@@ -590,7 +590,7 @@ export default function MeetingDetailPage() {
             </span>
             <strong>{meeting.title}</strong>
             <p>
-              {meeting.regionName} · {meeting.address}
+              {meeting.content}
             </p>
           </div>
         </div>
@@ -639,16 +639,8 @@ export default function MeetingDetailPage() {
             <dd>{meeting.placeName}</dd>
           </div>
           <div>
-            <dt>모임 방식</dt>
-            <dd>{MEETING_TYPE_MAP[meeting.meetingType] || "1회성 모임"}</dd>
-          </div>
-          <div>
             <dt>준비물</dt>
             <dd>{meeting.supplies || "편한 운동복, 물, 개인 이어폰"}</dd>
-          </div>
-          <div>
-            <dt>진행 안내</dt>
-            <dd>{meeting.guideText || "시작 10분 전 집결 권장"}</dd>
           </div>
         </dl>
       </AppModal>
