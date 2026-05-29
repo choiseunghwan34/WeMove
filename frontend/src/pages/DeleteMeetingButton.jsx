@@ -1,6 +1,5 @@
 import {deleteMeeting} from "../api/meetingApi.js";
 import styles from "../styles/DeleteMeetingButton.module.css";
-import parentStyles from "../styles/MeetingCreatePage.module.css";
 
 
 export default function DeleteMeetingButton({meetingId, onDeleted}){
