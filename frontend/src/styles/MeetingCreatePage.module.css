@@ -436,3 +436,11 @@
   border-radius: 20px !important;
   background: linear-gradient(180deg, #ffffff, #f8fbff) !important;
 }
+
+.actionGroup{
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+

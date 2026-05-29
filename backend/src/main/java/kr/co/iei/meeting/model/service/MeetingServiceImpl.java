@@ -80,7 +80,7 @@ public class MeetingServiceImpl implements MeetingService {
     System.out.println("★ DB 호출 직전 request의 thumbnailImage 값: " + request.getThumbnailImage());
     meetingDao.updateMeeting(request);
   }
-
+  @Override
   public void deleteMeeting(Long meetingId) {
     meetingDao.softDeleteMeeting(meetingId);
   }

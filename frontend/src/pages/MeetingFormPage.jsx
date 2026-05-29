@@ -6,6 +6,7 @@ import RegionPickerModal from "../components/RegionPickerModal.jsx";
 import {useAuth} from "../contexts/AuthContext.jsx";
 import {getSports} from "../api/sportApi.js";
 import {getRegions} from "../api/regionApi.js";
+import DeleteMeetingButton from "./DeleteMeetingButton.jsx";
 
 const normalizeText = (value = "") => String(value).trim();
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
@@ -590,8 +591,17 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                 )}
 
                 <div className={`${styles.full} ${styles.formActions}`}>
-                    <Link to="/meetings">취소</Link>
-                    <button type="submit">{isEditMode ? "모임 수정" : "모임 등록"}</button>
+                    {isEditMode && (
+                        <div className={styles.formActions}> {/* 삭제 버튼을 감싸는 div 추가 */}
+                            <DeleteMeetingButton meetingId={meetingId} onDeleted={() => navigate(`/meetings`)} />
+                        </div>
+
+                    )}
+                    <div className={styles.actionGroup}>
+                        <Link to="/meetings">취소</Link>
+                        <button type="submit">{isEditMode ? "모임 수정" : "모임 등록"}</button>
+
+                    </div>
                 </div>
             </form>
 

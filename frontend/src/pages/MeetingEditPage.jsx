@@ -2,6 +2,8 @@
 import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {getMeeting, updateMeeting} from "../api/meetingApi.js";
+import DeleteMeetingButton from "./DeleteMeetingButton.jsx";
+import styles from "../styles/MeetingCreatePage.module.css";
 
 export default function MeetingEditPage() {
 
@@ -45,7 +47,12 @@ export default function MeetingEditPage() {
     )
   }
 
-  return <MeetingFormPage title="모임 수정하기"
-                          initialData={initialData}
-                          onSubmit={handleUpdate} />;
+  return (
+      <>
+        <MeetingFormPage title="모임 수정하기"
+                         initialData={initialData}
+                         onSubmit={handleUpdate}/>
+      </>
+      )
+
 }
