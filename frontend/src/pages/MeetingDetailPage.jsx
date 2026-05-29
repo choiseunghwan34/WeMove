@@ -245,7 +245,7 @@ export default function MeetingDetailPage() {
               <article>
                 <span>참가 인원</span>
                 <strong>
-                  {(meeting.approvedCount || 0) + 1}/{meeting.maxMembers}명
+                  {meeting.approvedCount || 1}/{meeting.maxMembers}명
                 </strong>
               </article>
             </div>
@@ -338,7 +338,7 @@ export default function MeetingDetailPage() {
               </p>
               <p>
                 <span>현재 참가자</span>
-                <b>{(meeting.approvedCount || 0) + 1}명</b>
+                <b>{meeting.approvedCount || 1}명</b>
               </p>
               <p>
                 <span>최대 인원</span>

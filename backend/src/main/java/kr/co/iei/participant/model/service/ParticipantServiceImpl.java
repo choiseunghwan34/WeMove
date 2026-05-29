@@ -47,7 +47,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
     Integer approved = participantDao.countApprovedByMeetingId(meetingId);
     Integer max = meetingDao.selectMaxMembers(meetingId);
-    if (approved != null && max != null && (approved + 1) >= max)
+    if (approved != null && max != null && approved >= max)
       meetingDao.updateMeetingStatus(meetingId, "CLOSED");
   }
 
@@ -66,7 +66,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     if (meetingId != null) {
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
-      if (approved != null && max != null && (approved + 1) < max) {
+      if (approved != null && max != null && approved < max) {
         meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
       }
     }

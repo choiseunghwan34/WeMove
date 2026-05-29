@@ -38,7 +38,9 @@ export default function MeetingManagePage() {
       }
 
       setMeeting(meetingData);
-      setParticipants(participantsRes.data || []);
+      const allParticipants = participantsRes.data || [];
+      const pureGuests = allParticipants.filter((p) => Number(p.userId) !== Number(meetingData.hostUserId));
+      setParticipants(pureGuests);
     } catch (error) {
       console.error("Failed to fetch manage data:", error);
       navigate("/meetings", { replace: true });
