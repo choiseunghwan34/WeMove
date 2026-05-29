@@ -56,9 +56,19 @@
             u.nickname,
             mp.status,
             mp.message,
-            u.profileImage
+            u.profileImage,
+            u.email,
+            u.gender,
+            u.birthYear,
+            u.createdAt,
+            CONCAT(r.sido, ' ', r.sigungu) AS regionName,
+            (SELECT GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR ', ')
+             FROM userSports us
+             JOIN sports s ON us.sportId = s.sportId
+             WHERE us.userId = mp.userId) AS sports
         FROM meetingParticipants mp
         JOIN users u ON mp.userId=u.userId
+        LEFT JOIN regions r ON u.regionId=r.regionId
         WHERE mp.meetingId=#{meetingId}
         ORDER BY 
             CASE WHEN mp.status = 'APPROVED' THEN 0 ELSE 1 END,

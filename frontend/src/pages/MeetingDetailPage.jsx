@@ -9,6 +9,7 @@ import {
   cancelParticipant,
 } from "../api/participantApi";
 import { meetingImages } from "../data/dashboardData";
+import UserProfileDetailModal from "../components/UserProfileDetailModal";
 import UiIcon from "../components/UiIcon";
 import styles from "../styles/MeetingDetailPage.module.css";
 
@@ -84,6 +85,7 @@ export default function MeetingDetailPage() {
   const [modalType, setModalType] = useState(null);
   const [applyMessage, setApplyMessage] = useState("");
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+  const [selectedUserProfileUser, setSelectedUserProfileUser] = useState(null);
 
   const approvedParticipants = useMemo(() => {
     return participants.filter((p) => p.status === "APPROVED");
@@ -419,7 +421,12 @@ export default function MeetingDetailPage() {
                       item.nickname === meeting.meetingHostName;
 
                     return (
-                      <div key={item.participantId || item.userId} className={styles.accordionItem}>
+                      <div 
+                        key={item.participantId || item.userId} 
+                        className={styles.accordionItem}
+                        onClick={() => setSelectedUserProfileUser(item)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <div className={styles.accordionUserWrap}>
                           <img
                             src={item.profileImage || "/src/assets/image/default-user.png"}
@@ -679,6 +686,14 @@ export default function MeetingDetailPage() {
           </p>
         </div>
       </AppModal>
+      
+      {/* 👥 공통 유저 상세 프로필 모달 (아코디언 멤버 클릭 시) */}
+      <UserProfileDetailModal
+        open={Boolean(selectedUserProfileUser)}
+        onClose={() => setSelectedUserProfileUser(null)}
+        user={selectedUserProfileUser}
+        loginUser={user}
+      />
     </div>
   );
 }
