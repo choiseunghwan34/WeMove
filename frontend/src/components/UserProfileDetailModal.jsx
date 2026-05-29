@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "../styles/UserProfileDetailModal.module.css";
 import UiIcon from "./UiIcon";
+import { createReport } from "../api/reportApi";
 
 const formatJoinDate = (dateStr) => {
   if (!dateStr) return "2026.05";
@@ -24,6 +25,7 @@ const formatJoinDate = (dateStr) => {
 export default function UserProfileDetailModal({ open, onClose, user, loginUser }) {
   const [isReporting, setIsReporting] = useState(false);
   const [reportReason, setReportReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
   const [reportDetail, setReportDetail] = useState("");
 
   // 모달이 열리거나 유저가 바뀔 때 신고 상태 초기화
@@ -31,6 +33,7 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
     if (open) {
       setIsReporting(false);
       setReportReason("");
+      setCustomReason("");
       setReportDetail("");
     }
   }, [open, user]);
@@ -62,15 +65,40 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
     ? user.sports.split(", ").filter(Boolean)
     : [];
 
-  const handleReportSubmit = (e) => {
+  const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!reportReason) {
       alert("신고 사유를 선택해 주세요.");
       return;
     }
-    alert(`${user.nickname}님에 대한 신고가 정상적으로 접수되었습니다. 관리자 검토 후 조치 예정입니다.`);
-    setIsReporting(false);
-    onClose();
+    if (reportReason === "OTHER" && !customReason.trim()) {
+      alert("직접 입력 사유를 적어주세요.");
+      return;
+    }
+
+    const confirmReport = window.confirm(`${user.nickname}님을 정말로 신고하시겠습니까?`);
+    if (!confirmReport) {
+      return;
+    }
+
+    const finalContent = reportReason === "OTHER"
+      ? `[직접 입력 사유: ${customReason}] \n ${reportDetail || ""}`
+      : (reportDetail || "");
+
+    try {
+      await createReport({
+        reporterId: loginUser.memberId,
+        targetUserId: user.userId,
+        reason: reportReason,
+        content: finalContent
+      });
+      alert(`${user.nickname}님에 대한 신고가 정상적으로 접수되었습니다. 관리자 검토 후 조치 예정입니다.`);
+      setIsReporting(false);
+      onClose();
+    } catch (error) {
+      console.error("Failed to submit report:", error);
+      alert("신고 접수에 실패했습니다. 다시 시도해 주세요.");
+    }
   };
 
   // 로그인한 유저 본인 프로필일 경우 신고 버튼 미노출
@@ -97,25 +125,19 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
             /* 1단계: 일반 프로필 조회 화면 */
             <div className={styles.profileContainer}>
               <div className={styles.profileMainRow}>
-                {user.profileImage ? (
-                  <img
-                    src={user.profileImage}
-                    alt={user.nickname}
-                    className={styles.profileAvatar}
-                  />
-                ) : (
-                  <div className={styles.profileAvatarFallback}>
-                    <UiIcon name="user" className={styles.fallbackIcon} />
-                  </div>
-                )}
+                <img
+                  src={user.profileImage || "/src/assets/image/default-user.png"}
+                  alt={user.nickname}
+                  className={styles.profileAvatar}
+                  onError={(e) => {
+                    e.target.src = "/src/assets/image/default-user.png";
+                  }}
+                />
                 <div className={styles.profileMetaGroup}>
                   <strong className={styles.nicknameText}>{user.nickname}</strong>
                   <span className={styles.metaJoinDate}>가입일 {joinDate}</span>
                   <span className={styles.metaSubText}>
-                    {genderText} / {ageGroup}
-                  </span>
-                  <span className={styles.metaSubText}>
-                    {user.regionName || "지역 미지정"}
+                    {genderText} / {ageGroup} &nbsp;·&nbsp; {user.regionName || "지역 미지정"}
                   </span>
                 </div>
               </div>
@@ -139,7 +161,7 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
             /* 2단계: 신고 사유 작성 화면 (스위칭 콘텐츠) */
             <form onSubmit={handleReportSubmit} className={styles.reportForm}>
               <p className={styles.reportGuide}>
-                이 유저(<strong>{user.nickname}</strong>)에게 비매너, 노쇼 또는 부적절한 행위가 있었나요? 신속히 확인하여 조치하겠습니다.
+                이 유저(<strong>{user.nickname}</strong>)에게 비매너, 노쇼 또는 부적절한 행위가 있었나요?<br />신속히 확인하여 조치하겠습니다.
               </p>
               
               <div className={styles.formField}>
@@ -158,6 +180,22 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
                   <option value="OTHER">기타 직접 입력</option>
                 </select>
               </div>
+
+              {reportReason === "OTHER" && (
+                <div className={styles.formField}>
+                  <label htmlFor="customReasonInput">직접 입력 (최대 30자)</label>
+                  <input
+                    type="text"
+                    id="customReasonInput"
+                    className={styles.customReasonInput}
+                    placeholder="신고 사유를 직접 입력해 주세요."
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                    maxLength={30}
+                    required
+                  />
+                </div>
+              )}
 
               <div className={styles.formField}>
                 <label htmlFor="reportDetailText">상세 내용 (선택)</label>
@@ -193,7 +231,13 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
               <button
                 type="button"
                 className={styles.reportTriggerButton}
-                onClick={() => setIsReporting(true)}
+                onClick={() => {
+                  if (!loginUser || !loginUser.memberId) {
+                    alert("로그인이 필요한 기능입니다. 로그인 후 이용해 주세요.");
+                    return;
+                  }
+                  setIsReporting(true);
+                }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>

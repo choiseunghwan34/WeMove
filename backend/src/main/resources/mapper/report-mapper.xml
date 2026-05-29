@@ -6,14 +6,12 @@
     <insert id="insertReport" parameterType="kr.co.iei.report.model.vo.Report">
         INSERT INTO reports(
             reporterId,
-            meetingId,
             targetUserId,
             reason,
             content
         )
         VALUES(
             #{reporterId},
-            #{meetingId},
             #{targetUserId},
             #{reason},
             #{content}

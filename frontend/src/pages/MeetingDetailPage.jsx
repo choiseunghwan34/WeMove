@@ -342,17 +342,14 @@ export default function MeetingDetailPage() {
           <section className={styles.detailPanel}>
             <h3>모임장 정보</h3>
             <div className={styles.hostCard}>
-              {meeting.hostProfileImage ? (
-                <img
-                  src={meeting.hostProfileImage}
-                  alt={meeting.meetingHostName}
-                  className={styles.profileAvatar}
-                />
-              ) : (
-                <span className={styles.profileAvatarFallback}>
-                  <UiIcon name="user" className={styles.dashboardHostIcon} />
-                </span>
-              )}
+              <img
+                src={meeting.hostProfileImage || "/src/assets/image/default-user.png"}
+                alt={meeting.meetingHostName}
+                className={styles.profileAvatar}
+                onError={(e) => {
+                  e.target.src = "/src/assets/image/default-user.png";
+                }}
+              />
               <div>
                 <strong>{meeting.meetingHostName || "익명"}</strong>
                 <p className={styles.hostSportsText}>{getHostSportsText()}</p>

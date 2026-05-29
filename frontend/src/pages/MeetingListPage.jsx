@@ -664,20 +664,14 @@ export default function MeetingListPage() {
                   </div>
 
                   <div className={styles.host}>
-                    {meeting.hostProfileImage ? (
-                      <img
-                        src={meeting.hostProfileImage}
-                        alt={meeting.meetingHostName}
-                        className={styles.dashboardHostAvatar}
-                      />
-                    ) : (
-                      <i>
-                        <UiIcon
-                          name="user"
-                          className={styles.dashboardHostIcon}
-                        />
-                      </i>
-                    )}
+                    <img
+                      src={meeting.hostProfileImage || "/src/assets/image/default-user.png"}
+                      alt={meeting.meetingHostName}
+                      className={styles.dashboardHostAvatar}
+                      onError={(e) => {
+                        e.target.src = "/src/assets/image/default-user.png";
+                      }}
+                    />
                     <span>{meeting.meetingHostName || "익명"}</span>
                   </div>
                 </div>
