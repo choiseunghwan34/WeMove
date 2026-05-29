@@ -409,3 +409,12 @@
   font-weight: 500 !important;
   color: #475569 !important; /* 상세내용 플레이스홀더 색상 명시 고정 */
 }
+
+/* ==========================================
+   👤 기본 프로필 이미지 전용 스케일 다운 및 Contain 튜닝 (2px)
+   ========================================== */
+.profileAvatar[src*="default-user"] {
+  object-fit: contain !important;
+  padding: 2px !important; /* 패딩 2px 미세 조정 반영 */
+  background: #f1f5f9 !important; /* 캐릭터가 돋보이도록 깔끔한 은회색 백그라운드 매핑 */
+}

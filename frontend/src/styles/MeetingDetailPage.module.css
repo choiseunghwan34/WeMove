@@ -850,3 +850,14 @@
   background: linear-gradient(to top, rgba(255, 255, 255, 0.95), transparent) !important;
   pointer-events: none !important;
 }
+
+/* ==========================================
+   👤 기본 프로필 이미지 전용 스케일 다운 및 Contain 튜닝
+   ========================================== */
+.profileAvatar[src*="default-user"],
+.accordionAvatar[src*="default-user"],
+.miniAvatar[src*="default-user"] {
+  object-fit: contain !important;
+  padding: 2px !important; /* 패딩을 6px에서 2px로 미세 하향하여 캐릭터 크기 밸런싱 */
+  background: #f1f5f9 !important; /* 캐릭터가 돋보이도록 은은하고 깔끔한 백그라운드 색 매핑 */
+}
