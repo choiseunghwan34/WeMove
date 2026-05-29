@@ -2,6 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="meeting">
 
+    <select id="selectMainMeetingList" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
+        SELECT
+            m.meetingId as meetingId,
+            m.title as title,
+            m.thumbnailImage as thumbnailImage,
+            m.status as status,
+            s.name as sportName,
+            CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) as regionName,
+            (SELECT nickname FROM users WHERE userId = m.hostUserId) as meetingHostName,
+            m.placeName as placeName,
+            m.meetingDate as meetingDate,
+            m.startTime as startTime,
+            m.maxMembers as maxMembers,
+            (SELECT COUNT(*) FROM meetingParticipants mp
+             WHERE mp.meetingId = m.meetingId AND mp.status = "APPROVED") as approvedCount
+        FROM meetings m
+                 JOIN sports s ON m.sportId = s.sportId
+                 JOIN regions r ON m.regionId = r.regionId
+        WHERE m.deletedAt IS NULL
+        ORDER BY m.createdAt DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
+
     <select id="selectMeetingList" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
         SELECT
             m.meetingId as meetingId,

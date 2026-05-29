@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { meetings, regions, sports } from "../data/demoData";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import styles from "../styles/HomePage.module.css";
+import {getMainMeetings} from "../api/meetingApi.js";
 
 const heroSlides = [
   {
@@ -30,11 +31,24 @@ export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const [activeSlide, setActiveSlide] = useState(0);
-  const recruitingMeetings = meetings.filter(
-    (meeting) => meeting.status === "RECRUITING",
-  );
-  const featuredMeetings = recruitingMeetings.slice(0, 3);
+  const [meetings, setMeetings] = useState([]);
+  const recruitingMeetings = Array.isArray(meetings)
+      ? meetings.filter((meeting) => meeting.status === "RECRUITING")
+      : [];
+  const featuredMeetings = recruitingMeetings.slice(0, 10);
   const currentHero = heroSlides[activeSlide];
+
+//메인페이지 모임목록조회
+  useEffect(() => {
+    getMainMeetings().then((res)=>{
+      console.log(res.data);
+      setMeetings(res.data?.list || []);
+    }).catch((err)=>{
+      console.log(err);
+      alert("모임 데이터 로드 실패")
+      setMeetings([]);
+    })
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -286,24 +300,24 @@ export default function HomePage() {
 
         <div className={styles.dashboardFeed}>
           {featuredMeetings.map((meeting) => (
-            <article key={meeting.id} className={styles.dashboardMeetingCard}>
+            <article key={meeting.meetingId} className={styles.dashboardMeetingCard}>
               <img
-                src={meetingImages[meeting.id]}
+                src={thumbnailImage[meeting.meetingId]}
                 alt={meeting.title}
                 className={styles.dashboardMeetingImage}
               />
               <div className={styles.dashboardMeetingBody}>
                 <div className={styles.dashboardMeetingBadges}>
-                  <span>{meeting.sport}</span>
+                  <span>{meeting.sportId}</span>
                   <span className={styles.dashboardStatusBadge}>
-                    {meeting.statusText}
+                    {meeting.status}
                   </span>
                   <span>
-                    {meeting.current < meeting.max ? "초보 환영" : "정기 모임"}
+                    {meeting.current < meeting.maxMembers ? "초보 환영" : "정기 모임"}
                   </span>
                 </div>
                 <h3>{meeting.title}</h3>
-                <p>{meeting.desc}</p>
+                <p>{meeting.content}</p>
                 <div className={styles.dashboardMeetingMeta}>
                   <span>
                     <UiIcon

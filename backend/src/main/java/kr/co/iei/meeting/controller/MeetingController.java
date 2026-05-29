@@ -33,8 +33,12 @@ public class MeetingController {
   private final MeetingService meetingService;
   private final JwtTokenProvider jwtTokenProvider;
 
-  @GetMapping
+  @GetMapping("/main")
+  public ResponseEntity<List<MeetingListResponse>> getMainList(){
+    return ResponseEntity.ok(meetingService.getMainMeetingList());
+  }
 
+  @GetMapping
   public ResponseEntity<Map<String, Object>> list(MeetingSearchCondition c) {
     return ResponseEntity.ok(meetingService.getMeetings(c));
   }

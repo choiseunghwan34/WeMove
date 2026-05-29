@@ -26,6 +26,8 @@ public class MeetingServiceImpl implements MeetingService {
   private final CloudinaryImageService cloudinaryImageService;
 
 
+
+
   public Map<String, Object> getMeetings(MeetingSearchCondition c) {
     List<MeetingListResponse> list = meetingDao.selectMeetingList(c);
     int totalCount = meetingDao.selectMeetingCount(c);
@@ -87,5 +89,13 @@ public class MeetingServiceImpl implements MeetingService {
 
   public void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request) {
     meetingDao.updateMeetingStatus(meetingId, request.getStatus());
+  }
+
+  @Override
+  public List<MeetingListResponse> getMainMeetingList() {
+    Map<String, Object> result = new HashMap<>();
+    result.put("limit", 10);
+    result.put("offset", 0);
+    return meetingDao.selectMainMeetingList(result);
   }
 }
