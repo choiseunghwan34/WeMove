@@ -751,7 +751,7 @@
 }
 
 .accordionPanel.open {
-  max-height: 250px !important; /* 5명 분량 */
+  max-height: 262px !important; /* 5명 분량 */
 }
 
 .accordionList {
@@ -759,7 +759,7 @@
   flex-direction: column !important;
   gap: 4px !important;
   padding: 12px 18px !important;
-  max-height: 220px !important; /* 5명 기준 */
+  max-height: 228px !important; /* 4명까지 스크롤 없음, 5명째는 단 1픽셀도 삐져나오지 않고 완전 은닉 */
   overflow-y: auto !important;
   position: relative !important;
 }
