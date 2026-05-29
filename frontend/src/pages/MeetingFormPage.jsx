@@ -330,21 +330,11 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             </section>
 
             <form className={styles.formCard} onSubmit={handleSubmit}>
-                <p className={styles.requiredNotice}>* 표시는 필수 입력 항목입니다.</p>
-                <div className={styles.formStatusRow}>
-                    <article>
-                        <strong>한눈에 이해되는 제목</strong>
-                        <span>지역, 운동, 시간대가 먼저 보이게 구성</span>
-                    </article>
-                    <article>
-                        <strong>신뢰감 있는 소개</strong>
-                        <span>준비물, 초보 가능 여부, 진행 방식을 짧게 안내</span>
-                    </article>
-                </div>
-
-                {/* ref={(el) => (inputRefs.current.필드명 = el)} 형태로 할당 */}
                 <label className={styles.full}>
-                    <span className={styles.requiredLabel}>모임 제목</span>
+                    <div className={styles.titleRow}>
+                        <span className={styles.requiredLabel}>모임 제목</span>
+                        <p className={styles.requiredNotice}>* 표시는 필수 입력 항목입니다.</p>
+                    </div>
                     <input
                         ref={(el) => (inputRefs.current.title = el)}
                         name="title"
