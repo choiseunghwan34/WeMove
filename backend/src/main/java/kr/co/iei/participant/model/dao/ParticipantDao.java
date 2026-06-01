@@ -24,6 +24,10 @@ public class ParticipantDao {
     return sqlSession.selectList("participant.selectParticipants", meetingId);
   }
 
+  public ParticipantResponse selectParticipant(Long participantId) {
+    return sqlSession.selectOne("participant.selectParticipant", participantId);
+  }
+
   public int updateStatus(Long participantId, String status) {
     return sqlSession.update(
         "participant.updateStatus", Map.of("participantId", participantId, "status", status));

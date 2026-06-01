@@ -6,6 +6,7 @@ import { useToast } from "../contexts/ToastContext";
 import { getAccessToken } from "../utils/authTokenStore";
 import {
   NOTIFICATION_TYPES,
+  WEMOVE_NOTIFICATION_OPEN_EVENT,
   publishNotification,
 } from "../utils/notificationEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
@@ -66,6 +67,26 @@ const formatSchedule = (meetingDate, startTime) =>
     .filter(Boolean)
     .join(" ");
 
+const getRoomActivityTime = (room) => {
+  const value =
+    room?.lastMessageAt ||
+    (room?.meetingDate && room?.startTime
+      ? `${room.meetingDate}T${String(room.startTime).slice(0, 8)}`
+      : room?.meetingDate);
+  const time = value ? new Date(String(value).replace(" ", "T")).getTime() : 0;
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const sortRoomsByLatestMessage = (roomList) =>
+  [...roomList].sort((a, b) => {
+    const timeDiff = getRoomActivityTime(b) - getRoomActivityTime(a);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+
+    return Number(b.meetingId || 0) - Number(a.meetingId || 0);
+  });
+
 const PANEL_DEFAULT_WIDTH = 860;
 const PANEL_DEFAULT_HEIGHT = 560;
 const PANEL_MIN_WIDTH = 520;
@@ -92,6 +113,7 @@ export default function GlobalMeetingChat() {
   const [roomsCollapsed, setRoomsCollapsed] = useState(false);
   const panelRef = useRef(null);
   const listRef = useRef(null);
+  const messageInputRef = useRef(null);
   const socketMapRef = useRef(new Map());
   const activeMeetingIdRef = useRef(null);
   const openRef = useRef(false);
@@ -129,15 +151,17 @@ export default function GlobalMeetingChat() {
     }
 
     setRooms((current) =>
-      current.map((room) =>
-        Number(room.meetingId) === Number(message.meetingId)
-          ? {
-              ...room,
-              lastMessageId: message.messageId,
-              lastMessage: message.content,
-              lastMessageAt: message.createdAt,
-            }
-          : room,
+      sortRoomsByLatestMessage(
+        current.map((room) =>
+          Number(room.meetingId) === Number(message.meetingId)
+            ? {
+                ...room,
+                lastMessageId: message.messageId,
+                lastMessage: message.content,
+                lastMessageAt: message.createdAt,
+              }
+            : room,
+        ),
       ),
     );
 
@@ -156,25 +180,36 @@ export default function GlobalMeetingChat() {
       const notificationMessage = `${
         message.nickname || CHAT_PARTICIPANT_FALLBACK
       }: ${message.content}`;
-      toast.info(roomTitle, notificationMessage);
-      publishNotification({
+      const notificationPayload = {
         type: NOTIFICATION_TYPES.CHAT,
         title: roomTitle,
         message: notificationMessage,
+        sourceId: message.meetingId,
         createdAt: message.createdAt,
+      };
+
+      toast.info(roomTitle, notificationMessage, {
+        sourceId: `chat:${message.meetingId || roomTitle}`,
+        target: notificationPayload,
       });
+      publishNotification(notificationPayload);
     }
   }, [toast]);
 
   const publishTestNotification = useCallback(() => {
     const testMessage = "무브톡 알림 테스트 메시지입니다.";
-
-    toast.info(MOVE_TALK_FALLBACK_TITLE, testMessage);
-    publishNotification({
+    const notificationPayload = {
       type: NOTIFICATION_TYPES.CHAT,
       title: MOVE_TALK_FALLBACK_TITLE,
       message: testMessage,
+      sourceId: "move-talk-test",
+    };
+
+    toast.info(MOVE_TALK_FALLBACK_TITLE, testMessage, {
+      sourceId: "chat:move-talk-test",
+      target: notificationPayload,
     });
+    publishNotification(notificationPayload);
   }, [toast]);
 
   const loadRooms = useCallback(async () => {
@@ -189,7 +224,7 @@ export default function GlobalMeetingChat() {
 
     try {
       const { data } = await getChatRooms();
-      const nextRooms = Array.isArray(data) ? data : [];
+      const nextRooms = sortRoomsByLatestMessage(Array.isArray(data) ? data : []);
       setRooms(nextRooms);
       setSelectedMeetingId((current) =>
         nextRooms.some((room) => Number(room.meetingId) === Number(current))
@@ -374,6 +409,39 @@ export default function GlobalMeetingChat() {
     };
   }, [open, publishTestNotification, selectedMeetingId]);
 
+  useEffect(() => {
+    const handleOpenNotificationTarget = (event) => {
+      const notification = event.detail;
+      if (notification?.type !== NOTIFICATION_TYPES.CHAT) {
+        return;
+      }
+
+      const rawSourceId = String(notification.sourceId || "");
+      const meetingId = rawSourceId.startsWith("chat:")
+        ? rawSourceId.slice(5)
+        : rawSourceId;
+
+      if (!meetingId || meetingId === "move-talk-test") {
+        setOpen(true);
+        return;
+      }
+
+      setOpen(true);
+      setSelectedMeetingId(Number.isNaN(Number(meetingId)) ? meetingId : Number(meetingId));
+    };
+
+    window.addEventListener(
+      WEMOVE_NOTIFICATION_OPEN_EVENT,
+      handleOpenNotificationTarget,
+    );
+    return () => {
+      window.removeEventListener(
+        WEMOVE_NOTIFICATION_OPEN_EVENT,
+        handleOpenNotificationTarget,
+      );
+    };
+  }, []);
+
   if (loading || !isAuthenticated) {
     return null;
   }
@@ -397,6 +465,9 @@ export default function GlobalMeetingChat() {
       setError(requestError?.response?.data?.message || "메시지 전송에 실패했습니다.");
     } finally {
       setSending(false);
+      window.setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -574,6 +645,7 @@ export default function GlobalMeetingChat() {
                 ) : messages.length ? (
                   messages.map((message, index) => {
                     const isMine = Number(message.userId) === Number(user?.memberId);
+                    const isSystem = message.messageType === "SYSTEM";
                     const previousMessage = messages[index - 1];
                     const shouldShowDate =
                       index === 0 ||
@@ -591,48 +663,52 @@ export default function GlobalMeetingChat() {
                           </div>
                         ) : null}
 
-                        <article
-                          className={isMine ? styles.messageMineRow : styles.messageRow}
-                        >
-                          {!isMine ? (
-                            <img
-                              src={profileImage}
-                              alt={message.nickname ? `${message.nickname} 프로필` : "프로필"}
-                              className={styles.messageAvatar}
-                            />
-                          ) : null}
-
-                          <div className={styles.messageContent}>
+                        {isSystem ? (
+                          <p className={styles.systemMessage}>{message.content}</p>
+                        ) : (
+                          <article
+                            className={isMine ? styles.messageMineRow : styles.messageRow}
+                          >
                             {!isMine ? (
-                              <strong className={styles.messageNickname}>
-                                {message.nickname || "알 수 없음"}
-                              </strong>
+                              <img
+                                src={profileImage}
+                                alt={message.nickname ? `${message.nickname} 프로필` : "프로필"}
+                                className={styles.messageAvatar}
+                              />
                             ) : null}
-                            <div
-                              className={
-                                isMine ? styles.messageMineLine : styles.messageLine
-                              }
-                            >
-                              {isMine ? (
-                                <span className={styles.messageTime}>
-                                  {formatTime(message.createdAt)}
-                                </span>
+
+                            <div className={styles.messageContent}>
+                              {!isMine ? (
+                                <strong className={styles.messageNickname}>
+                                  {message.nickname || "알 수 없음"}
+                                </strong>
                               ) : null}
-                              <p
+                              <div
                                 className={
-                                  isMine ? styles.messageMineBubble : styles.messageBubble
+                                  isMine ? styles.messageMineLine : styles.messageLine
                                 }
                               >
-                                {message.content}
-                              </p>
-                              {!isMine ? (
-                                <span className={styles.messageTime}>
-                                  {formatTime(message.createdAt)}
-                                </span>
-                              ) : null}
+                                {isMine ? (
+                                  <span className={styles.messageTime}>
+                                    {formatTime(message.createdAt)}
+                                  </span>
+                                ) : null}
+                                <p
+                                  className={
+                                    isMine ? styles.messageMineBubble : styles.messageBubble
+                                  }
+                                >
+                                  {message.content}
+                                </p>
+                                {!isMine ? (
+                                  <span className={styles.messageTime}>
+                                    {formatTime(message.createdAt)}
+                                  </span>
+                                ) : null}
+                              </div>
                             </div>
-                          </div>
-                        </article>
+                          </article>
+                        )}
                       </div>
                     );
                   })
@@ -645,6 +721,7 @@ export default function GlobalMeetingChat() {
 
               <form className={styles.messageForm} onSubmit={submitMessage}>
                 <input
+                  ref={messageInputRef}
                   value={messageInput}
                   onChange={(event) => setMessageInput(event.target.value)}
                   placeholder="메시지 입력"

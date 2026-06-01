@@ -1,6 +1,7 @@
 package kr.co.iei.participant.model.service;
 
 import java.util.*;
+import kr.co.iei.chat.model.service.ChatService;
 import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.participant.model.dao.ParticipantDao;
 import kr.co.iei.participant.model.vo.*;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ParticipantServiceImpl implements ParticipantService {
   private final ParticipantDao participantDao;
   private final MeetingDao meetingDao;
+  private final ChatService chatService;
 
   @Transactional
   public void apply(Long meetingId, ParticipantRequest req) {
@@ -34,6 +36,12 @@ public class ParticipantServiceImpl implements ParticipantService {
   public void approve(Long participantId) {
     participantDao.updateStatus(participantId, "APPROVED");
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
+    ParticipantResponse participant = participantDao.selectParticipant(participantId);
+    if (participant != null) {
+      String nickname = participant.getNickname() == null ? "참가자" : participant.getNickname();
+      chatService.createSystemMessage(
+          meetingId, participant.getUserId(), nickname + "님의 모임 가입이 완료되었습니다.");
+    }
     Integer approved = participantDao.countApprovedByMeetingId(meetingId);
     Integer max = meetingDao.selectMaxMembers(meetingId);
     if (approved != null && max != null && (approved + 1) >= max)

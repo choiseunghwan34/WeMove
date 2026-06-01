@@ -22,12 +22,20 @@ const createNotification = (detail) => ({
   type: detail?.type || NOTIFICATION_TYPES.INFO,
   title: detail?.title || "",
   message: detail?.message || "",
+  sourceId: detail?.sourceId,
   createdAt: detail?.createdAt || new Date().toISOString(),
 });
 
+const getNotificationKey = (notification) => {
+  if (notification.type === NOTIFICATION_TYPES.CHAT) {
+    return `${notification.type}:${notification.sourceId || notification.title}`;
+  }
+
+  return notification.id;
+};
+
 export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const pushNotification = useCallback((detail) => {
@@ -37,10 +45,20 @@ export function NotificationProvider({ children }) {
       return;
     }
 
-    setNotifications((current) =>
-      [notification, ...current].slice(0, MAX_NOTIFICATION_COUNT)
-    );
-    setUnreadCount((current) => current + 1);
+    setNotifications((current) => {
+      const notificationKey = getNotificationKey(notification);
+      const existingIndex = current.findIndex(
+        (item) => getNotificationKey(item) === notificationKey,
+      );
+
+      if (existingIndex === -1) {
+        return [notification, ...current].slice(0, MAX_NOTIFICATION_COUNT);
+      }
+
+      const next = [...current];
+      next.splice(existingIndex, 1);
+      return [notification, ...next].slice(0, MAX_NOTIFICATION_COUNT);
+    });
   }, []);
 
   useEffect(() => {
@@ -56,7 +74,6 @@ export function NotificationProvider({ children }) {
 
   const openPanel = useCallback(() => {
     setIsPanelOpen(true);
-    setUnreadCount(0);
   }, []);
 
   const closePanel = useCallback(() => {
@@ -65,18 +82,16 @@ export function NotificationProvider({ children }) {
 
   const togglePanel = useCallback(() => {
     setIsPanelOpen((current) => !current);
-    setUnreadCount(0);
   }, []);
 
   const clearAll = useCallback(() => {
     setNotifications([]);
-    setUnreadCount(0);
   }, []);
 
   const value = useMemo(
     () => ({
       notifications,
-      unreadCount,
+      unreadCount: notifications.length,
       isPanelOpen,
       pushNotification,
       openPanel,
@@ -86,7 +101,6 @@ export function NotificationProvider({ children }) {
     }),
     [
       notifications,
-      unreadCount,
       isPanelOpen,
       pushNotification,
       openPanel,

@@ -296,6 +296,21 @@
   font-weight: 600;
 }
 
+.systemMessage {
+  justify-self: center;
+  max-width: 82%;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #edf4fb;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  word-break: keep-all;
+}
+
 .messageRow,
 .messageMineRow {
   display: flex;

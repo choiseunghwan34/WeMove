@@ -1,5 +1,8 @@
 import { useNotifications } from "../contexts/NotificationContext";
-import { NOTIFICATION_TYPES } from "../utils/notificationEvents";
+import {
+  NOTIFICATION_TYPES,
+  openNotificationTarget,
+} from "../utils/notificationEvents";
 import styles from "../styles/Notification.module.css";
 
 const TYPE_LABELS = {
@@ -26,6 +29,11 @@ export default function NotificationPanel() {
     return null;
   }
 
+  const handleNotificationClick = (notification) => {
+    openNotificationTarget(notification);
+    closePanel();
+  };
+
   return (
     <aside className={styles.panel} aria-label="알림 목록">
       <div className={styles.panelHead}>
@@ -41,14 +49,19 @@ export default function NotificationPanel() {
       <div className={styles.list}>
         {notifications.length ? (
           notifications.map((notification) => (
-            <article key={notification.id} className={styles.item}>
+            <button
+              key={notification.id}
+              type="button"
+              className={styles.item}
+              onClick={() => handleNotificationClick(notification)}
+            >
               <span className={styles.type}>
                 {TYPE_LABELS[notification.type] || TYPE_LABELS.info}
               </span>
               <strong>{notification.title}</strong>
               {notification.message ? <p>{notification.message}</p> : null}
               <time>{formatTime(notification.createdAt)}</time>
-            </article>
+            </button>
           ))
         ) : (
           <p className={styles.empty}>아직 받은 알림이 없습니다.</p>

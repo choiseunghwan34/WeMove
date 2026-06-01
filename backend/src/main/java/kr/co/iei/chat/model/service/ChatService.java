@@ -12,5 +12,7 @@ public interface ChatService {
 
   ChatMessageResponse createMessage(Long meetingId, Long userId, ChatMessageRequest request);
 
+  ChatMessageResponse createSystemMessage(Long meetingId, Long userId, String content);
+
   boolean canAccess(Long meetingId, Long userId);
 }

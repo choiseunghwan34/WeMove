@@ -1,16 +1,29 @@
 import styles from "../styles/ToastViewport.module.css";
+import { openNotificationTarget } from "../utils/notificationEvents";
 
 export default function ToastViewport({ toasts, onDismiss }) {
   if (!toasts.length) {
     return null;
   }
 
+  const handleToastClick = (toast) => {
+    if (!toast.target) {
+      return;
+    }
+
+    openNotificationTarget(toast.target);
+    onDismiss(toast.id);
+  };
+
   return (
     <div className={styles.viewport} aria-live="polite" aria-atomic="true">
       {toasts.map((toast) => (
         <article
           key={toast.id}
-          className={`${styles.toast} ${styles[toast.tone] ?? ""}`.trim()}
+          className={`${styles.toast} ${toast.target ? styles.clickable : ""} ${
+            styles[toast.tone] ?? ""
+          }`.trim()}
+          onClick={() => handleToastClick(toast)}
         >
           <div className={styles.copy}>
             <strong>{toast.title}</strong>
@@ -19,7 +32,10 @@ export default function ToastViewport({ toasts, onDismiss }) {
           <button
             type="button"
             className={styles.closeButton}
-            onClick={() => onDismiss(toast.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDismiss(toast.id);
+            }}
             aria-label="토스트 닫기"
           >
             ×
