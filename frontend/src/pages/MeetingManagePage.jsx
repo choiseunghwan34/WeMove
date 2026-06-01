@@ -92,8 +92,8 @@ export default function MeetingManagePage() {
       } else if (actionModal.type === "cancelApproval") {
         await cancelApproval(actionModal.applicant.participantId);
       } else if (actionModal.type === "reopen") {
-        // 대안 A: 최대 정원과 현재 승인 완료 인원 대조 검증 (호스트 포함 +1)
-        if (approvedApplicants.length >= meeting.maxMembers) {
+        // 대안 A: 최대 정원과 현재 승인 완료 인원 대조 검증
+        if (meeting.approvedCount >= meeting.maxMembers) {
           closeModal();
           return;
         }
@@ -121,6 +121,12 @@ export default function MeetingManagePage() {
     meeting &&
     (meeting.status === "CLOSED" ||
       meeting.status === "ONGOING" ||
+      meeting.status === "COMPLETED" ||
+      meeting.status === "CANCELLED");
+
+  const isFinished =
+    meeting &&
+    (meeting.status === "ONGOING" ||
       meeting.status === "COMPLETED" ||
       meeting.status === "CANCELLED");
 
@@ -161,11 +167,11 @@ export default function MeetingManagePage() {
         confirmText: "모임 완료",
         tone: "success",
       },
-      reopen: approvedApplicants.length >= (meeting?.maxMembers ?? 0)
+      reopen: (meeting?.approvedCount ?? 0) >= (meeting?.maxMembers ?? 0)
         ? {
             eyebrow: "모집 재개 불가",
             title: "모집을 재개할 수 없습니다",
-            description: `현재 확정 인원(${approvedApplicants.length}명)이 최대 정원(${meeting?.maxMembers ?? 0}명)에 도달하여 모집을 재개할 수 없습니다.\n추가 신청을 받으려면 승인된 참가자를 취소하여 자리를 확보하거나 모임 정원을 늘려주세요.`,
+            description: `현재 확정 인원(${meeting?.approvedCount ?? 0}명)이 최대 정원(${meeting?.maxMembers ?? 0}명)에 도달하여 모집을 재개할 수 없습니다.\n추가 신청을 받으려면 승인된 참가자를 취소하여 자리를 확보하거나 모임 정원을 늘려주세요.`,
             confirmText: "확인",
             tone: "danger",
             hideCancel: true,
@@ -200,7 +206,7 @@ export default function MeetingManagePage() {
         </article>
         <article>
           <span>확정 인원</span>
-              <strong>{approvedApplicants.length}</strong>
+          <strong>{meeting.approvedCount}</strong>
         </article>
         <article>
           <span>대기 인원</span>
@@ -334,6 +340,7 @@ export default function MeetingManagePage() {
                   <button
                     type="button"
                     className={styles.cancelBtn}
+                    disabled={isFinished}
                     onClick={() =>
                       setActionModal({ type: "cancelApproval", applicant: item })
                     }
@@ -410,7 +417,7 @@ export default function MeetingManagePage() {
             <div>
               <strong>{meeting.title}</strong>
               <p>
-                현재 확정 인원 {approvedApplicants.length}명, 대기 인원{" "}
+                현재 확정 인원 {meeting.approvedCount}명, 대기 인원{" "}
                 {pendingApplicants.length}명입니다.
               </p>
             </div>

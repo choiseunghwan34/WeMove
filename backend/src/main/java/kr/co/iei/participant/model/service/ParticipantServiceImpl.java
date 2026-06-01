@@ -88,10 +88,17 @@ public class ParticipantServiceImpl implements ParticipantService {
 
   @Transactional
   public void cancelApproval(Long participantId) {
-    participantDao.updateStatus(participantId, "PENDING");
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
     if (meetingId != null) {
       MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
+      
+      // [수정 - 2026-06-01] 이미 진행중(ONGOING), 완료(COMPLETED), 취소(CANCELLED)된 모임의 참가자는 취소 조작 차단 (API 보안 가드)
+      if (meeting != null && Arrays.asList("ONGOING", "COMPLETED", "CANCELLED").contains(meeting.getStatus())) {
+        throw new IllegalArgumentException("이미 진행중이거나 종료/취소된 모임의 참가자는 상태를 변경할 수 없습니다.");
+      }
+      
+      participantDao.updateStatus(participantId, "PENDING");
+      
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
 
@@ -101,6 +108,8 @@ public class ParticipantServiceImpl implements ParticipantService {
           && "CLOSED".equals(meeting.getStatus())) {
         meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
       }
+    } else {
+      participantDao.updateStatus(participantId, "PENDING");
     }
   }
 
