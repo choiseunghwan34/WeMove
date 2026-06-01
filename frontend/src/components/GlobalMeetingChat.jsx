@@ -3,7 +3,10 @@ import { createChatMessage, getChatMessages, getChatRooms } from "../api/chatApi
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { getAccessToken } from "../utils/authTokenStore";
-import { publishNotification } from "../utils/notificationEvents";
+import {
+  NOTIFICATION_TYPES,
+  publishNotification,
+} from "../utils/notificationEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
 
 const formatTime = (value) =>
@@ -90,7 +93,7 @@ export default function GlobalMeetingChat() {
       const notificationMessage = `${message.nickname || "참가자"}: ${message.content}`;
       toast.info(roomTitle, notificationMessage);
       publishNotification({
-        type: "chat",
+        type: NOTIFICATION_TYPES.CHAT,
         title: roomTitle,
         message: notificationMessage,
         createdAt: message.createdAt,
