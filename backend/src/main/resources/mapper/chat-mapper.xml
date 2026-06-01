@@ -15,6 +15,7 @@
             m.meetingDate,
             m.startTime,
             m.status,
+            m.hostUserId,
             u.nickname AS hostNickname,
             lm.messageId AS lastMessageId,
             lm.content AS lastMessage,
@@ -64,19 +65,34 @@
 
     <select id="selectMessages" resultType="kr.co.iei.chat.model.vo.ChatMessageResponse">
         SELECT
-            cm.messageId,
-            cm.meetingId,
-            cm.userId,
-            u.nickname,
-            u.profileImage,
-            cm.content,
-            cm.messageType,
-            cm.createdAt
-        FROM meetingChatMessages cm
-        JOIN users u ON cm.userId = u.userId
-        WHERE cm.meetingId = #{meetingId}
-        ORDER BY cm.createdAt ASC, cm.messageId ASC
-        LIMIT #{limit}
+            recent.messageId,
+            recent.meetingId,
+            recent.userId,
+            recent.nickname,
+            recent.profileImage,
+            recent.host,
+            recent.content,
+            recent.messageType,
+            recent.createdAt
+        FROM (
+            SELECT
+                cm.messageId,
+                cm.meetingId,
+                cm.userId,
+                u.nickname,
+                u.profileImage,
+                CASE WHEN cm.userId = m.hostUserId THEN TRUE ELSE FALSE END AS host,
+                cm.content,
+                cm.messageType,
+                cm.createdAt
+            FROM meetingChatMessages cm
+            JOIN users u ON cm.userId = u.userId
+            JOIN meetings m ON cm.meetingId = m.meetingId
+            WHERE cm.meetingId = #{meetingId}
+            ORDER BY cm.createdAt DESC, cm.messageId DESC
+            LIMIT #{limit}
+        ) recent
+        ORDER BY recent.createdAt ASC, recent.messageId ASC
     </select>
 
     <insert id="insertMessage" parameterType="kr.co.iei.chat.model.vo.ChatMessage" useGeneratedKeys="true" keyProperty="messageId">
@@ -101,11 +117,13 @@
             cm.userId,
             u.nickname,
             u.profileImage,
+            CASE WHEN cm.userId = m.hostUserId THEN TRUE ELSE FALSE END AS host,
             cm.content,
             cm.messageType,
             cm.createdAt
         FROM meetingChatMessages cm
         JOIN users u ON cm.userId = u.userId
+        JOIN meetings m ON cm.meetingId = m.meetingId
         WHERE cm.messageId = #{messageId}
     </select>
 

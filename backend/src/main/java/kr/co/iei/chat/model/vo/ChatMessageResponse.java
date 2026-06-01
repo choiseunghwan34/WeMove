@@ -10,6 +10,7 @@ public class ChatMessageResponse {
   private Long userId;
   private String nickname;
   private String profileImage;
+  private Boolean host;
   private String content;
   private String messageType;
   private LocalDateTime createdAt;

@@ -703,6 +703,12 @@ export default function GlobalMeetingChat() {
                     const isMine =
                       Number(message.userId) === Number(user?.memberId);
                     const isSystem = message.messageType === "SYSTEM";
+                    const isHostMessage =
+                      message.host ||
+                      (selectedRoom?.hostUserId &&
+                        Number(message.userId) === Number(selectedRoom.hostUserId)) ||
+                      (selectedRoom?.hostNickname &&
+                        message.nickname === selectedRoom.hostNickname);
                     const previousMessage = messages[index - 1];
                     const shouldShowDate =
                       index === 0 ||
@@ -749,9 +755,19 @@ export default function GlobalMeetingChat() {
 
                             <div className={styles.messageContent}>
                               {!isMine ? (
-                                <strong className={styles.messageNickname}>
-                                  {message.nickname || "알 수 없음"}
-                                </strong>
+                                <div className={styles.messageNameLine}>
+                                  <strong className={styles.messageNickname}>
+                                    {message.nickname || "알 수 없음"}
+                                  </strong>
+                                  {isHostMessage ? (
+                                    <span className={styles.hostCrownBadge}>
+                                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
+                                      </svg>
+                                      방장
+                                    </span>
+                                  ) : null}
+                                </div>
                               ) : null}
                               <div
                                 className={

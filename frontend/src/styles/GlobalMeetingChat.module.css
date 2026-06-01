@@ -340,6 +340,10 @@
   max-width: 78%;
 }
 
+.messageMineRow .messageContent {
+  justify-items: end;
+}
+
 .messageNickname {
   color: #10233d;
   font-size: 12px;
@@ -347,12 +351,42 @@
   line-height: 1.25;
 }
 
+.messageNameLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.hostCrownBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 999px;
+  background: #eaf2ff;
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hostCrownBadge svg {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+}
+
 .messageLine,
 .messageMineLine {
-  display: flex;
+  display: inline-flex;
   align-items: flex-end;
   gap: 6px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .messageMineLine {
@@ -361,7 +395,7 @@
 
 .messageBubble,
 .messageMineBubble {
-  width: fit-content;
+  display: inline-block;
   max-width: 100%;
   margin: 0;
   padding: 8px 10px;
@@ -488,5 +522,9 @@
 
   .messageContent {
     max-width: calc(100% - 48px);
+  }
+
+  .messageMineRow .messageContent {
+    max-width: 92%;
   }
 }
