@@ -132,6 +132,7 @@ export default function GlobalMeetingChat() {
   const roomsRef = useRef([]);
   const userIdRef = useRef(null);
   const latestMessageIdsRef = useRef(new Set());
+  const [chatType, setChatType] = useState("GROUP");
 
   const selectedRoom = useMemo(
     () =>
@@ -277,6 +278,24 @@ export default function GlobalMeetingChat() {
 
   useEffect(() => {
     openRef.current = open;
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -624,36 +643,57 @@ export default function GlobalMeetingChat() {
             }
           >
             <aside className={styles.roomList}>
+              <div className={styles.roomListHeader}>
+                <div
+                  className={chatType === "GROUP" ? styles.active : ""}
+                  onClick={() => setChatType("GROUP")}
+                >
+                  모임
+                </div>
+                <div
+                  className={chatType === "PRIVATE" ? styles.active : ""}
+                  onClick={() => setChatType("PRIVATE")}
+                >
+                  1대1 대화
+                </div>
+              </div>
               {loadingRooms ? (
                 <p>불러오는 중</p>
-              ) : rooms.length ? (
-                rooms.map((room) => (
-                  <button
-                    key={room.meetingId}
-                    type="button"
-                    className={
-                      Number(room.meetingId) === Number(selectedMeetingId)
-                        ? styles.roomActive
-                        : styles.room
-                    }
-                    onClick={() => setSelectedMeetingId(room.meetingId)}
-                  >
-                    <strong>{room.title}</strong>
-                    <span>
-                      {[room.sportName, room.regionName, room.placeName]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                    <small>
-                      {room.lastMessage ||
-                        formatSchedule(room.meetingDate, room.startTime) ||
-                        room.address ||
-                        "대화 내역 없음"}
-                    </small>
-                  </button>
-                ))
+              ) : chatType === "GROUP" ? (
+                rooms.length ? (
+                  rooms.map((room) => (
+                    <button
+                      key={room.meetingId}
+                      type="button"
+                      className={
+                        Number(room.meetingId) === Number(selectedMeetingId)
+                          ? styles.roomActive
+                          : styles.room
+                      }
+                      onClick={() => setSelectedMeetingId(room.meetingId)}
+                    >
+                      <strong>{room.title}</strong>
+                      <span>
+                        {[room.sportName, room.regionName, room.placeName]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                      <small>
+                        {room.lastMessage ||
+                          formatSchedule(room.meetingDate, room.startTime) ||
+                          room.address ||
+                          "대화 내역 없음"}
+                      </small>
+                    </button>
+                  ))
+                ) : (
+                  <p>참여 가능한 무브톡이 없습니다.</p>
+                )
               ) : (
-                <p>참여 가능한 무브톡이 없습니다.</p>
+                <div className={styles.emptyState}>
+                  <p>아직 대화 중인 친구가 없습니다.</p>
+                  <small>모임 참여자 프로필에서 대화를 시작해보세요!</small>
+                </div>
               )}
             </aside>
             <button
@@ -706,7 +746,8 @@ export default function GlobalMeetingChat() {
                     const isHostMessage =
                       message.host ||
                       (selectedRoom?.hostUserId &&
-                        Number(message.userId) === Number(selectedRoom.hostUserId)) ||
+                        Number(message.userId) ===
+                          Number(selectedRoom.hostUserId)) ||
                       (selectedRoom?.hostNickname &&
                         message.nickname === selectedRoom.hostNickname);
                     const previousMessage = messages[index - 1];
@@ -761,7 +802,10 @@ export default function GlobalMeetingChat() {
                                   </strong>
                                   {isHostMessage ? (
                                     <span className={styles.hostCrownBadge}>
-                                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                                      <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                      >
                                         <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
                                       </svg>
                                       방장

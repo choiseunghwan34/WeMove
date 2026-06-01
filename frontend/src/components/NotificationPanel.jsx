@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNotifications } from "../contexts/NotificationContext";
 import {
   NOTIFICATION_TYPES,
@@ -23,7 +24,24 @@ const formatTime = (value) => {
 };
 
 export default function NotificationPanel() {
-  const { notifications, isPanelOpen, closePanel, clearAll } = useNotifications();
+  const { notifications, isPanelOpen, closePanel, clearAll } =
+    useNotifications();
+
+  useEffect(() => {
+    if (!isPanelOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closePanel();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPanelOpen, closePanel]);
 
   if (!isPanelOpen) {
     return null;

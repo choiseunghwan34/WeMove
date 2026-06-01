@@ -145,11 +145,67 @@
   border-right: 1px solid #e5e7eb;
   background: #f8fafc;
 }
+.roomListHeader {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px 8px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: flex;
+}
+.roomListHeader div {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.roomListHeader div:hover {
+  /*
+  background-color: #a1b1c1;
+  */
+}
+.roomListHeader div:first-child {
+  border-right: 1px solid #e2e8f0; /* 선 색상 */
+  margin-right: -4px; /* gap 때문에 생기는 간격 조정 (필요시) */
+}
 
 .panelBodyCollapsed .roomList {
   overflow: hidden;
   padding: 0;
   border-right: 0;
+}
+
+.active {
+  color: #2563eb; /* 파란색으로 강조 */
+  font-weight: 900;
+  border-bottom: 2px solid #2563eb; /* 밑줄 추가 (선택사항) */
+}
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+  flex: 1;
+}
+.roomList .emptyState p {
+  /* .emptyState p 앞에 .roomList 를 붙여주세요! */
+  margin: 0; /* 이제 156px 마진이 0으로 덮어씌워집니다 */
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.roomList .emptyState small {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.8;
 }
 
 .roomToggle {
