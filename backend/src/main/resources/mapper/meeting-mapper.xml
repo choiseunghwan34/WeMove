@@ -186,7 +186,7 @@
         ON m.regionId = r.regionId
         WHERE m.deletedAt IS NULL
         GROUP BY r.sido, r.sigungu, r.dong
-        ORDER BY COUNT (*) DESC, MAX (m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
+        ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
             LIMIT 4
     </select>
 

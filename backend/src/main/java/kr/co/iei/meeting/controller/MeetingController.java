@@ -1,5 +1,6 @@
 package kr.co.iei.meeting.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import kr.co.iei.auth.util.JwtTokenProvider;
@@ -11,6 +12,7 @@ import kr.co.iei.meeting.model.vo.MeetingSearchCondition;
 import kr.co.iei.meeting.model.vo.MeetingStatusUpdateRequest;
 import kr.co.iei.meeting.model.vo.MeetingUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,7 +47,13 @@ public class MeetingController {
 
   @GetMapping("/top-regions")
   public ResponseEntity<List<Map<String, Object>>> topRegions() {
-    return ResponseEntity.ok(meetingService.getTopRegions());
+      try {
+          return ResponseEntity.ok(meetingService.getTopRegions());
+      } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Collections.emptyList());
+      }
   }
 
   @GetMapping("/{meetingId}")
