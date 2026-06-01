@@ -1,83 +1,174 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
+import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
+import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
-import { meetings, regions, sports } from "../data/demoData";
 import { categoryItems, meetingImages } from "../data/dashboardData";
+import { getComments } from "../api/commentApi";
+import { getMainMeetings, getMeetings } from "../api/meetingApi";
+import { getParticipants } from "../api/participantApi";
+import { getRegions } from "../api/regionApi";
+import { getSports } from "../api/sportApi";
 import styles from "../styles/HomePage.module.css";
-import {getMainMeetings} from "../api/meetingApi.js";
 
 const heroSlides = [
   {
-    title: "오늘 운동, 혼자 말고 같이",
-    description: "내 주변 운동 모임을 찾고, 함께 땀 흘려보세요.",
+    title: "가볍게 시작하는 5km 러닝",
+    description: "러닝부터 헬스, 풋살까지 원하는 운동을 자연스럽게 이어가요.",
     image: meetingImages[1],
   },
   {
-    title: "가볍게 시작하는 5km 러닝",
-    description: "러닝부터 헬스, 풋살까지 원하는 운동을 자연스럽게 이어가요.",
+    title: "오늘도 힘내는 웨이트 루틴",
+    description: "운동 메이트가 있으면 루틴 유지가 훨씬 쉬워져요.",
     image: meetingImages[2],
   },
   {
-    title: "이번 주말엔 새로운 운동 모임으로",
+    title: "이번 주말, 동네에서 같이 운동할 사람 찾기",
     description:
-      "관심 운동과 지역을 고르면 지금 바로 참여 가능한 모임을 빠르게 볼 수 있어요.",
+      "지역과 날짜를 먼저 고르고, 그다음 운동을 더하면 딱 맞는 모임만 보여요.",
     image: meetingImages[5],
   },
 ];
 
-const formatMeetingDateTime = (dateStr, timeStr) => {
-  const date = new Date(dateStr);
-  const today = new Date();
-
-  // 1. 날짜가 오늘인지 확인
-  const isToday =
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate();
-
-  // 2. 요일 배열
-  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-  const dayName = dayNames[date.getDay()];
-
-  // 3. 시간(HH:mm)과 오전/오후 구분
-  const hour = parseInt(timeStr.substring(0, 2), 10);
-  const ampm = hour < 12 ? "오전" : "오후";
-
-  // 12시간제 변환 (13시 -> 1시)
-  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-  const displayMinute = timeStr.substring(3, 5);
-  const shortTime = `${ampm} ${displayHour}:${displayMinute}`;
-
-  // 4. 날짜 포맷
-  const dateDisplay = isToday ? "오늘" : `${date.getMonth() + 1}.${date.getDate()}`;
-
-  return `${dateDisplay}(${dayName}) ${shortTime}`;
+const STATUS_LABELS = {
+  RECRUITING: "모집중",
+  CLOSED: "모집완료",
+  ONGOING: "진행중",
+  COMPLETED: "모임완료",
+  CANCELLED: "취소됨",
 };
+
+const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+
+const pad2 = (value) => String(value).padStart(2, "0");
+
+const toDateKey = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const date =
+    value instanceof Date ? value : new Date(String(value).replace(" ", "T"));
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(
+    date.getDate(),
+  )}`;
+};
+
+const formatRegionLabel = (region) => {
+  if (!region) {
+    return "";
+  }
+
+  return [region.sido, region.sigungu, region.dong]
+    .filter(Boolean)
+    .join(" ");
+};
+
+const formatMeetingDateTime = (dateStr, timeStr) => {
+  if (!dateStr || !timeStr) {
+    return "-";
+  }
+
+  const date = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  const hour = Number.parseInt(String(timeStr).slice(0, 2), 10);
+  const minute = String(timeStr).slice(3, 5);
+  const ampm = hour < 12 ? "오전" : "오후";
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  const dayLabel = DAY_LABELS[date.getDay()] ?? "";
+
+  return `${date.getMonth() + 1}.${date.getDate()}(${dayLabel}) ${ampm} ${displayHour}:${minute}`;
+};
+
+const formatHeroDate = (dateStr) => {
+  if (!dateStr) {
+    return "날짜 선택";
+  }
+
+  const date = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return "날짜 선택";
+  }
+
+  return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(
+    date.getDate(),
+  )}`;
+};
+
+const normalizeRegion = (region) => ({
+  regionId: region.regionId,
+  sido: region.sido ?? "",
+  sigungu: region.sigungu ?? "",
+  dong: region.dong ?? "",
+});
+
+const normalizeSport = (sport) => ({
+  sportId: sport.sportId,
+  name: sport.name ?? "",
+  category: sport.category ?? "",
+  isActive: sport.isActive ?? true,
+});
 
 export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
+
   const [activeSlide, setActiveSlide] = useState(0);
   const [meetings, setMeetings] = useState([]);
-  const recruitingMeetings = Array.isArray(meetings)
-      ? meetings.filter((meeting) => meeting.status === "RECRUITING")
-      : [];
-  const featuredMeetings = recruitingMeetings.slice(0, 10);
-  const currentHero = heroSlides[activeSlide];
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [sportOptions, setSportOptions] = useState([]);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [isExplicitAllRegion, setIsExplicitAllRegion] = useState(false);
+  const [selectedSport, setSelectedSport] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [isSportModalOpen, setIsSportModalOpen] = useState(false);
+  const [neighborhoodStats, setNeighborhoodStats] = useState({
+    recruitingCount: 0,
+    applicantCount: 0,
+    todayCount: 0,
+    newCommentCount: 0,
+  });
 
-//메인페이지 모임목록조회
-  useEffect(() => {
-    getMainMeetings().then((res)=>{
-      console.log("서버응답전체: " ,res.data);
-      setMeetings(Array.isArray(res.data) ? res.data : []);
-    }).catch((err)=>{
-      console.log(err);
-      alert("모임 데이터 로드 실패")
-      setMeetings([]);
-    })
-  }, []);
+  const memberRegion = useMemo(() => {
+    if (!user?.regionId) {
+      return null;
+    }
+
+    return (
+      regionOptions.find(
+        (region) => Number(region.regionId) === Number(user.regionId),
+      ) ?? null
+    );
+  }, [regionOptions, user?.regionId]);
+
+  const effectiveRegion =
+    isExplicitAllRegion ? null : selectedRegion ?? memberRegion ?? null;
+  const heroRegionLabel = effectiveRegion
+    ? formatRegionLabel(effectiveRegion)
+    : "전체 지역";
+  const heroSportLabel = selectedSport
+    ? selectedSport.name || "전체 운동"
+    : "전체 운동";
+  const neighborhoodRegionLabel = memberRegion
+    ? formatRegionLabel(memberRegion)
+    : "내 동네";
+
+  const currentHero = heroSlides[activeSlide];
+  const recruitingMeetings = Array.isArray(meetings)
+    ? meetings.filter((meeting) => meeting.status === "RECRUITING")
+    : [];
+  const featuredMeetings = recruitingMeetings.slice(0, 10);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -87,24 +178,252 @@ export default function HomePage() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const localStats = [
-    { label: "모집중 모임", value: "24개", tone: "blue", icon: "spark" },
-    { label: "참여 예정 인원", value: "128명", tone: "indigo", icon: "user" },
-    { label: "오늘 진행 모임", value: "5개", tone: "green", icon: "calendar" },
-    { label: "신규 댓글", value: "43개", tone: "mint", icon: "comment" },
+  useEffect(() => {
+    let active = true;
+
+    const fetchFilterOptions = async () => {
+      try {
+        const [regionsResponse, sportsResponse] = await Promise.all([
+          getRegions(),
+          getSports(),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        setRegionOptions(
+          Array.isArray(regionsResponse.data)
+            ? regionsResponse.data.map(normalizeRegion).filter((region) => region.sido && region.sigungu)
+            : [],
+        );
+
+        setSportOptions(
+          Array.isArray(sportsResponse.data)
+            ? sportsResponse.data
+                .map(normalizeSport)
+                .filter((sport) => sport.isActive !== false && sport.name)
+            : [],
+        );
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setRegionOptions([]);
+          setSportOptions([]);
+        }
+      }
+    };
+
+    fetchFilterOptions();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchMainMeetings = async () => {
+      try {
+        const response = await getMainMeetings();
+
+        if (!active) {
+          return;
+        }
+
+        setMeetings(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setMeetings([]);
+        }
+      }
+    };
+
+    fetchMainMeetings();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user?.regionId) {
+      setNeighborhoodStats({
+        recruitingCount: 0,
+        applicantCount: 0,
+        todayCount: 0,
+        newCommentCount: 0,
+      });
+      return undefined;
+    }
+
+    let active = true;
+
+    const fetchNeighborhoodStats = async () => {
+      try {
+        const todayKey = toDateKey(new Date());
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+        const { data } = await getMeetings({
+          regionId: user.regionId,
+          page: 1,
+          size: 100,
+        });
+
+        const regionMeetings = Array.isArray(data?.list) ? data.list : [];
+        const recruitingCount = regionMeetings.filter(
+          (meeting) => meeting.status === "RECRUITING",
+        ).length;
+        const todayCount = regionMeetings.filter(
+          (meeting) =>
+            toDateKey(meeting.meetingDate) === todayKey &&
+            meeting.status !== "CANCELLED",
+        ).length;
+        const activeMeetings = regionMeetings.filter((meeting) =>
+          ["RECRUITING", "CLOSED", "ONGOING"].includes(meeting.status),
+        );
+
+        const [participantsResult, commentsResult] = await Promise.all([
+          Promise.allSettled(
+            activeMeetings.map((meeting) => getParticipants(meeting.meetingId)),
+          ),
+          Promise.allSettled(
+            activeMeetings.map((meeting) => getComments(meeting.meetingId)),
+          ),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        const applicantCount = participantsResult.reduce((sum, result) => {
+          const participants = Array.isArray(result.value?.data)
+            ? result.value.data
+            : [];
+          return sum + participants.length;
+        }, 0);
+
+        const newCommentCount = commentsResult.reduce((sum, result) => {
+          const comments = Array.isArray(result.value?.data)
+            ? result.value.data
+            : [];
+
+          return (
+            sum +
+            comments.filter((comment) => {
+              const createdAt = comment?.createdAt
+                ? new Date(String(comment.createdAt).replace(" ", "T"))
+                : null;
+
+              return (
+                createdAt &&
+                !Number.isNaN(createdAt.getTime()) &&
+                createdAt >= sevenDaysAgo
+              );
+            }).length
+          );
+        }, 0);
+
+        setNeighborhoodStats({
+          recruitingCount,
+          applicantCount,
+          todayCount,
+          newCommentCount,
+        });
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setNeighborhoodStats({
+            recruitingCount: 0,
+            applicantCount: 0,
+            todayCount: 0,
+            newCommentCount: 0,
+          });
+        }
+      }
+    };
+
+    fetchNeighborhoodStats();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.regionId]);
+
+  const statsCards = [
+    {
+      label: "모집중 모임",
+      value: `${neighborhoodStats.recruitingCount}개`,
+      tone: "blue",
+      icon: "spark",
+    },
+    {
+      label: "참여 예정 인원",
+      value: `${neighborhoodStats.applicantCount}명`,
+      tone: "indigo",
+      icon: "user",
+    },
+    {
+      label: "오늘 진행 모임",
+      value: `${neighborhoodStats.todayCount}개`,
+      tone: "green",
+      icon: "calendar",
+    },
+    {
+      label: "신규 댓글",
+      value: `${neighborhoodStats.newCommentCount}개`,
+      tone: "mint",
+      icon: "comment",
+    },
   ];
 
-  const weeklySchedule = [
-    { day: "오늘", time: "20:00", title: "야당역 러닝 모임" },
-    { day: "내일", time: "07:00", title: "운정 헬스 모임" },
-    { day: "토", time: "18:00", title: "배드민턴 정기 모임" },
-    { day: "일", time: "18:00", title: "풋살 매치" },
-  ];
+  const buildMeetingSearchUrl = () => {
+    const params = new URLSearchParams();
 
-  const recentActivities = [
-    { user: "러너지니님", detail: "댓글을 남겼어요.", time: "5분 전" },
-    { user: "헬린이탈출님", detail: "모임을 생성했어요.", time: "15분 전" },
-  ];
+    if (effectiveRegion) {
+      params.set("regionLabel", formatRegionLabel(effectiveRegion));
+    } else {
+      params.set("global", "1");
+    }
+
+    if (selectedSport?.name) {
+      params.set("sportName", selectedSport.name);
+    }
+
+    if (selectedDate) {
+      params.set("meetingDate", selectedDate);
+    }
+
+    return `/meetings${params.toString() ? `?${params.toString()}` : ""}`;
+  };
+
+  const handleApplyRegion = (selection) => {
+    const hasSelection = Boolean(
+      selection?.regionId || selection?.sido || selection?.sigungu || selection?.dong,
+    );
+
+    if (!hasSelection) {
+      setSelectedRegion(null);
+      setIsExplicitAllRegion(true);
+      setIsRegionModalOpen(false);
+      return;
+    }
+
+    setSelectedRegion(selection);
+    setIsExplicitAllRegion(false);
+    setIsRegionModalOpen(false);
+  };
+
+  const handleApplySport = (sport) => {
+    setSelectedSport(sport ?? null);
+    setIsSportModalOpen(false);
+  };
+
+  const topRegionLabel = memberRegion ? neighborhoodRegionLabel : "전체 지역";
 
   const homeAside = isAdmin ? null : (
     <>
@@ -122,7 +441,7 @@ export default function HomePage() {
               <b>{index + 1}</b>
               <div>
                 <strong>{meeting.title}</strong>
-                <span>{18 - index * 4}</span>
+                <span>{meeting.approvedCount ?? 0}</span>
               </div>
             </Link>
           ))}
@@ -135,7 +454,12 @@ export default function HomePage() {
           <Link to="/meetings">전체 일정 보기</Link>
         </div>
         <div className={styles.dashboardScheduleList}>
-          {weeklySchedule.map((item) => (
+          {[
+            { day: "오늘", time: "20:00", title: "야당역 러닝 모임" },
+            { day: "내일", time: "07:00", title: "운정 헬스 모임" },
+            { day: "토", time: "18:00", title: "배드민턴 정기 모임" },
+            { day: "일", time: "18:00", title: "풋살 매치" },
+          ].map((item) => (
             <div
               key={`${item.day}-${item.time}`}
               className={styles.dashboardScheduleItem}
@@ -153,7 +477,10 @@ export default function HomePage() {
           <h3>최근 활동</h3>
         </div>
         <div className={styles.dashboardActivityList}>
-          {recentActivities.map((activity) => (
+          {[
+            { user: "러너지니님", detail: "댓글을 남겼어요.", time: "5분 전" },
+            { user: "헬린이탈출님", detail: "모임을 생성했어요.", time: "15분 전" },
+          ].map((activity) => (
             <div
               key={activity.user}
               className={styles.dashboardActivityItem}
@@ -189,53 +516,69 @@ export default function HomePage() {
               />
             ))}
           </div>
+
           <div className={styles.dashboardHeroContent}>
             <div>
-              <span className={styles.heroKicker}>Local Fitness Community</span>
+              <span className={styles.heroKicker}>LOCAL FITNESS COMMUNITY</span>
               <h1>{currentHero.title}</h1>
               <p>{currentHero.description}</p>
             </div>
 
             <div className={styles.dashboardHeroFilters}>
-              <label>
+              <button
+                type="button"
+                className={styles.dashboardHeroChoiceButton}
+                onClick={() => setIsRegionModalOpen(true)}
+              >
                 <span>
                   <UiIcon
                     name="location"
                     className={styles.dashboardInlineIcon}
                   />
                 </span>
-                <select defaultValue={regions[0]}>
-                  {regions.map((region) => (
-                    <option key={region}>{region}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
+                <div className={styles.dashboardHeroChoiceText}>
+                  <small>지역</small>
+                  <strong>{heroRegionLabel}</strong>
+                </div>
+                <UiIcon
+                  name="chevronDown"
+                  className={styles.dashboardHeroChoiceChevron}
+                />
+              </button>
+
+              <button
+                type="button"
+                className={styles.dashboardHeroChoiceButton}
+                onClick={() => setIsSportModalOpen(true)}
+              >
                 <span>
                   <UiIcon name="spark" className={styles.dashboardInlineIcon} />
                 </span>
-                <select defaultValue="전체 운동">
-                  <option>전체 운동</option>
-                  {sports.map((sport) => (
-                    <option key={sport.id}>{sport.name}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
+                <div className={styles.dashboardHeroChoiceText}>
+                  <small>운동</small>
+                  <strong>{heroSportLabel}</strong>
+                </div>
+                <UiIcon
+                  name="chevronDown"
+                  className={styles.dashboardHeroChoiceChevron}
+                />
+              </button>
+
+              <label className={styles.dashboardHeroDateField}>
                 <span>
                   <UiIcon
                     name="calendar"
                     className={styles.dashboardInlineIcon}
                   />
                 </span>
-                <select defaultValue="날짜 선택">
-                  <option>날짜 선택</option>
-                  <option>오늘</option>
-                  <option>이번 주</option>
-                  <option>주말</option>
-                </select>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(event) => setSelectedDate(event.target.value)}
+                />
               </label>
-              <Link to="/meetings" className={styles.dashboardHeroButton}>
+
+              <Link to={buildMeetingSearchUrl()} className={styles.dashboardHeroButton}>
                 모임 찾기
               </Link>
             </div>
@@ -261,10 +604,10 @@ export default function HomePage() {
         <section className={styles.dashboardSummaryCard}>
           <div className={styles.dashboardSidebarHead}>
             <strong>우리 동네 현황</strong>
-            <span>{regions[0]}</span>
+            <span>{topRegionLabel}</span>
           </div>
           <div className={styles.dashboardSummaryGrid}>
-            {localStats.map((stat) => (
+            {statsCards.map((stat) => (
               <article key={stat.label}>
                 <i
                   className={
@@ -327,10 +670,15 @@ export default function HomePage() {
         </div>
 
         <div className={styles.dashboardFeed}>
-          {featuredMeetings.map((meeting) => (
-            <article key={meeting.meetingId} className={styles.dashboardMeetingCard}>
+          {featuredMeetings.map((meeting, index) => (
+            <article
+              key={meeting.meetingId}
+              className={styles.dashboardMeetingCard}
+            >
               <img
-                  src={meeting.thumbnailImage || "/src/assets/image/bg1.jpg"}
+                src={
+                  meeting.thumbnailImage || meetingImages[index % meetingImages.length]
+                }
                 alt={meeting.title}
                 className={styles.dashboardMeetingImage}
               />
@@ -338,10 +686,7 @@ export default function HomePage() {
                 <div className={styles.dashboardMeetingBadges}>
                   <span>{meeting.sportName}</span>
                   <span className={styles.dashboardStatusBadge}>
-                    {meeting.status}
-                  </span>
-                  <span>
-                    {meeting.approvedCount < meeting.maxMembers ? "초보 환영" : "정기 모임"}
+                    {STATUS_LABELS[meeting.status] ?? meeting.status}
                   </span>
                 </div>
                 <h3>{meeting.title}</h3>
@@ -355,12 +700,15 @@ export default function HomePage() {
                     {meeting.regionName}
                   </span>
                   <span>
-                    <UiIcon name="calendar" className={styles.dashboardMetaIcon} />{" "}
+                    <UiIcon
+                      name="calendar"
+                      className={styles.dashboardMetaIcon}
+                    />{" "}
                     {formatMeetingDateTime(meeting.meetingDate, meeting.startTime)}
                   </span>
                   <span>
                     <UiIcon name="user" className={styles.dashboardMetaIcon} />{" "}
-                    {meeting.approvedCount} / {meeting.maxMembers}명
+                    {meeting.approvedCount ?? 0} / {meeting.maxMembers}명
                   </span>
                 </div>
                 <div className={styles.dashboardMeetingFooter}>
@@ -389,7 +737,7 @@ export default function HomePage() {
                         className={styles.dashboardActionIcon}
                       />
                     </button>
-                    <Link to={`/meetings/${meeting.meetingId}`}>참가 신청</Link>
+                    <Link to={`/meetings/${meeting.meetingId}`}>참여 신청</Link>
                   </div>
                 </div>
               </div>
@@ -397,6 +745,25 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <MeetingRegionPickerModal
+        open={isRegionModalOpen}
+        regions={regionOptions}
+        initialSelection={
+          selectedRegion ??
+          (isExplicitAllRegion ? { regionId: null, sido: "", sigungu: "", dong: "" } : memberRegion ?? { regionId: null, sido: "", sigungu: "", dong: "" })
+        }
+        onApply={handleApplyRegion}
+        onClose={() => setIsRegionModalOpen(false)}
+      />
+
+      <SportPickerModal
+        open={isSportModalOpen}
+        sports={sportOptions}
+        selectedSportId={selectedSport?.sportId ?? null}
+        onApply={handleApplySport}
+        onClose={() => setIsSportModalOpen(false)}
+      />
     </DashboardShell>
   );
 }

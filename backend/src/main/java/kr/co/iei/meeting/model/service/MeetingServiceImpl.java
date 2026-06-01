@@ -98,14 +98,30 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   public void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request) {
-    if ("CLOSED".equals(request.getStatus())) {
+    MeetingDetailResponse currentMeeting = meetingDao.selectMeetingDetail(meetingId);
+    if (currentMeeting == null) {
+      throw new IllegalArgumentException("모임을 찾을 수 없습니다.");
+    }
+
+    String nextStatus = request.getStatus();
+
+    if ("CLOSED".equals(nextStatus)) {
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
       if (approved == null || max == null || approved < max) {
         throw new IllegalArgumentException("모집완료는 정원이 모두 찬 경우에만 설정할 수 있습니다.");
       }
     }
-    meetingDao.updateMeetingStatus(meetingId, request.getStatus());
+
+    if ("CANCELLED".equals(nextStatus) && !"RECRUITING".equals(currentMeeting.getStatus())) {
+      throw new IllegalArgumentException("모집중인 모임만 취소할 수 있습니다.");
+    }
+
+    if ("COMPLETED".equals(nextStatus) && !"ONGOING".equals(currentMeeting.getStatus())) {
+      throw new IllegalArgumentException("진행중인 모임만 완료로 변경할 수 있습니다.");
+    }
+
+    meetingDao.updateMeetingStatus(meetingId, nextStatus);
   }
 
   @Override

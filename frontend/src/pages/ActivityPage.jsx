@@ -328,9 +328,30 @@ export default function ActivityPage() {
   const waitingMeetings = activityData.pendingMeetings;
   const completedMeetings = activityData.completedMeetings;
   const hostedMeetings = activityData.hostedMeetings;
-  const canCancelManagedMeeting =
-    manageModalMeeting &&
-    !["COMPLETED", "CANCELLED"].includes(manageModalMeeting.status);
+  const manageAction = useMemo(() => {
+    if (!manageModalMeeting) {
+      return null;
+    }
+
+    if (manageModalMeeting.status === "RECRUITING") {
+      return {
+        type: "cancel",
+        confirmText: "모임 취소"
+      };
+    }
+
+    if (manageModalMeeting.status === "ONGOING") {
+      return {
+        type: "complete",
+        confirmText: "모임 완료"
+      };
+    }
+
+    return {
+      type: null,
+      confirmText: ""
+    };
+  }, [manageModalMeeting]);
 
   const calendarMeetings = useMemo(() => {
     const grouped = new Map();
@@ -410,19 +431,30 @@ export default function ActivityPage() {
     setManageModalMeeting(null);
   };
 
-  const handleCancelHostedMeeting = async () => {
+  const handleManageHostedMeeting = async () => {
     if (!manageModalMeeting) {
       return;
     }
 
     try {
-      await updateMeetingStatus(manageModalMeeting.id, { status: "CANCELLED" });
-      toast.success("모임이 취소되었습니다.", "내 활동 목록이 갱신되었습니다.");
+      if (manageAction?.type === "cancel") {
+        await updateMeetingStatus(manageModalMeeting.id, { status: "CANCELLED" });
+        toast.success("모임을 취소했어요.", "내 활동 목록이 갱신되었습니다.");
+      } else if (manageAction?.type === "complete") {
+        await updateMeetingStatus(manageModalMeeting.id, { status: "COMPLETED" });
+        toast.success("모임을 완료했어요.", "완료된 모임으로 이동했습니다.");
+      } else {
+        toast.error("상태를 바꿀 수 없어요.", "모집중 또는 진행중 상태에서만 변경할 수 있습니다.");
+        return;
+      }
+
       setManageModalMeeting(null);
       await loadActivity({ showLoading: false });
     } catch (error) {
       console.error(error);
-      toast.error("모임 취소 실패", "모임 상태를 변경하지 못했습니다.");
+      const message =
+        error?.response?.data?.message ?? "모임 상태를 변경하지 못했습니다.";
+      toast.error("상태 변경 실패", message);
     }
   };
 
@@ -961,9 +993,9 @@ export default function ActivityPage() {
             ? `${manageModalMeeting.region} · ${formatMeetingDateTime(manageModalMeeting)}`
             : ""
         }
-        confirmText="모임 취소"
+        confirmText={manageAction?.confirmText || "확인"}
         cancelText="닫기"
-        onConfirm={canCancelManagedMeeting ? handleCancelHostedMeeting : undefined}
+        onConfirm={manageAction?.type ? handleManageHostedMeeting : undefined}
         onClose={handleCloseManageModal}
       >
         {manageModalMeeting ? (
@@ -989,16 +1021,7 @@ export default function ActivityPage() {
             >
               모임 상세 보기
             </Link>
-            {canCancelManagedMeeting ? (
-              <p className={styles.manageModalNotice}>
-                모임을 취소하면 참가자 목록에서도 더 이상 진행 중인 일정으로 보이지
-                않습니다.
-              </p>
-            ) : (
-              <p className={styles.manageModalNotice}>
-                완료되었거나 이미 취소된 모임이라 상태만 확인할 수 있습니다.
-              </p>
-            )}
+            <p className={styles.manageModalNotice}>{manageAction?.notice}</p>
           </div>
         ) : null}
       </AppModal>

@@ -267,6 +267,89 @@
   margin-top: 18px !important;
 }
 
+.dashboardHeroChoiceButton {
+  min-width: 0;
+  height: 54px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #496079;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboardHeroChoiceButton span:first-child {
+  flex-shrink: 0;
+}
+
+.dashboardHeroChoiceText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dashboardHeroChoiceText small {
+  color: #8b97a8;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.dashboardHeroChoiceText strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #18304d;
+  font-size: 0.92rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboardHeroChoiceChevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: #8ea0b8;
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.dashboardInlineIcon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.dashboardHeroDateField {
+  min-width: 0;
+  height: 54px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #496079;
+  font-weight: 800;
+}
+
+.dashboardHeroDateField input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  outline: 0;
+}
+
 .dashboardCategoryStrip {
   padding: 8px 10px !important;
   gap: 7px !important;
