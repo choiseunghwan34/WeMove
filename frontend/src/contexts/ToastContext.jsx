@@ -5,6 +5,8 @@ const ToastContext = createContext(null);
 
 let nextToastId = 1;
 
+const getToastKey = (toast) => toast.sourceId || toast.id;
+
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
@@ -13,14 +15,46 @@ export function ToastProvider({ children }) {
   }, []);
 
   const showToast = useCallback(
-    ({ title, message = "", tone = "info", duration = 2600 }) => {
+    ({
+      title,
+      message = "",
+      tone = "info",
+      sourceId,
+      target,
+      duration = 2600,
+    }) => {
       const id = nextToastId;
       nextToastId += 1;
+      const nextToast = { id, title, message, tone, sourceId, target };
 
-      setToasts((current) => [...current, { id, title, message, tone }]);
+      setToasts((current) => {
+        if (!sourceId) {
+          return [...current, nextToast];
+        }
+
+        const existingIndex = current.findIndex(
+          (toast) => getToastKey(toast) === sourceId,
+        );
+
+        if (existingIndex === -1) {
+          return [...current, nextToast];
+        }
+
+        const next = [...current];
+        next[existingIndex] = nextToast;
+        return next;
+      });
 
       if (duration > 0) {
-        window.setTimeout(() => dismissToast(id), duration);
+        window.setTimeout(() => {
+          setToasts((current) =>
+            current.filter((toast) =>
+              sourceId
+                ? !(toast.sourceId === sourceId && toast.id === id)
+                : toast.id !== id,
+            ),
+          );
+        }, duration);
       }
 
       return id;
@@ -31,10 +65,12 @@ export function ToastProvider({ children }) {
   const value = useMemo(
     () => ({
       showToast,
-      success: (title, message) =>
-        showToast({ title, message, tone: "success" }),
-      error: (title, message) => showToast({ title, message, tone: "error" }),
-      info: (title, message) => showToast({ title, message, tone: "info" }),
+      success: (title, message, options = {}) =>
+        showToast({ ...options, title, message, tone: "success" }),
+      error: (title, message, options = {}) =>
+        showToast({ ...options, title, message, tone: "error" }),
+      info: (title, message, options = {}) =>
+        showToast({ ...options, title, message, tone: "info" }),
     }),
     [showToast],
   );

@@ -4,6 +4,7 @@ import defaultUserImage from "../assets/image/Default-user.png";
 import { interestItems, navItems } from "../data/dashboardData";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/DashboardShell.module.css";
+import NotificationButton from "./NotificationButton";
 import UiIcon from "./UiIcon";
 import WeMoveLogo from "./WeMoveLogo";
 
@@ -90,6 +91,7 @@ export default function DashboardShell({
         <div className={styles.dashboardActions}>
           {loading ? null : user ? (
             <>
+              <NotificationButton />
               <div className={styles.dashboardUserInfo}>
                 <img
                   src={profileImage}

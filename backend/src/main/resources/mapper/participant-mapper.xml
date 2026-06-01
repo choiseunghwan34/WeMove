@@ -76,6 +76,19 @@
             mp.appliedAt DESC
     </select>
 
+    <select id="selectParticipant" resultType="kr.co.iei.participant.model.vo.ParticipantResponse">
+        SELECT
+            mp.participantId,
+            mp.meetingId,
+            mp.userId,
+            u.nickname,
+            mp.status,
+            mp.message
+        FROM meetingParticipants mp
+        JOIN users u ON mp.userId=u.userId
+        WHERE mp.participantId=#{participantId}
+    </select>
+
     <update id="updateStatus">
         UPDATE meetingParticipants
         SET

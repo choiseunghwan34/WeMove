@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
+import NotificationButton from "./NotificationButton";
 import WeMoveLogo from "./WeMoveLogo";
 
 export default function Header() {
@@ -73,6 +74,7 @@ export default function Header() {
         <div className="header-actions">
           {loading ? null : user ? (
             <>
+              <NotificationButton />
               <div className="header-user-info">
                 <img
                   src={profileImage}

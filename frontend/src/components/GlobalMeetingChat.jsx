@@ -1,22 +1,111 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createChatMessage, getChatMessages, getChatRooms } from "../api/chatApi";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createChatMessage,
+  getChatMessages,
+  getChatRooms,
+} from "../api/chatApi";
+import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { getAccessToken } from "../utils/authTokenStore";
+import {
+  NOTIFICATION_TYPES,
+  WEMOVE_NOTIFICATION_OPEN_EVENT,
+  publishNotification,
+} from "../utils/notificationEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
 
-const formatTime = (value) =>
-  value ? String(value).replace("T", " ").slice(0, 16) : "";
+const formatTime = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const normalizedValue = String(value).replace("T", " ");
+  const timeMatch = normalizedValue.match(/\b(\d{2}):(\d{2})/);
+
+  if (!timeMatch) {
+    return "";
+  }
+
+  const [, hourValue, minute] = timeMatch;
+  const hour = Number(hourValue);
+
+  if (Number.isNaN(hour)) {
+    return "";
+  }
+
+  const period = hour < 12 ? "오전" : "오후";
+  const displayHour = hour % 12 || 12;
+
+  return `${period} ${displayHour}:${minute}`;
+};
+
+const getDateKey = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  return String(value).replace("T", " ").slice(0, 10);
+};
+
+const formatDateLabel = (value) => {
+  const dateKey = getDateKey(value);
+  if (!dateKey) {
+    return "";
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) {
+    return dateKey;
+  }
+
+  const weekdays = [
+    "일요일",
+    "월요일",
+    "화요일",
+    "수요일",
+    "목요일",
+    "금요일",
+    "토요일",
+  ];
+
+  return `${year}년 ${month}월 ${day}일 ${weekdays[date.getDay()]}`;
+};
 
 const formatSchedule = (meetingDate, startTime) =>
   [meetingDate, startTime ? String(startTime).slice(0, 5) : ""]
     .filter(Boolean)
     .join(" ");
 
+const getRoomActivityTime = (room) => {
+  const value =
+    room?.lastMessageAt ||
+    (room?.meetingDate && room?.startTime
+      ? `${room.meetingDate}T${String(room.startTime).slice(0, 8)}`
+      : room?.meetingDate);
+  const time = value ? new Date(String(value).replace(" ", "T")).getTime() : 0;
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const sortRoomsByLatestMessage = (roomList) =>
+  [...roomList].sort((a, b) => {
+    const timeDiff = getRoomActivityTime(b) - getRoomActivityTime(a);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+
+    return Number(b.meetingId || 0) - Number(a.meetingId || 0);
+  });
+
 const PANEL_DEFAULT_WIDTH = 860;
 const PANEL_DEFAULT_HEIGHT = 560;
 const PANEL_MIN_WIDTH = 520;
 const PANEL_MIN_HEIGHT = 360;
+const MOVE_TALK_FALLBACK_TITLE = "무브톡";
+const CHAT_PARTICIPANT_FALLBACK = "참가자";
+const NOTIFICATION_TEST_COMMAND = "noti";
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -40,58 +129,108 @@ export default function GlobalMeetingChat() {
   const socketMapRef = useRef(new Map());
   const activeMeetingIdRef = useRef(null);
   const openRef = useRef(false);
+  const roomsRef = useRef([]);
+  const userIdRef = useRef(null);
   const latestMessageIdsRef = useRef(new Set());
 
   const selectedRoom = useMemo(
-    () => rooms.find((room) => Number(room.meetingId) === Number(selectedMeetingId)) ?? null,
+    () =>
+      rooms.find(
+        (room) => Number(room.meetingId) === Number(selectedMeetingId),
+      ) ?? null,
     [rooms, selectedMeetingId],
   );
 
-  const appendMessage = (message, options = {}) => {
-    if (!message?.messageId) {
-      return;
-    }
+  useEffect(() => {
+    roomsRef.current = rooms;
+  }, [rooms]);
 
-    const messageId = Number(message.messageId);
-    if (latestMessageIdsRef.current.has(messageId)) {
-      return;
-    }
+  useEffect(() => {
+    userIdRef.current = user?.memberId ?? null;
+  }, [user?.memberId]);
 
-    latestMessageIdsRef.current.add(messageId);
+  const appendMessage = useCallback(
+    (message, options = {}) => {
+      if (!message?.messageId) {
+        return;
+      }
 
-    if (Number(message.meetingId) === Number(activeMeetingIdRef.current)) {
-      setMessages((current) => [...current, message]);
-    }
+      const messageId = Number(message.messageId);
+      if (latestMessageIdsRef.current.has(messageId)) {
+        return;
+      }
 
-    setRooms((current) =>
-      current.map((room) =>
-        Number(room.meetingId) === Number(message.meetingId)
-          ? {
-              ...room,
-              lastMessageId: message.messageId,
-              lastMessage: message.content,
-              lastMessageAt: message.createdAt,
-            }
-          : room,
-      ),
-    );
+      latestMessageIdsRef.current.add(messageId);
 
-    const isMine = Number(message.userId) === Number(user?.memberId);
-    const shouldNotify =
-      !isMine &&
-      options.notify !== false &&
-      (!openRef.current ||
-        Number(activeMeetingIdRef.current) !== Number(message.meetingId));
+      if (Number(message.meetingId) === Number(activeMeetingIdRef.current)) {
+        setMessages((current) => [...current, message]);
+      }
 
-    if (shouldNotify) {
-      const roomTitle =
-        rooms.find((room) => Number(room.meetingId) === Number(message.meetingId))
-          ?.title || "무브톡";
-      toast.info(roomTitle, `${message.nickname || "참가자"}: ${message.content}`);
-    }
-  };
+      setRooms((current) =>
+        sortRoomsByLatestMessage(
+          current.map((room) =>
+            Number(room.meetingId) === Number(message.meetingId)
+              ? {
+                  ...room,
+                  lastMessageId: message.messageId,
+                  lastMessage: message.content,
+                  lastMessageAt: message.createdAt,
+                }
+              : room,
+          ),
+        ),
+      );
 
-  const loadRooms = async () => {
+      const isMine = Number(message.userId) === Number(userIdRef.current);
+      const shouldNotify =
+        !isMine &&
+        options.notify !== false &&
+        (!openRef.current ||
+          Number(activeMeetingIdRef.current) !== Number(message.meetingId));
+
+      if (shouldNotify) {
+        const roomTitle =
+          roomsRef.current.find(
+            (room) => Number(room.meetingId) === Number(message.meetingId),
+          )?.title || MOVE_TALK_FALLBACK_TITLE;
+        const notificationMessage = `${
+          message.nickname || CHAT_PARTICIPANT_FALLBACK
+        }: ${message.content}`;
+        const notificationPayload = {
+          type: NOTIFICATION_TYPES.CHAT,
+          title: roomTitle,
+          message: notificationMessage,
+          sourceId: message.meetingId,
+          createdAt: message.createdAt,
+        };
+
+        toast.info(roomTitle, notificationMessage, {
+          sourceId: `chat:${message.meetingId || roomTitle}`,
+          target: notificationPayload,
+        });
+        publishNotification(notificationPayload);
+      }
+    },
+    [toast],
+  );
+
+  const publishTestNotification = useCallback(() => {
+    const testMessage = "무브톡 알림 테스트 메시지입니다.";
+    const notificationPayload = {
+      type: NOTIFICATION_TYPES.CHAT,
+      title: MOVE_TALK_FALLBACK_TITLE,
+      message: testMessage,
+      sourceId: "move-talk-test",
+    };
+
+    toast.info(MOVE_TALK_FALLBACK_TITLE, testMessage, {
+      sourceId: "chat:move-talk-test",
+      target: notificationPayload,
+    });
+    publishNotification(notificationPayload);
+  }, [toast]);
+
+  const loadRooms = useCallback(async () => {
     if (!isAuthenticated) {
       setRooms([]);
       setSelectedMeetingId(null);
@@ -103,7 +242,9 @@ export default function GlobalMeetingChat() {
 
     try {
       const { data } = await getChatRooms();
-      const nextRooms = Array.isArray(data) ? data : [];
+      const nextRooms = sortRoomsByLatestMessage(
+        Array.isArray(data) ? data : [],
+      );
       setRooms(nextRooms);
       setSelectedMeetingId((current) =>
         nextRooms.some((room) => Number(room.meetingId) === Number(current))
@@ -113,11 +254,14 @@ export default function GlobalMeetingChat() {
     } catch (requestError) {
       setRooms([]);
       setSelectedMeetingId(null);
-      setError(requestError?.response?.data?.message || "무브톡 목록을 불러오지 못했습니다.");
+      setError(
+        requestError?.response?.data?.message ||
+          "무브톡 목록을 불러오지 못했습니다.",
+      );
     } finally {
       setLoadingRooms(false);
     }
-  };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (loading) {
@@ -125,7 +269,7 @@ export default function GlobalMeetingChat() {
     }
 
     loadRooms();
-  }, [isAuthenticated, loading, user?.memberId]);
+  }, [isAuthenticated, loadRooms, loading, user?.memberId]);
 
   useEffect(() => {
     activeMeetingIdRef.current = selectedMeetingId;
@@ -163,7 +307,10 @@ export default function GlobalMeetingChat() {
       .catch((requestError) => {
         if (active) {
           setMessages([]);
-          setError(requestError?.response?.data?.message || "메시지를 불러오지 못했습니다.");
+          setError(
+            requestError?.response?.data?.message ||
+              "메시지를 불러오지 못했습니다.",
+          );
         }
       })
       .finally(() => {
@@ -188,6 +335,17 @@ export default function GlobalMeetingChat() {
     if (!token) {
       return undefined;
     }
+
+    const visibleMeetingIds = new Set(
+      rooms.map((room) => Number(room.meetingId)).filter(Boolean),
+    );
+
+    socketMapRef.current.forEach((socket, meetingId) => {
+      if (!visibleMeetingIds.has(meetingId)) {
+        socket.close();
+        socketMapRef.current.delete(meetingId);
+      }
+    });
 
     rooms.forEach((room) => {
       const meetingId = Number(room.meetingId);
@@ -220,7 +378,7 @@ export default function GlobalMeetingChat() {
     });
 
     return undefined;
-  }, [isAuthenticated, rooms, user?.memberId]);
+  }, [appendMessage, isAuthenticated, rooms, user?.memberId]);
 
   useEffect(() => {
     if (!listRef.current) {
@@ -249,6 +407,74 @@ export default function GlobalMeetingChat() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open || selectedMeetingId) {
+      return undefined;
+    }
+
+    let commandBuffer = "";
+
+    const handleNotificationTestCommand = (event) => {
+      if (
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.key.length !== 1
+      ) {
+        return;
+      }
+
+      commandBuffer = `${commandBuffer}${event.key.toLowerCase()}`.slice(
+        -NOTIFICATION_TEST_COMMAND.length,
+      );
+
+      if (commandBuffer === NOTIFICATION_TEST_COMMAND) {
+        publishTestNotification();
+        commandBuffer = "";
+      }
+    };
+
+    window.addEventListener("keydown", handleNotificationTestCommand);
+    return () => {
+      window.removeEventListener("keydown", handleNotificationTestCommand);
+    };
+  }, [open, publishTestNotification, selectedMeetingId]);
+
+  useEffect(() => {
+    const handleOpenNotificationTarget = (event) => {
+      const notification = event.detail;
+      if (notification?.type !== NOTIFICATION_TYPES.CHAT) {
+        return;
+      }
+
+      const rawSourceId = String(notification.sourceId || "");
+      const meetingId = rawSourceId.startsWith("chat:")
+        ? rawSourceId.slice(5)
+        : rawSourceId;
+
+      if (!meetingId || meetingId === "move-talk-test") {
+        setOpen(true);
+        return;
+      }
+
+      setOpen(true);
+      setSelectedMeetingId(
+        Number.isNaN(Number(meetingId)) ? meetingId : Number(meetingId),
+      );
+    };
+
+    window.addEventListener(
+      WEMOVE_NOTIFICATION_OPEN_EVENT,
+      handleOpenNotificationTarget,
+    );
+    return () => {
+      window.removeEventListener(
+        WEMOVE_NOTIFICATION_OPEN_EVENT,
+        handleOpenNotificationTarget,
+      );
+    };
+  }, []);
+
   if (loading || !isAuthenticated) {
     return null;
   }
@@ -269,12 +495,14 @@ export default function GlobalMeetingChat() {
       appendMessage(data, { notify: false });
       setMessageInput("");
     } catch (requestError) {
-      setError(requestError?.response?.data?.message || "메시지 전송에 실패했습니다.");
+      setError(
+        requestError?.response?.data?.message || "메시지 전송에 실패했습니다.",
+      );
     } finally {
       setSending(false);
-      window.requestAnimationFrame(() => {
+      window.setTimeout(() => {
         messageInputRef.current?.focus();
-      });
+      }, 0);
     }
   };
 
@@ -297,10 +525,18 @@ export default function GlobalMeetingChat() {
 
       setPanelSize({
         width: direction.includes("left")
-          ? clamp(startWidth + startX - moveEvent.clientX, PANEL_MIN_WIDTH, maxWidth)
+          ? clamp(
+              startWidth + startX - moveEvent.clientX,
+              PANEL_MIN_WIDTH,
+              maxWidth,
+            )
           : startWidth,
         height: direction.includes("top")
-          ? clamp(startHeight + startY - moveEvent.clientY, PANEL_MIN_HEIGHT, maxHeight)
+          ? clamp(
+              startHeight + startY - moveEvent.clientY,
+              PANEL_MIN_HEIGHT,
+              maxHeight,
+            )
           : startHeight,
       });
     };
@@ -371,7 +607,11 @@ export default function GlobalMeetingChat() {
               <strong>무브톡</strong>
               <span>승인된 모임 대화방</span>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="무브톡 닫기">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="무브톡 닫기"
+            >
               x
             </button>
           </header>
@@ -419,7 +659,9 @@ export default function GlobalMeetingChat() {
             <button
               type="button"
               className={styles.roomToggle}
-              aria-label={roomsCollapsed ? "모임방 모음 펼치기" : "모임방 모음 숨기기"}
+              aria-label={
+                roomsCollapsed ? "모임방 모음 펼치기" : "모임방 모음 숨기기"
+              }
               onClick={() => setRoomsCollapsed((current) => !current)}
             >
               {roomsCollapsed ? "›" : "‹"}
@@ -427,14 +669,19 @@ export default function GlobalMeetingChat() {
 
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
-                <strong>{selectedRoom?.title || "무브톡을 선택해주세요"}</strong>
+                <strong>
+                  {selectedRoom?.title || "무브톡을 선택해주세요"}
+                </strong>
                 {selectedRoom ? (
                   <span>
                     {[
                       selectedRoom.sportName,
                       selectedRoom.regionName,
                       selectedRoom.placeName,
-                      formatSchedule(selectedRoom.meetingDate, selectedRoom.startTime),
+                      formatSchedule(
+                        selectedRoom.meetingDate,
+                        selectedRoom.startTime,
+                      ),
                     ]
                       .filter(Boolean)
                       .join(" · ")}
@@ -446,23 +693,97 @@ export default function GlobalMeetingChat() {
 
               <div className={styles.messageList} ref={listRef}>
                 {!selectedMeetingId ? (
-                  <p className={styles.state}>무브톡 방을 선택하면 대화 내역을 볼 수 있습니다.</p>
+                  <p className={styles.state}>
+                    무브톡 방을 선택하면 대화 내역을 볼 수 있습니다.
+                  </p>
                 ) : loadingMessages ? (
                   <p className={styles.state}>메시지를 불러오는 중입니다.</p>
                 ) : messages.length ? (
-                  messages.map((message) => {
-                    const isMine = Number(message.userId) === Number(user?.memberId);
+                  messages.map((message, index) => {
+                    const isMine =
+                      Number(message.userId) === Number(user?.memberId);
+                    const isSystem = message.messageType === "SYSTEM";
+                    const previousMessage = messages[index - 1];
+                    const shouldShowDate =
+                      index === 0 ||
+                      getDateKey(previousMessage?.createdAt) !==
+                        getDateKey(message.createdAt);
+                    const profileImage =
+                      typeof message.profileImage === "string" &&
+                      message.profileImage.trim()
+                        ? message.profileImage.trim()
+                        : defaultUserImage;
+
                     return (
-                      <article
+                      <div
                         key={message.messageId}
-                        className={isMine ? styles.messageMine : styles.message}
+                        className={styles.messageGroup}
                       >
-                        <div>
-                          <strong>{message.nickname || "알 수 없음"}</strong>
-                          <span>{formatTime(message.createdAt)}</span>
-                        </div>
-                        <p>{message.content}</p>
-                      </article>
+                        {shouldShowDate ? (
+                          <div className={styles.messageDateDivider}>
+                            {formatDateLabel(message.createdAt)}
+                          </div>
+                        ) : null}
+
+                        {isSystem ? (
+                          <p className={styles.systemMessage}>
+                            {message.content}
+                          </p>
+                        ) : (
+                          <article
+                            className={
+                              isMine ? styles.messageMineRow : styles.messageRow
+                            }
+                          >
+                            {!isMine ? (
+                              <img
+                                src={profileImage}
+                                alt={
+                                  message.nickname
+                                    ? `${message.nickname} 프로필`
+                                    : "프로필"
+                                }
+                                className={styles.messageAvatar}
+                              />
+                            ) : null}
+
+                            <div className={styles.messageContent}>
+                              {!isMine ? (
+                                <strong className={styles.messageNickname}>
+                                  {message.nickname || "알 수 없음"}
+                                </strong>
+                              ) : null}
+                              <div
+                                className={
+                                  isMine
+                                    ? styles.messageMineLine
+                                    : styles.messageLine
+                                }
+                              >
+                                {isMine ? (
+                                  <span className={styles.messageTime}>
+                                    {formatTime(message.createdAt)}
+                                  </span>
+                                ) : null}
+                                <p
+                                  className={
+                                    isMine
+                                      ? styles.messageMineBubble
+                                      : styles.messageBubble
+                                  }
+                                >
+                                  {message.content}
+                                </p>
+                                {!isMine ? (
+                                  <span className={styles.messageTime}>
+                                    {formatTime(message.createdAt)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                          </article>
+                        )}
+                      </div>
                     );
                   })
                 ) : (

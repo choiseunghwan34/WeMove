@@ -10,6 +10,7 @@ import AppModal from "./components/AppModal";
 import GlobalMeetingChat from "./components/GlobalMeetingChat";
 import Header from "./components/Header";
 import { useAuth } from "./contexts/AuthContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import AdminPage from "./pages/AdminPage";
 import ActivityPage from "./pages/ActivityPage";
@@ -190,13 +191,15 @@ function LayoutRoutes() {
 export default function App() {
   return (
     <ToastProvider>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/find-account" element={<FindAccountPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="*" element={<LayoutRoutes />} />
-      </Routes>
-      <GlobalMeetingChat />
+      <NotificationProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/find-account" element={<FindAccountPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="*" element={<LayoutRoutes />} />
+        </Routes>
+        <GlobalMeetingChat />
+      </NotificationProvider>
     </ToastProvider>
   );
 }

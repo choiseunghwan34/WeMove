@@ -65,6 +65,31 @@ public class ChatServiceImpl implements ChatService {
   }
 
   @Override
+  @Transactional
+  public ChatMessageResponse createSystemMessage(Long meetingId, Long userId, String content) {
+    if (meetingId == null || userId == null) {
+      throw new IllegalArgumentException("시스템 메시지를 보낼 모임 정보가 없습니다.");
+    }
+
+    String normalizedContent = normalizeContent(content);
+    if (normalizedContent.isBlank()) {
+      return null;
+    }
+
+    ChatMessage message = new ChatMessage();
+    message.setMeetingId(meetingId);
+    message.setUserId(userId);
+    message.setContent(normalizedContent);
+    message.setMessageType("SYSTEM");
+    chatDao.insertMessage(message);
+
+    ChatMessageResponse savedMessage = chatDao.selectMessage(message.getMessageId());
+    meetingChatBroadcaster.broadcast(
+        meetingId, new ChatMessageEvent("CHAT_MESSAGE_CREATED", savedMessage));
+    return savedMessage;
+  }
+
+  @Override
   public boolean canAccess(Long meetingId, Long userId) {
     if (meetingId == null || userId == null) {
       return false;

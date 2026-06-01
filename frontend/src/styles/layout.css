@@ -64,6 +64,7 @@
   align-items: center;
   gap: 10px;
 }
+
 .header-user-info {
   display: inline-flex;
   align-items: center;

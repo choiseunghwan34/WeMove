@@ -281,52 +281,116 @@
   background: #cbd5e1;
 }
 
-.message,
-.messageMine {
-  max-width: 78%;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+.messageGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.messageDateDivider {
+  justify-self: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.systemMessage {
+  justify-self: center;
+  max-width: 82%;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #edf4fb;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.messageRow,
+.messageMineRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.messageMineRow {
+  justify-content: flex-end;
+}
+
+.messageAvatar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.36);
   background: #fff;
 }
 
-.messageMine {
-  align-self: flex-end;
-  border-color: rgba(37, 99, 235, 0.18);
-  background: #eff6ff;
+.messageContent {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  max-width: 78%;
 }
 
-.message div,
-.messageMine div {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 5px;
-}
-
-.message strong,
-.messageMine strong {
+.messageNickname {
   color: #10233d;
   font-size: 12px;
   font-weight: 900;
+  line-height: 1.25;
 }
 
-.message span,
-.messageMine span {
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 700;
+.messageLine,
+.messageMineLine {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
 }
 
-.message p,
-.messageMine p {
+.messageMineLine {
+  justify-content: flex-end;
+}
+
+.messageBubble,
+.messageMineBubble {
+  width: fit-content;
+  max-width: 100%;
   margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-  color: #1f2937;
+  color: #111827;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.55;
+  line-height: 1.45;
+}
+
+.messageBubble {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.messageMineBubble {
+  background: #eaf3ff;
+  border: 1px solid #cfe1f7;
+}
+
+.messageTime {
+  flex: 0 0 auto;
+  color: #a8b3c3;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .error {
@@ -422,8 +486,7 @@
     line-height: 1;
   }
 
-  .message,
-  .messageMine {
-    max-width: 92%;
+  .messageContent {
+    max-width: calc(100% - 48px);
   }
 }
