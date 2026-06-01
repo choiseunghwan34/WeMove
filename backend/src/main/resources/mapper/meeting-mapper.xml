@@ -2,6 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="meeting">
 
+    <select id="selectMainMeetingList" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
+        SELECT
+            m.meetingId, m.title, m.placeName, m.meetingDate, m.startTime,
+            m.maxMembers, m.status, m.thumbnailImage,
+            s.name as sportName,
+            CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) as regionName,
+            (SELECT nickname FROM users WHERE userId = m.hostUserId) as meetingHostName,
+            (SELECT COUNT(*) FROM meetingParticipants mp WHERE mp.meetingId = m.meetingId AND mp.status="APPROVED") as approvedCount
+        FROM meetings m
+                 JOIN sports s ON m.sportId = s.sportId
+                 JOIN regions r ON m.regionId = r.regionId
+        WHERE m.deletedAt IS NULL
+        ORDER BY m.createdAt DESC
+            LIMIT 10 OFFSET 0
+    </select>
+
+
+
     <select id="selectMeetingList" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
         SELECT
             m.meetingId as meetingId,
@@ -177,7 +195,7 @@
         ON m.regionId = r.regionId
         WHERE m.deletedAt IS NULL
         GROUP BY r.sido, r.sigungu, r.dong
-        ORDER BY COUNT (*) DESC, MAX (m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
+        ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
             LIMIT 4
     </select>
 
@@ -294,7 +312,8 @@
 
     <update id="softDeleteMeeting">
         UPDATE meetings
-        SET deletedAt = NOW()
+        SET status = 'CANCELLED',
+            deletedAt = NOW()
         WHERE meetingId = #{meetingId}
     </update>
 

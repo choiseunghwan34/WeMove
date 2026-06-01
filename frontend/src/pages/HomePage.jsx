@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { meetings, regions, sports } from "../data/demoData";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import styles from "../styles/HomePage.module.css";
+import {getMainMeetings} from "../api/meetingApi.js";
 
 const heroSlides = [
   {
@@ -26,15 +27,57 @@ const heroSlides = [
   },
 ];
 
+const formatMeetingDateTime = (dateStr, timeStr) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+
+  // 1. 날짜가 오늘인지 확인
+  const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
+
+  // 2. 요일 배열
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const dayName = dayNames[date.getDay()];
+
+  // 3. 시간(HH:mm)과 오전/오후 구분
+  const hour = parseInt(timeStr.substring(0, 2), 10);
+  const ampm = hour < 12 ? "오전" : "오후";
+
+  // 12시간제 변환 (13시 -> 1시)
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  const displayMinute = timeStr.substring(3, 5);
+  const shortTime = `${ampm} ${displayHour}:${displayMinute}`;
+
+  // 4. 날짜 포맷
+  const dateDisplay = isToday ? "오늘" : `${date.getMonth() + 1}.${date.getDate()}`;
+
+  return `${dateDisplay}(${dayName}) ${shortTime}`;
+};
+
 export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const [activeSlide, setActiveSlide] = useState(0);
-  const recruitingMeetings = meetings.filter(
-    (meeting) => meeting.status === "RECRUITING",
-  );
-  const featuredMeetings = recruitingMeetings.slice(0, 3);
+  const [meetings, setMeetings] = useState([]);
+  const recruitingMeetings = Array.isArray(meetings)
+      ? meetings.filter((meeting) => meeting.status === "RECRUITING")
+      : [];
+  const featuredMeetings = recruitingMeetings.slice(0, 10);
   const currentHero = heroSlides[activeSlide];
+
+//메인페이지 모임목록조회
+  useEffect(() => {
+    getMainMeetings().then((res)=>{
+      console.log("서버응답전체: " ,res.data);
+      setMeetings(Array.isArray(res.data) ? res.data : []);
+    }).catch((err)=>{
+      console.log(err);
+      alert("모임 데이터 로드 실패")
+      setMeetings([]);
+    })
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -72,8 +115,8 @@ export default function HomePage() {
         <div className={styles.dashboardRankList}>
           {featuredMeetings.map((meeting, index) => (
             <Link
-              key={meeting.id}
-              to={`/meetings/${meeting.id}`}
+              key={meeting.meetingId}
+              to={`/meetings/${meeting.meetingId}`}
               className={styles.dashboardRankItem}
             >
               <b>{index + 1}</b>
@@ -278,7 +321,6 @@ export default function HomePage() {
               <button type="button">모집중</button>
               <button type="button">마감임박</button>
               <button type="button">초보 환영</button>
-              <button type="button">정기 모임</button>
             </div>
           </div>
           <Link to="/meetings">전체 보기</Link>
@@ -286,47 +328,44 @@ export default function HomePage() {
 
         <div className={styles.dashboardFeed}>
           {featuredMeetings.map((meeting) => (
-            <article key={meeting.id} className={styles.dashboardMeetingCard}>
+            <article key={meeting.meetingId} className={styles.dashboardMeetingCard}>
               <img
-                src={meetingImages[meeting.id]}
+                  src={meeting.thumbnailImage || "/src/assets/image/bg1.jpg"}
                 alt={meeting.title}
                 className={styles.dashboardMeetingImage}
               />
               <div className={styles.dashboardMeetingBody}>
                 <div className={styles.dashboardMeetingBadges}>
-                  <span>{meeting.sport}</span>
+                  <span>{meeting.sportName}</span>
                   <span className={styles.dashboardStatusBadge}>
-                    {meeting.statusText}
+                    {meeting.status}
                   </span>
                   <span>
-                    {meeting.current < meeting.max ? "초보 환영" : "정기 모임"}
+                    {meeting.approvedCount < meeting.maxMembers ? "초보 환영" : "정기 모임"}
                   </span>
                 </div>
                 <h3>{meeting.title}</h3>
-                <p>{meeting.desc}</p>
+                <p>{meeting.content}</p>
                 <div className={styles.dashboardMeetingMeta}>
                   <span>
                     <UiIcon
                       name="location"
                       className={styles.dashboardMetaIcon}
                     />{" "}
-                    {meeting.place}
+                    {meeting.regionName}
                   </span>
                   <span>
-                    <UiIcon
-                      name="calendar"
-                      className={styles.dashboardMetaIcon}
-                    />{" "}
-                    오늘(금) {meeting.time}
+                    <UiIcon name="calendar" className={styles.dashboardMetaIcon} />{" "}
+                    {formatMeetingDateTime(meeting.meetingDate, meeting.startTime)}
                   </span>
                   <span>
                     <UiIcon name="user" className={styles.dashboardMetaIcon} />{" "}
-                    {meeting.current} / {meeting.max}명
+                    {meeting.approvedCount} / {meeting.maxMembers}명
                   </span>
                 </div>
                 <div className={styles.dashboardMeetingFooter}>
                   <div className={styles.dashboardHostMeta}>
-                    <strong>{meeting.host}</strong>
+                    <strong>{meeting.meetingHostName}</strong>
                     <span>매너점수 4.8 (후기 18)</span>
                   </div>
                   <div className={styles.dashboardMeetingActions}>
@@ -350,7 +389,7 @@ export default function HomePage() {
                         className={styles.dashboardActionIcon}
                       />
                     </button>
-                    <Link to={`/meetings/${meeting.id}`}>참가 신청</Link>
+                    <Link to={`/meetings/${meeting.meetingId}`}>참가 신청</Link>
                   </div>
                 </div>
               </div>

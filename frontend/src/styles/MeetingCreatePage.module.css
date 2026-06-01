@@ -346,7 +346,7 @@
   color: #888;
   font-size: 0.9rem;
   margin-bottom: 20px;
-  text-align: left;
+  text-align: right;
 }
 
 .formStatusRow {
@@ -417,7 +417,7 @@
 }
 
 .formCard textarea {
-  min-height: 148px;
+  min-height: 300px !important;
   padding-top: 14px;
 }
 
@@ -435,4 +435,23 @@
 .formHintGrid article {
   border-radius: 20px !important;
   background: linear-gradient(180deg, #ffffff, #f8fbff) !important;
+}
+
+.actionGroup{
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.titleRow{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+}
+.requiredNotice {
+  margin: 0;
+  font-size: 0.8rem;
+  color: red;
 }

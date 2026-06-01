@@ -18,4 +18,7 @@ public interface MeetingService {
   void deleteMeeting(Long meetingId);
 
   void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request);
+
+
+  List<MeetingListResponse> getMainMeetingList();
 }
