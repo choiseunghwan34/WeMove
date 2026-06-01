@@ -41,7 +41,17 @@ public class MeetingController {
   }
 
   @GetMapping
-  public ResponseEntity<Map<String, Object>> list(MeetingSearchCondition c) {
+  public ResponseEntity<Map<String, Object>> list(
+      MeetingSearchCondition c,
+      @RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+      try {
+        Long loginUserId = jwtTokenProvider.parseUserId(authorizationHeader.substring(7));
+        c.setLoginUserId(loginUserId);
+      } catch (Exception e) {
+        // 토큰 위조/만료 시 무시 (비로그인 처리)
+      }
+    }
     return ResponseEntity.ok(meetingService.getMeetings(c));
   }
 

@@ -420,6 +420,49 @@ export default function MeetingListPage() {
     setIsSportModalOpen(false);
   };
 
+  const getButtonText = (meeting) => {
+    if (meeting.status !== "RECRUITING") {
+      return STATUS_MAP[meeting.status] || "알 수 없음";
+    }
+
+    if (!isAuthenticated || !meeting.myParticipantStatus) {
+      return "신청 가능";
+    }
+
+    switch (meeting.myParticipantStatus) {
+      case "PENDING":
+        return "승인 대기 중";
+      case "APPROVED":
+        return "참가 확정";
+      case "REJECTED":
+        return "신청 반려";
+      default:
+        return "신청 가능";
+    }
+  };
+
+  const getButtonClass = (meeting) => {
+    if (
+      meeting.status !== "RECRUITING" ||
+      (isAuthenticated && meeting.myParticipantStatus === "REJECTED")
+    ) {
+      return styles.actionClosed;
+    }
+
+    if (!isAuthenticated || !meeting.myParticipantStatus) {
+      return styles.actionAvailable;
+    }
+
+    switch (meeting.myParticipantStatus) {
+      case "PENDING":
+        return styles.actionPending;
+      case "APPROVED":
+        return styles.actionApproved;
+      default:
+        return styles.actionAvailable;
+    }
+  };
+
   return (
     <DashboardShell
       active="모임 찾기"
@@ -702,21 +745,9 @@ export default function MeetingListPage() {
 
                 <button
                   type="button"
-                  className={
-                    ["CLOSED", "COMPLETED", "CANCELLED"].includes(
-                      meeting.status,
-                    )
-                      ? styles.actionClosed
-                      : ""
-                  }
+                  className={getButtonClass(meeting)}
                 >
-                  {meeting.status === "CLOSED"
-                    ? "모집완료"
-                    : meeting.status === "COMPLETED"
-                      ? "진행완료"
-                      : meeting.status === "CANCELLED"
-                        ? "취소됨"
-                        : "참가 신청"}
+                  {getButtonText(meeting)}
                 </button>
               </aside>
             </Link>

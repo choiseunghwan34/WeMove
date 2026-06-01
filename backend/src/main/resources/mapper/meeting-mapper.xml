@@ -45,6 +45,13 @@
                 where userId = m.hostUserId
             ) hostProfileImage,
             (
+                SELECT mp.status
+                FROM meetingParticipants mp
+                WHERE mp.meetingId = m.meetingId
+                  AND mp.userId = #{loginUserId}
+                LIMIT 1
+            ) AS myParticipantStatus,
+            (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId

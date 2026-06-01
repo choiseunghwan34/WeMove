@@ -141,7 +141,7 @@ export default function MeetingManagePage() {
         confirmText: "승인하기",
       },
       close: {
-        eyebrow: "모집완료",
+        eyebrow: "모집 완료",
         title: "이 모임을 모집완료로 바꿀까요?",
         description: "모집완료로 바꾸면 신규 참가 신청 버튼이 비활성화됩니다.",
         confirmText: "모집완료 처리",
@@ -155,10 +155,10 @@ export default function MeetingManagePage() {
         tone: "danger",
       },
       complete: {
-        eyebrow: "紐⑥엫 ?꾨즺",
-        title: "紐⑥엫??吏꾪뻾?앹쑝濡?留뚮뱾?씠???瑜??좉퉴??",
-        description: "紐⑥엫???대? ?뱀씤??留ㅼ씪 ?섍린 ?뚭컧留??덈뒗 ?곹깭留??뺤떗???듦퀎?낅땲??",
-        confirmText: "紐⑥엫 ?꾨즺",
+        eyebrow: "모임 완료",
+        title: "이 모임을 완료 상태로 변경할까요?",
+        description: "모임을 완료하면 더 이상 참가자 승인/거절 상태를 변경할 수 없으며, 모임이 최종 종료됩니다.",
+        confirmText: "모임 완료",
         tone: "success",
       },
       reopen: approvedApplicants.length >= (meeting?.maxMembers ?? 0)
@@ -360,7 +360,7 @@ export default function MeetingManagePage() {
                 className={styles.approveBtn}
                 onClick={() => setActionModal({ type: "complete" })}
               >
-                紐⑥엫 ?꾨즺 泥섎━
+                모임 완료 처리
               </button>
             ) : meeting.status === "COMPLETED" || meeting.status === "CANCELLED" ? (
               <button

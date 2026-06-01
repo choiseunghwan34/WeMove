@@ -95,8 +95,10 @@ public class ParticipantServiceImpl implements ParticipantService {
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
 
-      // [수정] 최신 코드(sjm_0528)의 로직인 인원수 체크 조합만 남겼습니다. (시간 체크 제거)
-      if (approved != null && max != null && approved < max) {
+      // [수정] 대기 자리가 생겼고, 모임 시간이 시작 전이며, 기존 상태가 CLOSED(모집완료)인 경우에만 자동으로 RECRUITING(모집중) 전환
+      if (approved != null && max != null && approved < max 
+          && isRecruitable(meeting) 
+          && "CLOSED".equals(meeting.getStatus())) {
         meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
       }
     }

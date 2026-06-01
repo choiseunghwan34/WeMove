@@ -18,6 +18,7 @@ public class MeetingSearchCondition {
   private String sportName;
   private List<String> fixedSports;
   private String meetingDate;
+  private Long loginUserId;
 
   // Pagination fields
   private int page = 1;
