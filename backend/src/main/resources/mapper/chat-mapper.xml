@@ -68,6 +68,7 @@
             cm.meetingId,
             cm.userId,
             u.nickname,
+            u.profileImage,
             cm.content,
             cm.messageType,
             cm.createdAt
@@ -99,6 +100,7 @@
             cm.meetingId,
             cm.userId,
             u.nickname,
+            u.profileImage,
             cm.content,
             cm.messageType,
             cm.createdAt

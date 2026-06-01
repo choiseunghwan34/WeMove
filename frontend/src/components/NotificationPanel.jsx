@@ -1,13 +1,14 @@
 import { useNotifications } from "../contexts/NotificationContext";
+import { NOTIFICATION_TYPES } from "../utils/notificationEvents";
 import styles from "../styles/Notification.module.css";
 
 const TYPE_LABELS = {
-  chat: "메시지",
-  meetingRequest: "모임 신청",
-  meetingApproved: "모임 승인",
-  meetingRejected: "모임 거절",
-  notice: "공지사항",
-  info: "알림",
+  [NOTIFICATION_TYPES.CHAT]: "메시지",
+  [NOTIFICATION_TYPES.MEETING_REQUEST]: "모임 신청",
+  [NOTIFICATION_TYPES.MEETING_APPROVED]: "모임 승인",
+  [NOTIFICATION_TYPES.MEETING_REJECTED]: "모임 거절",
+  [NOTIFICATION_TYPES.NOTICE]: "공지사항",
+  [NOTIFICATION_TYPES.INFO]: "알림",
 };
 
 const formatTime = (value) => {

@@ -6,7 +6,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { WEMOVE_NOTIFICATION_EVENT } from "../utils/notificationEvents";
+import {
+  NOTIFICATION_TYPES,
+  WEMOVE_NOTIFICATION_EVENT,
+} from "../utils/notificationEvents";
 
 const MAX_NOTIFICATION_COUNT = 50;
 
@@ -16,7 +19,7 @@ const createNotification = (detail) => ({
   id:
     detail?.id ||
     `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-  type: detail?.type || "info",
+  type: detail?.type || NOTIFICATION_TYPES.INFO,
   title: detail?.title || "",
   message: detail?.message || "",
   createdAt: detail?.createdAt || new Date().toISOString(),

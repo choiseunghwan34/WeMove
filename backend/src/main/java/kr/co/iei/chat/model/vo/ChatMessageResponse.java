@@ -9,6 +9,7 @@ public class ChatMessageResponse {
   private Long meetingId;
   private Long userId;
   private String nickname;
+  private String profileImage;
   private String content;
   private String messageType;
   private LocalDateTime createdAt;
