@@ -1,6 +1,7 @@
 package kr.co.iei.meeting.model.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,12 @@ public class MeetingServiceImpl implements MeetingService {
 
   @Override
   public Long createMeeting(MeetingCreateRequest request, MultipartFile image, Long userId) {
+    // 1. [추가] 모임 생성 전 날짜/시간 검증
+    LocalDate meetingDate = LocalDate.parse(request.getMeetingDate());
+    LocalTime startTime = LocalTime.parse(request.getStartTime());
+
+    validateMeetingTime(meetingDate, startTime);
+
     Meeting meeting = new Meeting();
     meeting.setHostUserId(userId);
     meeting.setSportId(request.getSportId());
@@ -60,6 +67,7 @@ public class MeetingServiceImpl implements MeetingService {
     meeting.setThumbnailImage(cloudinaryImageService.uploadMeetingThumbnail(image));
     meeting.setPlaceName(request.getPlaceName());
     meeting.setAddress(request.getAddress());
+
     meeting.setMeetingDate(LocalDate.parse(request.getMeetingDate()));
     meeting.setStartTime(LocalTime.parse(request.getStartTime()));
     meeting.setMaxMembers(request.getMaxMembers());
@@ -82,6 +90,11 @@ public class MeetingServiceImpl implements MeetingService {
 
   @Override
   public void updateMeeting(Long meetingId, MeetingUpdateRequest request, MultipartFile image) {
+    LocalDate meetingDate = request.getMeetingDate();
+    LocalTime startTime = request.getStartTime();
+
+    validateMeetingTime(meetingDate, startTime);
+
     request.setMeetingId(meetingId);
 
     if(Boolean.TRUE.equals(request.getIsImageRemoved())){
@@ -98,11 +111,27 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   public void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request) {
+    // 1. 상태가 CLOSED(모집완료)로 변경될 때만 정원 체크
     if ("CLOSED".equals(request.getStatus())) {
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
       if (approved == null || max == null || approved < max) {
         throw new IllegalArgumentException("모집완료는 정원이 모두 찬 경우에만 설정할 수 있습니다.");
+      }
+    }
+    // 2. [추가] 모임 상태를 RECRUITING으로 변경할 때, 이미 지난 시간인지 확인
+    if ("RECRUITING".equals(request.getStatus())) {
+      // DB에서 해당 모임의 날짜와 시간을 조회
+      MeetingDetailResponse meeting = getMeeting(meetingId);
+      if(meeting == null) {
+        throw new IllegalArgumentException("존재하지 않는 모임입니다.");
+      }
+      //LocalDateTime 생성 (날짜와 시간 합치기)
+      LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
+
+      // 현재 시간보다 모임 시간이 과거라면 에러 발생
+      if (meetingDateTime.isBefore(LocalDateTime.now())) {
+        throw new IllegalArgumentException("이미 지난 시간의 모임은 다시 모집할 수 없습니다.");
       }
     }
     meetingDao.updateMeetingStatus(meetingId, request.getStatus());
@@ -112,5 +141,11 @@ public class MeetingServiceImpl implements MeetingService {
   public List<MeetingListResponse> getMainMeetingList(String category) {
     return meetingDao.selectMainMeetingList(category);
   }
-
+  // 공통으로 사용할 시간 검증 도우미 메서드
+  private void validateMeetingTime(LocalDate date, LocalTime time) {
+    LocalDateTime meetingDateTime = LocalDateTime.of(date, time);
+    if (meetingDateTime.isBefore(LocalDateTime.now())) {
+      throw new IllegalArgumentException("과거 시간으로는 모임을 생성하거나 수정할 수 없습니다.");
+    }
+  }
 }

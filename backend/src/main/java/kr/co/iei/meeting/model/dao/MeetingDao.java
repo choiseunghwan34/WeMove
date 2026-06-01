@@ -62,4 +62,6 @@ public class MeetingDao {
     map.put("category", category);
     return sqlSession.selectList("meeting.selectMainMeetingList", map);
   }
+
+
 }
