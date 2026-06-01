@@ -109,10 +109,8 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   @Override
-  public List<MeetingListResponse> getMainMeetingList() {
-    Map<String, Object> result = new HashMap<>();
-    result.put("limit", 10);
-    result.put("offset", 0);
-    return meetingDao.selectMainMeetingList(result);
+  public List<MeetingListResponse> getMainMeetingList(String category) {
+    return meetingDao.selectMainMeetingList(category);
   }
+
 }

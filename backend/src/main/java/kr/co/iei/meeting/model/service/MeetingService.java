@@ -20,5 +20,7 @@ public interface MeetingService {
   void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request);
 
 
-  List<MeetingListResponse> getMainMeetingList();
+  List<MeetingListResponse> getMainMeetingList(String category);
+
+    
 }

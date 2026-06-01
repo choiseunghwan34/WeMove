@@ -12,19 +12,23 @@ export const interestItems = [
   { label: "등산", icon: "mountain" },
   { label: "배드민턴", icon: "badminton" },
 ];
-
+/*
+*
+* */
 export const categoryItems = [
   { name: "전체", accent: "blue", icon: "spark" },
-  { name: "러닝", accent: "sky", icon: "running" },
-  { name: "헬스", accent: "blue", icon: "dumbbell" },
-  { name: "풋살", accent: "neutral", icon: "soccer" },
-  { name: "배드민턴", accent: "orange", icon: "badminton" },
-  { name: "농구", accent: "amber", icon: "basketball" },
-  { name: "등산", accent: "green", icon: "mountain" },
-  { name: "라이딩", accent: "teal", icon: "bike" },
-  { name: "요가", accent: "purple", icon: "yoga" },
-  { name: "테니스", accent: "lime", icon: "tennis" },
+  { name: "유산소", accent: "sky", icon: "running" },
+  { name: "구기", accent: "blue", icon: "dumbbell" },
+  { name: "라켓스포츠", accent: "neutral", icon: "soccer" },
+  { name: "근력·피트니스", accent: "orange", icon: "badminton" },
+  { name: "격투·무술", accent: "amber", icon: "basketball" },
+  { name: "수상스포츠", accent: "green", icon: "mountain" },
+  { name: "겨울스포츠", accent: "teal", icon: "bike" },
+  { name: "보드·레저", accent: "purple", icon: "yoga" },
+  { name: "댄스·생활체육", accent: "lime", icon: "tennis" },
+  { name: "기타스포츠", accent: "lime", icon: "tennis" },
 ];
+
 
 export const meetingImages = {
   1: "https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=1200&q=80",

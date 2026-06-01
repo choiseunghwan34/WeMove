@@ -2,7 +2,15 @@ import api from "./axiosInstance";
 
 export const getMeetings = (params) => api.get("/meetings", { params });
 export const getMeeting = (id) => api.get("/meetings/" + id);
-export const getMainMeetings = (params) => api.get("/meetings/main", {params});
+export const getMainMeetings = (params ={}) =>
+{
+    return api.get("/meetings/main", {
+        params: {
+            ...params,
+            category: params.category || "전체",
+        } });
+}
+
 export const getTopRegions = () => api.get("/meetings/top-regions");
 export const createMeeting = (formData) => api.post("/meetings", formData);
 

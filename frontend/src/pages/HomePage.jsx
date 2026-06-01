@@ -67,17 +67,23 @@ export default function HomePage() {
   const featuredMeetings = recruitingMeetings.slice(0, 10);
   const currentHero = heroSlides[activeSlide];
 
+  const [activeCategory, setActiveCategory] = useState("전체");
+
 //메인페이지 모임목록조회
   useEffect(() => {
-    getMainMeetings().then((res)=>{
-      console.log("서버응답전체: " ,res.data);
+    getMainMeetings({category: activeCategory}).then((res)=>{
+      console.log(`${activeCategory} 모임조회성공` ,res.data);
       setMeetings(Array.isArray(res.data) ? res.data : []);
     }).catch((err)=>{
       console.log(err);
       alert("모임 데이터 로드 실패")
       setMeetings([]);
     })
-  }, []);
+  }, [activeCategory]);
+
+
+
+
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -293,19 +299,11 @@ export default function HomePage() {
           <button
             key={item.name}
             type="button"
-            className={styles.dashboardCategoryItem}
+            className={`${styles.dashboardCategoryItem} ${activeCategory === item.name ? styles.active : ""}`}
+            onClick={() => setActiveCategory(item.name)}
           >
-            <i
-              className={
-                styles[
-                  `dashboardTone${item.accent[0].toUpperCase()}${item.accent.slice(1)}`
-                ]
-              }
-            >
-              <UiIcon
-                name={item.icon}
-                className={styles.dashboardCategoryGlyph}
-              />
+            <i className={styles[`dashboardTone${item.accent[0].toUpperCase()}${item.accent.slice(1)}`]}>
+              <UiIcon name={item.icon} className={styles.dashboardCategoryGlyph} />
             </i>
             <span>{item.name}</span>
           </button>
@@ -315,7 +313,7 @@ export default function HomePage() {
       <section className={styles.dashboardSection}>
         <div className={styles.dashboardSectionHead}>
           <div>
-            <h2>오늘의 추천 모임</h2>
+            <h2>신규 모임</h2>
             <div className={styles.dashboardPills}>
               <button type="button">전체</button>
               <button type="button">모집중</button>

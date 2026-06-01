@@ -20,4 +20,7 @@ public class MeetingListResponse {
   private String thumbnailImage;
   private String meetingHostName;
   private String hostProfileImage;
+
+  private String sportId;
+  private String category;
 }
