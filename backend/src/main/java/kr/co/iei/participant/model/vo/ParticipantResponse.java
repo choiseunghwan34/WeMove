@@ -10,4 +10,11 @@ public class ParticipantResponse {
   private String nickname;
   private String status;
   private String message;
+  private String profileImage;
+  private String email;
+  private String regionName;
+  private String createdAt;
+  private Integer birthYear;
+  private Integer gender;
+  private String sports;
 }

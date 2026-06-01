@@ -63,6 +63,8 @@ public class ParticipantServiceImpl implements ParticipantService {
     MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
     Integer approved = participantDao.countApprovedByMeetingId(meetingId);
     Integer max = meetingDao.selectMaxMembers(meetingId);
+
+    // [수정] sjm_0528의 단일 행 if문 구조에 중괄호 {}를 안전하게 씌워 하단의 닫는 괄호와 짝을 맞췄습니다.
     if (approved != null && max != null && approved >= max) {
       meetingDao.updateMeetingStatus(meetingId, "CLOSED");
     }
@@ -84,12 +86,15 @@ public class ParticipantServiceImpl implements ParticipantService {
       MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
-      if (approved != null && max != null && approved < max && isRecruitable(meeting)) {
+
+      // [수정] 최신 코드(sjm_0528)의 로직인 인원수 체크 조합만 남겼습니다. (시간 체크 제거)
+      if (approved != null && max != null && approved < max) {
         meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
       }
     }
   }
 
+  // NOTE: sjm_0528 로직에서 사용되지 않는다면 이 아래의 isRecruitable 메서드는 지우셔도 무방합니다.
   private boolean isRecruitable(MeetingDetailResponse meeting) {
     if (meeting == null || meeting.getMeetingDate() == null || meeting.getStartTime() == null) {
       return false;

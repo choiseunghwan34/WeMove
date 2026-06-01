@@ -193,10 +193,11 @@
 
 /* Specialized crown SVG sizing & fill */
 .hostCrownIcon {
-  width: 20px !important;
-  height: 20px !important;
-  margin-right: 6px !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-right: 4px !important;
   fill: #2563eb !important;
+  flex-shrink: 0 !important;
 }
 
 /* Invisible action block to sync heights across cards */
@@ -213,9 +214,97 @@
   font-weight: 900 !important;
   white-space: nowrap !important;
   min-width: max-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
 }
 
 /* Ensure consistent vertical spacing between description text and lists inside softPanel */
 .softPanel p {
   margin-bottom: 8px !important;
 }
+
+/* ==========================================
+   👤 Member Card Profile Avatars & Interactions
+   ========================================== */
+
+.cardAvatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+  background: #ffffff !important;
+}
+
+.cardAvatar:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+.cardAvatarFallback {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+.cardAvatarFallback:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+.fallbackIconMini {
+  width: 16px !important;
+  height: 16px !important;
+  color: #0284c7 !important;
+}
+
+.clickableName {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  transition: color 0.2s ease !important;
+  vertical-align: middle !important;
+}
+
+.clickableName:hover {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+
+.clickableName strong {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.hostNickname {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* ==========================================
+   👤 기본 프로필 이미지 전용 스케일 다운 및 Contain 튜닝
+   ========================================== */
+.cardAvatar[src*="default-user"] {
+  object-fit: contain !important;
+  padding: 2px !important; /* 패딩을 6px에서 2px로 미세 하향하여 캐릭터 크기 밸런싱 */
+  background: #f1f5f9 !important; /* 캐릭터가 돋보이도록 깔끔한 은회색 백그라운드 매핑 */
+}
+

@@ -527,7 +527,6 @@ export default function MeetingListPage() {
             <option value="CLOSED">모집완료</option>
             <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
-            <option value="CANCELLED">취소됨</option>
           </select>
 
           <input
@@ -663,25 +662,22 @@ export default function MeetingListPage() {
                         name="user"
                         className={styles.dashboardMetaIcon}
                       />
-                      {meeting.approvedCount || 0}/{meeting.maxMembers}명
+                      {meeting.approvedCount || 1}/{meeting.maxMembers}명
                     </span>
                   </div>
 
                   <div className={styles.host}>
-                    {meeting.hostProfileImage ? (
-                      <img
-                        src={meeting.hostProfileImage}
-                        alt={meeting.meetingHostName}
-                        className={styles.dashboardHostAvatar}
-                      />
-                    ) : (
-                      <i>
-                        <UiIcon
-                          name="user"
-                          className={styles.dashboardHostIcon}
-                        />
-                      </i>
-                    )}
+                    <img
+                      src={
+                        meeting.hostProfileImage ||
+                        "/src/assets/image/default-user.png"
+                      }
+                      alt={meeting.meetingHostName}
+                      className={styles.dashboardHostAvatar}
+                      onError={(e) => {
+                        e.target.src = "/src/assets/image/default-user.png";
+                      }}
+                    />
                     <span>{meeting.meetingHostName || "익명"}</span>
                   </div>
                 </div>
