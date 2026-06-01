@@ -1,7 +1,9 @@
 package kr.co.iei.participant.model.service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import kr.co.iei.meeting.model.dao.MeetingDao;
+import kr.co.iei.meeting.model.vo.MeetingDetailResponse;
 import kr.co.iei.participant.model.dao.ParticipantDao;
 import kr.co.iei.participant.model.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,14 @@ public class ParticipantServiceImpl implements ParticipantService {
 
   @Transactional
   public void apply(Long meetingId, ParticipantRequest req) {
+    MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
+    if (meeting == null) {
+      throw new IllegalArgumentException("존재하지 않는 모임입니다.");
+    }
+    if (!"RECRUITING".equals(meeting.getStatus())) {
+      throw new IllegalArgumentException("모집중인 모임만 참여 신청할 수 있습니다.");
+    }
+
     Long hostUserId = meetingDao.selectHostUserId(meetingId);
     if (hostUserId != null && hostUserId.equals(req.getUserId())) {
       throw new IllegalArgumentException("주최자는 자신의 모임에 참여 신청할 수 없습니다.");
@@ -50,10 +60,12 @@ public class ParticipantServiceImpl implements ParticipantService {
   public void approve(Long participantId) {
     participantDao.updateStatus(participantId, "APPROVED");
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
+    MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
     Integer approved = participantDao.countApprovedByMeetingId(meetingId);
     Integer max = meetingDao.selectMaxMembers(meetingId);
-    if (approved != null && max != null && approved >= max)
+    if (approved != null && max != null && approved >= max) {
       meetingDao.updateMeetingStatus(meetingId, "CLOSED");
+    }
   }
 
   public void reject(Long participantId) {
@@ -69,11 +81,21 @@ public class ParticipantServiceImpl implements ParticipantService {
     participantDao.updateStatus(participantId, "PENDING");
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
     if (meetingId != null) {
+      MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
-      if (approved != null && max != null && approved < max) {
+      if (approved != null && max != null && approved < max && isRecruitable(meeting)) {
         meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
       }
     }
+  }
+
+  private boolean isRecruitable(MeetingDetailResponse meeting) {
+    if (meeting == null || meeting.getMeetingDate() == null || meeting.getStartTime() == null) {
+      return false;
+    }
+
+    LocalDateTime startAt = LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
+    return startAt.isAfter(LocalDateTime.now());
   }
 }

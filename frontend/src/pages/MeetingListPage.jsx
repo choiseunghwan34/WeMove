@@ -28,7 +28,8 @@ const weekdayLabels = ["오늘", "내일", "토", "일"];
 
 const STATUS_MAP = {
   RECRUITING: "모집중",
-  CLOSED: "모집마감",
+  CLOSED: "모집완료",
+  ONGOING: "진행중",
   COMPLETED: "진행완료",
   CANCELLED: "취소됨",
 };
@@ -523,7 +524,8 @@ export default function MeetingListPage() {
           >
             <option value="">전체 상태</option>
             <option value="RECRUITING">모집중</option>
-            <option value="CLOSED">모집마감</option>
+            <option value="CLOSED">모집완료</option>
+            <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
             <option value="CANCELLED">취소됨</option>
           </select>
@@ -607,6 +609,7 @@ export default function MeetingListPage() {
               className={cx(
                 "listCard",
                 meeting.status === "RECRUITING" && "listCardRecruiting",
+                meeting.status === "ONGOING" && "listCardOngoing",
                 meeting.status === "COMPLETED" && "listCardCompleted",
                 (meeting.status === "CLOSED" ||
                   meeting.status === "CANCELLED") &&
@@ -712,7 +715,7 @@ export default function MeetingListPage() {
                   }
                 >
                   {meeting.status === "CLOSED"
-                    ? "모집마감"
+                    ? "모집완료"
                     : meeting.status === "COMPLETED"
                       ? "진행완료"
                       : meeting.status === "CANCELLED"
@@ -780,7 +783,8 @@ export default function MeetingListPage() {
           >
             <option value="">전체 상태</option>
             <option value="RECRUITING">모집중</option>
-            <option value="CLOSED">모집마감</option>
+            <option value="CLOSED">모집완료</option>
+            <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
             <option value="CANCELLED">취소됨</option>
           </select>

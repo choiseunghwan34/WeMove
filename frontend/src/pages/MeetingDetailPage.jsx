@@ -14,7 +14,9 @@ import styles from "../styles/MeetingDetailPage.module.css";
 
 const STATUS_MAP = {
   OPEN: "모집중",
-  CLOSED: "모집마감",
+  RECRUITING: "모집중",
+  CLOSED: "모집완료",
+  ONGOING: "진행중",
   COMPLETED: "모임 완료",
   CANCELLED: "취소됨",
 };
@@ -182,7 +184,9 @@ export default function MeetingDetailPage() {
   };
 
   const isClosed =
-    meeting.status === "CLOSED" || meeting.status === "COMPLETED";
+    meeting.status === "CLOSED" ||
+    meeting.status === "ONGOING" ||
+    meeting.status === "COMPLETED";
   const isAdmin = isAuthenticated && user && user.role === "ADMIN";
   const isHost =
     isAuthenticated && user && user.nickname === meeting.meetingHostName;
@@ -216,7 +220,7 @@ export default function MeetingDetailPage() {
             <div className={styles.detailCover}>
               <div className={styles.detailBadges}>
                 <span className={styles.badge}>{meeting.sportName}</span>
-                <span className={cx("badge", isClosed ? "warning" : "success")}>
+                <span className={cx("badge", meeting.status === "CLOSED" ? "warning" : "success")}>
                   {STATUS_MAP[meeting.status] || "모집중"}
                 </span>
               </div>
@@ -377,6 +381,7 @@ export default function MeetingDetailPage() {
                             className={styles.primaryButton}
                             disabled={
                               meeting.status === "CLOSED" ||
+                              meeting.status === "ONGOING" ||
                               isAdmin ||
                               isRejected
                             }
@@ -385,9 +390,11 @@ export default function MeetingDetailPage() {
                             {isAdmin
                               ? "관리자 계정은 신청할 수 없습니다"
                               : isRejected
-                                ? "신청 불가"
+                              ? "신청 불가"
                                 : meeting.status === "CLOSED"
-                                  ? "신청 마감"
+                                  ? "모집완료"
+                                  : meeting.status === "ONGOING"
+                                    ? "진행중"
                                   : "참가 신청"}
                           </button>
                           {isRejected && (

@@ -96,6 +96,13 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   public void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request) {
+    if ("CLOSED".equals(request.getStatus())) {
+      Integer approved = participantDao.countApprovedByMeetingId(meetingId);
+      Integer max = meetingDao.selectMaxMembers(meetingId);
+      if (approved == null || max == null || approved < max) {
+        throw new IllegalArgumentException("모집완료는 정원이 모두 찬 경우에만 설정할 수 있습니다.");
+      }
+    }
     meetingDao.updateMeetingStatus(meetingId, request.getStatus());
   }
 }

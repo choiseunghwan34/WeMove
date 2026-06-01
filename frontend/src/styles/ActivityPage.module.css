@@ -65,6 +65,11 @@
   color: #0369a1 !important;
 }
 
+.badgeOngoing {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
 .badgeWaiting {
   background: #fef3c7 !important;
   color: #b45309 !important;
@@ -319,6 +324,11 @@
   background: linear-gradient(180deg, #f8fbff 0%, #eff6ff 100%) !important;
 }
 
+.toneOngoing {
+  border-color: #93c5fd !important;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%) !important;
+}
+
 .toneWaiting {
   border-color: #fde68a !important;
   background: linear-gradient(180deg, #fffdf7 0%, #fffbeb 100%) !important;
@@ -338,6 +348,11 @@
 .toneHostedClosed {
   border-color: #fed7aa !important;
   background: linear-gradient(180deg, #fffdf8 0%, #fff7ed 100%) !important;
+}
+
+.toneHostedOngoing {
+  border-color: #93c5fd !important;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%) !important;
 }
 
 .toneHostedCompleted {

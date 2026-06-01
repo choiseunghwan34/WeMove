@@ -82,7 +82,8 @@ const initialSportForm = {
 
 const meetingStatusText = {
   RECRUITING: "모집중",
-  CLOSED: "모집마감",
+  CLOSED: "모집완료",
+  ONGOING: "진행중",
   COMPLETED: "모임완료",
   CANCELLED: "취소됨",
 };
@@ -112,7 +113,8 @@ const memberStatusOptions = [
 
 const meetingStatusOptions = [
   { value: "RECRUITING", label: "모집중" },
-  { value: "CLOSED", label: "모집마감" },
+  { value: "CLOSED", label: "모집완료" },
+  { value: "ONGOING", label: "진행중" },
   { value: "COMPLETED", label: "모임완료" },
   { value: "CANCELLED", label: "취소됨" },
 ];
@@ -603,6 +605,11 @@ export default function AdminPage() {
         label: "모집완료 모임",
         value: meetings.filter((meeting) => meeting.status === "CLOSED").length,
         tone: "chartOrange",
+      },
+      {
+        label: "진행중 모임",
+        value: meetings.filter((meeting) => meeting.status === "ONGOING").length,
+        tone: "chartBlue",
       },
       {
         label: "진행완료 모임",

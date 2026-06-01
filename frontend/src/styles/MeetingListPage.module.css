@@ -241,6 +241,15 @@
   border-color: rgba(15, 118, 110, 0.12) !important;
 }
 
+.listCardOngoing {
+  border-color: rgba(37, 99, 235, 0.18) !important;
+}
+
+.listCardOngoing .dateBox {
+  background: linear-gradient(180deg, #eff6ff, #f8fbff) !important;
+  border-color: rgba(37, 99, 235, 0.18) !important;
+}
+
 .listCardClosed {
   border-color: rgba(148, 163, 184, 0.18) !important;
   background: linear-gradient(180deg, #ffffff, #f8fafc) !important;

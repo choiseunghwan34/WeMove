@@ -19,6 +19,7 @@ const REGION_PREVIEW_LIMIT = 100;
 const meetingStatusText = {
   RECRUITING: "모집중",
   CLOSED: "모집완료",
+  ONGOING: "진행중",
   COMPLETED: "진행완료",
   CANCELLED: "취소됨",
 };

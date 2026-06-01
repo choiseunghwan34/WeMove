@@ -53,6 +53,10 @@ public class MeetingDao {
     return sqlSession.selectOne("meeting.selectHostUserId", id);
   }
 
+  public int startDueMeetings() {
+    return sqlSession.update("meeting.startDueMeetings");
+  }
+
 
 
 }

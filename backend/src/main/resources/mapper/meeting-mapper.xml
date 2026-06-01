@@ -98,9 +98,10 @@
         CASE m.status
         WHEN 'RECRUITING' THEN 0
         WHEN 'CLOSED' THEN 1
-        WHEN 'COMPLETED' THEN 2
-        WHEN 'CANCELLED' THEN 3
-        ELSE 4
+        WHEN 'ONGOING' THEN 2
+        WHEN 'COMPLETED' THEN 3
+        WHEN 'CANCELLED' THEN 4
+        ELSE 5
         END,
         m.meetingDate ASC,
         m.startTime ASC,
@@ -301,6 +302,15 @@
         UPDATE meetings
         SET status = #{status}
         WHERE meetingId = #{meetingId}
+    </update>
+
+    <update id="startDueMeetings">
+        UPDATE meetings
+        SET status = 'ONGOING',
+            updatedAt = NOW()
+        WHERE deletedAt IS NULL
+          AND status NOT IN ('ONGOING', 'COMPLETED', 'CANCELLED')
+          AND TIMESTAMP(meetingDate, startTime) &lt;= NOW()
     </update>
 
     <select id="selectMaxMembers" resultType="int">

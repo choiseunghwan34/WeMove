@@ -68,11 +68,13 @@ export default function MeetingManagePage() {
         await rejectParticipant(actionModal.applicant.participantId);
       } else if (actionModal.type === "close") {
         await updateMeetingStatus(meetingId, { status: "CLOSED" });
+      } else if (actionModal.type === "complete") {
+        await updateMeetingStatus(meetingId, { status: "COMPLETED" });
       } else if (actionModal.type === "cancelApproval") {
         await cancelApproval(actionModal.applicant.participantId);
       } else if (actionModal.type === "reopen") {
         // 대안 A: 최대 정원과 현재 승인 완료 인원 대조 검증 (호스트 포함 +1)
-        if ((approvedApplicants.length + 1) >= meeting.maxMembers) {
+        if (approvedApplicants.length >= meeting.maxMembers) {
           closeModal();
           return;
         }
@@ -96,7 +98,12 @@ export default function MeetingManagePage() {
   const approvedApplicants = participants.filter((p) => p.status === "APPROVED");
   const totalActiveApplicants = participants.filter((p) => p.status === "PENDING" || p.status === "APPROVED");
 
-  const isClosed = meeting && (meeting.status === "CLOSED" || meeting.status === "COMPLETED");
+  const isClosed =
+    meeting &&
+    (meeting.status === "CLOSED" ||
+      meeting.status === "ONGOING" ||
+      meeting.status === "COMPLETED" ||
+      meeting.status === "CANCELLED");
 
   const modalCopy =
     {
@@ -115,10 +122,10 @@ export default function MeetingManagePage() {
         confirmText: "승인하기",
       },
       close: {
-        eyebrow: "모집 마감",
-        title: "이 모임의 모집을 마감할까요?",
-        description: "마감 처리 후에는 신규 참가 신청 버튼이 비활성화됩니다.",
-        confirmText: "모집 마감 처리",
+        eyebrow: "모집완료",
+        title: "이 모임을 모집완료로 바꿀까요?",
+        description: "모집완료로 바꾸면 신규 참가 신청 버튼이 비활성화됩니다.",
+        confirmText: "모집완료 처리",
         tone: "danger",
       },
       cancelApproval: {
@@ -128,11 +135,18 @@ export default function MeetingManagePage() {
         confirmText: "승인 취소",
         tone: "danger",
       },
-      reopen: (approvedApplicants.length + 1) >= (meeting?.maxMembers ?? 0)
+      complete: {
+        eyebrow: "紐⑥엫 ?꾨즺",
+        title: "紐⑥엫??吏꾪뻾?앹쑝濡?留뚮뱾?씠???瑜??좉퉴??",
+        description: "紐⑥엫???대? ?뱀씤??留ㅼ씪 ?섍린 ?뚭컧留??덈뒗 ?곹깭留??뺤떗???듦퀎?낅땲??",
+        confirmText: "紐⑥엫 ?꾨즺",
+        tone: "success",
+      },
+      reopen: approvedApplicants.length >= (meeting?.maxMembers ?? 0)
         ? {
             eyebrow: "모집 재개 불가",
             title: "모집을 재개할 수 없습니다",
-            description: `현재 확정 인원(${approvedApplicants.length + 1}명)이 최대 정원(${meeting?.maxMembers ?? 0}명)에 도달하여 모집을 재개할 수 없습니다.\n추가 신청을 받으려면 승인된 참가자를 취소하여 자리를 확보하거나 모임 정원을 늘려주세요.`,
+            description: `현재 확정 인원(${approvedApplicants.length}명)이 최대 정원(${meeting?.maxMembers ?? 0}명)에 도달하여 모집을 재개할 수 없습니다.\n추가 신청을 받으려면 승인된 참가자를 취소하여 자리를 확보하거나 모임 정원을 늘려주세요.`,
             confirmText: "확인",
             tone: "danger",
             hideCancel: true,
@@ -167,7 +181,7 @@ export default function MeetingManagePage() {
         </article>
         <article>
           <span>확정 인원</span>
-          <strong>{approvedApplicants.length + 1}</strong>
+              <strong>{approvedApplicants.length}</strong>
         </article>
         <article>
           <span>대기 인원</span>
@@ -289,6 +303,14 @@ export default function MeetingManagePage() {
               >
                 모집 재개
               </button>
+            ) : meeting.status === "ONGOING" ? (
+              <button
+                type="button"
+                className={styles.approveBtn}
+                onClick={() => setActionModal({ type: "complete" })}
+              >
+                紐⑥엫 ?꾨즺 泥섎━
+              </button>
             ) : meeting.status === "COMPLETED" || meeting.status === "CANCELLED" ? (
               <button
                 type="button"
@@ -301,7 +323,7 @@ export default function MeetingManagePage() {
                 type="button"
                 onClick={() => setActionModal({ type: "close" })}
               >
-                모집 마감 처리
+                모집완료 처리
               </button>
             )}
           </div>
@@ -337,7 +359,7 @@ export default function MeetingManagePage() {
             <div>
               <strong>{meeting.title}</strong>
               <p>
-                현재 확정 인원 {approvedApplicants.length + 1}명, 대기 인원{" "}
+                현재 확정 인원 {approvedApplicants.length}명, 대기 인원{" "}
                 {pendingApplicants.length}명입니다.
               </p>
             </div>

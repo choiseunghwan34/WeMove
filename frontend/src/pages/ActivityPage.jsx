@@ -81,7 +81,9 @@ const getHostedStatusLabel = (status) => {
     case "RECRUITING":
       return "모집중";
     case "CLOSED":
-      return "마감";
+      return "모집완료";
+    case "ONGOING":
+      return "진행중";
     case "COMPLETED":
       return "완료";
     case "CANCELLED":
@@ -110,6 +112,8 @@ const getToneClassByHostedStatus = (status) => {
       return styles.toneHostedRecruiting;
     case "CLOSED":
       return styles.toneHostedClosed;
+    case "ONGOING":
+      return styles.toneHostedOngoing;
     case "COMPLETED":
       return styles.toneHostedCompleted;
     case "CANCELLED":
@@ -292,7 +296,7 @@ export default function ActivityPage() {
     }
   }, [authLoading, loadActivity]);
 
-  const activityItems = useMemo(
+  const activityItemsLegacy = useMemo(
     () => [
       { label: "참여 예정", value: `${activityData.approvedMeetings.length}개` },
       { label: "참여 대기", value: `${activityData.pendingMeetings.length}개` },
@@ -301,6 +305,22 @@ export default function ActivityPage() {
     ],
     [activityData],
   );
+
+  const activityItems = useMemo(() => {
+    const hostedActiveMeetings = activityData.hostedMeetings.filter(
+      (meeting) => !["COMPLETED", "CANCELLED"].includes(meeting.status),
+    ).length;
+    const hostedCompletedMeetings = activityData.hostedMeetings.filter(
+      (meeting) => meeting.status === "COMPLETED",
+    ).length;
+
+    return [
+      { label: "참여 예정", value: `${activityData.approvedMeetings.length + hostedActiveMeetings}개` },
+      { label: "참여 대기", value: `${activityData.pendingMeetings.length}개` },
+      { label: "내가 만든 모임", value: `${activityData.hostedMeetings.length}개` },
+      { label: "참여 완료", value: `${activityData.completedMeetings.length + hostedCompletedMeetings}개` },
+    ];
+  }, [activityData]);
 
   const activityFeed = useMemo(() => buildFeedItems(activityData), [activityData]);
   const scheduleItems = activityData.approvedMeetings.slice(0, 4);
@@ -596,6 +616,8 @@ export default function ActivityPage() {
                             styles.toneHostedRecruiting,
                             meeting.status === "CLOSED"
                               ? styles.toneHostedClosed
+                              : meeting.status === "ONGOING"
+                                ? styles.toneHostedOngoing
                               : meeting.status === "COMPLETED"
                                 ? styles.toneHostedCompleted
                                 : meeting.status === "CANCELLED"
@@ -621,8 +643,11 @@ export default function ActivityPage() {
                         <Link
                           key={`agenda-${meeting.id}`}
                           to={`/meetings/${meeting.id}`}
-                          className={[
+                        className={[
                             styles.calendarAgendaItem,
+                            meeting.status === "ONGOING"
+                              ? styles.toneOngoing
+                              : "",
                             meeting.status === "COMPLETED"
                               ? styles.toneCompleted
                               : meeting.participationStatus === "PENDING"
@@ -642,14 +667,20 @@ export default function ActivityPage() {
                           <b
                             className={[
                               styles.calendarAgendaTone,
-                              meeting.status === "COMPLETED"
+                              meeting.status === "ONGOING"
+                                ? styles.badgeOngoing
+                                : meeting.status === "COMPLETED"
                                 ? styles.badgeCompleted
                                 : styles.badgeScheduled,
                             ]
                               .filter(Boolean)
                               .join(" ")}
                           >
-                            {meeting.status === "COMPLETED" ? "완료" : "예정"}
+                            {meeting.status === "ONGOING"
+                              ? "진행중"
+                              : meeting.status === "COMPLETED"
+                                ? "완료"
+                                : "예정"}
                           </b>
                         </Link>
                       ),
@@ -693,7 +724,9 @@ export default function ActivityPage() {
                           to={`/meetings/${meeting.id}`}
                           className={[
                             styles.activityMeetingCard,
-                            styles.toneScheduled,
+                            meeting.status === "ONGOING"
+                              ? styles.toneOngoing
+                              : styles.toneScheduled,
                           ]
                             .filter(Boolean)
                             .join(" ")}
@@ -704,14 +737,18 @@ export default function ActivityPage() {
                               <span
                                 className={[
                                   styles.dashboardStatusBadge,
-                                  styles.badgeScheduled,
+                                  meeting.status === "ONGOING"
+                                    ? styles.badgeOngoing
+                                    : styles.badgeScheduled,
                                 ]
                                   .filter(Boolean)
                                   .join(" ")}
                               >
-                                {getParticipationLabel(
-                                  meeting.participationStatus || "APPROVED",
-                                )}
+                                {meeting.status === "ONGOING"
+                                  ? "진행중"
+                                  : getParticipationLabel(
+                                      meeting.participationStatus || "APPROVED",
+                                    )}
                               </span>
                             </div>
                             <strong>{meeting.title}</strong>
