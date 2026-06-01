@@ -2040,8 +2040,8 @@
   padding: 14px 18px;
   border-radius: 24px;
   display: grid;
-  grid-template-columns: repeat(10, minmax(76px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 6px;
 }
 .dashboardCategoryItem {
   padding: 8px 4px 2px;
@@ -2049,13 +2049,13 @@
   justify-items: center;
   gap: 10px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 16px;
   background: transparent;
   color: #5e738d;
-  font-weight: 800;
+  font-weight: 700;
 }
 .dashboardCategoryItem span {
-  font-size: 13px;
+  font-size: 11px;
 }
 .dashboardSection {
   display: grid;

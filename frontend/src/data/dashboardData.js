@@ -18,15 +18,15 @@ export const interestItems = [
 export const categoryItems = [
   { name: "전체", accent: "blue", icon: "spark" },
   { name: "유산소", accent: "sky", icon: "running" },
-  { name: "구기", accent: "blue", icon: "dumbbell" },
-  { name: "라켓스포츠", accent: "neutral", icon: "soccer" },
-  { name: "근력·피트니스", accent: "orange", icon: "badminton" },
-  { name: "격투·무술", accent: "amber", icon: "basketball" },
-  { name: "수상스포츠", accent: "green", icon: "mountain" },
-  { name: "겨울스포츠", accent: "teal", icon: "bike" },
-  { name: "보드·레저", accent: "purple", icon: "yoga" },
-  { name: "댄스·생활체육", accent: "lime", icon: "tennis" },
-  { name: "기타스포츠", accent: "lime", icon: "tennis" },
+  { name: "구기", accent: "blue", icon: "soccer" },
+  { name: "라켓스포츠", accent: "neutral", icon: "racket" },
+  { name: "근력·피트니스", accent: "orange", icon: "dumbbell" },
+  { name: "격투·무술", accent: "amber", icon: "boxing" },
+  { name: "수상스포츠", accent: "green", icon: "swimming" },
+  { name: "겨울스포츠", accent: "teal", icon: "ski" },
+  { name: "보드·레저", accent: "purple", icon: "skateboard" },
+  { name: "댄스·생활체육", accent: "lime", icon: "dance" },
+  { name: "기타스포츠", accent: "lime", icon: "more" },
 ];
 
 

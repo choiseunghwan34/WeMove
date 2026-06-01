@@ -64,7 +64,7 @@ export default function HomePage() {
   const recruitingMeetings = Array.isArray(meetings)
       ? meetings.filter((meeting) => meeting.status === "RECRUITING")
       : [];
-  const featuredMeetings = recruitingMeetings.slice(0, 10);
+  const featuredMeetings = recruitingMeetings.slice(0, 6);
   const currentHero = heroSlides[activeSlide];
 
   const [activeCategory, setActiveCategory] = useState("전체");
@@ -301,6 +301,7 @@ export default function HomePage() {
             type="button"
             className={`${styles.dashboardCategoryItem} ${activeCategory === item.name ? styles.active : ""}`}
             onClick={() => setActiveCategory(item.name)}
+            style={{ flex: "1", minWidth: "0", padding: "6px 2px" }}
           >
             <i className={styles[`dashboardTone${item.accent[0].toUpperCase()}${item.accent.slice(1)}`]}>
               <UiIcon name={item.icon} className={styles.dashboardCategoryGlyph} />
@@ -314,18 +315,14 @@ export default function HomePage() {
         <div className={styles.dashboardSectionHead}>
           <div>
             <h2>신규 모임</h2>
-            <div className={styles.dashboardPills}>
-              <button type="button">전체</button>
-              <button type="button">모집중</button>
-              <button type="button">마감임박</button>
-              <button type="button">초보 환영</button>
-            </div>
           </div>
           <Link to="/meetings">전체 보기</Link>
         </div>
 
         <div className={styles.dashboardFeed}>
-          {featuredMeetings.map((meeting) => (
+          {meetings.length > 0 ? (
+
+          meetings.map((meeting) => (
             <article key={meeting.meetingId} className={styles.dashboardMeetingCard}>
               <img
                   src={meeting.thumbnailImage || "/src/assets/image/bg1.jpg"}
@@ -336,11 +333,9 @@ export default function HomePage() {
                 <div className={styles.dashboardMeetingBadges}>
                   <span>{meeting.sportName}</span>
                   <span className={styles.dashboardStatusBadge}>
-                    {meeting.status}
+                    {meeting.statusText}
                   </span>
-                  <span>
-                    {meeting.approvedCount < meeting.maxMembers ? "초보 환영" : "정기 모임"}
-                  </span>
+
                 </div>
                 <h3>{meeting.title}</h3>
                 <p>{meeting.content}</p>
@@ -387,12 +382,20 @@ export default function HomePage() {
                         className={styles.dashboardActionIcon}
                       />
                     </button>
-                    <Link to={`/meetings/${meeting.meetingId}`}>참가 신청</Link>
+                    <Link to={`/meetings/${meeting.meetingId}`}>상세 보기</Link>
                   </div>
                 </div>
               </div>
             </article>
-          ))}
+          ))
+          ):(
+             <div className={styles.emptyContainer}>
+               <h3>해당 카테고리의 모임이 없습니다.</h3>
+               <p>새로운 모임을 직접 만들어보거나 다른 카테고리를 확인해보세요!</p>
+
+               <Link to="/meetings/new" className={styles.dashboardHeroButton}>모임만들기</Link>
+             </div>
+          )}
         </div>
       </section>
     </DashboardShell>

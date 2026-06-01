@@ -23,4 +23,6 @@ public class MeetingListResponse {
 
   private String sportId;
   private String category;
+  private String statusText;
+
 }
