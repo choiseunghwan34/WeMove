@@ -98,28 +98,10 @@ public class ParticipantServiceImpl implements ParticipantService {
       }
       
       participantDao.updateStatus(participantId, "PENDING");
-      
-      Integer approved = participantDao.countApprovedByMeetingId(meetingId);
-      Integer max = meetingDao.selectMaxMembers(meetingId);
-
-      // [수정] 대기 자리가 생겼고, 모임 시간이 시작 전이며, 기존 상태가 CLOSED(모집완료)인 경우에만 자동으로 RECRUITING(모집중) 전환
-      if (approved != null && max != null && approved < max 
-          && isRecruitable(meeting) 
-          && "CLOSED".equals(meeting.getStatus())) {
-        meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
-      }
     } else {
       participantDao.updateStatus(participantId, "PENDING");
     }
   }
 
-  // NOTE: sjm_0528 로직에서 사용되지 않는다면 이 아래의 isRecruitable 메서드는 지우셔도 무방합니다.
-  private boolean isRecruitable(MeetingDetailResponse meeting) {
-    if (meeting == null || meeting.getMeetingDate() == null || meeting.getStartTime() == null) {
-      return false;
-    }
 
-    LocalDateTime startAt = LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
-    return startAt.isAfter(LocalDateTime.now());
-  }
 }
