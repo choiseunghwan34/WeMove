@@ -1,16 +1,14 @@
 package kr.co.iei.chat.model.vo;
 
-import java.time.LocalDateTime;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
-public class ChatMessageResponse {
+public class DirectChatMessage {
   private Long messageId;
-  private Long meetingId;
+  private Long roomId;
   private Long userId;
-  private String nickname;
-  private String profileImage;
-  private Boolean host;
   private String content;
   private String messageType;
   private LocalDateTime createdAt;

@@ -16,6 +16,7 @@ public class ChatRoomResponse {
   private LocalDate meetingDate;
   private LocalTime startTime;
   private String status;
+  private Long hostUserId;
   private String hostNickname;
   private Long lastMessageId;
   private String lastMessage;

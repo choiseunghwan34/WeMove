@@ -24,6 +24,7 @@ export const openNotificationTarget = (notification) => {
 
 export const publishNotification = ({
   type = NOTIFICATION_TYPES.INFO,
+  chatKind,
   title,
   message = "",
   sourceId,
@@ -38,6 +39,7 @@ export const publishNotification = ({
       detail: {
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         type,
+        chatKind,
         title,
         message,
         sourceId,

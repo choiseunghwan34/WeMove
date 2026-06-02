@@ -3,13 +3,15 @@
   display: inline-flex;
 }
 
-.button {
+.root > .button {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
   width: 40px;
   height: 40px;
+  padding: 0;
   border: 1px solid #d7e1ef;
   border-radius: 50%;
   background: #ffffff;
@@ -21,13 +23,13 @@
     transform 0.2s ease;
 }
 
-.button:hover {
+.root > .button:hover {
   border-color: #2563eb;
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.14);
   transform: translateY(-1px);
 }
 
-.button svg {
+.root > .button svg {
   width: 20px;
   height: 20px;
   fill: currentColor;
@@ -66,6 +68,21 @@
   box-shadow: 0 22px 60px rgba(15, 23, 42, 0.2);
 }
 
+.root .panel button {
+  display: initial;
+  align-items: initial;
+  justify-content: initial;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  white-space: normal;
+}
+
 .panelHead {
   display: flex;
   align-items: center;
@@ -93,7 +110,10 @@
   font-weight: 700;
 }
 
-.panelHead button {
+.root .panelHead button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   background: transparent;
   color: #6b7d95;
@@ -108,22 +128,27 @@
   padding: 8px 12px;
 }
 
-.item {
+.root .item {
   display: block;
   width: 100%;
+  height: auto;
+  min-height: 0;
   padding: 12px 8px;
   border: 0;
   border-bottom: 1px solid #edf2f8;
+  border-radius: 0;
   background: transparent;
+  box-shadow: none;
   text-align: left;
   cursor: pointer;
+  white-space: normal;
 }
 
-.item:hover {
+.root .item:hover {
   background: #f8fbff;
 }
 
-.item:last-child {
+.root .item:last-child {
   border-bottom: 0;
 }
 
@@ -182,19 +207,22 @@
   background: #f8fbff;
 }
 
-.clearButton {
+.root .clearButton {
+  display: inline;
   height: auto;
+  min-height: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
+  box-shadow: none;
   color: #111827;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 
-.clearButton:disabled {
+.root .clearButton:disabled {
   background: transparent;
   color: #94a3b8;
   font-weight: 600;
@@ -202,12 +230,12 @@
 }
 
 @media (max-width: 640px) {
-  .button {
+  .root > .button {
     width: 36px;
     height: 36px;
   }
 
-  .button svg {
+  .root > .button svg {
     width: 18px;
     height: 18px;
   }
