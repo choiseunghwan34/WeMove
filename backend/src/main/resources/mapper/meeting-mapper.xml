@@ -72,6 +72,13 @@
                 where userId = m.hostUserId
             ) hostProfileImage,
             (
+                SELECT mp.status
+                FROM meetingParticipants mp
+                WHERE mp.meetingId = m.meetingId
+                  AND mp.userId = #{loginUserId}
+                LIMIT 1
+            ) AS myParticipantStatus,
+            (
                 SELECT COUNT(*)
                 FROM meetingParticipants mp
                 WHERE mp.meetingId = m.meetingId
@@ -220,7 +227,7 @@
         FROM meetings m
             JOIN regions r
         ON m.regionId = r.regionId
-        WHERE m.deletedAt IS NULL
+        WHERE m.deletedAt IS NULL AND m.status = 'RECRUITING'
         GROUP BY r.sido, r.sigungu, r.dong
         ORDER BY COUNT(*) DESC, MAX(m.createdAt) DESC, r.sido ASC, r.sigungu ASC, r.dong ASC
             LIMIT 4

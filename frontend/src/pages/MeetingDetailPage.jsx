@@ -477,17 +477,50 @@ export default function MeetingDetailPage() {
               </div>
             </div>
             <div className={styles.stickyActions}>
-              {!isHost && (
+              {meeting.status === "ONGOING" ||
+              meeting.status === "COMPLETED" ||
+              meeting.status === "CANCELLED" ? (
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  disabled
+                >
+                  {meeting.status === "ONGOING"
+                    ? "진행중"
+                    : meeting.status === "COMPLETED"
+                      ? "모임 완료"
+                      : "취소됨"}
+                </button>
+              ) : (
                 <>
-                  {meeting.status === "COMPLETED" ||
-                  meeting.status === "CANCELLED" ? (
-                    <button
-                      type="button"
-                      className={styles.primaryButton}
-                      disabled
-                    >
-                      {meeting.status === "COMPLETED" ? "모임 완료" : "취소됨"}
-                    </button>
+                  {isHost ? (
+                    <>
+                      <Link
+                        to={`/meetings/${meetingId}/edit`}
+                        className={styles.primaryButton}
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          textDecoration: "none",
+                        }}
+                      >
+                        모임 수정
+                      </Link>
+                      <Link
+                        to={`/meetings/${meetingId}/manage`}
+                        className={styles.secondaryButton}
+                        style={{
+                          marginTop: "8px",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          textDecoration: "none",
+                        }}
+                      >
+                        신청자 관리
+                      </Link>
+                    </>
                   ) : (
                     <>
                       {!isApplied && (
@@ -497,7 +530,6 @@ export default function MeetingDetailPage() {
                             className={styles.primaryButton}
                             disabled={
                               meeting.status === "CLOSED" ||
-                              meeting.status === "ONGOING" ||
                               isAdmin ||
                               isRejected
                             }
@@ -509,9 +541,7 @@ export default function MeetingDetailPage() {
                                 ? "신청 불가"
                                 : meeting.status === "CLOSED"
                                   ? "모집완료"
-                                  : meeting.status === "ONGOING"
-                                    ? "진행중"
-                                    : "참가 신청"}
+                                  : "참가 신청"}
                           </button>
                           {isRejected && (
                             <p
@@ -556,36 +586,6 @@ export default function MeetingDetailPage() {
                 >
                   관리자는 모임 상세 조회만 가능하며 참가 신청은 할 수 없습니다.
                 </p>
-              )}
-
-              {isHost && (
-                <>
-                  <Link
-                    to={`/meetings/${meetingId}/edit`}
-                    className={styles.primaryButton}
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      textDecoration: "none",
-                    }}
-                  >
-                    모임 수정
-                  </Link>
-                  <Link
-                    to={`/meetings/${meetingId}/manage`}
-                    className={styles.secondaryButton}
-                    style={{
-                      marginTop: "8px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      textDecoration: "none",
-                    }}
-                  >
-                    신청자 관리
-                  </Link>
-                </>
               )}
             </div>
           </section>

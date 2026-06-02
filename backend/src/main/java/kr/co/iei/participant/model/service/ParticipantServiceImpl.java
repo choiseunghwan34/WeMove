@@ -88,27 +88,20 @@ public class ParticipantServiceImpl implements ParticipantService {
 
   @Transactional
   public void cancelApproval(Long participantId) {
-    participantDao.updateStatus(participantId, "PENDING");
     Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
     if (meetingId != null) {
       MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
-      Integer approved = participantDao.countApprovedByMeetingId(meetingId);
-      Integer max = meetingDao.selectMaxMembers(meetingId);
-
-      // [수정] 최신 코드(sjm_0528)의 로직인 인원수 체크 조합만 남겼습니다. (시간 체크 제거)
-      if (approved != null && max != null && approved < max) {
-        meetingDao.updateMeetingStatus(meetingId, "RECRUITING");
+      
+      // [수정 - 2026-06-01] 이미 진행중(ONGOING), 완료(COMPLETED), 취소(CANCELLED)된 모임의 참가자는 취소 조작 차단 (API 보안 가드)
+      if (meeting != null && Arrays.asList("ONGOING", "COMPLETED", "CANCELLED").contains(meeting.getStatus())) {
+        throw new IllegalArgumentException("이미 진행중이거나 종료/취소된 모임의 참가자는 상태를 변경할 수 없습니다.");
       }
+      
+      participantDao.updateStatus(participantId, "PENDING");
+    } else {
+      participantDao.updateStatus(participantId, "PENDING");
     }
   }
 
-  // NOTE: sjm_0528 로직에서 사용되지 않는다면 이 아래의 isRecruitable 메서드는 지우셔도 무방합니다.
-  private boolean isRecruitable(MeetingDetailResponse meeting) {
-    if (meeting == null || meeting.getMeetingDate() == null || meeting.getStartTime() == null) {
-      return false;
-    }
 
-    LocalDateTime startAt = LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
-    return startAt.isAfter(LocalDateTime.now());
-  }
 }

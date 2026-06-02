@@ -1,15 +1,4 @@
-      if (rankedEntry == null || rankedEntry.getValue() == null || rankedEntry.getScore() == null) {
-        continue;
-      }
-
-      if (rankedEntry.getScore() <= 0D) {
-        continue;
-      }
-
-      try {
-        Long meetingId = Long.valueOf(rankedEntry.getValue());
-        meetingViews.put(meetingId, rankedEntry.getScore().intValue());
-      } catch (NumberFormatException ignored) {}package kr.co.iei.meeting.model.service;
+package kr.co.iei.meeting.model.service;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -199,6 +188,7 @@ public class MeetingServiceImpl implements MeetingService {
     String popularKey = todayPopularKey();
     stringRedisTemplate.opsForZSet().incrementScore(popularKey, String.valueOf(meetingId), 1D);
     stringRedisTemplate.expire(popularKey, ttl);
+    meetingDao.updateMeetingStatus(meetingId, request.getStatus());
   }
 
   @Override

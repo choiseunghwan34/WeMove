@@ -26,4 +26,5 @@ public class MeetingListResponse {
   private String category;
   private String statusText;
 
+  private String myParticipantStatus;
 }
