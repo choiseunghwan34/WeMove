@@ -188,7 +188,6 @@ public class MeetingServiceImpl implements MeetingService {
     String popularKey = todayPopularKey();
     stringRedisTemplate.opsForZSet().incrementScore(popularKey, String.valueOf(meetingId), 1D);
     stringRedisTemplate.expire(popularKey, ttl);
-    meetingDao.updateMeetingStatus(meetingId, request.getStatus());
   }
 
   @Override
