@@ -314,9 +314,8 @@ export default function HomePage() {
       <section className={styles.dashboardSection}>
         <div className={styles.dashboardSectionHead}>
           <div>
-            <h2>신규 모임</h2>
+            <h2>신규 생성 모임</h2>
           </div>
-          <Link to="/meetings">전체 보기</Link>
         </div>
 
         <div className={styles.dashboardFeed}>
@@ -357,18 +356,9 @@ export default function HomePage() {
                   </span>
                 </div>
                 <div className={styles.dashboardMeetingFooter}>
-                  <div className={styles.dashboardHostMeta}>
-                    <strong>{meeting.meetingHostName}</strong>
-                    <span>매너점수 4.8 (후기 18)</span>
-                  </div>
+
                   <div className={styles.dashboardMeetingActions}>
-                    <button type="button">
-                      <UiIcon
-                        name="heart"
-                        className={styles.dashboardActionIcon}
-                      />
-                      18
-                    </button>
+
                     <button type="button">
                       <UiIcon
                         name="comment"
