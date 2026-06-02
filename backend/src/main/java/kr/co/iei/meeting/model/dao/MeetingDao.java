@@ -61,4 +61,8 @@ public class MeetingDao {
   public List<MeetingListResponse> selectMainMeetingList(Map<String, Object> result) {
     return sqlSession.selectList("meeting.selectMainMeetingList", result);
   }
+
+  public List<MeetingListResponse> selectMainMeetingListByIds(List<Long> meetingIds) {
+    return sqlSession.selectList("meeting.selectMainMeetingListByIds", meetingIds);
+  }
 }

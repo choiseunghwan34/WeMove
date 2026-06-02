@@ -7,7 +7,7 @@ import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import { getComments } from "../api/commentApi";
-import { getMainMeetings, getMeetings } from "../api/meetingApi";
+import { getMainMeetings, getMeetings, getPopularMeetings } from "../api/meetingApi";
 import { getMyActivity } from "../api/memberApi";
 import { getParticipants } from "../api/participantApi";
 import { getRegions } from "../api/regionApi";
@@ -187,6 +187,7 @@ export default function HomePage() {
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [meetings, setMeetings] = useState([]);
+  const [popularMeetings, setPopularMeetings] = useState([]);
   const [activityData, setActivityData] = useState({
     hostedMeetings: [],
     approvedMeetings: [],
@@ -326,6 +327,33 @@ export default function HomePage() {
     };
 
     fetchFilterOptions();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchPopularMeetings = async () => {
+      try {
+        const response = await getPopularMeetings();
+
+        if (!active) {
+          return;
+        }
+
+        setPopularMeetings(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setPopularMeetings([]);
+        }
+      }
+    };
+
+    fetchPopularMeetings();
 
     return () => {
       active = false;
@@ -596,10 +624,15 @@ export default function HomePage() {
     <>
       <section className={styles.dashboardPanel}>
         <div className={styles.dashboardPanelHead}>
-          <h3>실시간 인기 모임</h3>
+          <div>
+            <h3>실시간 인기 모임</h3>
+            <span className={styles.dashboardPanelHint}>
+              기준: 오늘 조회수 · 0시 자동 초기화
+            </span>
+          </div>
         </div>
         <div className={styles.dashboardRankList}>
-          {featuredMeetings.map((meeting, index) => (
+          {popularMeetings.map((meeting, index) => (
             <Link
               key={meeting.meetingId}
               to={`/meetings/${meeting.meetingId}`}
@@ -608,7 +641,7 @@ export default function HomePage() {
               <b>{index + 1}</b>
               <div>
                 <strong>{meeting.title}</strong>
-                <span>{meeting.approvedCount ?? 0}</span>
+                <span>{meeting.viewCount ?? meeting.views ?? 0}회 조회</span>
               </div>
             </Link>
           ))}
@@ -623,7 +656,20 @@ export default function HomePage() {
         <div className={styles.dashboardScheduleList}>
           {scheduleItems.length ? (
             scheduleItems.map((meeting) => {
-              const scheduleDate = String(meeting.meetingDate ?? "").slice(5, 10).replace("-", ".");
+              const scheduleDateValue = String(meeting.meetingDate ?? "");
+              const scheduleDate = scheduleDateValue.slice(5, 10).replace("-", ".");
+              const scheduleWeekday = (() => {
+                if (!scheduleDateValue) {
+                  return "";
+                }
+
+                const parsedDate = new Date(`${scheduleDateValue}T00:00:00`);
+                if (Number.isNaN(parsedDate.getTime())) {
+                  return "";
+                }
+
+                return DAY_LABELS[parsedDate.getDay()] ?? "";
+              })();
               const scheduleTime = String(meeting.startTime ?? "").slice(0, 5) || "--:--";
 
               return (
@@ -631,7 +677,7 @@ export default function HomePage() {
                   key={meeting.id}
                   className={styles.dashboardScheduleItem}
                 >
-                  <span>{scheduleDate || "이번주"}</span>
+                  <span>{scheduleDate || "이번주"}{scheduleWeekday ? ` (${scheduleWeekday})` : ""}</span>
                   <strong>{scheduleTime}</strong>
                   <p>{meeting.title}</p>
                 </div>

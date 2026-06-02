@@ -12,6 +12,7 @@ public class MeetingListResponse {
   private LocalTime startTime;
   private Integer maxMembers;
   private Integer approvedCount;
+  private Integer viewCount;
   private String status;
   private String sportName;
   private String regionName;

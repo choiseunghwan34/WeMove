@@ -3,6 +3,7 @@ package kr.co.iei.meeting.controller;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 import kr.co.iei.auth.util.JwtTokenProvider;
 import kr.co.iei.meeting.model.service.MeetingService;
 import kr.co.iei.meeting.model.vo.MeetingCreateRequest;
@@ -36,8 +37,13 @@ public class MeetingController {
   private final JwtTokenProvider jwtTokenProvider;
 
   @GetMapping("/main")
-  public ResponseEntity<List<MeetingListResponse>> getMainList(){
+  public ResponseEntity<List<MeetingListResponse>> getMainList() {
     return ResponseEntity.ok(meetingService.getMainMeetingList());
+  }
+
+  @GetMapping("/popular")
+  public ResponseEntity<List<MeetingListResponse>> getPopularList() {
+    return ResponseEntity.ok(meetingService.getPopularMeetingList());
   }
 
   @GetMapping
@@ -47,18 +53,27 @@ public class MeetingController {
 
   @GetMapping("/top-regions")
   public ResponseEntity<List<Map<String, Object>>> topRegions() {
-      try {
-          return ResponseEntity.ok(meetingService.getTopRegions());
-      } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Collections.emptyList());
-      }
+    try {
+      return ResponseEntity.ok(meetingService.getTopRegions());
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Collections.emptyList());
+    }
   }
 
   @GetMapping("/{meetingId}")
   public ResponseEntity<MeetingDetailResponse> detail(@PathVariable Long meetingId) {
     return ResponseEntity.ok(meetingService.getMeeting(meetingId));
+  }
+
+  @PostMapping("/{meetingId}/views")
+  public ResponseEntity<Void> recordView(
+      @PathVariable Long meetingId,
+      @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
+      HttpServletRequest request) {
+    meetingService.recordMeetingView(meetingId, resolveActorKey(authorizationHeader, request));
+    return ResponseEntity.ok().build();
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -76,7 +91,7 @@ public class MeetingController {
       @PathVariable Long meetingId,
       @RequestPart(value = "request") MeetingUpdateRequest request,
       @RequestPart(value = "image", required = false) MultipartFile image) {
-    System.out.println("★ 컨트롤러에서 받은 request: " + request);
+    System.out.println("??而⑦듃濡ㅻ윭?먯꽌 諛쏆? request: " + request);
     meetingService.updateMeeting(meetingId, request, image);
     return ResponseEntity.ok().build();
   }
@@ -96,8 +111,19 @@ public class MeetingController {
 
   private String extractBearerToken(String authorizationHeader) {
     if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-      throw new IllegalArgumentException("유효한 인증 토큰이 없습니다.");
+      throw new IllegalArgumentException("?좏슚???몄쬆 ?좏겙???놁뒿?덈떎.");
     }
     return authorizationHeader.substring(7);
+  }
+
+  private String resolveActorKey(String authorizationHeader, HttpServletRequest request) {
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+      String token = authorizationHeader.substring(7);
+      if (jwtTokenProvider.isValid(token)) {
+        return "member:" + jwtTokenProvider.parseUserId(token);
+      }
+    }
+
+    return "session:" + request.getSession(true).getId();
   }
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import { useAuth } from "../contexts/AuthContext";
-import { getMeeting } from "../api/meetingApi";
+import { getMeeting, recordMeetingView } from "../api/meetingApi";
 import {
   getParticipants,
   applyMeeting,
@@ -161,6 +161,16 @@ export default function MeetingDetailPage() {
     };
     init();
   }, [meetingId, user]);
+
+  useEffect(() => {
+    if (!meetingId) {
+      return;
+    }
+
+    recordMeetingView(meetingId).catch((error) => {
+      console.error("Failed to record meeting view:", error);
+    });
+  }, [meetingId]);
 
   const handleApplyConfirm = async () => {
     try {

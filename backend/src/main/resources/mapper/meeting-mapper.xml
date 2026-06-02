@@ -14,8 +14,28 @@
                  JOIN sports s ON m.sportId = s.sportId
                  JOIN regions r ON m.regionId = r.regionId
         WHERE m.deletedAt IS NULL
+          AND m.status = 'RECRUITING'
         ORDER BY m.createdAt DESC
-            LIMIT 10 OFFSET 0
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectMainMeetingListByIds" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
+        SELECT
+            m.meetingId, m.title, m.placeName, m.meetingDate, m.startTime,
+            m.maxMembers, m.status, m.thumbnailImage,
+            s.name as sportName,
+            CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) as regionName,
+            (SELECT nickname FROM users WHERE userId = m.hostUserId) as meetingHostName,
+            (SELECT COUNT(*) FROM meetingParticipants mp WHERE mp.meetingId = m.meetingId AND mp.status="APPROVED") as approvedCount
+        FROM meetings m
+                 JOIN sports s ON m.sportId = s.sportId
+                 JOIN regions r ON m.regionId = r.regionId
+        WHERE m.deletedAt IS NULL
+          AND m.status = 'RECRUITING'
+          AND m.meetingId IN
+        <foreach item="meetingId" collection="list" open="(" separator="," close=")">
+            #{meetingId}
+        </foreach>
     </select>
 
 

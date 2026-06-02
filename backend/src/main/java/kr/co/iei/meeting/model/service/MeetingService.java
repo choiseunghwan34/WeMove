@@ -19,6 +19,9 @@ public interface MeetingService {
 
   void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request);
 
+  void recordMeetingView(Long meetingId, String actorKey);
 
   List<MeetingListResponse> getMainMeetingList();
+
+  List<MeetingListResponse> getPopularMeetingList();
 }

@@ -1563,3 +1563,44 @@
   line-height: 1.4 !important;
   color: #475569 !important;
 }
+
+/* 2026-06-02 sidebar tone unification */
+.dashboardPanelHint {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: -0.01em;
+}
+
+.dashboardRankItem,
+.dashboardRankItem:nth-child(1),
+.dashboardRankItem:nth-child(2),
+.dashboardRankItem:nth-child(3),
+.dashboardRankItem:nth-child(n + 4) {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+  border-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+.dashboardRankItem b {
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%) !important;
+  color: #1d4ed8 !important;
+}
+
+.dashboardRankItem strong {
+  color: #0f172a !important;
+}
+
+.dashboardRankItem span {
+  color: #64748b !important;
+}
+
+.dashboardScheduleItem {
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%) !important;
+  border-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+.dashboardPanelHead h3 {
+  color: #0f172a;
+}
