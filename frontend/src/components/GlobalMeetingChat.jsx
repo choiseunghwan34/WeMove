@@ -108,6 +108,26 @@ const sortRoomsByLatestMessage = (roomList) =>
     );
   });
 
+const mergeMessagesById = (...messageGroups) => {
+  const messageMap = new Map();
+
+  messageGroups.flat().forEach((message) => {
+    if (message?.messageId) {
+      messageMap.set(Number(message.messageId), message);
+    }
+  });
+
+  return [...messageMap.values()].sort((a, b) => {
+    const timeA = a?.createdAt ? new Date(String(a.createdAt).replace(" ", "T")).getTime() : 0;
+    const timeB = b?.createdAt ? new Date(String(b.createdAt).replace(" ", "T")).getTime() : 0;
+    if (timeA !== timeB) {
+      return timeA - timeB;
+    }
+
+    return Number(a.messageId || 0) - Number(b.messageId || 0);
+  });
+};
+
 const PANEL_DEFAULT_WIDTH = 860;
 const PANEL_DEFAULT_HEIGHT = 560;
 const PANEL_MIN_WIDTH = 520;
@@ -211,7 +231,7 @@ export default function GlobalMeetingChat() {
         chatTypeRef.current === "GROUP" &&
         Number(message.meetingId) === Number(selectedMeetingIdRef.current)
       ) {
-        setMessages((current) => [...current, message]);
+        setMessages((current) => mergeMessagesById(current, [message]));
       }
 
       setRooms((current) =>
@@ -281,7 +301,7 @@ export default function GlobalMeetingChat() {
         chatTypeRef.current === "PRIVATE" &&
         Number(message.roomId) === Number(selectedDirectRoomIdRef.current)
       ) {
-        setMessages((current) => [...current, message]);
+        setMessages((current) => mergeMessagesById(current, [message]));
       }
 
       setDirectRooms((current) =>
@@ -512,6 +532,7 @@ export default function GlobalMeetingChat() {
     let active = true;
     setLoadingMessages(true);
     setError("");
+    setMessages([]);
     latestMessageIdsRef.current.clear();
 
     const messageRequest =
@@ -533,7 +554,7 @@ export default function GlobalMeetingChat() {
             );
           }
         });
-        setMessages(nextMessages);
+        setMessages((current) => mergeMessagesById(nextMessages, current));
       })
       .catch((requestError) => {
         if (active) {
