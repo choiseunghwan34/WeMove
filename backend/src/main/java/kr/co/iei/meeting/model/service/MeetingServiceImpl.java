@@ -95,6 +95,12 @@ public class MeetingServiceImpl implements MeetingService {
 
     validateMeetingTime(meetingDate, startTime);
 
+    //현재모임의 승인된 인원수 조회
+    Integer approveCount = participantDao.countApprovedByMeetingId(meetingId);
+
+    if(approveCount != null && request.getMaxMembers() < approveCount) {
+      throw new IllegalArgumentException("모집 인원은 현재 승인된 인원 (" + approveCount + "명) 이상이어야 합니다.");
+    }
     request.setMeetingId(meetingId);
 
     if(Boolean.TRUE.equals(request.getIsImageRemoved())){

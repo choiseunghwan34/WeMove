@@ -12,10 +12,6 @@ const normalizeText = (value = "") => String(value).trim();
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
 
 export default function MeetingFormPage({ initialData, onSubmit, title }) {
-    console.log("★★★★★★ props 확인 ★★★★★★");
-    console.log("onSubmit:", onSubmit);
-    console.log("title:", title);
-
     const { meetingId } = useParams();
     const isEditMode = !!meetingId;
 
@@ -24,10 +20,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const fileInputRef = useRef(null);
     const inputRefs = useRef({});
 
-    // ★ 1. 공통 사용 함수 선언 (가장 먼저)
-    const getTodayString = () => new Date().toISOString().split('T')[0];
+     const getTodayString = () => new Date().toISOString().split('T')[0];
 
-    // ★ 2. State 선언
     const initialFormValue = initialData || {
         sportId: null, regionId: null, title: "", content: "", placeName: "", address: "",
         latitude: null, longitude: null, meetingDate: "", startTime: "", maxMembers: "",
@@ -45,7 +39,6 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const [selectedSportName, setSelectedSportName] = useState("");
     const [selectedRegion, setSelectedRegion] = useState({ sido: "", sigungu: "", dong: "" });
 
-    // ★ 3. useMemo (State를 참조하는 계산된 값들)
 
     // 썸네일 미리보기
     const previews = useMemo(() => {
@@ -259,6 +252,15 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         e.preventDefault();
         console.log("onsubmit 함수확인: ", onSubmit)
 
+        //승인된 인원보다 적게 수정불가
+        if(isEditMode && initialData?.approvedCount !== undefined){
+            if(Number(form.maxMembers) < initialData.approvedCount){
+                alert(`모집 인원은 현재 승인된 인원 (${initialData.approvedCount}명) 이상이어야 합니다.`)
+                inputRefs.current.maxMembers?.focus();
+                return;
+            }
+        }
+
         // 당일 시간 유효성 검사 로직
         const selectedDate = new Date(form.meetingDate);
         const today = new Date();
@@ -373,7 +375,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                 </div>
             </section>
 
-            <form className={styles.formCard} onSubmit={handleSubmit}>
+            <form className={styles.formCard} onSubmit={handleSubmit} noValidate>
                 <label className={styles.full}>
                     <div className={styles.titleRow}>
                         <span className={styles.requiredLabel}>모임 제목</span>
@@ -525,8 +527,11 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         value={form.maxMembers}
                         onChange={handleChange}
                         type="number"
-                        min="2"
+                        min={isEditMode && initialData?.approvedCount ? initialData?.approvedCount : "2"}
                     />
+                    {isEditMode && initialData?.approvedCount && Number(form.maxMembers) < initialData.approvedCount && (
+                        <small style={{ color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem" }}>* 현재 승인된 인원 ({initialData.approvedCount}명) 미만으로 줄일 수 없습니다.</small>
+                    )}
                 </label>
                 <label>
                     <span className={styles.requiredLabel}>모집 상태</span>
