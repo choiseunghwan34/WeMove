@@ -16,6 +16,7 @@ import { getMyActivity } from "../api/memberApi";
 import { getParticipants } from "../api/participantApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
+import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/HomePage.module.css";
 
 const heroSlides = [
@@ -222,9 +223,14 @@ export default function HomePage() {
 
   // 메인페이지 카테고리별 모임목록조회
   useEffect(() => {
-    getMainMeetings({ category: activeCategory })
+    const params =
+      !activeCategory || activeCategory === "전체" || activeCategory === "?꾩껜"
+        ? undefined
+        : { category: activeCategory };
+
+    getMainMeetings(params)
       .then((res) => {
-        setMeetings(Array.isArray(res.data) ? res.data : []);
+        setMeetings(Array.isArray(res.data) ? res.data.slice(0, 5) : []);
       })
       .catch((err) => {
         console.error(err);
@@ -283,19 +289,48 @@ export default function HomePage() {
   // 인기 모임 로드
   useEffect(() => {
     let active = true;
+    let intervalId = null;
+    let midnightTimeoutId = null;
+
     const fetchPopularMeetings = async () => {
       try {
         const response = await getPopularMeetings();
         if (!active) return;
-        setPopularMeetings(Array.isArray(response.data) ? response.data : []);
+
+        const popularList = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.data)
+            ? response.data.data
+            : Array.isArray(response.data?.list)
+              ? response.data.list
+              : [];
+
+        setPopularMeetings(popularList.slice(0, 5));
       } catch (error) {
         console.error(error);
         if (active) setPopularMeetings([]);
       }
     };
+
+    const scheduleMidnightRefresh = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now);
+      nextMidnight.setHours(24, 0, 0, 0);
+
+      midnightTimeoutId = window.setTimeout(() => {
+        fetchPopularMeetings();
+        scheduleMidnightRefresh();
+      }, Math.max(nextMidnight.getTime() - now.getTime(), 0));
+    };
+
     fetchPopularMeetings();
+    intervalId = window.setInterval(fetchPopularMeetings, 60 * 1000);
+    scheduleMidnightRefresh();
+
     return () => {
       active = false;
+      if (intervalId) window.clearInterval(intervalId);
+      if (midnightTimeoutId) window.clearTimeout(midnightTimeoutId);
     };
   }, []);
 
@@ -522,7 +557,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className={styles.dashboardRankList}>
-          {popularMeetings.map((meeting, index) => (
+          {popularMeetings.slice(0, 5).map((meeting, index) => (
             <Link
               key={meeting.meetingId}
               to={`/meetings/${meeting.meetingId}`}
@@ -778,16 +813,13 @@ export default function HomePage() {
 
         <div className={styles.dashboardFeed}>
           {meetings.length > 0 ? (
-            meetings.map((meeting, index) => (
+            meetings.slice(0, 5).map((meeting, index) => (
               <article
                 key={meeting.meetingId}
                 className={styles.dashboardMeetingCard}
               >
                 <img
-                  src={
-                    meeting.thumbnailImage ||
-                    meetingImages[index % meetingImages.length]
-                  }
+                  src={getMeetingThumbnail(meeting)}
                   alt={meeting.title}
                   className={styles.dashboardMeetingImage}
                 />

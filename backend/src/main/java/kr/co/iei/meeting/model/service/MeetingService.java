@@ -25,6 +25,8 @@ public interface MeetingService {
 
   List<MeetingListResponse> getPopularMeetingList();
 
+  List<MeetingListResponse> getMainMeetingList();
+
   List<MeetingListResponse> getMainMeetingList(String category);
 
     

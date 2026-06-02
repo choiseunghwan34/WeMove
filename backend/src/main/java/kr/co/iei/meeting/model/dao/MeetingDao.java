@@ -41,7 +41,7 @@ public class MeetingDao {
 
   public int updateMeetingStatus(Long id, String status) {
     return sqlSession.update(
-        "meeting.updateMeetingStatus", Map.of("meetingId", id, "status", status));
+            "meeting.updateMeetingStatus", Map.of("meetingId", id, "status", status));
   }
 
   public Integer selectMaxMembers(Long id) {
@@ -56,16 +56,11 @@ public class MeetingDao {
     return sqlSession.update("meeting.startDueMeetings");
   }
 
-
-  public List<MeetingListResponse> selectMainMeetingList(String category) {
-    Map<String, String> map = new HashMap<>();
-    map.put("category", category);
-    return sqlSession.selectList("meeting.selectMainMeetingList", map);
+  public List<MeetingListResponse> selectMainMeetingList(Map<String, Object> params) {
+    return sqlSession.selectList("meeting.selectMainMeetingList", params);
   }
-
 
   public List<MeetingListResponse> selectMainMeetingListByIds(List<Long> meetingIds) {
     return sqlSession.selectList("meeting.selectMainMeetingListByIds", meetingIds);
   }
-
 }

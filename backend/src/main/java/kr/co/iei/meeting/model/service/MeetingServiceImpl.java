@@ -1,4 +1,15 @@
-package kr.co.iei.meeting.model.service;
+      if (rankedEntry == null || rankedEntry.getValue() == null || rankedEntry.getScore() == null) {
+        continue;
+      }
+
+      if (rankedEntry.getScore() <= 0D) {
+        continue;
+      }
+
+      try {
+        Long meetingId = Long.valueOf(rankedEntry.getValue());
+        meetingViews.put(meetingId, rankedEntry.getScore().intValue());
+      } catch (NumberFormatException ignored) {}package kr.co.iei.meeting.model.service;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -36,7 +47,7 @@ public class MeetingServiceImpl implements MeetingService {
   private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
   private static final String POPULAR_KEY_PREFIX = "meeting:popular:";
   private static final String DEDUPE_KEY_PREFIX = "meeting:viewed:";
-  private static final int MAIN_LIMIT = 10;
+  private static final int MAIN_LIMIT = 5;
 
   private final MeetingDao meetingDao;
   private final ParticipantDao participantDao;
@@ -66,7 +77,6 @@ public class MeetingServiceImpl implements MeetingService {
 
   @Override
   public Long createMeeting(MeetingCreateRequest request, MultipartFile image, Long userId) {
-    // 1. [추가] 모임 생성 전 날짜/시간 검증
     LocalDate meetingDate = LocalDate.parse(request.getMeetingDate());
     LocalTime startTime = LocalTime.parse(request.getStartTime());
 
@@ -82,8 +92,8 @@ public class MeetingServiceImpl implements MeetingService {
     meeting.setPlaceName(request.getPlaceName());
     meeting.setAddress(request.getAddress());
 
-    meeting.setMeetingDate(LocalDate.parse(request.getMeetingDate()));
-    meeting.setStartTime(LocalTime.parse(request.getStartTime()));
+    meeting.setMeetingDate(meetingDate);
+    meeting.setStartTime(startTime);
     meeting.setMaxMembers(request.getMaxMembers());
     meeting.setMeetingType(request.getMeetingType());
     meeting.setRepeatType(request.getRepeatType());
@@ -109,10 +119,9 @@ public class MeetingServiceImpl implements MeetingService {
 
     validateMeetingTime(meetingDate, startTime);
 
-    //현재모임의 승인된 인원수 조회
     Integer approveCount = participantDao.countApprovedByMeetingId(meetingId);
 
-    if(approveCount != null && request.getMaxMembers() < approveCount) {
+    if (approveCount != null && request.getMaxMembers() < approveCount) {
       throw new IllegalArgumentException("모집 인원은 현재 승인된 인원 (" + approveCount + "명) 이상이어야 합니다.");
     }
     request.setMeetingId(meetingId);
@@ -135,29 +144,34 @@ public class MeetingServiceImpl implements MeetingService {
   public void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request) {
     MeetingDetailResponse currentMeeting = meetingDao.selectMeetingDetail(meetingId);
     if (currentMeeting == null) {
-      throw new IllegalArgumentException("紐⑥엫??李얠쓣 ???놁뒿?덈떎.");
+      throw new IllegalArgumentException("존재하지 않는 모임입니다.");
     }
 
     String nextStatus = request.getStatus();
 
+    // 1. 상태가 CLOSED(모집완료)로 변경될 때 정원 체크
     if ("CLOSED".equals(nextStatus)) {
-    // 1. 상태가 CLOSED(모집완료)로 변경될 때만 정원 체크
-    if ("CLOSED".equals(request.getStatus())) {
-
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
       if (approved == null || max == null || approved < max) {
-        throw new IllegalArgumentException("紐⑥쭛?꾨즺???뺤썝??紐⑤몢 李?寃쎌슦?먮뭔 ?ㅼ젙?????덉뒿?덈떎.");
+        throw new IllegalArgumentException("모집완료는 정원이 모두 찬 경우에만 설정할 수 있습니다.");
       }
     }
 
+    // 2. 상태를 RECRUITING으로 변경(재모집 등)할 때 시간 체크
+    if ("RECRUITING".equals(nextStatus)) {
+      LocalDateTime meetingDateTime = LocalDateTime.of(currentMeeting.getMeetingDate(), currentMeeting.getStartTime());
+      if (meetingDateTime.isBefore(LocalDateTime.now())) {
+        throw new IllegalArgumentException("이미 지난 시간의 모임은 다시 모집할 수 없습니다.");
+      }
+    }
 
     if ("CANCELLED".equals(nextStatus) && !"RECRUITING".equals(currentMeeting.getStatus())) {
-      throw new IllegalArgumentException("紐⑥쭛以묒씤 紐⑥엫留?痍⑥냼?????덉뒿?덈떎.");
+      throw new IllegalArgumentException("모집중인 모임만 취소할 수 있습니다.");
     }
 
     if ("COMPLETED".equals(nextStatus) && !"ONGOING".equals(currentMeeting.getStatus())) {
-      throw new IllegalArgumentException("吏꾪뻾以묒씤 紐⑥엫留??꾨즺濡?蹂寃쏀븷 ???덉뒿?덈떎.");
+      throw new IllegalArgumentException("진행중인 모임만 완료로 변경할 수 있습니다.");
     }
 
     meetingDao.updateMeetingStatus(meetingId, nextStatus);
@@ -189,60 +203,50 @@ public class MeetingServiceImpl implements MeetingService {
 
   @Override
   public List<MeetingListResponse> getMainMeetingList() {
-    return getLatestRecruitingMeetings(MAIN_LIMIT);
+    return getLatestRecruitingMeetings(MAIN_LIMIT, "전체");
   }
 
   @Override
   public List<MeetingListResponse> getPopularMeetingList() {
-    return getRankedRecruitingMeetings(MAIN_LIMIT);
-  }
-
-  private List<MeetingListResponse> getLatestRecruitingMeetings(int limit) {
-    Map<String, Object> result = new HashMap<>();
-    result.put("limit", limit);
-    result.put("offset", 0);
-    return meetingDao.selectMainMeetingList(result);
-
-    // 2. [추가] 모임 상태를 RECRUITING으로 변경할 때, 이미 지난 시간인지 확인
-    if ("RECRUITING".equals(request.getStatus())) {
-      // DB에서 해당 모임의 날짜와 시간을 조회
-      MeetingDetailResponse meeting = getMeeting(meetingId);
-      if(meeting == null) {
-        throw new IllegalArgumentException("존재하지 않는 모임입니다.");
-      }
-      //LocalDateTime 생성 (날짜와 시간 합치기)
-      LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
-
-      // 현재 시간보다 모임 시간이 과거라면 에러 발생
-      if (meetingDateTime.isBefore(LocalDateTime.now())) {
-        throw new IllegalArgumentException("이미 지난 시간의 모임은 다시 모집할 수 없습니다.");
-      }
+    try {
+      return getRankedRecruitingMeetings(MAIN_LIMIT);
+    } catch (Exception e) {
+      System.err.println("[meeting] popular meeting load failed: " + e.getMessage());
+      return List.of();
     }
-    meetingDao.updateMeetingStatus(meetingId, request.getStatus());
   }
 
   @Override
   public List<MeetingListResponse> getMainMeetingList(String category) {
-    return meetingDao.selectMainMeetingList(category);
+    return getLatestRecruitingMeetings(MAIN_LIMIT, category);
   }
-  // 공통으로 사용할 시간 검증 도우미 메서드
+
+  // 매퍼 구조(Map 파라미터 규격)와 카테고리 필터링을 통합한 도우미 메서드
+  private List<MeetingListResponse> getLatestRecruitingMeetings(int limit, String category) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("limit", limit);
+    params.put("offset", 0);
+    params.put("category", category);
+
+    return meetingDao.selectMainMeetingList(params);
+  }
+
   private void validateMeetingTime(LocalDate date, LocalTime time) {
+    if (date == null || time == null) return;
     LocalDateTime meetingDateTime = LocalDateTime.of(date, time);
     if (meetingDateTime.isBefore(LocalDateTime.now())) {
       throw new IllegalArgumentException("과거 시간으로는 모임을 생성하거나 수정할 수 없습니다.");
     }
-
   }
 
   private List<MeetingListResponse> getRankedRecruitingMeetings(int limit) {
     Map<Long, Integer> rankedMeetingViews = getTodayRankedMeetingViews(limit);
     List<Long> rankedMeetingIds = new ArrayList<>(rankedMeetingViews.keySet());
     if (rankedMeetingIds.isEmpty()) {
-      return getLatestRecruitingMeetings(limit);
+      return List.of();
     }
 
-    List<MeetingListResponse> rankedMeetings =
-        meetingDao.selectMainMeetingListByIds(rankedMeetingIds);
+    List<MeetingListResponse> rankedMeetings = meetingDao.selectMainMeetingListByIds(rankedMeetingIds);
     Map<Long, MeetingListResponse> meetingMap = new LinkedHashMap<>();
     for (MeetingListResponse meeting : rankedMeetings) {
       meetingMap.put(meeting.getMeetingId(), meeting);
@@ -257,28 +261,11 @@ public class MeetingServiceImpl implements MeetingService {
       }
     }
 
-    if (result.size() < limit) {
-      Set<Long> existingIds =
-          result.stream().map(MeetingListResponse::getMeetingId).collect(Collectors.toSet());
-
-      for (MeetingListResponse meeting : getLatestRecruitingMeetings(limit * 2)) {
-        if (result.size() >= limit) {
-          break;
-        }
-
-        if (meeting != null && existingIds.add(meeting.getMeetingId())) {
-          meeting.setViewCount(meeting.getViewCount() == null ? 0 : meeting.getViewCount());
-          result.add(meeting);
-        }
-      }
-    }
-
     return result;
   }
 
   private Map<Long, Integer> getTodayRankedMeetingViews(int limit) {
-    Set<TypedTuple<String>> rankedEntries =
-        stringRedisTemplate.opsForZSet().reverseRangeWithScores(todayPopularKey(), 0, limit - 1);
+    Set<TypedTuple<String>> rankedEntries = stringRedisTemplate.opsForZSet().reverseRangeWithScores(todayPopularKey(), 0, limit - 1);
 
     if (rankedEntries == null || rankedEntries.isEmpty()) {
       return Map.of();
@@ -290,12 +277,15 @@ public class MeetingServiceImpl implements MeetingService {
         continue;
       }
 
+      if (rankedEntry.getScore() <= 0D) {
+        continue;
+      }
+
+
       try {
         Long meetingId = Long.valueOf(rankedEntry.getValue());
         meetingViews.put(meetingId, rankedEntry.getScore().intValue());
-      } catch (NumberFormatException ignored) {
-        // Skip malformed redis entries.
-      }
+      } catch (NumberFormatException ignored) {}
     }
 
     return meetingViews;
@@ -305,18 +295,12 @@ public class MeetingServiceImpl implements MeetingService {
     if (actorKey == null) {
       return null;
     }
-
     String normalized = actorKey.trim();
     return normalized.isBlank() ? null : normalized;
   }
 
   private String buildDedupeKey(Long meetingId, String actorKey) {
-    return DEDUPE_KEY_PREFIX
-        + LocalDate.now(KOREA_ZONE_ID)
-        + ":"
-        + meetingId
-        + ":"
-        + Integer.toHexString(actorKey.toLowerCase().hashCode());
+    return DEDUPE_KEY_PREFIX + LocalDate.now(KOREA_ZONE_ID) + ":" + meetingId + ":" + Integer.toHexString(actorKey.toLowerCase().hashCode());
   }
 
   private String todayPopularKey() {
