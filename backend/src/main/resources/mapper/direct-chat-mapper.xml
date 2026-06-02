@@ -63,16 +63,28 @@
 
     <select id="canAccessDirectChat" resultType="int">
         SELECT COUNT(*)
-        FROM meetingParticipants mp
-        JOIN meetingParticipants targetMp
-          ON targetMp.meetingId = mp.meetingId
-        JOIN meetings m
-          ON m.meetingId = mp.meetingId
-        WHERE mp.userId = #{userId}
-          AND targetMp.userId = #{targetUserId}
-          AND mp.status = 'APPROVED'
-          AND targetMp.status = 'APPROVED'
-          AND m.deletedAt IS NULL
+        FROM meetings m
+        WHERE m.deletedAt IS NULL
+          AND (
+            m.hostUserId = #{userId}
+            OR EXISTS (
+                SELECT 1
+                FROM meetingParticipants mp
+                WHERE mp.meetingId = m.meetingId
+                  AND mp.userId = #{userId}
+                  AND mp.status = 'APPROVED'
+            )
+          )
+          AND (
+            m.hostUserId = #{targetUserId}
+            OR EXISTS (
+                SELECT 1
+                FROM meetingParticipants targetMp
+                WHERE targetMp.meetingId = m.meetingId
+                  AND targetMp.userId = #{targetUserId}
+                  AND targetMp.status = 'APPROVED'
+            )
+          )
     </select>
 
     <select id="selectExistingRoomId" resultType="long">

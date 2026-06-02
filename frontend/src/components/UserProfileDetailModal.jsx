@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import styles from "../styles/UserProfileDetailModal.module.css";
 import UiIcon from "./UiIcon";
 import { createReport } from "../api/reportApi";
+import { openDirectChat } from "../utils/directChatEvents";
 
 const formatJoinDate = (dateStr) => {
   if (!dateStr) return "2026.05";
@@ -103,6 +104,21 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
 
   // 로그인한 유저 본인 프로필일 경우 신고 버튼 미노출
   const isMe = loginUser && (Number(loginUser.memberId) === Number(user.userId));
+
+  const handleDirectChatClick = () => {
+
+    if (!loginUser || !loginUser.memberId) {
+      alert("로그인이 필요한 기능입니다. 로그인 후 이용해주세요.");
+      return;
+    }
+
+    if (isMe) {
+      return;
+    }
+
+    openDirectChat(user.userId);
+    onClose();
+  };
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -228,24 +244,33 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
         {!isReporting && (
           <div className={styles.modalFooter}>
             {!isMe ? (
-              <button
-                type="button"
-                className={styles.reportTriggerButton}
-                onClick={() => {
-                  if (!loginUser || !loginUser.memberId) {
-                    alert("로그인이 필요한 기능입니다. 로그인 후 이용해 주세요.");
-                    return;
-                  }
-                  setIsReporting(true);
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                유저 신고하기
-              </button>
+              <div className={styles.footerActions}>
+                <button
+                  type="button"
+                  className={styles.directChatButton}
+                  onClick={handleDirectChatClick}
+                >
+                  1:1 대화
+                </button>
+                <button
+                  type="button"
+                  className={styles.reportTriggerButton}
+                  onClick={() => {
+                    if (!loginUser || !loginUser.memberId) {
+                      alert("로그인이 필요한 기능입니다. 로그인 후 이용해주세요.");
+                      return;
+                    }
+                    setIsReporting(true);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  신고하기
+                </button>
+              </div>
             ) : (
               <span className={styles.myProfileTag}>나의 프로필 카드</span>
             )}

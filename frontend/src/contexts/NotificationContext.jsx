@@ -20,6 +20,7 @@ const createNotification = (detail) => ({
     detail?.id ||
     `${Date.now()}-${Math.random().toString(16).slice(2)}`,
   type: detail?.type || NOTIFICATION_TYPES.INFO,
+  chatKind: detail?.chatKind,
   title: detail?.title || "",
   message: detail?.message || "",
   sourceId: detail?.sourceId,
@@ -28,7 +29,9 @@ const createNotification = (detail) => ({
 
 const getNotificationKey = (notification) => {
   if (notification.type === NOTIFICATION_TYPES.CHAT) {
-    return `${notification.type}:${notification.sourceId || notification.title}`;
+    return `${notification.type}:${notification.chatKind || "GENERAL"}:${
+      notification.sourceId || notification.title
+    }`;
   }
 
   return notification.id;

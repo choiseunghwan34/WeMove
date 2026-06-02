@@ -43,16 +43,16 @@ public class DirectChatServiceImpl implements DirectChatService {
       throw new IllegalArgumentException("자기 자신에게는 1대1 대화를 보낼 수 없습니다.");
     }
 
+    Long existingRoomId = directChatDao.selectExistingRoomId(userId, targetUserId);
+    if (existingRoomId != null) {
+      return directChatDao.selectRoom(existingRoomId, userId);
+    }
+
     if (!directChatDao.canAccessDirectChat(userId, targetUserId)) {
       throw new ResponseStatusException(
               HttpStatus.FORBIDDEN,
               "같은 모임의 참가자에게만 개인 메시지를 보낼 수 있습니다."
       );
-    }
-
-    Long existingRoomId = directChatDao.selectExistingRoomId(userId, targetUserId);
-    if (existingRoomId != null) {
-      return directChatDao.selectRoom(existingRoomId, userId);
     }
 
     DirectChatRoom room = new DirectChatRoom();

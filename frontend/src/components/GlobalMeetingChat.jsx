@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createChatMessage,
   createDirectChatMessage,
+  createDirectChatRoom,
   getChatMessages,
   getChatRooms,
   getDirectChatMessages,
@@ -10,12 +11,14 @@ import {
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import UserProfileDetailModal from "./UserProfileDetailModal";
 import { getAccessToken } from "../utils/authTokenStore";
 import {
   NOTIFICATION_TYPES,
   WEMOVE_NOTIFICATION_OPEN_EVENT,
   publishNotification,
 } from "../utils/notificationEvents";
+import { WEMOVE_DIRECT_CHAT_OPEN_EVENT } from "../utils/directChatEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
 
 const formatTime = (value) => {
@@ -99,7 +102,10 @@ const sortRoomsByLatestMessage = (roomList) =>
       return timeDiff;
     }
 
-    return Number(b.meetingId || 0) - Number(a.meetingId || 0);
+    return (
+      Number(b.meetingId || b.roomId || 0) -
+      Number(a.meetingId || a.roomId || 0)
+    );
   });
 
 const PANEL_DEFAULT_WIDTH = 860;
@@ -128,9 +134,12 @@ export default function GlobalMeetingChat() {
   const listRef = useRef(null);
   const messageInputRef = useRef(null);
   const socketMapRef = useRef(new Map());
-  const activeMeetingIdRef = useRef(null);
   const openRef = useRef(false);
+  const chatTypeRef = useRef("GROUP");
+  const selectedMeetingIdRef = useRef(null);
+  const selectedDirectRoomIdRef = useRef(null);
   const roomsRef = useRef([]);
+  const directRoomsRef = useRef([]);
   const userIdRef = useRef(null);
   const latestMessageIdsRef = useRef(new Set());
   const [chatType, setChatType] = useState("GROUP");
@@ -138,6 +147,8 @@ export default function GlobalMeetingChat() {
   const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [selectedDirectRoomId, setSelectedDirectRoomId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [profileModalUser, setProfileModalUser] = useState(null);
+  const directSocketMapRef = useRef(new Map());
 
   const selectedMeetingRoom = useMemo(
     () =>
@@ -161,8 +172,24 @@ export default function GlobalMeetingChat() {
   }, [rooms]);
 
   useEffect(() => {
+    directRoomsRef.current = directRooms;
+  }, [directRooms]);
+
+  useEffect(() => {
     userIdRef.current = user?.memberId ?? null;
   }, [user?.memberId]);
+
+  useEffect(() => {
+    chatTypeRef.current = chatType;
+  }, [chatType]);
+
+  useEffect(() => {
+    selectedMeetingIdRef.current = selectedMeetingId;
+  }, [selectedMeetingId]);
+
+  useEffect(() => {
+    selectedDirectRoomIdRef.current = selectedDirectRoomId;
+  }, [selectedDirectRoomId]);
 
   const activeRoomId =
     chatType === "GROUP" ? selectedMeetingId : selectedDirectRoomId;
@@ -173,14 +200,17 @@ export default function GlobalMeetingChat() {
         return;
       }
 
-      const messageId = Number(message.messageId);
-      if (latestMessageIdsRef.current.has(messageId)) {
+      const messageKey = `meeting:${message.messageId}`;
+      if (latestMessageIdsRef.current.has(messageKey)) {
         return;
       }
 
-      latestMessageIdsRef.current.add(messageId);
+      latestMessageIdsRef.current.add(messageKey);
 
-      if (Number(message.meetingId) === Number(activeMeetingIdRef.current)) {
+      if (
+        chatTypeRef.current === "GROUP" &&
+        Number(message.meetingId) === Number(selectedMeetingIdRef.current)
+      ) {
         setMessages((current) => [...current, message]);
       }
 
@@ -204,7 +234,8 @@ export default function GlobalMeetingChat() {
         !isMine &&
         options.notify !== false &&
         (!openRef.current ||
-          Number(activeMeetingIdRef.current) !== Number(message.meetingId));
+          chatTypeRef.current !== "GROUP" ||
+          Number(selectedMeetingIdRef.current) !== Number(message.meetingId));
 
       if (shouldNotify) {
         const roomTitle =
@@ -216,6 +247,7 @@ export default function GlobalMeetingChat() {
         }: ${message.content}`;
         const notificationPayload = {
           type: NOTIFICATION_TYPES.CHAT,
+          chatKind: "MEETING",
           title: roomTitle,
           message: notificationMessage,
           sourceId: message.meetingId,
@@ -224,6 +256,76 @@ export default function GlobalMeetingChat() {
 
         toast.info(roomTitle, notificationMessage, {
           sourceId: `chat:${message.meetingId || roomTitle}`,
+          target: notificationPayload,
+        });
+        publishNotification(notificationPayload);
+      }
+    },
+    [toast],
+  );
+
+  const appendDirectMessage = useCallback(
+    (message, options = {}) => {
+      if (!message?.messageId) {
+        return;
+      }
+
+      const messageKey = `direct:${message.messageId}`;
+      if (latestMessageIdsRef.current.has(messageKey)) {
+        return;
+      }
+
+      latestMessageIdsRef.current.add(messageKey);
+
+      if (
+        chatTypeRef.current === "PRIVATE" &&
+        Number(message.roomId) === Number(selectedDirectRoomIdRef.current)
+      ) {
+        setMessages((current) => [...current, message]);
+      }
+
+      setDirectRooms((current) =>
+        sortRoomsByLatestMessage(
+          current.map((room) =>
+            Number(room.roomId) === Number(message.roomId)
+              ? {
+                  ...room,
+                  lastMessageId: message.messageId,
+                  lastMessage: message.content,
+                  lastMessageAt: message.createdAt,
+                }
+              : room,
+          ),
+        ),
+      );
+
+      const isMine = Number(message.userId) === Number(userIdRef.current);
+      const shouldNotify =
+        !isMine &&
+        options.notify !== false &&
+        (!openRef.current ||
+          chatTypeRef.current !== "PRIVATE" ||
+          Number(selectedDirectRoomIdRef.current) !== Number(message.roomId));
+
+      if (shouldNotify) {
+        const roomTitle =
+          directRoomsRef.current.find(
+            (room) => Number(room.roomId) === Number(message.roomId),
+          )?.targetNickname || "1:1 대화";
+        const notificationMessage = `${
+          message.nickname || CHAT_PARTICIPANT_FALLBACK
+        }: ${message.content}`;
+        const notificationPayload = {
+          type: NOTIFICATION_TYPES.CHAT,
+          chatKind: "DIRECT",
+          title: roomTitle,
+          message: notificationMessage,
+          sourceId: message.roomId,
+          createdAt: message.createdAt,
+        };
+
+        toast.info(roomTitle, notificationMessage, {
+          sourceId: `direct-chat:${message.roomId || roomTitle}`,
           target: notificationPayload,
         });
         publishNotification(notificationPayload);
@@ -285,7 +387,7 @@ export default function GlobalMeetingChat() {
     if (!isAuthenticated) {
       setDirectRooms([]);
       setSelectedDirectRoomId(null);
-      return;
+      return [];
     }
 
     setLoadingRooms(true);
@@ -302,17 +404,67 @@ export default function GlobalMeetingChat() {
           ? current
           : null,
       );
+      return nextRooms;
     } catch (requestError) {
       setDirectRooms([]);
       setSelectedDirectRoomId(null);
       setError(
         requestError?.response?.data?.message ||
-          "1대1 대화 목록을 불러오지 못했습니다.",
+          "1:1 대화 목록을 불러오지 못했습니다.",
       );
+      return [];
     } finally {
       setLoadingRooms(false);
     }
   }, [isAuthenticated]);
+
+  const openDirectRoomByTargetUser = useCallback(
+    async (targetUserId) => {
+
+      if (!isAuthenticated || !targetUserId) {
+        return;
+      }
+
+      setOpen(true);
+      setChatType("PRIVATE");
+      setError("");
+
+      try {
+
+        const { data } = await createDirectChatRoom(targetUserId);
+
+        const nextRooms = await loadDirectRooms();
+
+        const createdRoom = data?.roomId
+          ? data
+          : nextRooms.find(
+              (room) => Number(room.targetUserId) === Number(targetUserId),
+            );
+
+        if (!createdRoom?.roomId) {
+          throw new Error("Direct chat room response does not include roomId.");
+        }
+
+        setDirectRooms((current) =>
+          sortRoomsByLatestMessage([
+            createdRoom,
+            ...current.filter(
+              (room) => Number(room.roomId) !== Number(createdRoom.roomId),
+            ),
+          ]),
+        );
+        setSelectedDirectRoomId(createdRoom.roomId);
+      } catch (requestError) {
+
+        const message =
+          requestError?.response?.data?.message ||
+          "1:1 대화를 시작하지 못했습니다.";
+        setError(message);
+        toast.error("1:1 대화", message);
+      }
+    },
+    [isAuthenticated, loadDirectRooms, toast],
+  );
 
   useEffect(() => {
     if (loading) {
@@ -328,11 +480,6 @@ export default function GlobalMeetingChat() {
     loading,
     user?.memberId,
   ]);
-
-  useEffect(() => {
-    activeMeetingIdRef.current =
-      chatType === "GROUP" ? selectedMeetingId : selectedDirectRoomId;
-  }, [chatType, selectedDirectRoomId, selectedMeetingId]);
 
   useEffect(() => {
     openRef.current = open;
@@ -381,7 +528,9 @@ export default function GlobalMeetingChat() {
         const nextMessages = Array.isArray(data) ? data : [];
         nextMessages.forEach((message) => {
           if (message?.messageId) {
-            latestMessageIdsRef.current.add(Number(message.messageId));
+            latestMessageIdsRef.current.add(
+              `${chatType === "GROUP" ? "meeting" : "direct"}:${message.messageId}`,
+            );
           }
         });
         setMessages(nextMessages);
@@ -475,6 +624,10 @@ export default function GlobalMeetingChat() {
     }
 
     const closeOnOutsidePointerDown = (event) => {
+      if (profileModalUser) {
+        return;
+      }
+
       if (panelRef.current?.contains(event.target)) {
         return;
       }
@@ -487,7 +640,58 @@ export default function GlobalMeetingChat() {
     return () => {
       document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
     };
-  }, [open]);
+  }, [open, profileModalUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !directRooms.length) {
+      directSocketMapRef.current.forEach((socket) => socket.close());
+      directSocketMapRef.current.clear();
+      return undefined;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      return undefined;
+    }
+
+    const visibleRoomIds = new Set(
+      directRooms.map((room) => Number(room.roomId)).filter(Boolean),
+    );
+    directSocketMapRef.current.forEach((socket, roomId) => {
+      if (!visibleRoomIds.has(roomId)) {
+        socket.close();
+        directSocketMapRef.current.delete(roomId);
+      }
+    });
+    directRooms.forEach((room) => {
+      const roomId = Number(room.roomId);
+      if (!roomId || directSocketMapRef.current.has(roomId)) {
+        return;
+      }
+      const socket = new WebSocket(
+        `ws://localhost:8456/ws/direct-chat?roomId=${encodeURIComponent(
+          roomId,
+        )}&token=${encodeURIComponent(token)}`,
+      );
+
+      socket.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === "DIRECT_CHAT_MESSAGE_CREATED") {
+            appendDirectMessage(payload.message);
+          }
+        } catch {
+          // 1:1 채팅 메시지가 아니면 무시합니다.
+        }
+      };
+      socket.onclose = () => {
+        directSocketMapRef.current.delete(roomId);
+      };
+      directSocketMapRef.current.set(roomId, socket);
+    });
+
+    return undefined;
+  }, [appendDirectMessage, isAuthenticated, directRooms, user?.memberId]);
 
   useEffect(() => {
     if (!open || activeRoomId) {
@@ -529,6 +733,18 @@ export default function GlobalMeetingChat() {
         return;
       }
 
+      if (notification.chatKind === "DIRECT") {
+        setOpen(true);
+        setChatType("PRIVATE");
+        setSelectedDirectRoomId(
+          Number.isNaN(Number(notification.sourceId))
+            ? notification.sourceId
+            : Number(notification.sourceId),
+        );
+        loadDirectRooms();
+        return;
+      }
+
       const rawSourceId = String(notification.sourceId || "");
       const meetingId = rawSourceId.startsWith("chat:")
         ? rawSourceId.slice(5)
@@ -540,6 +756,7 @@ export default function GlobalMeetingChat() {
       }
 
       setOpen(true);
+      setChatType("GROUP");
       setSelectedMeetingId(
         Number.isNaN(Number(meetingId)) ? meetingId : Number(meetingId),
       );
@@ -555,7 +772,21 @@ export default function GlobalMeetingChat() {
         handleOpenNotificationTarget,
       );
     };
-  }, []);
+  }, [loadDirectRooms]);
+
+  useEffect(() => {
+    const handleDirectChatOpen = (event) => {
+      openDirectRoomByTargetUser(event.detail?.targetUserId);
+    };
+
+    window.addEventListener(WEMOVE_DIRECT_CHAT_OPEN_EVENT, handleDirectChatOpen);
+    return () => {
+      window.removeEventListener(
+        WEMOVE_DIRECT_CHAT_OPEN_EVENT,
+        handleDirectChatOpen,
+      );
+    };
+  }, [openDirectRoomByTargetUser]);
 
   if (loading || !isAuthenticated) {
     return null;
@@ -580,23 +811,8 @@ export default function GlobalMeetingChat() {
 
       if (chatType === "GROUP") {
         appendMessage(data, { notify: false });
-      } else if (data?.messageId) {
-        latestMessageIdsRef.current.add(Number(data.messageId));
-        setMessages((current) => [...current, data]);
-        setDirectRooms((current) =>
-          sortRoomsByLatestMessage(
-            current.map((room) =>
-              Number(room.roomId) === Number(activeRoomId)
-                ? {
-                    ...room,
-                    lastMessageId: data.messageId,
-                    lastMessage: data.content,
-                    lastMessageAt: data.createdAt,
-                  }
-                : room,
-            ),
-          ),
-        );
+      } else {
+        appendDirectMessage(data, { notify: false });
       }
       setMessageInput("");
     } catch (requestError) {
@@ -653,6 +869,19 @@ export default function GlobalMeetingChat() {
 
     window.addEventListener("pointermove", resizePanel);
     window.addEventListener("pointerup", stopResize);
+  };
+
+  const openMessageProfile = (message) => {
+    if (!message?.userId) {
+      return;
+    }
+
+    setProfileModalUser({
+      userId: message.userId,
+      nickname: message.nickname,
+      profileImage: message.profileImage,
+      createdAt: message.createdAt,
+    });
   };
 
   return (
@@ -793,7 +1022,9 @@ export default function GlobalMeetingChat() {
                   >
                     <strong>{room.targetNickname || "1:1 대화"}</strong>
                     <span>1:1 대화</span>
-                    <small>{room.lastMessage || "아직 메시지가 없습니다."}</small>
+                    <small>
+                      {room.lastMessage || "아직 메시지가 없습니다."}
+                    </small>
                   </button>
                 ))
               ) : (
@@ -819,7 +1050,8 @@ export default function GlobalMeetingChat() {
                 <strong>
                   {chatType === "GROUP"
                     ? selectedRoom?.title || "무브톡을 선택해주세요"
-                    : selectedRoom?.targetNickname || "1대1 대화를 선택해주세요"}
+                    : selectedRoom?.targetNickname ||
+                      "1대1 대화를 선택해주세요"}
                 </strong>
                 {selectedRoom && chatType === "GROUP" ? (
                   <span>
@@ -895,23 +1127,33 @@ export default function GlobalMeetingChat() {
                             }
                           >
                             {!isMine ? (
-                              <img
-                                src={profileImage}
-                                alt={
-                                  message.nickname
-                                    ? `${message.nickname} 프로필`
-                                    : "프로필"
-                                }
-                                className={styles.messageAvatar}
-                              />
+                              <button
+                                type="button"
+                                className={styles.messageProfileButton}
+                                onClick={() => openMessageProfile(message)}
+                              >
+                                <img
+                                  src={profileImage}
+                                  alt={
+                                    message.nickname
+                                      ? `${message.nickname} 프로필`
+                                      : "프로필"
+                                  }
+                                  className={styles.messageAvatar}
+                                />
+                              </button>
                             ) : null}
 
                             <div className={styles.messageContent}>
                               {!isMine ? (
                                 <div className={styles.messageNameLine}>
-                                  <strong className={styles.messageNickname}>
+                                  <button
+                                    type="button"
+                                    className={styles.messageNicknameButton}
+                                    onClick={() => openMessageProfile(message)}
+                                  >
                                     {message.nickname || "알 수 없음"}
-                                  </strong>
+                                  </button>
                                   {isHostMessage ? (
                                     <span className={styles.hostCrownBadge}>
                                       <svg
@@ -982,6 +1224,13 @@ export default function GlobalMeetingChat() {
           </div>
         </section>
       ) : null}
+
+      <UserProfileDetailModal
+        open={Boolean(profileModalUser)}
+        onClose={() => setProfileModalUser(null)}
+        user={profileModalUser}
+        loginUser={user}
+      />
     </>
   );
 }
