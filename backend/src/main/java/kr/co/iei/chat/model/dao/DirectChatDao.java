@@ -1,14 +1,15 @@
 package kr.co.iei.chat.model.dao;
 
-import kr.co.iei.chat.model.vo.ChatMessage;
-import kr.co.iei.chat.model.vo.ChatMessageResponse;
-import kr.co.iei.chat.model.vo.ChatRoomResponse;
-import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.session.SqlSession;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import kr.co.iei.chat.model.vo.DirectChatMessage;
+import kr.co.iei.chat.model.vo.DirectChatMessageResponse;
+import kr.co.iei.chat.model.vo.DirectChatRoom;
+import kr.co.iei.chat.model.vo.DirectChatRoomResponse;
+import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
 
 
 @Repository
@@ -24,23 +25,34 @@ public class DirectChatDao {
         
         Integer count =
                 sqlSession.selectOne(
-                        "chat.canAccessDirectChat", Map.of("userId1", userId1, "userId2", userId2));
+                        "directChat.canAccessDirectChat", Map.of("userId1", userId1, "userId2", userId2));
         return count != null && count > 0;
     }
 
-    public List<ChatRoomResponse> selectChatRooms(Long userId) {
-        return sqlSession.selectList("chat.selectChatRooms", userId);
+    public List<DirectChatRoomResponse> selectRooms(Long userId) {
+        return sqlSession.selectList("directChat.selectRooms", userId);
+    }
+    public DirectChatRoomResponse selectRoom(Long roomId, Long userId){
+        return sqlSession.selectOne("directChat.selectRoom", Map.of("roomId", roomId, "userId", userId));
     }
 
-    public List<ChatMessageResponse> selectMessages(Long meetingId, int limit) {
-        return sqlSession.selectList("chat.selectMessages", Map.of("meetingId", meetingId, "limit", limit));
+    public Long selectExistingRoomId(Long userId1, Long userId2) {
+        return sqlSession.selectOne("directChat.selectExistingRoomId", Map.of("userId1", userId1, "userId2", userId2));
+    }
+    public int insertRoom(DirectChatRoom room) {
+        return sqlSession.insert("directChat.insertRoom", room);
+    }
+    //public int
+
+    public List<DirectChatMessageResponse> selectMessages(Long roomId, int limit) {
+        return sqlSession.selectList("directChat.selectMessages", Map.of("roomId", roomId, "limit", limit));
     }
 
-    public int insertMessage(ChatMessage message) {
-        return sqlSession.insert("chat.insertMessage", message);
+    public int insertMessage(DirectChatMessage message) {
+        return sqlSession.insert("directChat.insertMessage", message);
     }
 
-    public ChatMessageResponse selectMessage(Long messageId) {
-        return sqlSession.selectOne("chat.selectMessage", messageId);
+    public DirectChatMessageResponse selectMessage(Long messageId) {
+        return sqlSession.selectOne("directChat.selectMessage", messageId);
     }
 }
