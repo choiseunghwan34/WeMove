@@ -813,7 +813,6 @@ export default function MeetingListPage() {
             <option value="CLOSED">모집완료</option>
             <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
-            <option value="CANCELLED">취소됨</option>
           </select>
 
           <input
