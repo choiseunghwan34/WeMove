@@ -1443,3 +1443,123 @@
     0 8px 18px rgba(37, 99, 235, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
+
+/* 2026-06-02 home sidebar rank card refresh */
+.dashboardRankList {
+  gap: 10px !important;
+}
+
+.dashboardRankItem {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 14px !important;
+  margin-bottom: 0 !important;
+  border: 1px solid rgba(37, 99, 235, 0.1) !important;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.1), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%) !important;
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+.dashboardRankItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.18) !important;
+  box-shadow:
+    0 12px 24px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
+}
+
+.dashboardRankItem b {
+  width: 28px !important;
+  height: 28px !important;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.dashboardRankItem > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.dashboardRankItem strong {
+  color: #10233f !important;
+  font-size: 0.95rem !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardRankItem span {
+  color: #6b7280 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+}
+
+.dashboardRankItem:nth-child(1) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.16), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #eef4ff 100%) !important;
+}
+
+.dashboardRankItem:nth-child(2) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.12), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #eefaf7 100%) !important;
+}
+
+.dashboardRankItem:nth-child(3) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.12), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #fff7ea 100%) !important;
+}
+
+.dashboardRankItem:nth-child(n + 4) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(148, 163, 184, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+}
+
+.dashboardScheduleList {
+  gap: 10px !important;
+}
+
+.dashboardScheduleItem {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  min-height: 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid #eef0f3 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.dashboardScheduleItem span {
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+}
+
+.dashboardScheduleItem strong {
+  font-size: 0.98rem !important;
+  font-weight: 800 !important;
+  color: #111827 !important;
+}
+
+.dashboardScheduleItem p {
+  margin: 0 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.4 !important;
+  color: #475569 !important;
+}

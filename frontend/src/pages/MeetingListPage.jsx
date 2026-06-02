@@ -130,11 +130,12 @@ export default function MeetingListPage() {
   const keywordParam = urlSearchParams.get("keyword") ?? "";
   const regionLabelParam = urlSearchParams.get("regionLabel") ?? "";
   const sportNameParam = urlSearchParams.get("sportName") ?? "";
+  const meetingDateParam = urlSearchParams.get("meetingDate") ?? "";
   const isGlobalSearch =
     urlSearchParams.get("global") === "1" ||
     Boolean(keywordParam || sportNameParam || regionLabelParam);
 
-  const [meetingDate, setMeetingDate] = useState("");
+  const [meetingDate, setMeetingDate] = useState(meetingDateParam);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
@@ -286,6 +287,11 @@ export default function MeetingListPage() {
   }, [keywordParam, regionLabelParam]);
 
   useEffect(() => {
+    setMeetingDate(meetingDateParam);
+    setCurrentPage(1);
+  }, [meetingDateParam]);
+
+  useEffect(() => {
     if (!regionOptions.length) {
       return;
     }
@@ -360,9 +366,9 @@ export default function MeetingListPage() {
 
   const displayedRegionLabel = selectedRegion
     ? formatRegionLabel(selectedRegion)
-    : isAuthenticated && memberRegion && !isExplicitAll
-      ? `${memberRegion.sido} ${memberRegion.sigungu}`
-      : ALL_REGION;
+    : (isGlobalSearch || isExplicitAll || !isAuthenticated || !memberRegion)
+      ? ALL_REGION
+      : `${memberRegion.sido} ${memberRegion.sigungu}`;
 
   const displayedSportLabel = selectedSport?.name ?? ALL_SPORT;
 

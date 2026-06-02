@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import { getComments } from "../api/commentApi";
 import { getMainMeetings, getMeetings } from "../api/meetingApi";
+import { getMyActivity } from "../api/memberApi";
 import { getParticipants } from "../api/participantApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
@@ -119,12 +120,79 @@ const normalizeSport = (sport) => ({
   isActive: sport.isActive ?? true,
 });
 
+const normalizeActivityMeeting = (meeting) => ({
+  ...meeting,
+  id: meeting.meetingId ?? meeting.id,
+  title: meeting.title ?? "-",
+  sport: meeting.sportName ?? meeting.sport ?? "-",
+  region: meeting.regionName ?? meeting.region ?? "-",
+  hostName: meeting.meetingHostName ?? meeting.hostNickname ?? meeting.host ?? "",
+  meetingDate: meeting.meetingDate ?? null,
+  startTime: meeting.startTime ?? "",
+  status: meeting.status ?? "RECRUITING",
+});
+
+const buildRelativeText = (dateValue) => {
+  if (!dateValue) {
+    return "최근";
+  }
+
+  const target = new Date(dateValue);
+  if (Number.isNaN(target.getTime())) {
+    return String(dateValue).slice(0, 10);
+  }
+
+  const today = new Date();
+  const diffMs =
+    target.setHours(0, 0, 0, 0) - new Date(today.setHours(0, 0, 0, 0));
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "오늘";
+  }
+
+  if (diffDays === 1) {
+    return "내일";
+  }
+
+  if (diffDays === -1) {
+    return "어제";
+  }
+
+  if (diffDays > 1) {
+    return `${diffDays}일 후`;
+  }
+
+  return `${Math.abs(diffDays)}일 전`;
+};
+
+const formatScheduleText = (meeting) => {
+  if (!meeting?.meetingDate) {
+    return "-";
+  }
+
+  const date = new Date(`${meeting.meetingDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return String(meeting.meetingDate).slice(5, 10).replace("-", ".");
+  }
+
+  const dayLabel = DAY_LABELS[date.getDay()] ?? "";
+  const timeText = String(meeting.startTime ?? "").slice(0, 5) || "--:--";
+  return `${date.getMonth() + 1}.${date.getDate()}(${dayLabel}) ${timeText}`;
+};
+
 export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [meetings, setMeetings] = useState([]);
+  const [activityData, setActivityData] = useState({
+    hostedMeetings: [],
+    approvedMeetings: [],
+    pendingMeetings: [],
+    completedMeetings: [],
+  });
   const [regionOptions, setRegionOptions] = useState([]);
   const [sportOptions, setSportOptions] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState(null);
@@ -169,6 +237,49 @@ export default function HomePage() {
     ? meetings.filter((meeting) => meeting.status === "RECRUITING")
     : [];
   const featuredMeetings = recruitingMeetings.slice(0, 10);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 6);
+  const scheduleItems = [...activityData.approvedMeetings]
+    .filter((meeting) => {
+      if (!meeting?.meetingDate) {
+        return false;
+      }
+
+      const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
+      if (Number.isNaN(meetingDay.getTime())) {
+        return false;
+      }
+
+      return meetingDay >= today && meetingDay <= nextWeek;
+    })
+    .sort((left, right) => {
+      const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
+      const rightDate = `${right.meetingDate ?? ""} ${right.startTime ?? ""}`;
+      return leftDate.localeCompare(rightDate);
+    })
+    .slice(0, 4);
+  const recentActivities = [
+    ...activityData.hostedMeetings.slice(0, 3).map((meeting) => ({
+      key: `host-${meeting.id}`,
+      user: meeting.hostName || "내가",
+      detail: `${meeting.title} 모임을 만들었어요.`,
+      time: buildRelativeText(meeting.createdAt || meeting.meetingDate),
+    })),
+    ...activityData.approvedMeetings.slice(0, 2).map((meeting) => ({
+      key: `approved-${meeting.id}`,
+      user: meeting.hostName || "참여 예정",
+      detail: `${meeting.title} 참여가 확정됐어요.`,
+      time: buildRelativeText(meeting.meetingDate),
+    })),
+    ...activityData.pendingMeetings.slice(0, 2).map((meeting) => ({
+      key: `pending-${meeting.id}`,
+      user: meeting.hostName || "참여 대기",
+      detail: `${meeting.title} 승인 결과를 기다리는 중이에요.`,
+      time: buildRelativeText(meeting.meetingDate),
+    })),
+  ].slice(0, 4);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -220,6 +331,62 @@ export default function HomePage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.memberId) {
+      setActivityData({
+        hostedMeetings: [],
+        approvedMeetings: [],
+        pendingMeetings: [],
+        completedMeetings: [],
+      });
+      return undefined;
+    }
+
+    let active = true;
+
+    const fetchActivity = async () => {
+      try {
+        const response = await getMyActivity(user.memberId);
+        const payload = response.data ?? {};
+
+        if (!active) {
+          return;
+        }
+
+        setActivityData({
+          hostedMeetings: Array.isArray(payload.hostedMeetings)
+            ? payload.hostedMeetings.map(normalizeActivityMeeting)
+            : [],
+          approvedMeetings: Array.isArray(payload.approvedMeetings)
+            ? payload.approvedMeetings.map(normalizeActivityMeeting)
+            : [],
+          pendingMeetings: Array.isArray(payload.pendingMeetings)
+            ? payload.pendingMeetings.map(normalizeActivityMeeting)
+            : [],
+          completedMeetings: Array.isArray(payload.completedMeetings)
+            ? payload.completedMeetings.map(normalizeActivityMeeting)
+            : [],
+        });
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setActivityData({
+            hostedMeetings: [],
+            approvedMeetings: [],
+            pendingMeetings: [],
+            completedMeetings: [],
+          });
+        }
+      }
+    };
+
+    fetchActivity();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.memberId]);
 
   useEffect(() => {
     let active = true;
@@ -454,21 +621,29 @@ export default function HomePage() {
           <Link to="/meetings">전체 일정 보기</Link>
         </div>
         <div className={styles.dashboardScheduleList}>
-          {[
-            { day: "오늘", time: "20:00", title: "야당역 러닝 모임" },
-            { day: "내일", time: "07:00", title: "운정 헬스 모임" },
-            { day: "토", time: "18:00", title: "배드민턴 정기 모임" },
-            { day: "일", time: "18:00", title: "풋살 매치" },
-          ].map((item) => (
-            <div
-              key={`${item.day}-${item.time}`}
-              className={styles.dashboardScheduleItem}
-            >
-              <span>{item.day}</span>
-              <strong>{item.time}</strong>
-              <p>{item.title}</p>
+          {scheduleItems.length ? (
+            scheduleItems.map((meeting) => {
+              const scheduleDate = String(meeting.meetingDate ?? "").slice(5, 10).replace("-", ".");
+              const scheduleTime = String(meeting.startTime ?? "").slice(0, 5) || "--:--";
+
+              return (
+                <div
+                  key={meeting.id}
+                  className={styles.dashboardScheduleItem}
+                >
+                  <span>{scheduleDate || "이번주"}</span>
+                  <strong>{scheduleTime}</strong>
+                  <p>{meeting.title}</p>
+                </div>
+              );
+            })
+          ) : (
+            <div className={styles.dashboardScheduleItem}>
+              <span>이번주</span>
+              <strong>-</strong>
+              <p>참여 중인 일정이 없어요.</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -477,22 +652,30 @@ export default function HomePage() {
           <h3>최근 활동</h3>
         </div>
         <div className={styles.dashboardActivityList}>
-          {[
-            { user: "러너지니님", detail: "댓글을 남겼어요.", time: "5분 전" },
-            { user: "헬린이탈출님", detail: "모임을 생성했어요.", time: "15분 전" },
-          ].map((activity) => (
-            <div
-              key={activity.user}
-              className={styles.dashboardActivityItem}
-            >
-              <i>{activity.user.slice(0, 1)}</i>
-              <div>
-                <strong>{activity.user}</strong>
-                <p>{activity.detail}</p>
+          {recentActivities.length ? (
+            recentActivities.map((activity) => (
+              <div
+                key={activity.key}
+                className={styles.dashboardActivityItem}
+              >
+                <i>{activity.user.slice(0, 1)}</i>
+                <div>
+                  <strong>{activity.user}</strong>
+                  <p>{activity.detail}</p>
+                </div>
+                <span>{activity.time}</span>
               </div>
-              <span>{activity.time}</span>
+            ))
+          ) : (
+            <div className={styles.dashboardActivityItem}>
+              <i>i</i>
+              <div>
+                <strong>최근 활동이 없어요</strong>
+                <p>모임에 참여하거나 만들면 이곳에 표시됩니다.</p>
+              </div>
+              <span>-</span>
             </div>
-          ))}
+          )}
         </div>
       </section>
     </>

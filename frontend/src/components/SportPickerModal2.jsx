@@ -1,109 +1,175 @@
-
 import { useEffect, useMemo, useState } from "react";
 import AppModal from "./AppModal";
-import styles from "../styles/MeetingPickerModal.module.css";
+import styles from "../styles/SportPickerModal.module.css";
+
+const ALL_CATEGORY = "전체 카테고리";
+
+const normalizeText = (value = "") => String(value ?? "").trim();
 
 export default function SportPickerModal({
-                                           open,
-                                           sports,
-                                           selectedSportId,
-                                           onApply,
-                                           onClose,
-                                         }) {
-  const [keyword, setKeyword] = useState("");
+  open,
+  sports = [],
+  selectedSportId,
+  onApply,
+  onClose,
+}) {
+  const [draftCategory, setDraftCategory] = useState(ALL_CATEGORY);
   const [draftSportId, setDraftSportId] = useState(selectedSportId ?? null);
 
-  useEffect(() => {
-    if (open) {
-      setKeyword("");
-      setDraftSportId(selectedSportId ?? null);
-    }
-  }, [open, selectedSportId]);
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(
+      sports
+        .map((sport) => normalizeText(sport.category))
+        .filter(Boolean),
+    );
 
-  const filteredSports = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase();
+    return Array.from(uniqueCategories).sort((left, right) =>
+      left.localeCompare(right, "ko"),
+    );
+  }, [sports]);
 
-    if (!normalizedKeyword) {
+  const selectedSport = useMemo(
+    () => sports.find((sport) => sport.sportId === draftSportId) ?? null,
+    [draftSportId, sports],
+  );
+
+  const visibleSports = useMemo(() => {
+    if (draftCategory === ALL_CATEGORY) {
       return sports;
     }
 
-    return sports.filter((sport) =>
-        [sport.name, sport.category]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase()
-            .includes(normalizedKeyword),
+    return sports.filter(
+      (sport) => normalizeText(sport.category) === draftCategory,
     );
-  }, [sports, keyword]);
+  }, [draftCategory, sports]);
 
-  const selectedSport =
-      sports.find((sport) => sport.sportId === draftSportId) ?? null;
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const selected =
+      sports.find((sport) => sport.sportId === selectedSportId) ?? null;
+    const initialCategory =
+      normalizeText(selected?.category) ||
+      normalizeText(sports[0]?.category) ||
+      ALL_CATEGORY;
+
+    setDraftSportId(selectedSportId ?? null);
+    setDraftCategory(initialCategory);
+  }, [open, selectedSportId, sports]);
+
+  useEffect(() => {
+    if (!categories.length) {
+      setDraftCategory(ALL_CATEGORY);
+      return;
+    }
+
+    if (
+      draftCategory !== ALL_CATEGORY &&
+      !categories.includes(draftCategory)
+    ) {
+      setDraftCategory(categories[0]);
+    }
+  }, [categories, draftCategory]);
+
+  const previewText = selectedSport
+    ? `${selectedSport.name}${selectedSport.category ? ` · ${selectedSport.category}` : ""}`
+    : "전체 운동";
 
   const applySelection = () => {
     onApply?.(selectedSport);
   };
 
+  const clearSelection = () => {
+    setDraftSportId(null);
+    setDraftCategory(categories[0] ?? ALL_CATEGORY);
+  };
+
   return (
-      <AppModal
-          open={open}
-          eyebrow="운동 조회"
-          title="운동 종목 선택"
-          description="운동 이름이나 카테고리로 검색한 뒤 조회에 사용할 종목을 선택하세요."
-          confirmText="적용"
-          cancelText="닫기"
-          onConfirm={applySelection}
-          onClose={onClose}
-      >
-        <div className={styles.previewBar}>
-          <span>현재 선택</span>
-          <strong>
-            {selectedSport
-                ? `${selectedSport.name} · ${selectedSport.category || "기타"}`
-                : "전체 종목"}
-          </strong>
-          <button
+    <AppModal
+      open={open}
+      eyebrow="운동 조회"
+      title="운동 카테고리 선택"
+      description="카테고리별로 먼저 좁혀서 고르면 더 빠르게 원하는 운동을 찾을 수 있어요."
+      confirmText="적용"
+      cancelText="닫기"
+      onConfirm={applySelection}
+      onClose={onClose}
+    >
+      <div className={styles.previewBar}>
+        <span className={styles.previewKicker}>현재 선택</span>
+        <strong>{previewText}</strong>
+        <button
+          type="button"
+          className={styles.textButton}
+          onClick={clearSelection}
+        >
+          전체 운동으로 보기
+        </button>
+      </div>
+
+      <div className={styles.browser}>
+        <section className={styles.column}>
+          <header className={styles.columnHead}>카테고리</header>
+          <div className={styles.list}>
+            <button
               type="button"
-              className={styles.textButton}
-              onClick={() => setDraftSportId(null)}
-          >
-            전체 종목으로 보기
-          </button>
-        </div>
+              className={`${styles.item} ${
+                draftCategory === ALL_CATEGORY ? styles.itemCurrent : ""
+              }`.trim()}
+              onClick={() => {
+                setDraftCategory(ALL_CATEGORY);
+                setDraftSportId(null);
+              }}
+            >
+              전체 카테고리
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`${styles.item} ${
+                  category === draftCategory ? styles.itemCurrent : ""
+                }`.trim()}
+                onClick={() => {
+                  setDraftCategory(category);
+                  setDraftSportId(null);
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </section>
 
-        <label className={styles.searchField}>
-          <span>종목 검색</span>
-          <input
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-              placeholder="운동명 또는 카테고리 검색"
-          />
-        </label>
-
-        <div className={styles.browser} style={{ gridTemplateColumns: "1fr" }}>
-          <section className={styles.column}>
-            <header className={styles.columnHead}>운동 종목 목록</header>
-            <div className={styles.sportList}>
-              {filteredSports.map((sport) => (
+        <section className={styles.column}>
+          <header className={styles.columnHead}>운동</header>
+          {visibleSports.length ? (
+            <div className={styles.list}>
+              {visibleSports.map((sport) => (
                 <button
                   key={sport.sportId}
                   type="button"
-                  className={`${styles.sportCard} ${
-                    sport.sportId === draftSportId
-                      ? styles.sportCardCurrent
-                      : ""
+                  className={`${styles.item} ${
+                    sport.sportId === draftSportId ? styles.itemCurrent : ""
                   }`.trim()}
-                  onClick={() => setDraftSportId(sport.sportId)}
+                  onClick={() => {
+                    setDraftSportId(sport.sportId);
+                    setDraftCategory(normalizeText(sport.category) || ALL_CATEGORY);
+                  }}
                 >
-                  <strong>{sport.name}</strong>
-                  <span>{sport.category || "기타"}</span>
+                  {sport.name}
                 </button>
               ))}
-              {filteredSports.length === 0 ? (
-                <div className={styles.emptyState}>검색 결과가 없습니다.</div>
-              ) : null}
             </div>
-          </section>
-        </div>
-      </AppModal>
+          ) : (
+            <div className={styles.emptyState}>
+              카테고리를 먼저 선택하면 운동 목록이 보여요.
+            </div>
+          )}
+        </section>
+      </div>
+    </AppModal>
   );
 }
