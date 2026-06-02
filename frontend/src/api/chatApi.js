@@ -7,3 +7,14 @@ export const getChatMessages = (meetingId) =>
 
 export const createChatMessage = (meetingId, content) =>
   api.post(`/meetings/${meetingId}/chat/messages`, { content });
+
+export const getDirectChatRooms = () => api.get("/direct-chat/rooms");
+
+export const createDirectChatRoom = (targetUserId) =>
+  api.post("/direct-chat/rooms", { targetUserId });
+
+export const getDirectChatMessages = (roomId) =>
+  api.get(`/direct-chat/rooms/${roomId}/messages`);
+
+export const createDirectChatMessage = (roomId, content) =>
+  api.post(`/direct-chat/rooms/${roomId}/messages`, { content });

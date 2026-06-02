@@ -86,7 +86,7 @@ public class DirectChatServiceImpl implements DirectChatService {
 
     DirectChatMessage message = new DirectChatMessage();
     message.setRoomId(roomId);
-    message.setSenderId(userId);
+    message.setUserId(userId);
     message.setContent(content);
     message.setMessageType("TEXT");
 

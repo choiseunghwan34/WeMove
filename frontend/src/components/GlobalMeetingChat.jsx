@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createChatMessage,
+  createDirectChatMessage,
   getChatMessages,
   getChatRooms,
+  getDirectChatMessages,
+  getDirectChatRooms,
 } from "../api/chatApi";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
@@ -114,8 +117,6 @@ export default function GlobalMeetingChat() {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [rooms, setRooms] = useState([]);
-  const [selectedMeetingId, setSelectedMeetingId] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -133,14 +134,27 @@ export default function GlobalMeetingChat() {
   const userIdRef = useRef(null);
   const latestMessageIdsRef = useRef(new Set());
   const [chatType, setChatType] = useState("GROUP");
+  const [directRooms, setDirectRooms] = useState([]);
+  const [selectedMeetingId, setSelectedMeetingId] = useState(null);
+  const [selectedDirectRoomId, setSelectedDirectRoomId] = useState(null);
+  const [messages, setMessages] = useState([]);
 
-  const selectedRoom = useMemo(
+  const selectedMeetingRoom = useMemo(
     () =>
       rooms.find(
         (room) => Number(room.meetingId) === Number(selectedMeetingId),
       ) ?? null,
     [rooms, selectedMeetingId],
   );
+  const selectedDirectRoom = useMemo(
+    () =>
+      directRooms.find(
+        (room) => Number(room.roomId) === Number(selectedDirectRoomId),
+      ) ?? null,
+    [directRooms, selectedDirectRoomId],
+  );
+  const selectedRoom =
+    chatType === "GROUP" ? selectedMeetingRoom : selectedDirectRoom;
 
   useEffect(() => {
     roomsRef.current = rooms;
@@ -149,6 +163,9 @@ export default function GlobalMeetingChat() {
   useEffect(() => {
     userIdRef.current = user?.memberId ?? null;
   }, [user?.memberId]);
+
+  const activeRoomId =
+    chatType === "GROUP" ? selectedMeetingId : selectedDirectRoomId;
 
   const appendMessage = useCallback(
     (message, options = {}) => {
@@ -231,7 +248,7 @@ export default function GlobalMeetingChat() {
     publishNotification(notificationPayload);
   }, [toast]);
 
-  const loadRooms = useCallback(async () => {
+  const loadMeetingRooms = useCallback(async () => {
     if (!isAuthenticated) {
       setRooms([]);
       setSelectedMeetingId(null);
@@ -264,17 +281,58 @@ export default function GlobalMeetingChat() {
     }
   }, [isAuthenticated]);
 
+  const loadDirectRooms = useCallback(async () => {
+    if (!isAuthenticated) {
+      setDirectRooms([]);
+      setSelectedDirectRoomId(null);
+      return;
+    }
+
+    setLoadingRooms(true);
+    setError("");
+
+    try {
+      const { data } = await getDirectChatRooms();
+      const nextRooms = sortRoomsByLatestMessage(
+        Array.isArray(data) ? data : [],
+      );
+      setDirectRooms(nextRooms);
+      setSelectedDirectRoomId((current) =>
+        nextRooms.some((room) => Number(room.roomId) === Number(current))
+          ? current
+          : null,
+      );
+    } catch (requestError) {
+      setDirectRooms([]);
+      setSelectedDirectRoomId(null);
+      setError(
+        requestError?.response?.data?.message ||
+          "1대1 대화 목록을 불러오지 못했습니다.",
+      );
+    } finally {
+      setLoadingRooms(false);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (loading) {
       return;
     }
 
-    loadRooms();
-  }, [isAuthenticated, loadRooms, loading, user?.memberId]);
+    loadMeetingRooms();
+    loadDirectRooms();
+  }, [
+    isAuthenticated,
+    loadMeetingRooms,
+    loadDirectRooms,
+    loading,
+    user?.memberId,
+  ]);
 
   useEffect(() => {
-    activeMeetingIdRef.current = selectedMeetingId;
-  }, [selectedMeetingId]);
+    activeMeetingIdRef.current =
+      chatType === "GROUP" ? selectedMeetingId : selectedDirectRoomId;
+  }, [chatType, selectedDirectRoomId, selectedMeetingId]);
 
   useEffect(() => {
     openRef.current = open;
@@ -299,7 +357,7 @@ export default function GlobalMeetingChat() {
   }, [open]);
 
   useEffect(() => {
-    if (!selectedMeetingId || !open) {
+    if (!activeRoomId || !open) {
       setMessages([]);
       return;
     }
@@ -309,7 +367,12 @@ export default function GlobalMeetingChat() {
     setError("");
     latestMessageIdsRef.current.clear();
 
-    getChatMessages(selectedMeetingId)
+    const messageRequest =
+      chatType === "GROUP"
+        ? getChatMessages(activeRoomId)
+        : getDirectChatMessages(activeRoomId);
+
+    messageRequest
       .then(({ data }) => {
         if (!active) {
           return;
@@ -341,7 +404,7 @@ export default function GlobalMeetingChat() {
     return () => {
       active = false;
     };
-  }, [open, selectedMeetingId]);
+  }, [activeRoomId, chatType, open]);
 
   useEffect(() => {
     if (!isAuthenticated || !rooms.length) {
@@ -427,7 +490,7 @@ export default function GlobalMeetingChat() {
   }, [open]);
 
   useEffect(() => {
-    if (!open || selectedMeetingId) {
+    if (!open || activeRoomId) {
       return undefined;
     }
 
@@ -457,7 +520,7 @@ export default function GlobalMeetingChat() {
     return () => {
       window.removeEventListener("keydown", handleNotificationTestCommand);
     };
-  }, [open, publishTestNotification, selectedMeetingId]);
+  }, [activeRoomId, open, publishTestNotification]);
 
   useEffect(() => {
     const handleOpenNotificationTarget = (event) => {
@@ -502,7 +565,7 @@ export default function GlobalMeetingChat() {
     event.preventDefault();
 
     const content = messageInput.trim();
-    if (!selectedMeetingId || !content || sending) {
+    if (!activeRoomId || !content || sending) {
       return;
     }
 
@@ -510,8 +573,31 @@ export default function GlobalMeetingChat() {
     setError("");
 
     try {
-      const { data } = await createChatMessage(selectedMeetingId, content);
-      appendMessage(data, { notify: false });
+      const { data } =
+        chatType === "GROUP"
+          ? await createChatMessage(activeRoomId, content)
+          : await createDirectChatMessage(activeRoomId, content);
+
+      if (chatType === "GROUP") {
+        appendMessage(data, { notify: false });
+      } else if (data?.messageId) {
+        latestMessageIdsRef.current.add(Number(data.messageId));
+        setMessages((current) => [...current, data]);
+        setDirectRooms((current) =>
+          sortRoomsByLatestMessage(
+            current.map((room) =>
+              Number(room.roomId) === Number(activeRoomId)
+                ? {
+                    ...room,
+                    lastMessageId: data.messageId,
+                    lastMessage: data.content,
+                    lastMessageAt: data.createdAt,
+                  }
+                : room,
+            ),
+          ),
+        );
+      }
       setMessageInput("");
     } catch (requestError) {
       setError(
@@ -578,7 +664,8 @@ export default function GlobalMeetingChat() {
           aria-label="무브톡 열기"
           onClick={() => {
             setOpen(true);
-            loadRooms();
+            loadMeetingRooms();
+            loadDirectRooms();
           }}
         >
           <span aria-hidden="true" className={styles.floatingIcon}>
@@ -652,7 +739,10 @@ export default function GlobalMeetingChat() {
                 </div>
                 <div
                   className={chatType === "PRIVATE" ? styles.active : ""}
-                  onClick={() => setChatType("PRIVATE")}
+                  onClick={() => {
+                    setChatType("PRIVATE");
+                    loadDirectRooms();
+                  }}
                 >
                   1대1 대화
                 </div>
@@ -689,6 +779,23 @@ export default function GlobalMeetingChat() {
                 ) : (
                   <p>참여 가능한 무브톡이 없습니다.</p>
                 )
+              ) : directRooms.length ? (
+                directRooms.map((room) => (
+                  <button
+                    key={room.roomId}
+                    type="button"
+                    className={
+                      Number(room.roomId) === Number(selectedDirectRoomId)
+                        ? styles.roomActive
+                        : styles.room
+                    }
+                    onClick={() => setSelectedDirectRoomId(room.roomId)}
+                  >
+                    <strong>{room.targetNickname || "1:1 대화"}</strong>
+                    <span>1:1 대화</span>
+                    <small>{room.lastMessage || "아직 메시지가 없습니다."}</small>
+                  </button>
+                ))
               ) : (
                 <div className={styles.emptyState}>
                   <p>아직 대화 중인 친구가 없습니다.</p>
@@ -710,9 +817,11 @@ export default function GlobalMeetingChat() {
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
                 <strong>
-                  {selectedRoom?.title || "무브톡을 선택해주세요"}
+                  {chatType === "GROUP"
+                    ? selectedRoom?.title || "무브톡을 선택해주세요"
+                    : selectedRoom?.targetNickname || "1대1 대화를 선택해주세요"}
                 </strong>
-                {selectedRoom ? (
+                {selectedRoom && chatType === "GROUP" ? (
                   <span>
                     {[
                       selectedRoom.sportName,
@@ -726,13 +835,15 @@ export default function GlobalMeetingChat() {
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
+                ) : selectedRoom ? (
+                  <span>1:1 대화</span>
                 ) : (
-                  <span>왼쪽 목록에서 대화할 모임을 선택해주세요.</span>
+                  <span>왼쪽 목록에서 대화할 방을 선택해주세요.</span>
                 )}
               </div>
 
               <div className={styles.messageList} ref={listRef}>
-                {!selectedMeetingId ? (
+                {!activeRoomId ? (
                   <p className={styles.state}>
                     무브톡 방을 선택하면 대화 내역을 볼 수 있습니다.
                   </p>
@@ -744,12 +855,13 @@ export default function GlobalMeetingChat() {
                       Number(message.userId) === Number(user?.memberId);
                     const isSystem = message.messageType === "SYSTEM";
                     const isHostMessage =
-                      message.host ||
-                      (selectedRoom?.hostUserId &&
-                        Number(message.userId) ===
-                          Number(selectedRoom.hostUserId)) ||
-                      (selectedRoom?.hostNickname &&
-                        message.nickname === selectedRoom.hostNickname);
+                      chatType === "GROUP" &&
+                      (message.host ||
+                        (selectedRoom?.hostUserId &&
+                          Number(message.userId) ===
+                            Number(selectedRoom.hostUserId)) ||
+                        (selectedRoom?.hostNickname &&
+                          message.nickname === selectedRoom.hostNickname));
                     const previousMessage = messages[index - 1];
                     const shouldShowDate =
                       index === 0 ||
@@ -860,9 +972,9 @@ export default function GlobalMeetingChat() {
                   onChange={(event) => setMessageInput(event.target.value)}
                   placeholder="메시지 입력"
                   maxLength={1000}
-                  disabled={!selectedMeetingId || sending}
+                  disabled={!activeRoomId || sending}
                 />
-                <button type="submit" disabled={!selectedMeetingId || sending}>
+                <button type="submit" disabled={!activeRoomId || sending}>
                   전송
                 </button>
               </form>

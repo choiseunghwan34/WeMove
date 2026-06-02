@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class DirectChatRoomResponse {
   private Long roomId;
-  private String content;
   private Long targetUserId;
   private String targetNickname;
   private String targetProfileImage;

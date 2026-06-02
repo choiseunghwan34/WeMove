@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class ChatMessageEvent {
   private String type;
-  private ChatMessageResponse message;
+  private Object message;
 }
