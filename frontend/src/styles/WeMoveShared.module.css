@@ -2016,6 +2016,9 @@
   border-radius: 18px;
   background: #fbfdff;
 }
+.dashboardSummaryGrid article > div {
+  min-width: 0;
+}
 .dashboardSummaryGrid i,
 .dashboardCategoryItem i {
   width: 40px;
@@ -2030,12 +2033,13 @@
   color: #8a9aab;
   font-size: 12px;
   font-weight: 800;
-  white-space: nowrap;
+  word-break: keep-all;
 }
 .dashboardSummaryGrid strong {
   display: block;
   margin-top: 4px;
-  font-size: 16px;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
 }
 .dashboardCategoryStrip {
   padding: 14px 18px;
@@ -2264,9 +2268,15 @@
 }
 .dashboardScheduleItem {
   display: grid;
-  grid-template-columns: 42px 64px minmax(0, 1fr);
+  grid-template-columns: 72px 64px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.dashboardScheduleItem:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 .dashboardScheduleItem span {
   color: #61758d;
@@ -2278,6 +2288,10 @@
 .dashboardScheduleItem p {
   margin: 0;
   color: #61758d;
+}
+.dashboardActivityList {
+  display: grid;
+  gap: 10px;
 }
 .dashboardActivityItem {
   display: grid;
@@ -2483,7 +2497,7 @@
 }
 .dashboardSimpleList {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 .dashboardSimpleList div {
   display: flex;
@@ -3745,7 +3759,8 @@
 .dashboardCompactBody > div,
 .listCard,
 .listCardBody,
-.listCardContent {
+.listCardContent,
+.dashboardSummaryGrid article > div {
   min-width: 0;
 }
 
@@ -3767,7 +3782,8 @@
 .listCard h3,
 .listCard p,
 .listMeta span,
-.host span {
+.host span,
+.dashboardSummaryGrid span {
   overflow-wrap: anywhere;
   word-break: keep-all;
 }
@@ -4226,7 +4242,7 @@
 .myList aside a,
 .tableHead button,
 .tableCard td button {
-  border-color: rgba(15, 23, 42, 0.12);
+  border-color: rgba(18, 32, 59, 0.12);
   background: #fff;
   color: #344054;
 }
@@ -4624,7 +4640,7 @@
 .dashboardHeroFilters label {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
+  background: #fff;
 }
 
 .dashboardCategoryStrip {
@@ -6086,9 +6102,6 @@
 .dashboardMain::after {
   display: none !important;
   content: none !important;
-  background: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
 }
 
 .dashboardHeader,
@@ -6114,9 +6127,6 @@
 .dashboardMeetingCard::after {
   display: none !important;
   content: none !important;
-  background: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
 }
 
 .dashboardCategoryItem,
@@ -6163,9 +6173,6 @@
 .dashboardMain::after {
   display: none !important;
   content: none !important;
-  background: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
 }
 
 .dashboardHeader,
@@ -6195,9 +6202,6 @@
 .dashboardMeetingCard::after {
   display: none !important;
   content: none !important;
-  background: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
 }
 
 .dashboardCategoryItem,
@@ -6783,5 +6787,13 @@
 }
 
 .dashboardSummaryGrid span {
-  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.dashboardSummaryGrid article > div {
+  min-width: 0;
+}
+
+.dashboardSummaryGrid strong {
+  font-size: 1.15rem !important;
 }
