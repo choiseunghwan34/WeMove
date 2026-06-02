@@ -1,28 +1,26 @@
-import {useEffect, useMemo, useRef, useState} from "react";
-import {Link, useNavigate, useParams} from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import styles from "../styles/MeetingCreatePage.module.css";
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
-import {useAuth} from "../contexts/AuthContext.jsx";
-import {getSports} from "../api/sportApi.js";
-import {getRegions} from "../api/regionApi.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import { getSports } from "../api/sportApi.js";
+import { getRegions } from "../api/regionApi.js";
 import DeleteMeetingButton from "./DeleteMeetingButton.jsx";
 
 const normalizeText = (value = "") => String(value).trim();
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
 
-export default function MeetingFormPage({initialData, onSubmit, title}) {
-    console.log("★★★★★★ props 확인 ★★★★★★");
-    console.log("onSubmit:", onSubmit);
-    console.log("title:", title);
-
-    const {meetingId} = useParams();
-    const isEditMode = !!meetingId;//meetingId가 있으면 TRUE, 없으면 FALSE
+export default function MeetingFormPage({ initialData, onSubmit, title }) {
+    const { meetingId } = useParams();
+    const isEditMode = !!meetingId;
 
     const navigate = useNavigate();
-    const {isAuthenticated} = useAuth();
+    const { isAuthenticated } = useAuth();
     const fileInputRef = useRef(null);
     const inputRefs = useRef({});
+
+     const getTodayString = () => new Date().toISOString().split('T')[0];
 
     const initialFormValue = initialData || {
         sportId: null, regionId: null, title: "", content: "", placeName: "", address: "",
@@ -32,7 +30,6 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
 
     const [form, setForm] = useState(initialFormValue);
     const [files, setFiles] = useState([]);
-
     const [sports, setSports] = useState([]);
     const [regions, setRegions] = useState([]);
 
@@ -40,25 +37,76 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const [isSportModalOpen, setIsSportModalOpen] = useState(false);
 
     const [selectedSportName, setSelectedSportName] = useState("");
-    const [selectedRegion, setSelectedRegion] = useState({sido: "", sigungu: "", dong: ""});
+    const [selectedRegion, setSelectedRegion] = useState({ sido: "", sigungu: "", dong: "" });
 
 
     // 썸네일 미리보기
     const previews = useMemo(() => {
         return files.map((file) => {
-            // 1. file이 객체 형태(수정 모드에서 넣은 {name, url})라면 url 그대로 사용
             if (file.url) {
-                return {name: file.name, url: file.url};
+                return { name: file.name, url: file.url };
             }
-            // 2. file이 실제 File 객체라면 createObjectURL 사용
-            return {name: file.name, url: URL.createObjectURL(file)};
+            return { name: file.name, url: URL.createObjectURL(file) };
         });
     }, [files]);
 
+    // 계층형 지역 데이터
+    const regionHierarchy = useMemo(() => {
+        const grouped = new Map();
+        regions.forEach((region) => {
+            if (!grouped.has(region.sido)) grouped.set(region.sido, new Map());
+            const sigunguMap = grouped.get(region.sido);
+            if (!sigunguMap.has(region.sigungu)) sigunguMap.set(region.sigungu, []);
+            sigunguMap.get(region.sigungu).push(region.dong);
+        });
+        return [...grouped.entries()].sort((l, r) => l[0].localeCompare(r[0], "ko")).map(([sido, sigunguMap]) => ({
+            sido,
+            sigungus: [...sigunguMap.entries()].sort((l, r) => l[0].localeCompare(r[0], "ko")).map(([sigungu, dongs]) => ({
+                sigungu,
+                dongs: [...new Set(dongs)].sort((l, r) => l.localeCompare(r, "ko")),
+            })),
+        }));
+    }, [regions]);
+
+    // 시간 옵션 (에러 수정된 부분)
+    const timeOptions = useMemo(() => {
+        const options = [];
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const todayStr = getTodayString(); // 선언된 함수 안전하게 호출
+
+        for (let i = 0; i < 24; i++) {
+            for (let m = 0; m < 60; m += 10) {
+                // 오늘 날짜일 때만 시간 필터링
+                if (form.meetingDate === todayStr) {
+                    if (i < currentHour || (i === currentHour && m <= currentMinute)) {
+                        continue;
+                    }
+                }
+                const p = i < 12 ? '오전' : '오후';
+                const hDisplay = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+                const valH = String(i).padStart(2, '0');
+                const valM = String(m).padStart(2, '0');
+
+                options.push({
+                    value: `${valH}:${valM}`,
+                    label: `${p} ${String(hDisplay).padStart(2, '0')}:${valM}`
+                });
+            }
+        }
+        return options;
+    }, [form.meetingDate]);
+
+
+    // ★ 4. useEffect (API 호출 및 사이드 이펙트)
+
+    // 메모리 누수 방지
     useEffect(() => {
         return () => previews.forEach((item) => URL.revokeObjectURL(item.url));
     }, [previews]);
 
+    // 초기 데이터 로드 (종목, 지역)
     useEffect(() => {
         getSports().then((res) => {
             setSports(res.data);
@@ -77,14 +125,15 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         });
     }, []);
 
-    // 데이터 로드
+    // 폼 초기값 세팅 (수정 모드일 때)
     useEffect(() => {
-        //1. 기본 폼 데이터 불러오기(저장된 데이터가 있을때만 실행)
         if (!initialData || sports.length === 0 || regions.length === 0) return;
 
         const foundSport = sports.find(s => s.name === initialData.sportName);
         const foundRegion = regions.find(r =>
             `${r.sido} ${r.sigungu} ${r.dong}` === initialData.regionName);
+
+        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0, 5) : "";
 
         setForm(prev => ({
             ...prev,
@@ -92,10 +141,8 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             startTime: formattedStartTime,
             sportId: foundSport ? foundSport.sportId : prev.sportId,
             regionId: foundRegion ? foundRegion.regionId : prev.regionId,
-
         }));
 
-        //모달 표시용 이름 동기화
         if (initialData.sportName) {
             setSelectedSportName(initialData.sportName);
         }
@@ -105,63 +152,31 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                 sido: parts[0] || "",
                 sigungu: parts[1] || "",
                 dong: parts[2] || "",
-            })
+            });
         }
         if (initialData.thumbnailImage) {
             console.log("이미지 url확인: ", initialData.thumbnailImage);
-            setFiles([{name: "기존 썸네일", url: initialData.thumbnailImage}]);
+            setFiles([{ name: "기존 썸네일", url: initialData.thumbnailImage }]);
         }
-
-        const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0, 5) : "";
-
-
     }, [initialData, sports, regions]);
 
-    const regionHierarchy = useMemo(() => {
-        const grouped = new Map();
-        regions.forEach((region) => {
-            if (!grouped.has(region.sido)) grouped.set(region.sido, new Map());
-            const sigunguMap = grouped.get(region.sido);
-            if (!sigunguMap.has(region.sigungu)) sigunguMap.set(region.sigungu, []);
-            sigunguMap.get(region.sigungu).push(region.dong);
-        });
-        return [...grouped.entries()].sort((l, r) => l[0].localeCompare(r[0], "ko")).map(([sido, sigunguMap]) => ({
-            sido,
-            sigungus: [...sigunguMap.entries()].sort((l, r) => l[0].localeCompare(r[0], "ko")).map(([sigungu, dongs]) => ({
-                sigungu,
-                dongs: [...new Set(dongs)].sort((l, r) => l.localeCompare(r, "ko")),
-            })),
-        }));
-    }, [regions]);
 
-    const timeOptions = useMemo(() => {
-        const options = [];
-        for (let i = 0; i < 24; i++) {
-            const p = i < 12 ? '오전' : '오후';
-            const h = i === 0 ? 12 : (i > 12 ? i - 12 : i);
-            const valH = String(i).padStart(2, '0');
-            options.push({value: `${valH}:00`, label: `${p} ${String(h).padStart(2, '0')}:00`});
-            options.push({value: `${valH}:30`, label: `${p} ${String(h).padStart(2, '0')}:30`});
-        }
-        return options;
-    }, []);
+    // ★ 5. 일반 핸들러 함수들
 
-    // 핸들러
-    // 카카오 주소 API 핸들러
+    const regionDisplayText = selectedRegion.dong ? `${selectedRegion.sido} ${selectedRegion.sigungu} ${selectedRegion.dong}` : "";
+
     const handleAddressSearch = () => {
         new window.daum.Postcode({
             oncomplete: function (data) {
-                let addr = ''; // 주소 변수
-                let extraAddr = ''; // 참고항목 변수
+                let addr = '';
+                let extraAddr = '';
 
-                // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-                if (data.userSelectedType === 'R') { // 도로명 주소
+                if (data.userSelectedType === 'R') {
                     addr = data.roadAddress;
-                } else { // 지번 주소
+                } else {
                     addr = data.jibunAddress;
                 }
 
-                // 도로명 타입일 때 참고항목을 조합한다.
                 if (data.userSelectedType === 'R') {
                     if (data.bname !== '' && /[동로가]$/.test(data.bname)) {
                         extraAddr += data.bname;
@@ -181,33 +196,33 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             }
         }).open();
     };
+
     const handleCustomBtnClick = () => fileInputRef.current.click();
-    const getTodayString = () => new Date().toISOString().split('T')[0];
-    const regionDisplayText = selectedRegion.dong ? `${selectedRegion.sido} ${selectedRegion.sigungu} ${selectedRegion.dong}` : "";
 
     const handleSportApply = (d) => {
-        setForm(p => ({...p, sportId: d.sportId}));
+        setForm(p => ({ ...p, sportId: d.sportId }));
         setSelectedSportName(d.name);
         setIsSportModalOpen(false);
     };
+
     const handleRegionApply = (d) => {
-        // 1. 선택된 정보를 상태에 저장 (화면 표시용)
-        setSelectedRegion({sido: d.sido, sigungu: d.sigungu, dong: d.dong});
-        // 2. 평탄화된 regions 리스트에서 ID를 찾음
+        setSelectedRegion({ sido: d.sido, sigungu: d.sigungu, dong: d.dong });
         const match = regions.find(r =>
             r.sido === d.sido &&
             r.sigungu === d.sigungu &&
             r.dong === d.dong
         );
         if (match) {
-            setForm(p => ({...p, regionId: match.regionId}));
+            setForm(p => ({ ...p, regionId: match.regionId }));
         }
         setIsRegionModalOpen(false);
     };
+
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setForm(p => ({...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value}));
+        const { name, value } = e.target;
+        setForm(p => ({ ...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value }));
     };
+
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (file?.size > MAX_THUMBNAIL_SIZE) {
@@ -217,9 +232,11 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         if (file) setFiles([file]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
+
     const removeFile = (nameToRemove) => {
         setFiles(files.filter(f => f.name !== nameToRemove));
     };
+
     const handleRemoveImage = () => {
         if (files.length > 0) {
             removeFile(files[0].name);
@@ -228,21 +245,48 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             ...prev,
             thumbnailImage: null,
             isImageRemoved: true,
-        }))
-    }
+        }));
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log("onsubmit 함수확인: ", onSubmit)
 
-        let finalForm = {...form};
-        // sportName은 있는데 sportId가 없다면 매칭
+        //승인된 인원보다 적게 수정불가
+        if(isEditMode && initialData?.approvedCount !== undefined){
+            if(Number(form.maxMembers) < initialData.approvedCount){
+                alert(`모집 인원은 현재 승인된 인원 (${initialData.approvedCount}명) 이상이어야 합니다.`)
+                inputRefs.current.maxMembers?.focus();
+                return;
+            }
+        }
+
+        // 당일 시간 유효성 검사 로직
+        const selectedDate = new Date(form.meetingDate);
+        const today = new Date();
+
+        const isToday = selectedDate.getFullYear() === today.getFullYear() &&
+            selectedDate.getMonth() === today.getMonth() &&
+            selectedDate.getDate() === today.getDate();
+
+        if (isToday) {
+            const [selectedHour, selectedMinute] = form.startTime.split(":").map(Number);
+            const currentHour = today.getHours();
+            const currentMinute = today.getMinutes();
+
+            if (selectedHour < currentHour || (selectedHour === currentHour && selectedMinute <= currentMinute)) {
+                alert("당일 모임은 현재 시간 이후로만 설정 가능합니다.");
+                inputRefs.current.startTime?.focus();
+                return;
+            }
+        }
+
+        let finalForm = { ...form };
         if (!finalForm.sportId && selectedSportName) {
             const s = sports.find(x => x.name === selectedSportName);
             if (s) finalForm.sportId = s.sportId;
         }
 
-        // regionName(이름)은 있는데 regionId가 없다면 매칭
         if (!finalForm.regionId && selectedRegion.sido) {
             const r = regions.find(x =>
                 x.sido === selectedRegion.sido &&
@@ -253,24 +297,26 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         }
 
         const requiredFields = [
-            {key: "title", label: "모임 제목", refKey: "title"},
-            {key: "address", label: "주소", refKey: "address"},
-            {key: "placeName", label: "상세 주소", refKey: "placeName"},
-            {key: "meetingDate", label: "날짜", refKey: "meetingDate"},
-            {key: "startTime", label: "시작 시간", refKey: "startTime"},
-            {key: "maxMembers", label: "모집 인원", refKey: "maxMembers"},
-            {key: "supplies", label: "준비물", refKey: "supplies"},
-            {key: "guideText", label: "진행 안내", refKey: "guideText"},
-            {key: "content", label: "모임 소개", refKey: "content"}
+            { key: "title", label: "모임 제목", refKey: "title" },
+            { key: "address", label: "주소", refKey: "address" },
+            { key: "placeName", label: "상세 주소", refKey: "placeName" },
+            { key: "meetingDate", label: "날짜", refKey: "meetingDate" },
+            { key: "startTime", label: "시작 시간", refKey: "startTime" },
+            { key: "maxMembers", label: "모집 인원", refKey: "maxMembers" },
+            { key: "supplies", label: "준비물", refKey: "supplies" },
+            { key: "guideText", label: "진행 안내", refKey: "guideText" },
+            { key: "content", label: "모임 소개", refKey: "content" }
         ];
+
         for (const f of requiredFields) {
             if (!form[f.key] || String(form[f.key]).trim() === "") {
                 alert(`${f.label}을(를) 입력해주세요.`);
                 inputRefs.current[f.refKey]?.focus();
-                inputRefs.current[f.refKey]?.scrollIntoView({behavior: 'smooth', block: 'center'});
+                inputRefs.current[f.refKey]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
         }
+
         if (!form.sportId) {
             alert("운동 종목을 선택해주세요.");
             setIsSportModalOpen(true);
@@ -288,7 +334,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         }
 
         const formData = new FormData();
-        formData.append("request", new Blob([JSON.stringify(form)], {type: "application/json"}));
+        formData.append("request", new Blob([JSON.stringify(form)], { type: "application/json" }));
         if (files.length > 0) formData.append("image", files[0]);
         onSubmit(formData);
     };
@@ -329,7 +375,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                 </div>
             </section>
 
-            <form className={styles.formCard} onSubmit={handleSubmit}>
+            <form className={styles.formCard} onSubmit={handleSubmit} noValidate>
                 <label className={styles.full}>
                     <div className={styles.titleRow}>
                         <span className={styles.requiredLabel}>모임 제목</span>
@@ -481,12 +527,20 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         value={form.maxMembers}
                         onChange={handleChange}
                         type="number"
-                        min="2"
+                        min={isEditMode && initialData?.approvedCount ? initialData?.approvedCount : "2"}
                     />
+                    {isEditMode && initialData?.approvedCount && Number(form.maxMembers) < initialData.approvedCount && (
+                        <small style={{ color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem" }}>* 현재 승인된 인원 ({initialData.approvedCount}명) 미만으로 줄일 수 없습니다.</small>
+                    )}
                 </label>
                 <label>
                     <span className={styles.requiredLabel}>모집 상태</span>
-                    <select name="status" value={form.status} onChange={handleChange}>
+                    <select
+                        name="status"
+                        value={form.status}
+                        onChange={handleChange}
+                        disabled={!isEditMode}
+                    >
                         <option value="RECRUITING">모집중</option>
                         <option value="CLOSED">모집완료</option>
                     </select>

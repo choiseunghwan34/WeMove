@@ -12,6 +12,7 @@ import { meetingImages } from "../data/dashboardData";
 import UserProfileDetailModal from "../components/UserProfileDetailModal";
 import UiIcon from "../components/UiIcon";
 import styles from "../styles/MeetingDetailPage.module.css";
+import Comment from "../components/Comment.jsx";
 
 const STATUS_MAP = {
   OPEN: "모집중",
@@ -325,35 +326,18 @@ export default function MeetingDetailPage() {
             </div>
           </section>
 
+
           <section className={styles.detailSection}>
             <div className={styles.sectionHead}>
               <div>
-                <h2>댓글</h2>
+                <h2>댓글({comments.length})</h2>
                 <p>참여 전 궁금한 점을 편하게 남겨보세요.</p>
               </div>
             </div>
-
-            <div className={styles.commentList}>
-              {comments.map((comment) => (
-                <article key={comment.id} className={styles.commentItem}>
-                  <div className={styles.commentAvatar} />
-                  <div>
-                    <div className={styles.commentMeta}>
-                      <strong>{comment.writer}</strong>
-                      <span>{comment.time}</span>
-                    </div>
-                    <p>{comment.content}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-
-            <form className={styles.commentForm}>
-              <textarea placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요." />
-              <div className={styles.formActions}>
-                <button type="button">댓글 등록</button>
-              </div>
-            </form>
+            <Comment
+                meetingId={meetingId}
+                hostUserId={meeting.hostUserId}
+            />
           </section>
         </main>
 

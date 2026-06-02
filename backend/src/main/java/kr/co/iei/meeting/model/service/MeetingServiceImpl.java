@@ -2,6 +2,7 @@ package kr.co.iei.meeting.model.service;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -65,6 +66,12 @@ public class MeetingServiceImpl implements MeetingService {
 
   @Override
   public Long createMeeting(MeetingCreateRequest request, MultipartFile image, Long userId) {
+    // 1. [추가] 모임 생성 전 날짜/시간 검증
+    LocalDate meetingDate = LocalDate.parse(request.getMeetingDate());
+    LocalTime startTime = LocalTime.parse(request.getStartTime());
+
+    validateMeetingTime(meetingDate, startTime);
+
     Meeting meeting = new Meeting();
     meeting.setHostUserId(userId);
     meeting.setSportId(request.getSportId());
@@ -74,6 +81,7 @@ public class MeetingServiceImpl implements MeetingService {
     meeting.setThumbnailImage(cloudinaryImageService.uploadMeetingThumbnail(image));
     meeting.setPlaceName(request.getPlaceName());
     meeting.setAddress(request.getAddress());
+
     meeting.setMeetingDate(LocalDate.parse(request.getMeetingDate()));
     meeting.setStartTime(LocalTime.parse(request.getStartTime()));
     meeting.setMaxMembers(request.getMaxMembers());
@@ -96,6 +104,17 @@ public class MeetingServiceImpl implements MeetingService {
 
   @Override
   public void updateMeeting(Long meetingId, MeetingUpdateRequest request, MultipartFile image) {
+    LocalDate meetingDate = request.getMeetingDate();
+    LocalTime startTime = request.getStartTime();
+
+    validateMeetingTime(meetingDate, startTime);
+
+    //현재모임의 승인된 인원수 조회
+    Integer approveCount = participantDao.countApprovedByMeetingId(meetingId);
+
+    if(approveCount != null && request.getMaxMembers() < approveCount) {
+      throw new IllegalArgumentException("모집 인원은 현재 승인된 인원 (" + approveCount + "명) 이상이어야 합니다.");
+    }
     request.setMeetingId(meetingId);
 
     if (Boolean.TRUE.equals(request.getIsImageRemoved())) {
@@ -122,12 +141,16 @@ public class MeetingServiceImpl implements MeetingService {
     String nextStatus = request.getStatus();
 
     if ("CLOSED".equals(nextStatus)) {
+    // 1. 상태가 CLOSED(모집완료)로 변경될 때만 정원 체크
+    if ("CLOSED".equals(request.getStatus())) {
+
       Integer approved = participantDao.countApprovedByMeetingId(meetingId);
       Integer max = meetingDao.selectMaxMembers(meetingId);
       if (approved == null || max == null || approved < max) {
         throw new IllegalArgumentException("紐⑥쭛?꾨즺???뺤썝??紐⑤몢 李?寃쎌슦?먮뭔 ?ㅼ젙?????덉뒿?덈떎.");
       }
     }
+
 
     if ("CANCELLED".equals(nextStatus) && !"RECRUITING".equals(currentMeeting.getStatus())) {
       throw new IllegalArgumentException("紐⑥쭛以묒씤 紐⑥엫留?痍⑥냼?????덉뒿?덈떎.");
@@ -179,6 +202,36 @@ public class MeetingServiceImpl implements MeetingService {
     result.put("limit", limit);
     result.put("offset", 0);
     return meetingDao.selectMainMeetingList(result);
+
+    // 2. [추가] 모임 상태를 RECRUITING으로 변경할 때, 이미 지난 시간인지 확인
+    if ("RECRUITING".equals(request.getStatus())) {
+      // DB에서 해당 모임의 날짜와 시간을 조회
+      MeetingDetailResponse meeting = getMeeting(meetingId);
+      if(meeting == null) {
+        throw new IllegalArgumentException("존재하지 않는 모임입니다.");
+      }
+      //LocalDateTime 생성 (날짜와 시간 합치기)
+      LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
+
+      // 현재 시간보다 모임 시간이 과거라면 에러 발생
+      if (meetingDateTime.isBefore(LocalDateTime.now())) {
+        throw new IllegalArgumentException("이미 지난 시간의 모임은 다시 모집할 수 없습니다.");
+      }
+    }
+    meetingDao.updateMeetingStatus(meetingId, request.getStatus());
+  }
+
+  @Override
+  public List<MeetingListResponse> getMainMeetingList(String category) {
+    return meetingDao.selectMainMeetingList(category);
+  }
+  // 공통으로 사용할 시간 검증 도우미 메서드
+  private void validateMeetingTime(LocalDate date, LocalTime time) {
+    LocalDateTime meetingDateTime = LocalDateTime.of(date, time);
+    if (meetingDateTime.isBefore(LocalDateTime.now())) {
+      throw new IllegalArgumentException("과거 시간으로는 모임을 생성하거나 수정할 수 없습니다.");
+    }
+
   }
 
   private List<MeetingListResponse> getRankedRecruitingMeetings(int limit) {

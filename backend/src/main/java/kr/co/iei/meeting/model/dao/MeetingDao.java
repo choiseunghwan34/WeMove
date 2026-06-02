@@ -5,7 +5,6 @@ import kr.co.iei.meeting.model.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.multipart.MultipartFile;
 
 @Repository
 @RequiredArgsConstructor
@@ -58,11 +57,15 @@ public class MeetingDao {
   }
 
 
-  public List<MeetingListResponse> selectMainMeetingList(Map<String, Object> result) {
-    return sqlSession.selectList("meeting.selectMainMeetingList", result);
+  public List<MeetingListResponse> selectMainMeetingList(String category) {
+    Map<String, String> map = new HashMap<>();
+    map.put("category", category);
+    return sqlSession.selectList("meeting.selectMainMeetingList", map);
   }
+
 
   public List<MeetingListResponse> selectMainMeetingListByIds(List<Long> meetingIds) {
     return sqlSession.selectList("meeting.selectMainMeetingListByIds", meetingIds);
   }
+
 }

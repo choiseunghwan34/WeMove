@@ -21,7 +21,11 @@ public interface MeetingService {
 
   void recordMeetingView(Long meetingId, String actorKey);
 
-  List<MeetingListResponse> getMainMeetingList();
+
 
   List<MeetingListResponse> getPopularMeetingList();
+
+  List<MeetingListResponse> getMainMeetingList(String category);
+
+    
 }
