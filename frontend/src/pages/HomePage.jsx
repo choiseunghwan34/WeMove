@@ -133,37 +133,30 @@ const normalizeActivityMeeting = (meeting) => ({
 });
 
 const buildRelativeText = (dateValue) => {
-  if (!dateValue) {
-    return "최근";
-  }
+  if (!dateValue) return "최근";
 
+  const today = new Date();
   const target = new Date(dateValue);
   if (Number.isNaN(target.getTime())) {
     return String(dateValue).slice(0, 10);
   }
 
-  const today = new Date();
   const diffMs =
     target.setHours(0, 0, 0, 0) - new Date(today.setHours(0, 0, 0, 0));
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) {
-    return "오늘";
-  }
-
-  if (diffDays === 1) {
-    return "내일";
-  }
-
-  if (diffDays === -1) {
-    return "어제";
-  }
-
-  if (diffDays > 1) {
-    return `${diffDays}일 후`;
-  }
-
+  if (diffDays === 0) return "오늘";
+  if (diffDays === 1) return "내일";
+  if (diffDays > 1) return `${diffDays}일 후`;
+  if (diffDays === -1) return "어제";
   return `${Math.abs(diffDays)}일 전`;
+};
+
+const getWeekdayLabel = (dateValue) => {
+  if (!dateValue) return "";
+  const parsedDate = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(parsedDate.getTime())) return "";
+  return DAY_LABELS[parsedDate.getDay()];
 };
 
 const formatScheduleText = (meeting) => {
@@ -656,38 +649,30 @@ export default function HomePage() {
         <div className={styles.dashboardScheduleList}>
           {scheduleItems.length ? (
             scheduleItems.map((meeting) => {
-              const scheduleDateValue = String(meeting.meetingDate ?? "");
-              const scheduleDate = scheduleDateValue.slice(5, 10).replace("-", ".");
-              const scheduleWeekday = (() => {
-                if (!scheduleDateValue) {
-                  return "";
-                }
-
-                const parsedDate = new Date(`${scheduleDateValue}T00:00:00`);
-                if (Number.isNaN(parsedDate.getTime())) {
-                  return "";
-                }
-
-                return DAY_LABELS[parsedDate.getDay()] ?? "";
-              })();
-              const scheduleTime = String(meeting.startTime ?? "").slice(0, 5) || "--:--";
+              const relativeDate = buildRelativeText(meeting.meetingDate);
+              const weekday = getWeekdayLabel(meeting.meetingDate);
+              const displayDate = relativeDate.includes("일 전") || relativeDate.includes("일 후") 
+                ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
+                : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
 
               return (
                 <div
-                  key={meeting.id}
+                  key={`schedule-${meeting.id}`}
                   className={styles.dashboardScheduleItem}
                 >
-                  <span>{scheduleDate || "이번주"}{scheduleWeekday ? ` (${scheduleWeekday})` : ""}</span>
-                  <strong>{scheduleTime}</strong>
+                  <span>{displayDate}</span>
+                  <strong>
+                    {String(meeting.startTime ?? "").slice(0, 5) || "--:--"}
+                  </strong>
                   <p>{meeting.title}</p>
                 </div>
               );
             })
           ) : (
             <div className={styles.dashboardScheduleItem}>
-              <span>이번주</span>
+              <span>-</span>
               <strong>-</strong>
-              <p>참여 중인 일정이 없어요.</p>
+              <p>예정된 일정이 아직 없어요.</p>
             </div>
           )}
         </div>

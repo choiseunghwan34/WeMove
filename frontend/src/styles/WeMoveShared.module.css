@@ -2030,6 +2030,7 @@
   color: #8a9aab;
   font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
 }
 .dashboardSummaryGrid strong {
   display: block;
@@ -2430,18 +2431,13 @@
 }
 
 @media (max-width: 520px) {
-  .dashboardCreateButton,
-  .dashboardIconButton,
-  .dashboardProfile {
-    width: 100%;
-    justify-content: center;
-  }
   .dashboardCategoryStrip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .dashboardMeetingBody h3,
-  .dashboardSectionHead h2 {
-    font-size: 28px;
+  .dashboardLoginButton,
+  .dashboardSignupButton {
+    width: 100%;
+    justify-content: center;
   }
 }
 .dashboardPageIntro {
@@ -3014,14 +3010,26 @@
 .dashboardActivityItem > span {
   color: #8395ab;
 }
-.dashboardScheduleList,
+.dashboardScheduleList {
+  display: grid;
+  gap: 10px;
+}
 .dashboardActivityList,
 .dashboardSimpleList,
 .dashboardQuickLinks {
   gap: 10px;
 }
 .dashboardScheduleItem {
-  grid-template-columns: 40px 62px minmax(0, 1fr);
+  display: grid;
+  grid-template-columns: 72px 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.dashboardScheduleItem:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 .dashboardQuickLinks a {
   border-color: rgba(15, 23, 42, 0.08);
@@ -3106,7 +3114,7 @@
 @media (max-width: 720px) {
   .dashboardPage {
     width: min(100%, calc(100% - 20px));
-    padding-top: 16px;
+    padding: 16px;
   }
   .dashboardHeader {
     position: sticky;
@@ -4281,7 +4289,8 @@
 }
 
 .badge,
-.dashboardMeetingBadges span {
+.dashboardMeetingBadges span,
+.reviewScore {
   border: 1px solid rgba(37, 99, 235, 0.12);
   background: #eff6ff;
   color: #1d4ed8;
@@ -4668,9 +4677,10 @@
 .dashboardMeetingImage,
 .listCardImage,
 .dashboardMiniImage,
-.reviewPreviewImage {
-  border-radius: 20px;
-  box-shadow: 0 16px 36px rgba(18, 32, 59, 0.12);
+.reviewPreviewImage,
+.detailHeroImage {
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 36px rgba(18, 32, 59, 0.12) !important;
 }
 
 .badge,
@@ -4683,7 +4693,8 @@
   color: #1747b8;
 }
 
-.success {
+.success,
+.dashboardStatusBadge {
   border-color: rgba(18, 128, 92, 0.16);
   background: linear-gradient(135deg, #ecfdf3, #f7fffb);
   color: #12805c;
@@ -4766,7 +4777,6 @@
 .detailSummary article,
 .sideInfo p,
 .dashboardSimpleList p,
-.dashboardScheduleItem,
 .dashboardRankItem,
 .dashboardActivityItem {
   border-radius: 16px;
@@ -6191,7 +6201,12 @@
 }
 
 .dashboardCategoryItem,
+.dashboardCategoryItem:nth-child(3n + 2),
+.dashboardCategoryItem:nth-child(3n),
 .dashboardSummaryGrid article,
+.dashboardSummaryGrid article:nth-child(2),
+.dashboardSummaryGrid article:nth-child(3),
+.dashboardSummaryGrid article:nth-child(4),
 .dashboardScheduleItem,
 .dashboardRankItem,
 .dashboardActivityItem {
@@ -6208,7 +6223,12 @@
 .dashboardSummaryGrid i,
 .dashboardRankItem b,
 .dashboardActivityItem i,
-.dashboardInterestList i {
+.dashboardCategoryItem:nth-child(3n + 2) i,
+.dashboardCategoryItem:nth-child(3n) i,
+.dashboardSummaryGrid article:nth-child(2) i,
+.dashboardSummaryGrid article:nth-child(3) i,
+.dashboardSummaryGrid article:nth-child(4) i,
+.dashboardActivityItem:nth-child(2n) i {
   background: #eef4ff !important;
   background-image: none !important;
   color: #3f6fd8 !important;
@@ -6596,4 +6616,172 @@
   color: transparent !important;
   font-size: 0 !important;
   box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28) !important;
+}
+
+/* 2026-06-02 home sidebar rank card refresh */
+.dashboardRankList {
+  gap: 10px !important;
+}
+
+.dashboardRankItem {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 14px !important;
+  margin-bottom: 0 !important;
+  border: 1px solid rgba(37, 99, 235, 0.1) !important;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.1), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%) !important;
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+.dashboardRankItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.18) !important;
+  box-shadow:
+    0 12px 24px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
+}
+
+.dashboardRankItem b {
+  width: 28px !important;
+  height: 28px !important;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.dashboardRankItem > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.dashboardRankItem strong {
+  color: #10233f !important;
+  font-size: 0.95rem !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardRankItem span {
+  color: #64748b !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+}
+
+.dashboardRankItem:nth-child(1) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.16), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #eef4ff 100%) !important;
+}
+
+.dashboardRankItem:nth-child(2) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.12), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #eefaf7 100%) !important;
+}
+
+.dashboardRankItem:nth-child(3) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.12), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #fff7ea 100%) !important;
+}
+
+.dashboardRankItem:nth-child(n + 4) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(148, 163, 184, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+}
+
+.dashboardScheduleList {
+  gap: 10px !important;
+}
+
+.dashboardScheduleItem {
+  display: grid !important;
+  grid-template-columns: 86px 56px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid #eef0f3 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.dashboardScheduleItem span {
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+}
+
+.dashboardScheduleItem strong {
+  font-size: 0.98rem !important;
+  font-weight: 800 !important;
+  color: #111827 !important;
+}
+
+.dashboardScheduleItem p {
+  margin: 0 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.4 !important;
+  color: #475569 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2026-06-02 sidebar tone unification */
+.dashboardPanelHint {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: -0.01em;
+}
+
+.dashboardRankItem,
+.dashboardRankItem:nth-child(1),
+.dashboardRankItem:nth-child(2),
+.dashboardRankItem:nth-child(3),
+.dashboardRankItem:nth-child(n + 4) {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+  border-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+.dashboardRankItem b {
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%) !important;
+  color: #1d4ed8 !important;
+}
+
+.dashboardRankItem strong {
+  color: #0f172a !important;
+}
+
+.dashboardRankItem span {
+  color: #64748b !important;
+}
+
+.dashboardScheduleItem {
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%) !important;
+  border-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+.dashboardPanelHead h3 {
+  color: #0f172a;
+}
+
+.dashboardSummaryGrid span {
+  white-space: nowrap;
 }

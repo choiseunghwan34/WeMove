@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
@@ -7,9 +7,8 @@ import Pagination from "../components/Pagination";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
-import { meetings } from "../data/demoData";
 import { getMeetings, getTopRegions } from "../api/meetingApi";
-import { getMember } from "../api/memberApi";
+import { getMember, getMyActivity } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
 import styles from "../styles/MeetingListPage.module.css";
@@ -24,7 +23,7 @@ const ALL_REGION = "전체 지역";
 const ALL_SPORT = "전체 종목";
 const ALL_STATUS = "전체 상태";
 const PAGE_SIZE = 10;
-const weekdayLabels = ["오늘", "내일", "토", "일"];
+const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 const STATUS_MAP = {
   RECRUITING: "모집중",
@@ -35,6 +34,45 @@ const STATUS_MAP = {
 };
 
 const normalizeText = (value = "") => String(value).trim();
+
+const buildRelativeText = (dateValue) => {
+  if (!dateValue) return "최근";
+
+  const today = new Date();
+  const target = new Date(dateValue);
+  if (Number.isNaN(target.getTime())) {
+    return String(dateValue).slice(0, 10);
+  }
+
+  const diffMs =
+    target.setHours(0, 0, 0, 0) - new Date(today.setHours(0, 0, 0, 0));
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "오늘";
+  if (diffDays === 1) return "내일";
+  if (diffDays > 1) return `${diffDays}일 후`;
+  if (diffDays === -1) return "어제";
+  return `${Math.abs(diffDays)}일 전`;
+};
+
+const getWeekdayLabel = (dateValue) => {
+  if (!dateValue) return "";
+  const parsedDate = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(parsedDate.getTime())) return "";
+  return DAY_LABELS[parsedDate.getDay()];
+};
+
+const normalizeMeeting = (meeting) => ({
+  ...meeting,
+  id: meeting.meetingId ?? meeting.id,
+  title: meeting.title ?? "-",
+  sport: meeting.sportName ?? meeting.sport ?? "-",
+  place: meeting.placeName ?? meeting.place ?? "-",
+  region: meeting.regionName ?? meeting.region ?? "-",
+  meetingDate: meeting.meetingDate ?? null,
+  startTime: meeting.startTime ?? "",
+  status: meeting.status ?? "RECRUITING",
+});
 
 const normalizeRegion = (region) => ({
   regionId: region.regionId,
@@ -156,6 +194,31 @@ export default function MeetingListPage() {
   const [topRegions, setTopRegions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
   const [sportOptions, setSportOptions] = useState([]);
+  
+  const [scheduleItems, setScheduleItems] = useState([]);
+
+  const loadActivity = useCallback(async () => {
+    if (authLoading || !isAuthenticated || !user?.memberId) {
+      setScheduleItems([]);
+      return;
+    }
+
+    try {
+      const response = await getMyActivity(user.memberId);
+      const payload = response.data ?? {};
+      const approved = Array.isArray(payload.approvedMeetings)
+        ? payload.approvedMeetings.map(normalizeMeeting)
+        : [];
+      setScheduleItems(approved.slice(0, 4));
+    } catch (error) {
+      console.error("Failed to load activity:", error);
+      setScheduleItems([]);
+    }
+  }, [authLoading, isAuthenticated, user?.memberId]);
+
+  useEffect(() => {
+    loadActivity();
+  }, [loadActivity]);
 
   useEffect(() => {
     const fetchFilterOptions = async () => {
@@ -460,13 +523,34 @@ export default function MeetingListPage() {
               <h3>이번 주 일정</h3>
             </div>
             <div className={styles.dashboardScheduleList}>
-              {meetings.slice(0, 4).map((meeting, index) => (
-                <div key={meeting.id} className={styles.dashboardScheduleItem}>
-                  <span>{weekdayLabels[index]}</span>
-                  <strong>{meeting.time}</strong>
-                  <p>{meeting.title}</p>
+              {scheduleItems.length ? (
+                scheduleItems.map((meeting) => {
+                  const relativeDate = buildRelativeText(meeting.meetingDate);
+                  const weekday = getWeekdayLabel(meeting.meetingDate);
+                  const displayDate = relativeDate.includes("일 전") || relativeDate.includes("일 후") 
+                    ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
+                    : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
+                  
+                  return (
+                    <div
+                      key={`schedule-${meeting.id}`}
+                      className={styles.dashboardScheduleItem}
+                    >
+                      <span>{displayDate}</span>
+                      <strong>
+                        {String(meeting.startTime || "").slice(0, 5) || "-"}
+                      </strong>
+                      <p>{meeting.title}</p>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className={styles.dashboardScheduleItem}>
+                  <span>-</span>
+                  <strong>-</strong>
+                  <p>예정된 일정이 아직 없어요.</p>
                 </div>
-              ))}
+              )}
             </div>
           </section>
         </>

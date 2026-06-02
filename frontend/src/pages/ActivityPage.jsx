@@ -11,6 +11,7 @@ import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/ActivityPage.module.css";
 
 const normalizeText = (value = "") => String(value).trim();
+const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 const formatMeetingDateTime = (meeting) => {
   const date = meeting.meetingDate
@@ -43,6 +44,13 @@ const buildRelativeText = (dateValue) => {
   if (diffDays > 1) return `${diffDays}일 후`;
   if (diffDays === -1) return "어제";
   return `${Math.abs(diffDays)}일 전`;
+};
+
+const getWeekdayLabel = (dateValue) => {
+  if (!dateValue) return "";
+  const parsedDate = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(parsedDate.getTime())) return "";
+  return DAY_LABELS[parsedDate.getDay()];
 };
 
 const normalizeMeeting = (meeting) => ({
@@ -469,18 +477,33 @@ export default function ActivityPage() {
             <div className={styles.dashboardPanelHead}>
               <h3>이번 주 일정</h3>
             </div>
-            <div className={styles.dashboardSimpleList}>
+            <div className={styles.dashboardScheduleList}>
               {scheduleItems.length ? (
-                scheduleItems.map((meeting) => (
-                  <div key={`schedule-${meeting.id}`}>
-                    <span>{meeting.title}</span>
-                    <strong>{formatMeetingDateTime(meeting)}</strong>
-                  </div>
-                ))
+                scheduleItems.map((meeting) => {
+                  const relativeDate = buildRelativeText(meeting.meetingDate);
+                  const weekday = getWeekdayLabel(meeting.meetingDate);
+                  const displayDate = relativeDate.includes("일 전") || relativeDate.includes("일 후") 
+                    ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
+                    : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
+                  
+                  return (
+                    <div
+                      key={`schedule-${meeting.id}`}
+                      className={styles.dashboardScheduleItem}
+                    >
+                      <span>{displayDate}</span>
+                      <strong>
+                        {String(meeting.startTime || "").slice(0, 5) || "-"}
+                      </strong>
+                      <p>{meeting.title}</p>
+                    </div>
+                  );
+                })
               ) : (
-                <div>
-                  <span>예정된 일정</span>
-                  <strong>아직 없어요</strong>
+                <div className={styles.dashboardScheduleItem}>
+                  <span>-</span>
+                  <strong>-</strong>
+                  <p>예정된 일정이 아직 없어요.</p>
                 </div>
               )}
             </div>
