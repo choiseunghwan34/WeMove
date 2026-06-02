@@ -530,7 +530,12 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                 </label>
                 <label>
                     <span className={styles.requiredLabel}>모집 상태</span>
-                    <select name="status" value={form.status} onChange={handleChange}>
+                    <select
+                        name="status"
+                        value={form.status}
+                        onChange={handleChange}
+                        disabled={!isEditMode}
+                    >
                         <option value="RECRUITING">모집중</option>
                         <option value="CLOSED">모집완료</option>
                     </select>
