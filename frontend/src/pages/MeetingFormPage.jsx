@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import styles from "../styles/MeetingCreatePage.module.css";
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { getSports } from "../api/sportApi.js";
 import { getRegions } from "../api/regionApi.js";
@@ -40,7 +41,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const [selectedRegion, setSelectedRegion] = useState({ sido: "", sigungu: "", dong: "" });
 
 
-    // 썸네일 미리보기
+    // ?몃꽕??誘몃━蹂닿린
     const previews = useMemo(() => {
         return files.map((file) => {
             if (file.url) {
@@ -50,7 +51,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         });
     }, [files]);
 
-    // 계층형 지역 데이터
+    // 怨꾩링??吏???곗씠??
     const regionHierarchy = useMemo(() => {
         const grouped = new Map();
         regions.forEach((region) => {
@@ -68,23 +69,23 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }));
     }, [regions]);
 
-    // 시간 옵션 (에러 수정된 부분)
+    // ?쒓컙 ?듭뀡 (?먮윭 ?섏젙??遺遺?
     const timeOptions = useMemo(() => {
         const options = [];
         const now = new Date();
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
-        const todayStr = getTodayString(); // 선언된 함수 안전하게 호출
+        const todayStr = getTodayString(); // ?좎뼵???⑥닔 ?덉쟾?섍쾶 ?몄텧
 
         for (let i = 0; i < 24; i++) {
             for (let m = 0; m < 60; m += 10) {
-                // 오늘 날짜일 때만 시간 필터링
+                // ?ㅻ뒛 ?좎쭨???뚮쭔 ?쒓컙 ?꾪꽣留?
                 if (form.meetingDate === todayStr) {
                     if (i < currentHour || (i === currentHour && m <= currentMinute)) {
                         continue;
                     }
                 }
-                const p = i < 12 ? '오전' : '오후';
+                const p = i < 12 ? '?ㅼ쟾' : '?ㅽ썑';
                 const hDisplay = i === 0 ? 12 : (i > 12 ? i - 12 : i);
                 const valH = String(i).padStart(2, '0');
                 const valM = String(m).padStart(2, '0');
@@ -99,14 +100,14 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     }, [form.meetingDate]);
 
 
-    // ★ 4. useEffect (API 호출 및 사이드 이펙트)
+    // ??4. useEffect (API ?몄텧 諛??ъ씠???댄럺??
 
-    // 메모리 누수 방지
+    // 硫붾え由??꾩닔 諛⑹?
     useEffect(() => {
         return () => previews.forEach((item) => URL.revokeObjectURL(item.url));
     }, [previews]);
 
-    // 초기 데이터 로드 (종목, 지역)
+    // 珥덇린 ?곗씠??濡쒕뱶 (醫낅ぉ, 吏??
     useEffect(() => {
         getSports().then((res) => {
             setSports(res.data);
@@ -125,7 +126,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         });
     }, []);
 
-    // 폼 초기값 세팅 (수정 모드일 때)
+    // ??珥덇린媛??명똿 (?섏젙 紐⑤뱶????
     useEffect(() => {
         if (!initialData || sports.length === 0 || regions.length === 0) return;
 
@@ -155,13 +156,13 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
             });
         }
         if (initialData.thumbnailImage) {
-            console.log("이미지 url확인: ", initialData.thumbnailImage);
-            setFiles([{ name: "기존 썸네일", url: initialData.thumbnailImage }]);
+            console.log("?대?吏 url?뺤씤: ", initialData.thumbnailImage);
+            setFiles([{ name: "existing-thumbnail", url: initialData.thumbnailImage }]);
         }
     }, [initialData, sports, regions]);
 
 
-    // ★ 5. 일반 핸들러 함수들
+    // ??5. ?쇰컲 ?몃뱾???⑥닔??
 
     const regionDisplayText = selectedRegion.dong ? `${selectedRegion.sido} ${selectedRegion.sigungu} ${selectedRegion.dong}` : "";
 
@@ -178,7 +179,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                 }
 
                 if (data.userSelectedType === 'R') {
-                    if (data.bname !== '' && /[동로가]$/.test(data.bname)) {
+                    if (data.bname !== '' && /[?숇줈媛]$/.test(data.bname)) {
                         extraAddr += data.bname;
                     }
                     if (data.buildingName !== '' && data.apartment === 'Y') {
@@ -226,7 +227,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (file?.size > MAX_THUMBNAIL_SIZE) {
-            alert("10MB 이하만 가능합니다.");
+            alert("10MB ?댄븯留?媛?ν빀?덈떎.");
             return;
         }
         if (file) setFiles([file]);
@@ -250,18 +251,18 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("onsubmit 함수확인: ", onSubmit)
+        console.log("onsubmit ?⑥닔?뺤씤: ", onSubmit)
 
-        //승인된 인원보다 적게 수정불가
+        //?뱀씤???몄썝蹂대떎 ?곴쾶 ?섏젙遺덇?
         if(isEditMode && initialData?.approvedCount !== undefined){
             if(Number(form.maxMembers) < initialData.approvedCount){
-                alert(`모집 인원은 현재 승인된 인원 (${initialData.approvedCount}명) 이상이어야 합니다.`)
+                alert(`紐⑥쭛 ?몄썝? ?꾩옱 ?뱀씤???몄썝 (${initialData.approvedCount}紐? ?댁긽?댁뼱???⑸땲??`)
                 inputRefs.current.maxMembers?.focus();
                 return;
             }
         }
 
-        // 당일 시간 유효성 검사 로직
+        // ?뱀씪 ?쒓컙 ?좏슚??寃??濡쒖쭅
         const selectedDate = new Date(form.meetingDate);
         const today = new Date();
 
@@ -275,7 +276,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
             const currentMinute = today.getMinutes();
 
             if (selectedHour < currentHour || (selectedHour === currentHour && selectedMinute <= currentMinute)) {
-                alert("당일 모임은 현재 시간 이후로만 설정 가능합니다.");
+                alert("?뱀씪 紐⑥엫? ?꾩옱 ?쒓컙 ?댄썑濡쒕쭔 ?ㅼ젙 媛?ν빀?덈떎.");
                 inputRefs.current.startTime?.focus();
                 return;
             }
@@ -297,20 +298,20 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }
 
         const requiredFields = [
-            { key: "title", label: "모임 제목", refKey: "title" },
-            { key: "address", label: "주소", refKey: "address" },
-            { key: "placeName", label: "상세 주소", refKey: "placeName" },
-            { key: "meetingDate", label: "날짜", refKey: "meetingDate" },
-            { key: "startTime", label: "시작 시간", refKey: "startTime" },
-            { key: "maxMembers", label: "모집 인원", refKey: "maxMembers" },
-            { key: "supplies", label: "준비물", refKey: "supplies" },
-            { key: "guideText", label: "진행 안내", refKey: "guideText" },
-            { key: "content", label: "모임 소개", refKey: "content" }
+            { key: "title", label: "紐⑥엫 ?쒕ぉ", refKey: "title" },
+            { key: "address", label: "二쇱냼", refKey: "address" },
+            { key: "placeName", label: "?곸꽭 二쇱냼", refKey: "placeName" },
+            { key: "meetingDate", label: "?좎쭨", refKey: "meetingDate" },
+            { key: "startTime", label: "?쒖옉 ?쒓컙", refKey: "startTime" },
+            { key: "maxMembers", label: "紐⑥쭛 ?몄썝", refKey: "maxMembers" },
+            { key: "supplies", label: "以鍮꾨Ъ", refKey: "supplies" },
+            { key: "guideText", label: "吏꾪뻾 ?덈궡", refKey: "guideText" },
+            { key: "content", label: "紐⑥엫 ?뚭컻", refKey: "content" }
         ];
 
         for (const f of requiredFields) {
             if (!form[f.key] || String(form[f.key]).trim() === "") {
-                alert(`${f.label}을(를) 입력해주세요.`);
+                alert(`${f.label}??瑜? ?낅젰?댁＜?몄슂.`);
                 inputRefs.current[f.refKey]?.focus();
                 inputRefs.current[f.refKey]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
@@ -318,17 +319,17 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }
 
         if (!form.sportId) {
-            alert("운동 종목을 선택해주세요.");
+            alert("?대룞 醫낅ぉ???좏깮?댁＜?몄슂.");
             setIsSportModalOpen(true);
             return;
         }
         if (!form.regionId) {
-            alert("지역을 선택해주세요.");
+            alert("吏??쓣 ?좏깮?댁＜?몄슂.");
             setIsRegionModalOpen(true);
             return;
         }
         if (!isAuthenticated) {
-            alert("로그인이 필요합니다.");
+            alert("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
             navigate("/login");
             return;
         }
@@ -345,22 +346,20 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
             <div className={styles.pageTitle}>
                 <div>
                     <h1>{title}</h1>
-                    <p>{isEditMode ? "참가 예정인 사람들도 헷갈리지 않도록, 바뀐 정보가 한눈에 보이게 정리해두세요." : "제목, 장소, 시간, 소개와 대표 사진까지 정리하면 훨씬 신뢰감 있는 모임 페이지를 만들 수 있습니다."}
+                    <p>{isEditMode ? "李멸? ?덉젙???щ엺?ㅻ룄 ?룰컝由ъ? ?딅룄濡? 諛붾??뺣낫媛 ?쒕늿??蹂댁씠寃??뺣━?대몢?몄슂." : "?쒕ぉ, ?μ냼, ?쒓컙, ?뚭컻? ????ъ쭊源뚯? ?뺣━?섎㈃ ?⑥뵮 ?좊ː媛??덈뒗 紐⑥엫 ?섏씠吏瑜?留뚮뱾 ???덉뒿?덈떎."}
 
                     </p>
                 </div>
             </div>
-
             <section className={styles.formIntro}>
-                <h2>{isEditMode ? "기존 흐름은 유지하고, 필요한 부분만 정확하게 다듬어보세요." : "좋은 모임은 한눈에 이해되는 정보에서 시작됩니다."}</h2>
+                <h2>{isEditMode ? "모임 정보를 수정해 주세요." : "좋은 모임은 알아보기 쉬운 정보에서 시작합니다."}</h2>
                 <p>
-                    참가자는 제목과 썸네일, 장소, 분위기를 먼저 봅니다. 처음 보는 사람도
-                    바로 감을 잡을 수 있게 간결하고 선명하게 구성해보세요.
+                    제목, 장소, 시간, 소개와 사진을 정리하면 참여자가 모임을 더 쉽게 이해할 수 있습니다.
                 </p>
                 <div className={styles.formHintGrid}>
                     <article>
                         <span>제목 작성 팁</span>
-                        <strong>지역 + 운동 + 시간대가 자연스럽게 보이도록 쓰기</strong>
+                        <strong>지역, 운동, 시간을 자연스럽게 보여주기</strong>
                     </article>
                     <article>
                         <span>사진 등록 팁</span>
@@ -368,9 +367,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                     </article>
                     <article>
                         <span>소개 작성 팁</span>
-                        <strong>
-                            초보 가능 여부, 준비물, 진행 방식을 짧고 명확하게 안내
-                        </strong>
+                        <strong>초보 가능 여부, 준비물, 진행 방식을 짧고 명확하게 안내</strong>
                     </article>
                 </div>
             </section>
@@ -386,10 +383,9 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         name="title"
                         value={form.title}
                         onChange={handleChange}
-                        placeholder="예: 야당역 5km 러닝 크루 모집"
+                        placeholder="예: 잠실 5km 러닝 모임"
                     />
                 </label>
-                {/* 운동 종목 선택 영역 */}
                 <label>
                     <span className={styles.requiredLabel}>운동 종목</span>
                     <div className={styles.pickerRow}>
@@ -407,12 +403,11 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                                     selectedSportName ? styles.valueText : styles.placeholderText
                                 }
                             >
-                {selectedSportName || "운동 종목을 선택해주세요"}
-              </span>
+                                {selectedSportName || "운동 종목을 선택해주세요"}
+                            </span>
                         </div>
                     </div>
                 </label>
-                {/* 지역 선택 영역 */}
                 <label>
                     <span className={styles.requiredLabel}>지역</span>
                     <div className={styles.pickerRow}>
@@ -430,12 +425,10 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                                     regionDisplayText ? styles.valueText : styles.placeholderText
                                 }
                             >
-                {regionDisplayText || "지역을 선택해주세요."}
-              </span>
+                                {regionDisplayText || "지역을 선택해주세요."}
+                            </span>
                         </div>
                     </div>
-                </label>
-
                 <label>
                     <span className={styles.requiredLabel}>주소</span>
                     <input
@@ -444,8 +437,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         value={form.address}
                         onClick={handleAddressSearch}
                         readOnly
-                        placeholder="주소를 설정하세요."
-                        style={{cursor: "pointer"}}
+                        placeholder="주소를 설정하세요"
+                        style={{ cursor: "pointer" }}
                     />
                 </label>
                 <label>
@@ -455,45 +448,20 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         name="placeName"
                         value={form.placeName}
                         onChange={handleChange}
-                        placeholder="예: 야당역 2번 출구 앞"
+                        placeholder="예: 잠실역 2번 출구 앞"
                     />
                 </label>
                 <label>
                     <span className={styles.requiredLabel}>날짜</span>
-                    <input
-                        ref={(el) => (inputRefs.current.meetingDate = el)}
+                    <ReactCalendarDatePicker
+                        inputRef={(el) => (inputRefs.current.meetingDate = el)}
                         name="meetingDate"
                         value={form.meetingDate}
                         onChange={handleChange}
-                        type={form.meetingDate ? "date" : "text"}
-                        placeholder="날짜를 설정하세요."
-                        onClick={(e) => {
-                            const target = e.target;
-
-                            // 1. 클릭하는 순간 즉시 date 타입으로 변경
-                            if (target.type !== "date") {
-                                target.type = "date";
-                            }
-
-                            // 2. 브라우저가 타입을 바꿀 아주 짧은 시간(10ms)을 준 뒤 달력 강제 호출
-                            setTimeout(() => {
-                                try {
-                                    target.showPicker();
-                                } catch (error) {
-                                    // Safari 등 구형 브라우저 대비 안전장치
-                                }
-                            }, 10);
-                        }}
-                        onBlur={(e) => {
-                            // 달력을 닫았는데 값이 없으면 다시 text(Placeholder)로 복귀
-                            if (!e.target.value) {
-                                e.target.type = "text";
-                            }
-                        }}
+                        placeholder="날짜를 설정하세요"
                         min={getTodayString()}
                     />
                 </label>
-
                 <label>
                     <span className={styles.requiredLabel}>시작 시간</span>
                     <select
@@ -504,9 +472,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         className={`${styles.timeSelect} ${!form.startTime ? styles.placeholderText : styles.valueText}`}
                     >
                         <option value="" disabled hidden>
-                            시간을 설정하세요.
+                            시간을 설정하세요
                         </option>
-
                         {timeOptions.map((time) => (
                             <option
                                 key={time.value}
@@ -518,7 +485,6 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         ))}
                     </select>
                 </label>
-
                 <label>
                     <span className={styles.requiredLabel}>모집 인원 (본인 포함)</span>
                     <input
@@ -530,7 +496,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         min={isEditMode && initialData?.approvedCount ? initialData?.approvedCount : "2"}
                     />
                     {isEditMode && initialData?.approvedCount && Number(form.maxMembers) < initialData.approvedCount && (
-                        <small style={{ color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem" }}>* 현재 승인된 인원 ({initialData.approvedCount}명) 미만으로 줄일 수 없습니다.</small>
+                        <small style={{ color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem" }}>* 현재 승인된 인원보다 적게 줄일 수 없습니다.</small>
                     )}
                 </label>
                 <label>
@@ -545,7 +511,6 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         <option value="CLOSED">모집완료</option>
                     </select>
                 </label>
-
                 <label className={styles.full}>
                     <span className={styles.requiredLabel}>준비물</span>
                     <input
@@ -555,38 +520,39 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         placeholder="편한 운동복, 물, 개인 이어폰"
                     />
                 </label>
-
                 <label className={styles.full}>
                     <span className={styles.requiredLabel}>모임 소개</span>
                     <input
                         name="content"
                         value={form.content}
                         onChange={handleChange}
-                        placeholder="모임 분위기 등 간단한 모임 소개를 적어주세요."
+                        placeholder="모임 분위기와 간단한 소개를 적어주세요"
                     />
                 </label>
 
+                </label>
+
                 <label className={styles.full}>
-                    <span className={styles.requiredLabel}>진행 안내</span>
+                    <span className={styles.requiredLabel}>吏꾪뻾 ?덈궡</span>
                     <textarea
                         name="guideText"
                         value={form.guideText}
                         onChange={handleChange}
-                        placeholder="[진행 안내 사항을 적어주세요.]
+                        placeholder="[吏꾪뻾 ?덈궡 ?ы빆???곸뼱二쇱꽭??]
 
-- 집결 시간:
-모임 시작 10분 전
+- 吏묎껐 ?쒓컙:
+紐⑥엫 ?쒖옉 10遺???
 
-- 주의사항:
-우천 시 모임 취소 여부는 당일 오전 00시에 공지합니다.
-늦으시는 분들은 채팅을 통해 연락 부탁드립니다.
-운동 중 개인 부상에 대해서는 본인 책임이 크니 무리하지 마세요!
-당일 뵙겠습니다!"
+- 二쇱쓽?ы빆:
+?곗쿇 ??紐⑥엫 痍⑥냼 ?щ????뱀씪 ?ㅼ쟾 00?쒖뿉 怨듭??⑸땲??
+??쑝?쒕뒗 遺꾨뱾? 梨꾪똿???듯빐 ?곕씫 遺?곷뱶由쎈땲??
+?대룞 以?媛쒖씤 遺?곸뿉 ??댁꽌??蹂몄씤 梨낆엫???щ땲 臾대━?섏? 留덉꽭??
+?뱀씪 逾숆쿋?듬땲??"
                     />
                 </label>
 
                 <label className={`${styles.full} ${styles.fileUploadWrapper}`}>
-                    <span className={styles.fileUploadLabel}>대표 사진 등록</span>
+                    <span className={styles.fileUploadLabel}>????ъ쭊 ?깅줉</span>
                     <input
                         type="file"
                         accept="image/*"
@@ -599,7 +565,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                     />
 
                     <small className={styles.uploadHint}>
-                        대표 썸네일 1장만 등록할 수 있습니다. 최대 10MB까지 지원합니다.
+                        ????몃꽕??1?λ쭔 ?깅줉?????덉뒿?덈떎. 理쒕? 10MB源뚯? 吏?먰빀?덈떎.
                     </small>
 
                     <button
@@ -607,7 +573,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         onClick={handleCustomBtnClick}
                         className={styles.fileUploadButton}
                     >
-                        파일 선택
+                        ?뚯씪 ?좏깮
                     </button>
                 </label>
 
@@ -626,7 +592,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                                         type="button"
                                         onClick={handleRemoveImage}
                                     >
-                                        삭제
+                                        ??젣
                                     </button>
                                 </div>
                             </article>
@@ -636,36 +602,36 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
 
                 <div className={`${styles.full} ${styles.formActions}`}>
                     {isEditMode && (
-                        <div className={styles.formActions}> {/* 삭제 버튼을 감싸는 div 추가 */}
+                        <div className={styles.formActions}> {/* ??젣 踰꾪듉??媛먯떥??div 異붽? */}
                             <DeleteMeetingButton meetingId={meetingId} onDeleted={() => navigate(`/meetings`)} />
                         </div>
 
                     )}
                     <div className={styles.actionGroup}>
-                        <Link to="/meetings">취소</Link>
-                        <button type="submit">{isEditMode ? "모임 수정" : "모임 등록"}</button>
+                        <Link to="/meetings">痍⑥냼</Link>
+                        <button type="submit">{isEditMode ? "紐⑥엫 ?섏젙" : "紐⑥엫 ?깅줉"}</button>
 
                     </div>
                 </div>
             </form>
 
 
-            {/*운동 종목 선택 모달*/}
+            {/*?대룞 醫낅ぉ ?좏깮 紐⑤떖*/}
             <SportPickerModal
                 open={isSportModalOpen}
-                sports={sports} // DB에서 가져온 배열 전달
+                sports={sports} // DB?먯꽌 媛?몄삩 諛곗뿴 ?꾨떖
                 initialSelection={{
-                    category: sports.find(s => s.sportId === form.sportId)?.category || "전체 분류",
+                    category: sports.find(s => s.sportId === form.sportId)?.category || "?꾩껜 遺꾨쪟",
                     sportId: form.sportId,
                     name: selectedSportName
                 }}
                 onApply={handleSportApply}
                 onClose={() => setIsSportModalOpen(false)}
             />
-            {/*지역 선택 모달*/}
+            {/*吏???좏깮 紐⑤떖*/}
             <RegionPickerModal
                 open={isRegionModalOpen}
-                regions={regionHierarchy} // 변환된 계층형 데이터
+                regions={regionHierarchy} // 蹂?섎맂 怨꾩링???곗씠??
                 initialSelection={{
                     sido: selectedRegion.sido || "전체 시도",
                     sigungu: selectedRegion.sigungu || "전체 시군구",

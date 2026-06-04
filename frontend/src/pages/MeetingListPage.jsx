@@ -4,6 +4,7 @@ import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import Pagination from "../components/Pagination";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
@@ -662,14 +663,13 @@ export default function MeetingListPage() {
             <option value="COMPLETED">모임완료</option>
           </select>
 
-          <input
-            type="date"
+          <ReactCalendarDatePicker
             value={meetingDate}
             onChange={(event) => {
               setMeetingDate(event.target.value);
               setCurrentPage(1);
             }}
-            onClick={(e) => e.target.showPicker?.()}
+            placeholder="날짜 선택"
           />
 
           <input
@@ -905,14 +905,13 @@ export default function MeetingListPage() {
             <option value="COMPLETED">모임완료</option>
           </select>
 
-          <input
-            type="date"
+          <ReactCalendarDatePicker
             value={meetingDate}
             onChange={(event) => {
               setMeetingDate(event.target.value);
               setCurrentPage(1);
             }}
-            onClick={(e) => e.target.showPicker?.()}
+            placeholder="날짜 선택"
           />
 
           <input
