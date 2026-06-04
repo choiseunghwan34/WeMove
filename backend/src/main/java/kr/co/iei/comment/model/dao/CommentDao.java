@@ -22,4 +22,9 @@ public class CommentDao {
   public int softDeleteComment(Long id) {
     return sqlSession.update("comment.softDeleteComment", id);
   }
+
+    public Comment selectCommentById(Long commentId) {
+      return sqlSession.selectOne("commentMapper.selectCommentById", commentId);
+    }
+
 }

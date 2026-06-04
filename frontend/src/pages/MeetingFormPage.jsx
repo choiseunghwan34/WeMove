@@ -250,8 +250,26 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         e.preventDefault();
         console.log("onsubmit 함수확인: ", onSubmit)
 
-        //모임 등록 시 참여인원 2명 이상으로
-        if (Number(form.maxMembers) < minRequiredMembers) {
+        // 1. 모임 수정시 설정, 승인 인원에 따른 모집상태 변경
+        const currentMax = Number(form.maxMembers);
+        const approvedCount = initialData?.approvedCount || 0;
+
+        let changeStatus = form.status;
+
+        if (currentMax === approvedCount) {
+            changeStatus = 'CLOSED';
+        } else if (currentMax > approvedCount) {
+            if (form.status === 'CLOSED' || form.status === 'RECRUITING') {
+                changeStatus = 'RECRUITING';
+            }
+        }
+
+        // 2. ★ 백엔드로 보낼 "최종 데이터 객체"를 여기서 미리 만듭니다! ★
+        let finalForm = { ...form, status: changeStatus };
+        setForm(finalForm);
+
+        // 모임 등록 시 참여인원 2명 이상으로
+        if (Number(finalForm.maxMembers) < minRequiredMembers) {
             if (minRequiredMembers > 2) {
                 alert(`모집 인원은 현재 승인된 인원 (${initialData.approvedCount}명) 이상이어야 합니다.`)
             } else {
@@ -260,7 +278,6 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             inputRefs.current.maxMembers?.focus();
             return;
         }
-
 
         // 당일 시간 유효성 검사 로직
         const selectedDate = new Date(form.meetingDate);
@@ -281,8 +298,6 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                 return;
             }
         }
-
-        let finalForm = {...form};
         if (!finalForm.sportId && selectedSportName) {
             const s = sports.find(x => x.name === selectedSportName);
             if (s) finalForm.sportId = s.sportId;
@@ -310,7 +325,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         ];
 
         for (const f of requiredFields) {
-            if (!form[f.key] || String(form[f.key]).trim() === "") {
+            if (!finalForm[f.key] || String(form[f.key]).trim() === "") {
                 alert(`${f.label}을(를) 입력해주세요.`);
                 inputRefs.current[f.refKey]?.focus();
                 inputRefs.current[f.refKey]?.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -318,12 +333,12 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             }
         }
 
-        if (!form.sportId) {
+        if (!finalForm.sportId) {
             alert("운동 종목을 선택해주세요.");
             setIsSportModalOpen(true);
             return;
         }
-        if (!form.regionId) {
+        if (!finalForm.regionId) {
             alert("지역을 선택해주세요.");
             setIsRegionModalOpen(true);
             return;
@@ -335,7 +350,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         }
 
         const formData = new FormData();
-        formData.append("request", new Blob([JSON.stringify(form)], {type: "application/json"}));
+        formData.append("request", new Blob([JSON.stringify(finalForm)], {type: "application/json"}));
         if (files.length > 0) formData.append("image", files[0]);
         onSubmit(formData);
     };

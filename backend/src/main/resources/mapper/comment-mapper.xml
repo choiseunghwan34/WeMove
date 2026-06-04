@@ -3,6 +3,19 @@
 
 <mapper namespace="comment">
 
+    <select id="selectCommentById" parameterType="long" resultType="kr.co.iei.comment.model.vo.Comment">
+        SELECT
+            commentId,
+            meetingId,
+            writerId,
+            parentCommentId,
+            content,
+            createdAt,
+            isDeleted
+        FROM comments
+        WHERE commentId = #{commentId}
+    </select>
+
     <select id="selectComments" resultType="kr.co.iei.comment.model.vo.CommentResponse">
         SELECT
             c.commentId,
