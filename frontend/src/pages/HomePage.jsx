@@ -5,8 +5,9 @@ import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
-import { categoryItems, meetingImages } from "../data/dashboardData";
+import { categoryItems, meetingImages} from "../data/dashboardData";
 import { getComments } from "../api/commentApi";
+import defaultImage from "../assets/image/bg1.jpg";
 import {
   getMainMeetings,
   getMeetings,
@@ -819,7 +820,10 @@ export default function HomePage() {
                 className={styles.dashboardMeetingCard}
               >
                 <img
-                  src={getMeetingThumbnail(meeting)}
+                    src={
+                        meeting.thumbnailImage ||
+                        defaultImage
+                    }
                   alt={meeting.title}
                   className={styles.dashboardMeetingImage}
                 />

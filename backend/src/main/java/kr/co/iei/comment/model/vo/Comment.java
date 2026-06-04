@@ -12,4 +12,6 @@ public class Comment {
   private String content;
   private Boolean isDeleted;
   private LocalDateTime createdAt;
+  private String profileImage;
+
 }

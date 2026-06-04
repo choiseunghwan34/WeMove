@@ -2,10 +2,11 @@ import {useAuth} from "../contexts/AuthContext.jsx";
 import styles from "../styles/WeMoveShared.module.css";
 import {useEffect, useState} from "react";
 import {createComment, getComments} from "../api/commentApi.js";
-export default function Comment({meetingId, hostUserId}){
+import defaultUserImage from "../assets/image/Default-user.png"
+export default function Comment({meetingId, hostUserId, comments, setComments}) {
     const { user,isAuthenticated } = useAuth();
-    const [comments, setComments] = useState([]);
     const [content, setContent] = useState("");
+
 
     //1.댓글목록조회
     const fetchComments = ()=>{
@@ -25,11 +26,19 @@ export default function Comment({meetingId, hostUserId}){
     //2.댓글 등록
     const handleCommentSubmit = (e) => {
         e.preventDefault();
+
+        console.log("현재 로그인한 유저 아이디: ", user)
+        console.log("유저 아이디 : ", user?.memberId)
         if(!content.trim()){
             alert("댓글 내용을 입력해주세요.");
             return;
         }
-        createComment(meetingId, {content}).then(res=>{
+        const commentData = {
+            writerId: user?.memberId,
+            content: content,
+            parentCommentId: null
+        }
+        createComment(meetingId, commentData).then((res)=>{
             console.log(res);
             setContent(""); // 입력창 초기화
             fetchComments(); //목록새로고침
@@ -49,25 +58,40 @@ export default function Comment({meetingId, hostUserId}){
                 {comments.length === 0 ? (
                     <p>아직 작성된 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
                 ):(
+
                     comments.map((comment)=>(
                         <article key={comment.commentId} className={styles.commentItem}>
-                            <div className={styles.commentAvatar}/>
+                            <img
+                                style={!comment.profileImage ? {
+                                    padding: "2px",
+                                    backgroundColor: "#f3f4f6",
+                                    boxSizing: "border-box",
+                                }:{}}
+                                src={comment.profileImage || defaultUserImage}
+                                alt={`${comment.nickname} 프로필`}
+                                className={styles.commentAvatar}
+                            />
                                 <div>
                                     <div className={styles.commentMeta}>
                                         <strong>{comment.nickname}</strong>
-                                        <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                        <span>{new Date(comment.createdAt).toLocaleString()}</span>
                                     </div>
                                     <p>{comment.content}</p>
                                 </div>
                         </article>
                     )))}
+
+
             </div>
             {isAuthenticated ? (
-                <form className={styles.commentForm}>
-                    <textarea placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요."/>
+                <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
+                    <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요."/>
                     <div className={styles.formActions}>
                         <button
-                            type="button"
+                            type="submit"
                         >댓글 등록
                         </button>
                     </div>

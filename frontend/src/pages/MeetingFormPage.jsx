@@ -1,26 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {useEffect, useMemo, useRef, useState} from "react";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import styles from "../styles/MeetingCreatePage.module.css";
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
-import { useAuth } from "../contexts/AuthContext.jsx";
-import { getSports } from "../api/sportApi.js";
-import { getRegions } from "../api/regionApi.js";
+import {useAuth} from "../contexts/AuthContext.jsx";
+import {getSports} from "../api/sportApi.js";
+import {getRegions} from "../api/regionApi.js";
 import DeleteMeetingButton from "./DeleteMeetingButton.jsx";
 
 const normalizeText = (value = "") => String(value).trim();
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
 
-export default function MeetingFormPage({ initialData, onSubmit, title }) {
-    const { meetingId } = useParams();
+export default function MeetingFormPage({initialData, onSubmit, title}) {
+    const {meetingId} = useParams();
     const isEditMode = !!meetingId;
 
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const {isAuthenticated} = useAuth();
     const fileInputRef = useRef(null);
     const inputRefs = useRef({});
 
-     const getTodayString = () => new Date().toISOString().split('T')[0];
+    const getTodayString = () => new Date().toISOString().split('T')[0];
 
     const initialFormValue = initialData || {
         sportId: null, regionId: null, title: "", content: "", placeName: "", address: "",
@@ -37,16 +37,16 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const [isSportModalOpen, setIsSportModalOpen] = useState(false);
 
     const [selectedSportName, setSelectedSportName] = useState("");
-    const [selectedRegion, setSelectedRegion] = useState({ sido: "", sigungu: "", dong: "" });
+    const [selectedRegion, setSelectedRegion] = useState({sido: "", sigungu: "", dong: ""});
 
 
     // 썸네일 미리보기
     const previews = useMemo(() => {
         return files.map((file) => {
             if (file.url) {
-                return { name: file.name, url: file.url };
+                return {name: file.name, url: file.url};
             }
-            return { name: file.name, url: URL.createObjectURL(file) };
+            return {name: file.name, url: URL.createObjectURL(file)};
         });
     }, [files]);
 
@@ -97,9 +97,6 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }
         return options;
     }, [form.meetingDate]);
-
-
-    // ★ 4. useEffect (API 호출 및 사이드 이펙트)
 
     // 메모리 누수 방지
     useEffect(() => {
@@ -156,7 +153,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }
         if (initialData.thumbnailImage) {
             console.log("이미지 url확인: ", initialData.thumbnailImage);
-            setFiles([{ name: "기존 썸네일", url: initialData.thumbnailImage }]);
+            setFiles([{name: "기존 썸네일", url: initialData.thumbnailImage}]);
         }
     }, [initialData, sports, regions]);
 
@@ -200,27 +197,27 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
     const handleCustomBtnClick = () => fileInputRef.current.click();
 
     const handleSportApply = (d) => {
-        setForm(p => ({ ...p, sportId: d.sportId }));
+        setForm(p => ({...p, sportId: d.sportId}));
         setSelectedSportName(d.name);
         setIsSportModalOpen(false);
     };
 
     const handleRegionApply = (d) => {
-        setSelectedRegion({ sido: d.sido, sigungu: d.sigungu, dong: d.dong });
+        setSelectedRegion({sido: d.sido, sigungu: d.sigungu, dong: d.dong});
         const match = regions.find(r =>
             r.sido === d.sido &&
             r.sigungu === d.sigungu &&
             r.dong === d.dong
         );
         if (match) {
-            setForm(p => ({ ...p, regionId: match.regionId }));
+            setForm(p => ({...p, regionId: match.regionId}));
         }
         setIsRegionModalOpen(false);
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(p => ({ ...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value }));
+        const {name, value} = e.target;
+        setForm(p => ({...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value}));
     };
 
     const handleFileChange = (e) => {
@@ -247,19 +244,23 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
             isImageRemoved: true,
         }));
     };
+    const minRequiredMembers = isEditMode && initialData?.approvedCount ? Math.max(2, initialData?.approvedCount) : 2;
 
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log("onsubmit 함수확인: ", onSubmit)
 
-        //승인된 인원보다 적게 수정불가
-        if(isEditMode && initialData?.approvedCount !== undefined){
-            if(Number(form.maxMembers) < initialData.approvedCount){
+        //모임 등록 시 참여인원 2명 이상으로
+        if (Number(form.maxMembers) < minRequiredMembers) {
+            if (minRequiredMembers > 2) {
                 alert(`모집 인원은 현재 승인된 인원 (${initialData.approvedCount}명) 이상이어야 합니다.`)
-                inputRefs.current.maxMembers?.focus();
-                return;
+            } else {
+                alert("참여 인원은 본인 포함 최소 2명 이상이어야 합니다.");
             }
+            inputRefs.current.maxMembers?.focus();
+            return;
         }
+
 
         // 당일 시간 유효성 검사 로직
         const selectedDate = new Date(form.meetingDate);
@@ -281,7 +282,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
             }
         }
 
-        let finalForm = { ...form };
+        let finalForm = {...form};
         if (!finalForm.sportId && selectedSportName) {
             const s = sports.find(x => x.name === selectedSportName);
             if (s) finalForm.sportId = s.sportId;
@@ -297,22 +298,22 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }
 
         const requiredFields = [
-            { key: "title", label: "모임 제목", refKey: "title" },
-            { key: "address", label: "주소", refKey: "address" },
-            { key: "placeName", label: "상세 주소", refKey: "placeName" },
-            { key: "meetingDate", label: "날짜", refKey: "meetingDate" },
-            { key: "startTime", label: "시작 시간", refKey: "startTime" },
-            { key: "maxMembers", label: "모집 인원", refKey: "maxMembers" },
-            { key: "supplies", label: "준비물", refKey: "supplies" },
-            { key: "guideText", label: "진행 안내", refKey: "guideText" },
-            { key: "content", label: "모임 소개", refKey: "content" }
+            {key: "title", label: "모임 제목", refKey: "title"},
+            {key: "address", label: "주소", refKey: "address"},
+            {key: "placeName", label: "상세 주소", refKey: "placeName"},
+            {key: "meetingDate", label: "날짜", refKey: "meetingDate"},
+            {key: "startTime", label: "시작 시간", refKey: "startTime"},
+            {key: "maxMembers", label: "모집 인원", refKey: "maxMembers"},
+            {key: "supplies", label: "준비물", refKey: "supplies"},
+            {key: "guideText", label: "진행 안내", refKey: "guideText"},
+            {key: "content", label: "모임 소개", refKey: "content"}
         ];
 
         for (const f of requiredFields) {
             if (!form[f.key] || String(form[f.key]).trim() === "") {
                 alert(`${f.label}을(를) 입력해주세요.`);
                 inputRefs.current[f.refKey]?.focus();
-                inputRefs.current[f.refKey]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                inputRefs.current[f.refKey]?.scrollIntoView({behavior: 'smooth', block: 'center'});
                 return;
             }
         }
@@ -334,7 +335,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         }
 
         const formData = new FormData();
-        formData.append("request", new Blob([JSON.stringify(form)], { type: "application/json" }));
+        formData.append("request", new Blob([JSON.stringify(form)], {type: "application/json"}));
         if (files.length > 0) formData.append("image", files[0]);
         onSubmit(formData);
     };
@@ -530,7 +531,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                         min={isEditMode && initialData?.approvedCount ? initialData?.approvedCount : "2"}
                     />
                     {isEditMode && initialData?.approvedCount && Number(form.maxMembers) < initialData.approvedCount && (
-                        <small style={{ color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem" }}>* 현재 승인된 인원 ({initialData.approvedCount}명) 미만으로 줄일 수 없습니다.</small>
+                        <small style={{color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem"}}>* 현재
+                            승인된 인원 ({initialData.approvedCount}명) 미만으로 줄일 수 없습니다.</small>
                     )}
                 </label>
                 <label>
@@ -637,7 +639,7 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
                 <div className={`${styles.full} ${styles.formActions}`}>
                     {isEditMode && (
                         <div className={styles.formActions}> {/* 삭제 버튼을 감싸는 div 추가 */}
-                            <DeleteMeetingButton meetingId={meetingId} onDeleted={() => navigate(`/meetings`)} />
+                            <DeleteMeetingButton meetingId={meetingId} onDeleted={() => navigate(`/meetings`)}/>
                         </div>
 
                     )}

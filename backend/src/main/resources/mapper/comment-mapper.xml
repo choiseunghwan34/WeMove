@@ -10,7 +10,8 @@
             u.nickname,
             c.content,
             c.createdAt,
-            c.isDeleted
+            c.isDeleted,
+            u.profileImage
         FROM comments c
         JOIN users u ON c.writerId=u.userId
         WHERE c.meetingId=#{meetingId}
