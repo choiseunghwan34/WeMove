@@ -31,7 +31,7 @@ const heroSlides = [
     image: meetingImages[2],
   },
   {
-    title: "이번 주말, 동네에서 같이 운동할 사람 찾기",
+    title: "이번 주말, 동네에서 운동할 사람 찾기",
     description:
       "지역과 날짜를 먼저 고르고, 그다음 운동을 더하면 딱 맞는 모임만 보여요.",
     image: meetingImages[5],
