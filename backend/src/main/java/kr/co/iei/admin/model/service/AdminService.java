@@ -18,7 +18,5 @@ public interface AdminService {
 
   void updateMeetingStatus(Long meetingId, String status);
 
-  void resolveReport(Long reportId);
-
-  void rejectReport(Long reportId);
+  void processReport(Long reportId, AdminReportActionRequest request);
 }

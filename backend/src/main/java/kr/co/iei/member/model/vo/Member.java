@@ -17,6 +17,9 @@ public class Member {
   private Long regionId;
   private String role;
   private String status;
+  private LocalDateTime suspendedUntil;
+  private String suspendReason;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+
 }

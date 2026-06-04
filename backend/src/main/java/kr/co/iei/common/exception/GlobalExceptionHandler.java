@@ -17,6 +17,13 @@ public class GlobalExceptionHandler {
         .body(new ApiErrorResponse(exception.getMessage()));
   }
 
+  @ExceptionHandler(AccountSuspendedException.class)
+  public ResponseEntity<ApiErrorResponse> handleAccountSuspended(
+      AccountSuspendedException exception) {
+    return ResponseEntity.status(HttpStatus.LOCKED)
+        .body(new ApiErrorResponse(exception.getMessage()));
+  }
+
   @ExceptionHandler({
     IllegalArgumentException.class,
     MethodArgumentNotValidException.class

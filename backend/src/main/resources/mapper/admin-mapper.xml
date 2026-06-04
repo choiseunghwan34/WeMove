@@ -7,7 +7,7 @@
         SELECT
             (SELECT COUNT(*) FROM users WHERE role != 'ADMIN') AS total_members,
             (SELECT COUNT(*) FROM meetings WHERE deletedAt IS NULL) AS total_meetings,
-            (SELECT COUNT(*) FROM reports WHERE status = "PENDING") AS pending_reports,
+            (SELECT COUNT(*) FROM reports WHERE status = 'PENDING') AS pending_reports,
             (SELECT COUNT(*) FROM sports) AS total_sports
     </select>
 
@@ -22,7 +22,8 @@
                 ELSE CONCAT(r.sido, ' ', r.sigungu, ' ', r.dong)
             END AS regionName,
             u.role,
-            u.status
+            u.status,
+            u.suspendedUntil
         FROM users u
         LEFT JOIN regions r ON u.regionId = r.regionId
         ORDER BY u.userId DESC
@@ -73,6 +74,12 @@
         ORDER BY m.meetingId DESC
     </select>
 
+    <select id="selectReportTargetUserId" resultType="java.lang.Integer">
+        SELECT targetUserId
+        FROM reports
+        WHERE reportId = #{reportId}
+    </select>
+
     <select id="selectReports" resultType="kr.co.iei.admin.model.vo.AdminReportResponse">
         SELECT
             r.reportId,
@@ -82,11 +89,11 @@
             r.targetUserId,
             u.nickname AS targetName
         FROM reports r
-                 LEFT JOIN users u ON r.targetUserId = u.userId
+        LEFT JOIN users u ON r.targetUserId = u.userId
         ORDER BY r.reportId DESC
     </select>
 
-    <update id="updateReportStatus">
+    <update id="updateReportStatusToProcessed">
         UPDATE reports
         SET
             status = #{status},
@@ -96,7 +103,17 @@
 
     <update id="updateMemberStatus">
         UPDATE users
-        SET status = #{status}
+        SET
+            status = #{status},
+            suspendedUntil = CASE
+                WHEN #{status} = 'SUSPENDED' THEN DATE_ADD(NOW(), INTERVAL 24 HOUR)
+                ELSE NULL
+            END,
+            suspendReason = CASE
+                WHEN #{status} = 'SUSPENDED' THEN suspendReason
+                ELSE NULL
+            END,
+            updatedAt = NOW()
         WHERE userId = #{userId}
     </update>
 
@@ -106,6 +123,16 @@
             status = #{status},
             updatedAt = NOW()
         WHERE meetingId = #{meetingId}
+    </update>
+
+    <update id="suspendUser">
+        UPDATE users
+        SET
+            status = 'SUSPENDED',
+            suspendedUntil = DATE_ADD(NOW(), INTERVAL #{suspendDuration} HOUR),
+            suspendReason = #{suspendReason},
+            updatedAt = NOW()
+        WHERE userId = #{userId}
     </update>
 
 </mapper>

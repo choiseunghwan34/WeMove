@@ -31,6 +31,10 @@ public class AdminDao {
     return sqlSession.selectList("admin.selectReports");
   }
 
+  public Integer selectReportTargetUserId(Long reportId) {
+    return sqlSession.selectOne("admin.selectReportTargetUserId", reportId);
+  }
+
   public int updateMemberStatus(Long userId, String status) {
     return sqlSession.update(
         "admin.updateMemberStatus", Map.of("userId", userId, "status", status));
@@ -42,8 +46,18 @@ public class AdminDao {
         Map.of("meetingId", meetingId, "status", status));
   }
 
-  public int updateReportStatus(Long reportId, String status) {
-    return sqlSession.update(
-        "admin.updateReportStatus", Map.of("reportId", reportId, "status", status));
+  public void updateReportStatusToProcessed(Long reportId, String status) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("reportId", reportId);
+    params.put("status", status);
+    sqlSession.update("admin.updateReportStatusToProcessed", params);
+  }
+
+  public void suspendUser(Long userId, int suspendDuration, String suspendReason) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("suspendDuration", suspendDuration);
+    params.put("suspendReason", suspendReason);
+    sqlSession.update("admin.suspendUser", params);
   }
 }

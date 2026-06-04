@@ -1,5 +1,6 @@
 package kr.co.iei.auth.model.dao;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import kr.co.iei.member.model.vo.Member;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,19 @@ public class AuthDao {
 
   public int updatePassword(Long userId, String password) {
     return sqlSession.update("auth.updatePassword", Map.of("userId", userId, "password", password));
+  }
+
+  public int updateMemberStatus(Long userId, String status) {
+    return sqlSession.update("auth.updateMemberStatus", Map.of("userId", userId, "status", status));
+  }
+
+  public int restoreExpiredSuspensions() {
+    return sqlSession.update("auth.restoreExpiredSuspensions");
+  }
+
+  public int suspendUser(Long userId, LocalDateTime suspendedUntil) {
+    return sqlSession.update(
+        "auth.suspendUser",
+        Map.of("userId", userId, "suspendedUntil", suspendedUntil));
   }
 }

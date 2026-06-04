@@ -19,3 +19,6 @@ export const resolveReport = (id) =>
   api.patch("/admin/reports/" + id + "/resolve");
 export const rejectReport = (id) =>
   api.patch("/admin/reports/" + id + "/reject");
+export const processAdminReport = (reportId, payload) => {
+  return api.post(`/admin/reports/${reportId}/process`, payload);
+};

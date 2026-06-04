@@ -1,8 +1,9 @@
 package kr.co.iei.common.config;
 
 import kr.co.iei.chat.websocket.DirectChatWebSocketHandler;
-import kr.co.iei.common.websocket.CommonWebSocketHandler;
 import kr.co.iei.chat.websocket.MeetingChatWebSocketHandler;
+import kr.co.iei.common.websocket.CommonWebSocketHandler;
+import kr.co.iei.common.websocket.NotificationWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -16,6 +17,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
   private final CommonWebSocketHandler commonWebSocketHandler;
   private final MeetingChatWebSocketHandler meetingChatWebSocketHandler;
   private final DirectChatWebSocketHandler directChatWebSocketHandler;
+  private final NotificationWebSocketHandler notificationWebSocketHandler;
 
   @Override
   public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -31,5 +33,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
         .addHandler(directChatWebSocketHandler, "/ws/direct-chat")
         .setAllowedOrigins("http://localhost:5173", "http://127.0.0.1:5173");
 
+    registry
+        .addHandler(notificationWebSocketHandler, "/ws/notifications")
+        .setAllowedOrigins("http://localhost:5173", "http://127.0.0.1:5173");
   }
 }

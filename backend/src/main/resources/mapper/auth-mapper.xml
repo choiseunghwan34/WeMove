@@ -4,9 +4,15 @@
 <mapper namespace="auth">
 
     <select id="selectByLoginId" resultType="kr.co.iei.member.model.vo.Member">
-        SELECT *
-        FROM users
-        WHERE loginId=#{loginId}
+        SELECT
+            u.*,
+            (SELECT reason
+             FROM reports
+             WHERE targetUserId = u.userId
+             ORDER BY createdAt DESC
+                LIMIT 1) AS suspendReason
+        FROM users u
+        WHERE u.loginId = #{loginId}
     </select>
 
     <select id="selectByUserId" resultType="kr.co.iei.member.model.vo.Member">
@@ -69,6 +75,43 @@
         UPDATE users
         SET password=#{password}
         WHERE userId=#{userId}
+    </update>
+
+    <update id="updateMemberStatus">
+        UPDATE users
+        SET
+            status = #{status},
+            suspendedUntil = CASE
+                WHEN #{status} = 'SUSPENDED' THEN COALESCE(suspendedUntil, DATE_ADD(NOW(), INTERVAL 24 HOUR))
+                ELSE NULL
+            END,
+            suspendReason = CASE
+                WHEN #{status} = 'SUSPENDED' THEN suspendReason
+                ELSE NULL
+            END,
+            updatedAt = NOW()
+        WHERE userId = #{userId}
+    </update>
+
+    <update id="suspendUser">
+        UPDATE users
+        SET
+            status = 'SUSPENDED',
+            suspendedUntil = #{suspendedUntil},
+            updatedAt = NOW()
+        WHERE userId = #{userId}
+    </update>
+
+    <update id="restoreExpiredSuspensions">
+        UPDATE users
+        SET
+            status = 'ACTIVE',
+            suspendedUntil = NULL,
+            suspendReason = NULL,
+            updatedAt = NOW()
+        WHERE status = 'SUSPENDED'
+          AND suspendedUntil IS NOT NULL
+          AND suspendedUntil &lt;= NOW()
     </update>
 
 </mapper>

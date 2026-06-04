@@ -547,6 +547,26 @@
   color: #1f2937 !important;
 }
 
+.reportActionCell {
+  vertical-align: middle;
+}
+
+.processedLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .tableCard tr:hover td {
   background: #f8fbff !important;
 }

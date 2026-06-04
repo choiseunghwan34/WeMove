@@ -36,10 +36,6 @@ const normalizeServerMessage = (message) => {
     return "이메일 인증을 완료한 뒤 로그인해주세요.";
   }
 
-  if (message.includes("suspended") || message.includes("정지")) {
-    return "정지된 계정입니다. 관리자에게 문의해주세요.";
-  }
-
   if (message.includes("deleted") || message.includes("탈퇴")) {
     return "탈퇴한 계정은 로그인할 수 없습니다.";
   }
@@ -87,7 +83,15 @@ export default function LoginPage() {
   const [autoLogin, setAutoLogin] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 모달 관련 상태
   const [duplicatePromptOpen, setDuplicatePromptOpen] = useState(false);
+  const [suspendedModalOpen, setSuspendedModalOpen] = useState(false);
+  const [suspensionDetails, setSuspensionDetails] = useState({
+    reason: "",
+    until: "",
+  });
+
   const [stats, setStats] = useState({
     totalMembers: 0,
     totalMeetings: 0,
@@ -184,9 +188,28 @@ export default function LoginPage() {
     try {
       await requestLogin();
     } catch (error) {
-      if (error?.response?.data?.code === "DUPLICATE_LOGIN_REQUIRED") {
+      const errData = error?.response?.data;
+
+      // 1. 중복 로그인 확인
+      if (errData?.code === "DUPLICATE_LOGIN_REQUIRED") {
         setDuplicatePromptOpen(true);
-      } else {
+      }
+      // 2. 계정 정지 확인 (상태 코드 423 또는 에러 메시지/코드로 판별)
+      else if (
+          error?.response?.status === 423 ||
+          errData?.code === "ACCOUNT_SUSPENDED" ||
+          errData?.message?.includes("suspended") ||
+          errData?.message?.includes("정지")
+      ) {
+        setSuspensionDetails({
+          // 백엔드에서 넘겨주는 JSON 키 이름에 맞게 수정 필요 (예: errData.reason)
+          reason: errData?.reason || "운영원칙 위반",
+          until: errData?.suspendedUntil || "관리자 문의 요망",
+        });
+        setSuspendedModalOpen(true);
+      }
+      // 3. 그 외 일반 에러
+      else {
         setErrorMessage(getLoginErrorMessage(error));
       }
     } finally {
@@ -211,7 +234,7 @@ export default function LoginPage() {
   return (
       <>
         <main className={styles.page}>
-          {/* 줌인 애니메이션이 적용되는 배경 레이어 */}
+          {/* 줌인 애니메이션이 적용되는 배경 레이어 */}
           <div
               className={styles.backgroundLayer}
               style={{ backgroundImage: `url(${backgroundImage})` }}
@@ -326,6 +349,7 @@ export default function LoginPage() {
           </div>
         </main>
 
+        {/* 중복 로그인 모달 */}
         <AppModal
             open={duplicatePromptOpen}
             title="중복 로그인 안내"
@@ -335,6 +359,43 @@ export default function LoginPage() {
             onConfirm={confirmDuplicateLogin}
             onClose={() => setDuplicatePromptOpen(false)}
         />
+
+        {/* 정지 계정 안내 모달 추가 */}
+        <AppModal
+            open={suspendedModalOpen}
+            title="접속 제한 안내"
+            description="운영원칙 위반으로 인해 계정 이용이 일시적으로 제한되었습니다."
+            confirmText="확인"
+            hideCancel={true} // 닫기 버튼 하나만 보여줌
+            onConfirm={() => setSuspendedModalOpen(false)}
+            onClose={() => setSuspendedModalOpen(false)}
+        >
+          <div style={{
+            marginTop: "16px",
+            padding: "16px",
+            backgroundColor: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            textAlign: "left"
+          }}>
+            <div style={{ marginBottom: "8px" }}>
+              <span style={{ fontSize: "13px", color: "#64748b", display: "block", marginBottom: "4px" }}>
+                정지 사유
+              </span>
+              <strong style={{ fontSize: "14px", color: "#334155" }}>
+                {suspensionDetails.reason}
+              </strong>
+            </div>
+            <div>
+              <span style={{ fontSize: "13px", color: "#64748b", display: "block", marginBottom: "4px" }}>
+                제한 해제 일시
+              </span>
+              <strong style={{ fontSize: "15px", color: "#e11d48" }}>
+                {suspensionDetails.until}
+              </strong>
+            </div>
+          </div>
+        </AppModal>
       </>
   );
 }
