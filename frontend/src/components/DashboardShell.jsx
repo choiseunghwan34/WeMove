@@ -28,7 +28,9 @@ export default function DashboardShell({
   const [internalSearchValue, setInternalSearchValue] = useState("");
   const isAdmin = user?.role === "ADMIN";
   const searchValue =
-    typeof headerSearchValue === "string" ? headerSearchValue : internalSearchValue;
+    typeof headerSearchValue === "string"
+      ? headerSearchValue
+      : internalSearchValue;
   const profileImage =
     typeof user?.profileImage === "string" && user.profileImage.trim()
       ? user.profileImage.trim()
@@ -95,7 +97,9 @@ export default function DashboardShell({
               <div className={styles.dashboardUserInfo}>
                 <img
                   src={profileImage}
-                  alt={user.nickname ? `${user.nickname} 프로필` : "기본 프로필"}
+                  alt={
+                    user.nickname ? `${user.nickname} 프로필` : "기본 프로필"
+                  }
                   className={styles.dashboardUserAvatar}
                 />
                 <span className={styles.dashboardUserName}>
@@ -184,7 +188,7 @@ export default function DashboardShell({
                 onClick={closeMenu}
               >
                 <UiIcon name="spark" className={styles.dashboardNavIcon} />
-                <span>관리자페이지</span>
+                <span>관리자페이지111</span>
               </Link>
             ) : null}
           </nav>
@@ -231,7 +235,9 @@ export default function DashboardShell({
         <main className={styles.dashboardMain}>
           {(title || description) && (
             <section className={styles.dashboardPageIntro}>
-              <span className={styles.dashboardPageEyebrow}>{introEyebrow}</span>
+              <span className={styles.dashboardPageEyebrow}>
+                {introEyebrow}
+              </span>
               {title ? <h1>{title}</h1> : null}
               {description ? <p>{description}</p> : null}
               <div className={styles.dashboardIntroMeta}>
@@ -240,7 +246,10 @@ export default function DashboardShell({
                   지역 기반 추천
                 </span>
                 <span>
-                  <UiIcon name="compass" className={styles.dashboardIntroIcon} />
+                  <UiIcon
+                    name="compass"
+                    className={styles.dashboardIntroIcon}
+                  />
                   빠른 탐색 흐름
                 </span>
                 <span>
@@ -253,7 +262,9 @@ export default function DashboardShell({
           {children}
         </main>
 
-        <aside className={styles.dashboardAside}>{!isAdmin ? aside : null}</aside>
+        <aside className={styles.dashboardAside}>
+          {!isAdmin ? aside : null}
+        </aside>
       </div>
     </div>
   );
