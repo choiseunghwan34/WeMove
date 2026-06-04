@@ -4,7 +4,6 @@ import AppModal from "../components/AppModal";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { login } from "../api/authApi";
 import { getLoginPageStats } from "../api/statsApi";
-import homeBg from "../assets/images/home-bg.webp";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/LoginPage.module.css";
 import { parseUserFromAccessToken } from "../utils/jwtPayload";
@@ -14,7 +13,11 @@ import {
   setRememberedLoginId,
 } from "../utils/rememberedLogin";
 
-const authBackgrounds = [homeBg];
+// 새로고침 시 번갈아 나올 배경 이미지들 임포트
+import bg1 from "../assets/image/bg1.jpg";
+import bg2 from "../assets/image/bg2.jpg";
+
+const authBackgrounds = [bg1, bg2];
 
 const normalizeServerMessage = (message) => {
   if (!message) {
@@ -22,9 +25,9 @@ const normalizeServerMessage = (message) => {
   }
 
   if (
-    message.includes("Invalid login credentials") ||
-    message.includes("아이디 또는 비밀번호") ||
-    message.includes("비밀번호가 올바르지")
+      message.includes("Invalid login credentials") ||
+      message.includes("아이디 또는 비밀번호") ||
+      message.includes("비밀번호가 올바르지")
   ) {
     return "아이디 또는 비밀번호가 올바르지 않습니다.";
   }
@@ -129,9 +132,10 @@ export default function LoginPage() {
     };
   }, []);
 
+  // 렌더링 시 랜덤으로 배경 이미지 선택
   const backgroundImage = useMemo(
-    () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
-    [],
+      () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
+      [],
   );
 
   const finishLogin = (loginId, nextAccessToken) => {
@@ -205,120 +209,132 @@ export default function LoginPage() {
   };
 
   return (
-    <>
-      <main
-        className={styles.page}
-        style={{ "--auth-bg-image": `url(${backgroundImage})` }}
-      >
-        <div className={styles.layout}>
-          <section className={styles.copy}>
-            <Link to="/" className={styles.logo}>
-              <WeMoveLogo tone="dark" size="md" />
-            </Link>
-            <span className={styles.eyebrow}>LOCAL FITNESS COMMUNITY</span>
-            <h1>동네 운동을 자연스럽게 이어주는 방법</h1>
-            <p>
-              러닝, 헬스, 풋살, 등산, 배드민턴까지. 가까운 사람들과 함께 움직일 수 있는
-              지역 기반 운동 모임 플랫폼입니다.
-            </p>
+      <>
+        <main className={styles.page}>
+          {/* 줌인 애니메이션이 적용되는 배경 레이어 */}
+          <div
+              className={styles.backgroundLayer}
+              style={{ backgroundImage: `url(${backgroundImage})` }}
+          />
+          {/* 배경을 살짝 눌러주는 어두운 오버레이 */}
+          <div className={styles.backgroundOverlay} />
 
-            <div className={styles.metrics}>
-              <article>
-                <strong>{formatMetric(stats.totalMembers)}</strong>
-                <span>회원 수</span>
-              </article>
-              <article>
-                <strong>{formatMetric(stats.totalMeetings)}</strong>
-                <span>생성 모임</span>
-              </article>
-              <article>
-                <strong>{formatMetric(stats.completedMeetings)}</strong>
-                <span>누적 참여</span>
-              </article>
-            </div>
-          </section>
+          {/* 둥둥 떠다니는 빛 효과 (Ambient Orbs) */}
+          <div className={styles.ambientEffects} aria-hidden="true">
+            <div className={`${styles.ambientOrb} ${styles.orb1}`} />
+            <div className={`${styles.ambientOrb} ${styles.orb2}`} />
+            <div className={`${styles.ambientOrb} ${styles.orb3}`} />
+          </div>
 
-          <form className={styles.card} onSubmit={handleSubmit}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardKicker}>로그인</span>
-              <h2>오늘도 가까운 운동 모임과 같이 움직여볼까요?</h2>
-              <p>로그인하고 이번 주 운동 모임을 바로 확인해보세요.</p>
-            </div>
-
-            <label>
-              <span>아이디</span>
-              <input
-                name="loginId"
-                value={form.loginId}
-                onChange={handleChange}
-                placeholder="아이디 입력"
-                autoComplete="username"
-                disabled={isSubmitting}
-              />
-            </label>
-
-            <label>
-              <span>비밀번호</span>
-              <input
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="비밀번호 입력"
-                autoComplete="current-password"
-                disabled={isSubmitting}
-              />
-            </label>
-
-            <div className={styles.options}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={rememberLoginId}
-                  onChange={(event) => setRememberLoginId(event.target.checked)}
-                  disabled={isSubmitting}
-                />
-                아이디 저장
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={autoLogin}
-                  onChange={(event) => setAutoLogin(event.target.checked)}
-                  disabled={isSubmitting}
-                />
-                자동 로그인
-              </label>
-            </div>
-
-            {errorMessage ? (
-              <p role="alert" style={{ color: "#dc2626", margin: "0" }}>
-                {errorMessage}
+          <div className={styles.layout}>
+            <section className={styles.copy}>
+              <Link to="/" className={styles.logo}>
+                <WeMoveLogo tone="dark" size="md" />
+              </Link>
+              <span className={styles.eyebrow}>LOCAL FITNESS COMMUNITY</span>
+              <h1>동네 운동을 자연스럽게 이어주는 방법</h1>
+              <p>
+                러닝, 헬스, 풋살, 등산, 배드민턴까지. 가까운 사람들과 함께 움직일 수 있는
+                지역 기반 운동 모임 플랫폼입니다.
               </p>
-            ) : null}
 
-            <button className={styles.submit} type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "로그인 중..." : "로그인"}
-            </button>
+              <div className={styles.metrics}>
+                <article>
+                  <strong>{formatMetric(stats.totalMembers)}</strong>
+                  <span>회원 수</span>
+                </article>
+                <article>
+                  <strong>{formatMetric(stats.totalMeetings)}</strong>
+                  <span>생성 모임</span>
+                </article>
+                <article>
+                  <strong>{formatMetric(stats.completedMeetings)}</strong>
+                  <span>누적 참여</span>
+                </article>
+              </div>
+            </section>
 
-            <div className={styles.links}>
-              <Link to="/signup">회원가입</Link>
-              <span>·</span>
-              <Link to="/find-account">아이디/비밀번호 찾기</Link>
-            </div>
-          </form>
-        </div>
-      </main>
+            <form className={styles.card} onSubmit={handleSubmit}>
+              <div className={styles.cardHead}>
+                <span className={styles.cardKicker}>로그인</span>
+                <h2>오늘도 가까운 운동 모임과 같이 움직여볼까요?</h2>
+                <p>로그인하고 이번 주 운동 모임을 바로 확인해보세요.</p>
+              </div>
 
-      <AppModal
-        open={duplicatePromptOpen}
-        title="중복 로그인 안내"
-        description="이미 로그인 중인 계정이 있습니다. 새 기기에서 계속 로그인하시겠습니까?"
-        confirmText="확인"
-        cancelText="취소"
-        onConfirm={confirmDuplicateLogin}
-        onClose={() => setDuplicatePromptOpen(false)}
-      />
-    </>
+              <label>
+                <span>아이디</span>
+                <input
+                    name="loginId"
+                    value={form.loginId}
+                    onChange={handleChange}
+                    placeholder="아이디 입력"
+                    autoComplete="username"
+                    disabled={isSubmitting}
+                />
+              </label>
+
+              <label>
+                <span>비밀번호</span>
+                <input
+                    name="password"
+                    type="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="비밀번호 입력"
+                    autoComplete="current-password"
+                    disabled={isSubmitting}
+                />
+              </label>
+
+              <div className={styles.options}>
+                <label>
+                  <input
+                      type="checkbox"
+                      checked={rememberLoginId}
+                      onChange={(event) => setRememberLoginId(event.target.checked)}
+                      disabled={isSubmitting}
+                  />
+                  아이디 저장
+                </label>
+                <label>
+                  <input
+                      type="checkbox"
+                      checked={autoLogin}
+                      onChange={(event) => setAutoLogin(event.target.checked)}
+                      disabled={isSubmitting}
+                  />
+                  자동 로그인
+                </label>
+              </div>
+
+              {errorMessage ? (
+                  <p role="alert" style={{ color: "#dc2626", margin: "0" }}>
+                    {errorMessage}
+                  </p>
+              ) : null}
+
+              <button className={styles.submit} type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "로그인 중..." : "로그인"}
+              </button>
+
+              <div className={styles.links}>
+                <Link to="/signup">회원가입</Link>
+                <span>·</span>
+                <Link to="/find-account">아이디/비밀번호 찾기</Link>
+              </div>
+            </form>
+          </div>
+        </main>
+
+        <AppModal
+            open={duplicatePromptOpen}
+            title="중복 로그인 안내"
+            description="이미 로그인 중인 계정이 있습니다. 새 기기에서 계속 로그인하시겠습니까?"
+            confirmText="확인"
+            cancelText="취소"
+            onConfirm={confirmDuplicateLogin}
+            onClose={() => setDuplicatePromptOpen(false)}
+        />
+      </>
   );
 }
