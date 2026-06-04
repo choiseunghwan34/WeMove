@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import defaultUserImage from "../assets/image/Default-user.png";
-import { interestItems, navItems } from "../data/dashboardData";
+import { navItems } from "../data/dashboardData";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/DashboardShell.module.css";
 import NotificationButton from "./NotificationButton";
 import UiIcon from "./UiIcon";
 import WeMoveLogo from "./WeMoveLogo";
+import { getMySports } from "../api/memberApi";
+import { getSportIconName } from "../utils/sportIconMap";
 
 export default function DashboardShell({
   active = "",
@@ -22,13 +24,51 @@ export default function DashboardShell({
   children,
 }) {
   const navigate = useNavigate();
+  const [interestItems, setInterestItems] = useState([]);
   const { user, logout, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInterestExpanded, setIsInterestExpanded] = useState(false);
   const [internalSearchValue, setInternalSearchValue] = useState("");
   const isAdmin = user?.role === "ADMIN";
+  useEffect(() => {
+    if (sidebarInterestItems !== undefined || !user?.memberId || isAdmin) {
+      setInterestItems([]);
+      return undefined;
+    }
+
+    let active = true;
+
+    const fetchInterests = async () => {
+      try {
+        const { data } = await getMySports(user.memberId);
+
+        if (!active) return;
+
+        const nextItems = Array.isArray(data)
+          ? data.map((sport) => ({
+              label: sport.name,
+              icon: getSportIconName(sport),
+            }))
+          : [];
+        setInterestItems(nextItems);
+      } catch (error) {
+        console.error("관심 운동을 불러오는 중 오류 발생:", error);
+        if (active) {
+          setInterestItems([]);
+        }
+      }
+    };
+
+    fetchInterests();
+    return () => {
+      active = false;
+    };
+  }, [sidebarInterestItems, user?.memberId, isAdmin]);
+
   const searchValue =
-    typeof headerSearchValue === "string" ? headerSearchValue : internalSearchValue;
+    typeof headerSearchValue === "string"
+      ? headerSearchValue
+      : internalSearchValue;
   const profileImage =
     typeof user?.profileImage === "string" && user.profileImage.trim()
       ? user.profileImage.trim()
@@ -95,7 +135,9 @@ export default function DashboardShell({
               <div className={styles.dashboardUserInfo}>
                 <img
                   src={profileImage}
-                  alt={user.nickname ? `${user.nickname} 프로필` : "기본 프로필"}
+                  alt={
+                    user.nickname ? `${user.nickname} 프로필` : "기본 프로필"
+                  }
                   className={styles.dashboardUserAvatar}
                 />
                 <span className={styles.dashboardUserName}>
@@ -231,7 +273,9 @@ export default function DashboardShell({
         <main className={styles.dashboardMain}>
           {(title || description) && (
             <section className={styles.dashboardPageIntro}>
-              <span className={styles.dashboardPageEyebrow}>{introEyebrow}</span>
+              <span className={styles.dashboardPageEyebrow}>
+                {introEyebrow}
+              </span>
               {title ? <h1>{title}</h1> : null}
               {description ? <p>{description}</p> : null}
               <div className={styles.dashboardIntroMeta}>
@@ -240,7 +284,10 @@ export default function DashboardShell({
                   지역 기반 추천
                 </span>
                 <span>
-                  <UiIcon name="compass" className={styles.dashboardIntroIcon} />
+                  <UiIcon
+                    name="compass"
+                    className={styles.dashboardIntroIcon}
+                  />
                   빠른 탐색 흐름
                 </span>
                 <span>
@@ -253,7 +300,9 @@ export default function DashboardShell({
           {children}
         </main>
 
-        <aside className={styles.dashboardAside}>{!isAdmin ? aside : null}</aside>
+        <aside className={styles.dashboardAside}>
+          {!isAdmin ? aside : null}
+        </aside>
       </div>
     </div>
   );
