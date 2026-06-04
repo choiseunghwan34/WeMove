@@ -318,13 +318,10 @@ export default function HomePage() {
       const nextMidnight = new Date(now);
       nextMidnight.setHours(24, 0, 0, 0);
 
-      midnightTimeoutId = window.setTimeout(
-        () => {
-          fetchPopularMeetings();
-          scheduleMidnightRefresh();
-        },
-        Math.max(nextMidnight.getTime() - now.getTime(), 0),
-      );
+      midnightTimeoutId = window.setTimeout(() => {
+        fetchPopularMeetings();
+        scheduleMidnightRefresh();
+      }, Math.max(nextMidnight.getTime() - now.getTime(), 0));
     };
 
     fetchPopularMeetings();
