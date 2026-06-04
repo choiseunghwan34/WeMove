@@ -343,7 +343,7 @@
 .dashboardHeroDateInput {
   width: 100%;
   min-width: 0;
-  border: 0;
+  border: none;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -1573,4 +1573,8 @@
 
 .dashboardSection > .dashboardSectionHead > a {
   color: var(--color-primary-strong);
+}
+
+.dashboardHeroDateInput {
+  border: none;
 }
