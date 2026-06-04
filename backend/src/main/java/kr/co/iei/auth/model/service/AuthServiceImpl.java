@@ -307,13 +307,16 @@ public class AuthServiceImpl implements AuthService {
       return;
     }
 
-    // 💡 매퍼 서브쿼리로 reports에서 가져온 영문 값 (NOSHOW, SPAM 등)
-    String rawReason = member.getSuspendReason();
+    // 💡 u.suspendReason -> 관리자가 직접 입력한 진짜 한글 문장
+    String adminReason = member.getSuspendReason();
+
+    // 💡 매퍼에서 새로 분리한 reportReason -> 영문 값 (NOSHOW, SPAM 등)
+    String rawReport = member.getReportReason();
     String categoryTitle = "운영원칙 위반"; // 기본값
 
-    // 💡 DB의 영문 키워드를 유저용 한글 타이틀로 매핑
-    if (rawReason != null) {
-      switch (rawReason.toUpperCase()) {
+    // 💡 독립된 영문 키워드로 정확하게 한글 타이틀 매핑
+    if (rawReport != null) {
+      switch (rawReport.toUpperCase()) {
         case "NOSHOW":
           categoryTitle = "노쇼 제한";
           break;
@@ -332,11 +335,10 @@ public class AuthServiceImpl implements AuthService {
       }
     }
 
-    // 💡 [해결] 하드코딩 문자열 대신, 관리자가 입력한 문구 세팅
-    // 만약 관리자 입력값이 비어있다면 한글 타이틀만 보여주고, 있으면 결합합니다.
-    String finalReason = (rawReason != null && !rawReason.isBlank())
-            ? "[" + categoryTitle + "] 3번 신고누적으로 인한 1차 계정 일시정지입니다" // 툴이나 관리자가 동적으로 넣어준 문구가 있다면 여기에 맞게 매핑되거나, 원래 필드가 하나 더 있다면 u.suspendReason을 썼겠지만 지금 구조에선 이 텍스트가 정답입니다.
-            : "[" + categoryTitle + "] 운영원칙 위반으로 제한되었습니다.";
+    // 💡 관리자가 입력한 소중한 원래 문구 앞에 한글 카테고리 타이틀 결합
+    String finalReason = (adminReason != null && !adminReason.isBlank())
+            ? "[" + categoryTitle + "] " + adminReason
+            : "[" + categoryTitle + "] 제한된 계정입니다.";
 
     throw new AccountSuspendedException(
             finalReason,

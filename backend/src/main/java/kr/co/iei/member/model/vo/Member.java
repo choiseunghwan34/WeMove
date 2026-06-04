@@ -21,5 +21,5 @@ public class Member {
   private String suspendReason;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-
+  private String reportReason;
 }

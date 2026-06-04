@@ -10,7 +10,7 @@
              FROM reports
              WHERE targetUserId = u.userId
              ORDER BY createdAt DESC
-                LIMIT 1) AS suspendReason
+                LIMIT 1) AS reportReason
         FROM users u
         WHERE u.loginId = #{loginId}
     </select>
