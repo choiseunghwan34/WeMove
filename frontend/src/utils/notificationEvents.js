@@ -1,5 +1,6 @@
 export const WEMOVE_NOTIFICATION_EVENT = "wemove:notification";
 export const WEMOVE_NOTIFICATION_OPEN_EVENT = "wemove:notification-open";
+export const WEMOVE_ACCOUNT_SUSPEND_EVENT = "wemove:account-suspend";
 
 export const NOTIFICATION_TYPES = {
   CHAT: "chat",
@@ -8,6 +9,8 @@ export const NOTIFICATION_TYPES = {
   MEETING_REJECTED: "meetingRejected",
   NOTICE: "notice",
   INFO: "info",
+  ACCOUNT_WARNING: "accountWarning",
+  ACCOUNT_SUSPEND: "accountSuspend",
 };
 
 export const openNotificationTarget = (notification) => {
@@ -22,6 +25,18 @@ export const openNotificationTarget = (notification) => {
   );
 };
 
+export const publishAccountSuspend = ({ title = "계정 정지 안내", message = "" }) => {
+  if (typeof window === "undefined" || !message) {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(WEMOVE_ACCOUNT_SUSPEND_EVENT, {
+      detail: { title, message },
+    }),
+  );
+};
+
 export const publishNotification = ({
   type = NOTIFICATION_TYPES.INFO,
   chatKind,
@@ -29,6 +44,9 @@ export const publishNotification = ({
   message = "",
   sourceId,
   createdAt = new Date().toISOString(),
+  forceLogout,
+  suspendedUntil,
+  suspendHours,
 }) => {
   if (typeof window === "undefined" || !title) {
     return;
@@ -44,6 +62,9 @@ export const publishNotification = ({
         message,
         sourceId,
         createdAt,
+        forceLogout,
+        suspendedUntil,
+        suspendHours,
       },
     }),
   );

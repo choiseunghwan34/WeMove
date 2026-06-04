@@ -9,6 +9,7 @@ import {
 import { getMe } from "../api/memberApi";
 import { clearAccessToken, setAccessToken } from "../utils/authTokenStore";
 import { parseUserFromAccessToken } from "../utils/jwtPayload";
+import { WEMOVE_ACCOUNT_SUSPEND_EVENT } from "../utils/notificationEvents";
 
 const AuthContext =
   globalThis.__WEMOVE_AUTH_CONTEXT__ ??
@@ -19,12 +20,19 @@ const DUPLICATE_LOGOUT_MESSAGE =
 const SESSION_EXPIRED_MESSAGE =
   "로그인 시간이 만료되어 로그아웃되었습니다. 다시 로그인해주세요.";
 
+const DEFAULT_FORCED_LOGOUT_MODAL = {
+  title: "로그아웃 안내",
+  message: "",
+};
+
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [accessToken, setAccessTokenState] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [forcedLogoutMessage, setForcedLogoutMessage] = useState("");
+  const [forcedLogoutModal, setForcedLogoutModal] = useState(
+    DEFAULT_FORCED_LOGOUT_MODAL,
+  );
   const revocationHandledRef = useRef(false);
 
   useEffect(() => {
@@ -41,11 +49,20 @@ export function AuthProvider({ children }) {
           setAccessTokenState(refreshedAccessToken);
           setUser(parsedUser);
         }
-      } catch {
+      } catch (error) {
         if (active) {
           clearAccessToken();
           setAccessTokenState(null);
           setUser(null);
+
+          if (error?.response?.status === 423) {
+            setForcedLogoutModal({
+              title: "계정 정지 안내",
+              message:
+                error?.response?.data?.message ||
+                "정지된 계정입니다. 관리자에게 문의해주세요.",
+            });
+          }
         }
       } finally {
         if (active) {
@@ -68,7 +85,10 @@ export function AuthProvider({ children }) {
 
     let active = true;
 
-    const handleRevokedSession = (message) => {
+    const handleRevokedSession = (
+      message,
+      title = DEFAULT_FORCED_LOGOUT_MODAL.title,
+    ) => {
       if (!active || revocationHandledRef.current) {
         return;
       }
@@ -77,7 +97,7 @@ export function AuthProvider({ children }) {
       clearAccessToken();
       setAccessTokenState(null);
       setUser(null);
-      setForcedLogoutMessage(message);
+      setForcedLogoutModal({ title, message });
     };
 
     const verifySession = async () => {
@@ -97,8 +117,31 @@ export function AuthProvider({ children }) {
           handleRevokedSession(
             error?.response?.data?.message || SESSION_EXPIRED_MESSAGE,
           );
+          return;
+        }
+
+        if (error?.response?.status === 423) {
+          handleRevokedSession(
+            error?.response?.data?.message ||
+              "정지된 계정입니다. 관리자에게 문의해주세요.",
+            "계정 정지 안내",
+          );
         }
       }
+    };
+
+    const handleAccountSuspend = async (event) => {
+      try {
+        await logoutApi();
+      } catch {
+        // Session may already be invalidated by the server.
+      }
+
+      handleRevokedSession(
+        event?.detail?.message ||
+          "계정이 정지되어 로그아웃됩니다. 관리자에게 문의해주세요.",
+        event?.detail?.title || "계정 정지 안내",
+      );
     };
 
     verifySession();
@@ -111,12 +154,17 @@ export function AuthProvider({ children }) {
     };
 
     window.addEventListener("focus", verifySession);
+    window.addEventListener(WEMOVE_ACCOUNT_SUSPEND_EVENT, handleAccountSuspend);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       active = false;
       window.clearInterval(intervalId);
       window.removeEventListener("focus", verifySession);
+      window.removeEventListener(
+        WEMOVE_ACCOUNT_SUSPEND_EVENT,
+        handleAccountSuspend,
+      );
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [accessToken, user]);
@@ -163,7 +211,7 @@ export function AuthProvider({ children }) {
   const applyAccessToken = (nextAccessToken) => {
     const parsedUser = parseUserFromAccessToken(nextAccessToken);
     revocationHandledRef.current = false;
-    setForcedLogoutMessage("");
+    setForcedLogoutModal(DEFAULT_FORCED_LOGOUT_MODAL);
     setAccessToken(nextAccessToken);
     setAccessTokenState(nextAccessToken);
     setUser(parsedUser);
@@ -198,7 +246,7 @@ export function AuthProvider({ children }) {
         } finally {
           clearSession();
           revocationHandledRef.current = false;
-          setForcedLogoutMessage("");
+          setForcedLogoutModal(DEFAULT_FORCED_LOGOUT_MODAL);
         }
       },
     }),
@@ -206,7 +254,7 @@ export function AuthProvider({ children }) {
   );
 
   const closeForcedLogoutModal = () => {
-    setForcedLogoutMessage("");
+    setForcedLogoutModal(DEFAULT_FORCED_LOGOUT_MODAL);
     revocationHandledRef.current = false;
     navigate("/login", { replace: true });
   };
@@ -215,9 +263,9 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={value}>
       {children}
       <AppModal
-        open={Boolean(forcedLogoutMessage)}
-        title="로그아웃 안내"
-        description={forcedLogoutMessage}
+        open={Boolean(forcedLogoutModal.message)}
+        title={forcedLogoutModal.title}
+        description={forcedLogoutModal.message}
         confirmText="확인"
         onConfirm={closeForcedLogoutModal}
         onClose={closeForcedLogoutModal}

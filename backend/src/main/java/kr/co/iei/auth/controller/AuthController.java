@@ -172,6 +172,8 @@ public class AuthController {
                   "message", SESSION_EXPIRED_MESSAGE));
     }
 
+    authService.ensureAccountCanAccess(accessToken);
+
     if (!authService.isCurrentSession(accessToken)) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
           .body(

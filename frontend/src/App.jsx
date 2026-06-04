@@ -9,6 +9,7 @@ import {
 import AppModal from "./components/AppModal";
 import GlobalMeetingChat from "./components/GlobalMeetingChat";
 import Header from "./components/Header";
+import NotificationSocket from "./components/NotificationSocket";
 import { useAuth } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { ToastProvider } from "./contexts/ToastContext";
@@ -198,6 +199,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="*" element={<LayoutRoutes />} />
         </Routes>
+        <NotificationSocket />
         <GlobalMeetingChat />
       </NotificationProvider>
     </ToastProvider>

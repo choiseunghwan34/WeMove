@@ -216,7 +216,23 @@ export default function MeetingListPage() {
       const approved = Array.isArray(payload.approvedMeetings)
         ? payload.approvedMeetings.map(normalizeMeeting)
         : [];
-      setScheduleItems(approved.slice(0, 4));
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const filteredAndSorted = approved
+        .filter((meeting) => {
+          if (!meeting?.meetingDate) return false;
+          const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
+          return !Number.isNaN(meetingDay.getTime()) && meetingDay >= today;
+        })
+        .sort((left, right) => {
+          const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
+          const rightDate = `${right.meetingDate ?? ""} ${right.startTime ?? ""}`;
+          return leftDate.localeCompare(rightDate);
+        });
+
+      setScheduleItems(filteredAndSorted.slice(0, 4));
     } catch (error) {
       console.error("Failed to load activity:", error);
       setScheduleItems([]);
@@ -938,6 +954,7 @@ export default function MeetingListPage() {
             <option value="CLOSED">모집완료</option>
             <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
+            <option value="CANCELLED">취소됨</option>
           </select>
 
           <input

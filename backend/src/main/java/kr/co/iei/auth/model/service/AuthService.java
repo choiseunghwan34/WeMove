@@ -22,4 +22,8 @@ public interface AuthService {
   void logout(String refreshToken);
 
   boolean isCurrentSession(String accessToken);
+
+  void ensureAccountCanAccess(String accessToken);
+
+  void invalidateUserSession(Long userId);
 }

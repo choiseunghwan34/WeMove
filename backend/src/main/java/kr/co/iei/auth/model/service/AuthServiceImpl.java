@@ -1,9 +1,11 @@
 package kr.co.iei.auth.model.service;
 
 import java.time.Duration;
-import java.util.UUID;
-import kr.co.iei.auth.exception.DuplicateLoginException;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.UUID;
+import kr.co.iei.admin.model.service.AccountSanctionMessageUtil;
+import kr.co.iei.auth.exception.DuplicateLoginException;
 import kr.co.iei.auth.model.dao.AuthDao;
 import kr.co.iei.auth.model.vo.AuthLoginResult;
 import kr.co.iei.auth.model.vo.AuthRefreshResult;
@@ -14,6 +16,7 @@ import kr.co.iei.auth.model.vo.LoginResponse;
 import kr.co.iei.auth.model.vo.PasswordResetRequest;
 import kr.co.iei.auth.model.vo.SignupRequest;
 import kr.co.iei.auth.util.JwtTokenProvider;
+import kr.co.iei.common.exception.AccountSuspendedException;
 import kr.co.iei.common.exception.DuplicateResourceException;
 import kr.co.iei.common.util.PasswordUtil;
 import kr.co.iei.member.model.vo.Member;
@@ -165,6 +168,8 @@ public class AuthServiceImpl implements AuthService {
       throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
 
+    ensureMemberCanAccess(member);
+
     boolean autoLogin = Boolean.TRUE.equals(req.getAutoLogin());
     boolean forceLogin = Boolean.TRUE.equals(req.getForceLogin());
     long effectiveRefreshSeconds =
@@ -216,6 +221,8 @@ public class AuthServiceImpl implements AuthService {
       throw new IllegalArgumentException("User not found.");
     }
 
+    ensureMemberCanAccess(member);
+
     LoginResponse user =
         new LoginResponse(
             member.getUserId(), member.getLoginId(), member.getNickname(), member.getRole());
@@ -251,6 +258,26 @@ public class AuthServiceImpl implements AuthService {
     return sessionMatches(sessionId, savedSessionId);
   }
 
+  @Override
+  public void ensureAccountCanAccess(String accessToken) {
+    if (!hasText(accessToken) || !jwtTokenProvider.isValid(accessToken)) {
+      return;
+    }
+
+    Member member = authDao.selectByUserId(jwtTokenProvider.parseUserId(accessToken));
+    ensureMemberCanAccess(member);
+  }
+
+  @Override
+  public void invalidateUserSession(Long userId) {
+    if (userId == null) {
+      return;
+    }
+
+    stringRedisTemplate.delete(refreshKey(userId));
+    stringRedisTemplate.delete(sessionKey(userId));
+  }
+
   private boolean isPasswordMatched(String rawPassword, String savedPassword) {
     if (rawPassword == null || savedPassword == null) {
       return false;
@@ -260,6 +287,63 @@ public class AuthServiceImpl implements AuthService {
 
   private boolean hasText(String value) {
     return value != null && !value.isBlank();
+  }
+
+  private void ensureMemberCanAccess(Member member) {
+    if (member == null) {
+      return;
+    }
+
+    if (!"SUSPENDED".equals(member.getStatus())) {
+      return;
+    }
+
+    // 정지 기간이 지났으면 상태를 복구하고 리턴 (기존 로직 유지)
+    if (member.getSuspendedUntil() != null && !member.getSuspendedUntil().isAfter(LocalDateTime.now())) {
+      authDao.updateMemberStatus(member.getUserId(), "ACTIVE");
+      member.setStatus("ACTIVE");
+      member.setSuspendedUntil(null);
+      member.setSuspendReason(null);
+      return;
+    }
+
+    // 💡 u.suspendReason -> 관리자가 직접 입력한 진짜 한글 문장
+    String adminReason = member.getSuspendReason();
+
+    // 💡 매퍼에서 새로 분리한 reportReason -> 영문 값 (NOSHOW, SPAM 등)
+    String rawReport = member.getReportReason();
+    String categoryTitle = "운영원칙 위반"; // 기본값
+
+    // 💡 독립된 영문 키워드로 정확하게 한글 타이틀 매핑
+    if (rawReport != null) {
+      switch (rawReport.toUpperCase()) {
+        case "NOSHOW":
+          categoryTitle = "노쇼 제한";
+          break;
+        case "SPAM":
+          categoryTitle = "광고 및 스팸 제한";
+          break;
+        case "FRAUD":
+          categoryTitle = "사기 및 부정행위 제한";
+          break;
+        case "OTHER":
+          categoryTitle = "기타 제한";
+          break;
+        default:
+          categoryTitle = "운영원칙 위반 제한";
+          break;
+      }
+    }
+
+    // 💡 관리자가 입력한 소중한 원래 문구 앞에 한글 카테고리 타이틀 결합
+    String finalReason = (adminReason != null && !adminReason.isBlank())
+            ? "[" + categoryTitle + "] " + adminReason
+            : "[" + categoryTitle + "] 제한된 계정입니다.";
+
+    throw new AccountSuspendedException(
+            finalReason,
+            member.getSuspendedUntil() != null ? member.getSuspendedUntil().toString() : "관리자 문의 요망"
+    );
   }
 
   private void validateSignupRequest(SignupRequest req) {

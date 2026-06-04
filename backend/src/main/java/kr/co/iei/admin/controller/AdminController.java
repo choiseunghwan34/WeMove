@@ -52,15 +52,13 @@ public class AdminController {
     return ResponseEntity.ok().build();
   }
 
-  @PatchMapping("/reports/{reportId}/resolve")
-  public ResponseEntity<Void> resolve(@PathVariable Long reportId) {
-    adminService.resolveReport(reportId);
-    return ResponseEntity.ok().build();
-  }
 
-  @PatchMapping("/reports/{reportId}/reject")
-  public ResponseEntity<Void> reject(@PathVariable Long reportId) {
-    adminService.rejectReport(reportId);
+  @PostMapping("/reports/{reportId}/process")
+  public ResponseEntity<?> processReport(
+          @PathVariable("reportId") int reportId,
+          @RequestBody AdminReportActionRequest request) {
+
+    adminService.processReport((long) reportId, request);
     return ResponseEntity.ok().build();
   }
 }

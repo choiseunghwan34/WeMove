@@ -5,7 +5,7 @@ import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
-import { categoryItems, meetingImages} from "../data/dashboardData";
+import { categoryItems, meetingImages } from "../data/dashboardData";
 import { getComments } from "../api/commentApi";
 import defaultImage from "../assets/image/bg1.jpg";
 import {
@@ -19,7 +19,8 @@ import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
 import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/HomePage.module.css";
-
+// 기본 썸네일 이미지 import
+import defaultThumbnail from "../assets/image/bg1.jpg";
 
 const heroSlides = [
   {
@@ -185,15 +186,12 @@ export default function HomePage() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const nextWeek = new Date(today);
-  nextWeek.setDate(nextWeek.getDate() + 6);
 
   const scheduleItems = [...activityData.approvedMeetings]
     .filter((meeting) => {
       if (!meeting?.meetingDate) return false;
       const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
-      if (Number.isNaN(meetingDay.getTime())) return false;
-      return meetingDay >= today && meetingDay <= nextWeek;
+      return !Number.isNaN(meetingDay.getTime()) && meetingDay >= today;
     })
     .sort((left, right) => {
       const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
@@ -319,10 +317,13 @@ export default function HomePage() {
       const nextMidnight = new Date(now);
       nextMidnight.setHours(24, 0, 0, 0);
 
-      midnightTimeoutId = window.setTimeout(() => {
-        fetchPopularMeetings();
-        scheduleMidnightRefresh();
-      }, Math.max(nextMidnight.getTime() - now.getTime(), 0));
+      midnightTimeoutId = window.setTimeout(
+        () => {
+          fetchPopularMeetings();
+          scheduleMidnightRefresh();
+        },
+        Math.max(nextMidnight.getTime() - now.getTime(), 0),
+      );
     };
 
     fetchPopularMeetings();
@@ -587,7 +588,7 @@ export default function HomePage() {
               const weekday = getWeekdayLabel(meeting.meetingDate);
               const displayDate =
                 relativeDate.includes("일 전") || relativeDate.includes("일 후")
-                  ? `${String(meeting.meetingDate).slice(5).replace("-", "")}${weekday ? ` (${weekday})` : ""}`
+                  ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
                   : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
 
               return (
@@ -821,12 +822,12 @@ export default function HomePage() {
                 className={styles.dashboardMeetingCard}
               >
                 <img
-                    src={
-                        meeting.thumbnailImage ||
-                        defaultImage
-                    }
+                  src={getMeetingThumbnail(meeting) || defaultThumbnail}
                   alt={meeting.title}
                   className={styles.dashboardMeetingImage}
+                  onError={(e) => {
+                    e.currentTarget.src = defaultThumbnail;
+                  }}
                 />
                 <div className={styles.dashboardMeetingBody}>
                   <div className={styles.dashboardMeetingBadges}>
@@ -835,8 +836,10 @@ export default function HomePage() {
                       {STATUS_LABELS[meeting.status] ?? meeting.status}
                     </span>
                   </div>
+
                   <h3>{meeting.title}</h3>
                   <p>{meeting.content}</p>
+
                   <div className={styles.dashboardMeetingMeta}>
                     <span>
                       <UiIcon
@@ -863,13 +866,15 @@ export default function HomePage() {
                       {meeting.approvedCount ?? 0} / {meeting.maxMembers}명
                     </span>
                   </div>
+
                   <div className={styles.dashboardMeetingFooter}>
                     <div className={styles.dashboardMeetingActions}>
                       <button type="button">
                         <UiIcon
                           name="comment"
                           className={styles.dashboardActionIcon}
-                        />{meeting.commentCount}
+                        />
+                        {meeting.commentCount}
                       </button>
                       <button type="button">
                         <UiIcon
@@ -886,6 +891,7 @@ export default function HomePage() {
               </article>
             ))
           ) : (
+            /* 모임 데이터가 없을 때 보여줄 fallback UI (공백일 경우 null 처리 가능) */
             <div className={styles.emptyContainer}>
               <h3>해당 카테고리의 모임이 없습니다.</h3>
               <p>
