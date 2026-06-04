@@ -47,6 +47,8 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
             alert("댓글 등록에 실패했습니다.")
         })
     }
+    //댓글 삭제
+
 
 
 
@@ -77,6 +79,9 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
                                         <span>{new Date(comment.createdAt).toLocaleString()}</span>
                                     </div>
                                     <p>{comment.content}</p>
+                                    <div className={styles.buttonWrap}>
+                                        <button className={styles.deleteBtn}>댓글 삭제</button>
+                                    </div>
                                 </div>
                         </article>
                     )))}

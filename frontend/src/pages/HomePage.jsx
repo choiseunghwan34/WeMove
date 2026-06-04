@@ -20,6 +20,7 @@ import { getSports } from "../api/sportApi";
 import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/HomePage.module.css";
 
+
 const heroSlides = [
   {
     title: "가볍게 시작하는 5km 러닝",
@@ -868,8 +869,7 @@ export default function HomePage() {
                         <UiIcon
                           name="comment"
                           className={styles.dashboardActionIcon}
-                        />{" "}
-                        6
+                        />{meeting.commentCount}
                       </button>
                       <button type="button">
                         <UiIcon

@@ -10,6 +10,7 @@
         CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) as regionName,
         (SELECT nickname FROM users WHERE userId = m.hostUserId) as meetingHostName,
         (SELECT COUNT(*) FROM meetingParticipants mp WHERE mp.meetingId = m.meetingId AND mp.status="APPROVED") as approvedCount,
+        (SELECT COUNT(*) FROM comments c WHERE c.meetingId = m.meetingId AND c.isDeleted = 0) as commentCount,
         CASE WHEN m.status = 'RECRUITING' THEN '모집중'
         ELSE m.status
         END as statusText
