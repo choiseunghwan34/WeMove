@@ -44,4 +44,13 @@ public class MemberDao {
     return sqlSession.selectList(
         "member.selectParticipantActivityMeetings", Map.of("memberId", memberId));
   }
+
+  public int countActiveHostedMeetings(Long memberId) {
+    return sqlSession.selectOne("member.countActiveHostedMeetings", Map.of("memberId", memberId));
+  }
+
+  public int countActiveParticipatingMeetings(Long memberId) {
+    return sqlSession.selectOne(
+        "member.countActiveParticipatingMeetings", Map.of("memberId", memberId));
+  }
 }

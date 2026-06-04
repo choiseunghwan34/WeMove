@@ -8,16 +8,19 @@ import kr.co.iei.auth.model.dao.AuthDao;
 import kr.co.iei.auth.model.service.EmailVerificationService;
 import kr.co.iei.common.exception.DuplicateResourceException;
 import kr.co.iei.common.service.CloudinaryImageService;
+import kr.co.iei.common.util.PasswordUtil;
 
 import kr.co.iei.member.model.dao.MemberDao;
 import kr.co.iei.member.model.vo.*;
 import kr.co.iei.sport.model.vo.Sport;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -30,6 +33,7 @@ public class MemberServiceImpl implements MemberService {
   private final AuthDao authDao;
   private final EmailVerificationService emailVerificationService;
   private final CloudinaryImageService cloudinaryImageService;
+  private final PasswordUtil passwordUtil;
 
   public MemberResponse getMe(Long memberId) {
     return memberDao.selectMemberById(memberId);
@@ -95,6 +99,40 @@ public class MemberServiceImpl implements MemberService {
 
     memberDao.deleteMemberSports(memberId);
     sportIds.forEach((sportId) -> memberDao.insertMemberSport(memberId, sportId));
+  }
+
+  @Transactional
+  public void withdraw(Long memberId, MemberWithdrawRequest request) {
+    if (memberId == null) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+    }
+    if (request == null || request.getPassword() == null || request.getPassword().isBlank()) {
+      throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+    }
+
+    Member member = authDao.selectByUserId(memberId);
+    if (member == null || "DELETED".equals(member.getStatus())) {
+      throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
+    }
+    if (!isPasswordMatched(request.getPassword(), member.getPassword())) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
+    }
+
+    if (memberDao.countActiveHostedMeetings(memberId) > 0) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "모임장인 모임이 있어 회원탈퇴를 할 수 없습니다. 모임을 완료하거나 취소한 뒤 다시 시도해주세요.");
+    }
+
+    boolean hasParticipatingMeetings = memberDao.countActiveParticipatingMeetings(memberId) > 0;
+    if (hasParticipatingMeetings
+        && !Boolean.TRUE.equals(request.getConfirmParticipatingMeetings())) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "가입한 모임이 있습니다. 그래도 탈퇴하시겠습니까?");
+    }
+
+    authDao.updateMemberStatus(memberId, "DELETED");
   }
 
   public MemberResponse getMember(Long memberId) {
@@ -207,6 +245,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     return phone.replaceAll("\\D", "");
+  }
+
+  private boolean isPasswordMatched(String rawPassword, String savedPassword) {
+    if (rawPassword == null || savedPassword == null) {
+      return false;
+    }
+
+    return passwordUtil.matches(rawPassword, savedPassword) || rawPassword.equals(savedPassword);
   }
 
   private Comparator<MemberActivityMeetingResponse> activityMeetingComparator() {

@@ -294,6 +294,10 @@ public class AuthServiceImpl implements AuthService {
       return;
     }
 
+    if ("DELETED".equals(member.getStatus())) {
+      throw new IllegalArgumentException("탈퇴한 계정입니다.");
+    }
+
     if (!"SUSPENDED".equals(member.getStatus())) {
       return;
     }

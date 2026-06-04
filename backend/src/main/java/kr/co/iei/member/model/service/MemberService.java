@@ -18,6 +18,8 @@ public interface MemberService {
 
   void updateSports(Long memberId, MemberSportsUpdateRequest request);
 
+  void withdraw(Long memberId, MemberWithdrawRequest request);
+
   MemberResponse getMember(Long memberId);
 
   MemberActivityResponse getActivity(Long memberId);

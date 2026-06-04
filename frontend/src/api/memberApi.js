@@ -33,6 +33,11 @@ export const updateMe = (memberId, data, image) => {
   });
 };
 
+export const withdrawMe = (password, confirmParticipatingMeetings = false) =>
+  api.delete("/members/me", {
+    data: { password, confirmParticipatingMeetings },
+  });
+
 export const checkMyNickname = (memberId, nickname) =>
   api.get("/members/me/check-nickname", {
     params: { memberId, nickname },

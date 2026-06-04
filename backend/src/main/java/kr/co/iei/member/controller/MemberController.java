@@ -74,6 +74,15 @@ public class MemberController {
     return ResponseEntity.ok().build();
   }
 
+  @DeleteMapping("/me")
+  public ResponseEntity<Void> withdrawMe(
+      @RequestHeader(value = "Authorization", required = false) String authorization,
+      @RequestBody MemberWithdrawRequest request) {
+    Long resolvedMemberId = resolveMemberId(authorization, null);
+    memberService.withdraw(resolvedMemberId, request);
+    return ResponseEntity.ok().build();
+  }
+
   @GetMapping("/{memberId}")
   public ResponseEntity<MemberResponse> member(@PathVariable Long memberId) {
     return ResponseEntity.ok(memberService.getMember(memberId));

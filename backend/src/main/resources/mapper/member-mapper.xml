@@ -60,6 +60,25 @@
         )
     </insert>
 
+    <select id="countActiveHostedMeetings" resultType="int">
+        SELECT COUNT(*)
+        FROM meetings
+        WHERE hostUserId = #{memberId}
+          AND deletedAt IS NULL
+          AND status NOT IN ('COMPLETED', 'CANCELLED')
+    </select>
+
+    <select id="countActiveParticipatingMeetings" resultType="int">
+        SELECT COUNT(*)
+        FROM meetingParticipants mp
+        JOIN meetings m ON mp.meetingId = m.meetingId
+        WHERE mp.userId = #{memberId}
+          AND m.hostUserId != #{memberId}
+          AND mp.status = 'APPROVED'
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+    </select>
+
     <select id="selectHostedActivityMeetings"
             resultType="kr.co.iei.member.model.vo.MemberActivityMeetingResponse">
         SELECT

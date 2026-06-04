@@ -11,6 +11,7 @@ import {
   getMySports,
   updateMe,
   updateMySports,
+  withdrawMe,
 } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
@@ -32,7 +33,7 @@ const ALL_SIGUNGU = "전체 시군구";
 const ALL_DONG = "전체 읍면동";
 
 export default function MyPage() {
-  const { user, loading: authLoading, isAuthenticated, updateUserProfile } =
+  const { user, loading: authLoading, isAuthenticated, updateUserProfile, logout } =
     useAuth();
   const [member, setMember] = useState(null);
   const [regions, setRegions] = useState([]);
@@ -55,6 +56,11 @@ export default function MyPage() {
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [withdrawPassword, setWithdrawPassword] = useState("");
+  const [withdrawError, setWithdrawError] = useState("");
+  const [withdrawRequiresConfirm, setWithdrawRequiresConfirm] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
   const [draftRegionSelection, setDraftRegionSelection] = useState({
     sido: ALL_SIDO,
     sigungu: ALL_SIGUNGU,
@@ -339,6 +345,55 @@ export default function MyPage() {
     setNicknameCheckMessage("");
     setEmailVerificationStatus("idle");
     setVerifiedEmail("");
+  };
+
+  const openWithdrawModal = () => {
+    setWithdrawPassword("");
+    setWithdrawError("");
+    setWithdrawRequiresConfirm(false);
+    setIsWithdrawOpen(true);
+  };
+
+  const closeWithdrawModal = () => {
+    if (withdrawing) {
+      return;
+    }
+
+    setIsWithdrawOpen(false);
+    setWithdrawPassword("");
+    setWithdrawError("");
+    setWithdrawRequiresConfirm(false);
+  };
+
+  const handleWithdraw = async () => {
+    const password = withdrawPassword.trim();
+
+    if (!password) {
+      setWithdrawError("비밀번호를 입력해주세요.");
+      return;
+    }
+
+    setWithdrawing(true);
+    setWithdrawError("");
+
+    try {
+      await withdrawMe(password, withdrawRequiresConfirm);
+      await logout();
+    } catch (error) {
+      const status = error?.response?.status;
+      const message =
+        error?.response?.data?.message || "회원탈퇴 처리 중 오류가 발생했습니다.";
+
+      if (status === 409 && message.includes("가입한 모임")) {
+        setWithdrawRequiresConfirm(true);
+        setWithdrawError(message);
+        return;
+      }
+
+      setWithdrawError(message);
+    } finally {
+      setWithdrawing(false);
+    }
   };
 
   const handleFormChange = (event) => {
@@ -710,9 +765,18 @@ export default function MyPage() {
                 </small>
               </div>
             </div>
-            <button type="button" onClick={openEditModal}>
-              프로필 수정
-            </button>
+            <div className={styles.profileActions}>
+              <button type="button" onClick={openEditModal}>
+                프로필 수정
+              </button>
+              <button
+                type="button"
+                className={styles.withdrawButton}
+                onClick={openWithdrawModal}
+              >
+                회원탈퇴
+              </button>
+            </div>
           </section>
 
           {loading ? (
@@ -820,7 +884,7 @@ export default function MyPage() {
         title="프로필 수정"
         description="닉네임, 이메일, 휴대폰 번호, 관심 지역과 프로필 이미지를 수정할 수 있습니다."
         confirmText={saving ? "저장 중..." : "저장하기"}
-        cancelText="닫기"
+        cancelText="취소"
         onConfirm={handleSaveProfile}
         onClose={closeEditModal}
       >
@@ -938,6 +1002,46 @@ export default function MyPage() {
           </label>
 
           {saveError ? <p className={styles.formError}>{saveError}</p> : null}
+        </div>
+      </AppModal>
+
+      <AppModal
+        open={isWithdrawOpen}
+        title="회원탈퇴"
+        description={
+          withdrawRequiresConfirm
+            ? "가입한 모임이 있습니다. 그래도 탈퇴하시겠습니까?"
+            : "회원탈퇴를 진행하려면 비밀번호를 입력해주세요."
+        }
+        confirmText={withdrawing ? "처리 중..." : "회원탈퇴"}
+        cancelText="취소"
+        tone="danger"
+        onConfirm={handleWithdraw}
+        onClose={closeWithdrawModal}
+      >
+        <div className={styles.withdrawForm}>
+          <label className={styles.formField}>
+            <span>비밀번호</span>
+            <input
+              type="password"
+              value={withdrawPassword}
+              onChange={(event) => {
+                setWithdrawPassword(event.target.value);
+                setWithdrawError("");
+              }}
+              placeholder="현재 비밀번호를 입력하세요."
+              autoComplete="current-password"
+            />
+          </label>
+          {withdrawRequiresConfirm ? (
+            <p className={styles.withdrawWarning}>
+              탈퇴하면 계정이 비활성화되며, 참여 중인 모임 정보에서 회원 상태가
+              탈퇴 처리됩니다.
+            </p>
+          ) : null}
+          {withdrawError ? (
+            <p className={styles.formError}>{withdrawError}</p>
+          ) : null}
         </div>
       </AppModal>
 

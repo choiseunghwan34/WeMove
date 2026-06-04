@@ -330,9 +330,43 @@
   box-shadow: 0 12px 26px rgba(37, 99, 235, 0.18);
 }
 
+.profileActions {
+  display: grid;
+  gap: 8px;
+  min-width: 118px;
+}
+
+.withdrawButton {
+  background: #dc2626 !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.22) !important;
+}
+
+.withdrawButton:hover {
+  background: #b91c1c !important;
+}
+
 .editForm {
   display: grid;
   gap: 14px;
+}
+
+.withdrawForm {
+  display: grid;
+  gap: 12px;
+}
+
+.withdrawWarning {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
 }
 
 .imageEditor {
