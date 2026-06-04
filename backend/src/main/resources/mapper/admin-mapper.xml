@@ -75,12 +75,15 @@
 
     <select id="selectReports" resultType="kr.co.iei.admin.model.vo.AdminReportResponse">
         SELECT
-            reportId,
-            reason,
-            status,
-            createdAt
-        FROM reports
-        ORDER BY reportId DESC
+            r.reportId,
+            r.reason,
+            r.status,
+            r.createdAt,
+            r.targetUserId,
+            u.nickname AS targetName
+        FROM reports r
+                 LEFT JOIN users u ON r.targetUserId = u.userId
+        ORDER BY r.reportId DESC
     </select>
 
     <update id="updateReportStatus">

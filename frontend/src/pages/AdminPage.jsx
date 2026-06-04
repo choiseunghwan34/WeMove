@@ -13,7 +13,6 @@ import {
   getAdminReports,
   getAdminSports,
   getSummary,
-  updateAdminMeetingStatus,
   updateAdminMemberStatus,
   updateAdminSport,
 } from "../api/adminApi";
@@ -21,11 +20,11 @@ import { useToast } from "../contexts/ToastContext";
 import styles from "../styles/AdminPage.module.css";
 
 const cx = (...names) =>
-  names
-    .flat()
-    .filter(Boolean)
-    .map((name) => styles[name] ?? name)
-    .join(" ");
+    names
+        .flat()
+        .filter(Boolean)
+        .map((name) => styles[name] ?? name)
+        .join(" ");
 
 const PAGE_SIZE = 10;
 const ALL_SIDO = "전체 시도";
@@ -111,14 +110,6 @@ const memberStatusOptions = [
   { value: "DELETED", label: "탈퇴" },
 ];
 
-const meetingStatusOptions = [
-  { value: "RECRUITING", label: "모집중" },
-  { value: "CLOSED", label: "모집완료" },
-  { value: "ONGOING", label: "진행중" },
-  { value: "COMPLETED", label: "모임완료" },
-  { value: "CANCELLED", label: "취소됨" },
-];
-
 const sportStatusOptions = [
   { value: true, label: "사용중" },
   { value: false, label: "비활성" },
@@ -132,6 +123,32 @@ const sportUsageFilters = [
 
 const normalizeText = (value = "") => String(value).trim();
 
+// 신고 대상 번역 함수
+const translateTarget = (target) => {
+  if (!target) return "";
+  const t = String(target).toUpperCase();
+  if (t === "MEMBER") return "회원";
+  if (t === "MEETING") return "모임";
+  if (t === "COMMENT") return "댓글";
+  return target;
+};
+
+// 신고 사유 번역 함수 (노쇼 추가)
+const translateReason = (reason) => {
+  if (!reason) return "-";
+  const r = String(reason).toUpperCase();
+  if (r.includes("SPAM") || r.includes("PROMOTION")) return "스팸/홍보성";
+  if (r.includes("ABUSE") || r.includes("PROFANITY") || r.includes("INSULT")) return "욕설/비방";
+  if (r.includes("INAPPROPRIATE") || r.includes("OBSCENE")) return "부적절한 내용";
+  if (r.includes("FRAUD") || r.includes("SCAM")) return "사기/거짓 정보";
+  if (r.includes("ADVERTISEMENT") || r.includes("AD")) return "상업적 광고";
+  if (r.includes("NO_SHOW") || r.includes("NOSHOW")) return "노쇼";
+  if (r === "OTHER") return "기타";
+
+  // 조건에 안 맞으면 서버에서 준 값을 그대로 보여줍니다
+  return reason;
+};
+
 const parseRegionLabel = (label = "") => {
   const [sido = "", sigungu = "", dong = ""] = normalizeText(label).split(/\s+/);
   return { sido, sigungu, dong };
@@ -141,9 +158,9 @@ const matchesRegionSelection = (regionLabel, sido, sigungu, dong) => {
   const parsed = parseRegionLabel(regionLabel);
 
   return (
-    (sido === ALL_SIDO || parsed.sido === sido) &&
-    (sigungu === ALL_SIGUNGU || parsed.sigungu === sigungu) &&
-    (dong === ALL_DONG || parsed.dong === dong)
+      (sido === ALL_SIDO || parsed.sido === sido) &&
+      (sigungu === ALL_SIGUNGU || parsed.sigungu === sigungu) &&
+      (dong === ALL_DONG || parsed.dong === dong)
   );
 };
 
@@ -210,9 +227,9 @@ export default function AdminPage() {
   const [selectedSigungu, setSelectedSigungu] = useState(ALL_SIGUNGU);
   const [selectedDong, setSelectedDong] = useState(ALL_DONG);
   const [selectedMeetingCategory, setSelectedMeetingCategory] =
-    useState(ALL_CATEGORY);
+      useState(ALL_CATEGORY);
   const [selectedSportCategory, setSelectedSportCategory] =
-    useState(ALL_CATEGORY);
+      useState(ALL_CATEGORY);
   const [selectedSportUsage, setSelectedSportUsage] = useState("ALL");
   const [selectedMemberStatus, setSelectedMemberStatus] = useState("ALL");
   const [memberKeyword, setMemberKeyword] = useState("");
@@ -227,11 +244,8 @@ export default function AdminPage() {
   const [sportForm, setSportForm] = useState(initialSportForm);
   const [sportFormError, setSportFormError] = useState("");
   const [updatingMemberId, setUpdatingMemberId] = useState(null);
-  const [updatingMeetingId, setUpdatingMeetingId] = useState(null);
   const [updatingSportId, setUpdatingSportId] = useState(null);
   const [deletingSportId, setDeletingSportId] = useState(null);
-  const [selectedMeetingIds, setSelectedMeetingIds] = useState([]);
-  const [bulkMeetingStatus, setBulkMeetingStatus] = useState("RECRUITING");
   const [selectedMemberDetail, setSelectedMemberDetail] = useState(null);
   const [selectedMeetingDetail, setSelectedMeetingDetail] = useState(null);
   const [pages, setPages] = useState({
@@ -254,27 +268,6 @@ export default function AdminPage() {
         block: "start",
       });
     }, 0);
-  };
-
-  const toggleMeetingSelection = (meetingId) => {
-    setSelectedMeetingIds((current) =>
-      current.includes(meetingId)
-        ? current.filter((id) => id !== meetingId)
-        : [...current, meetingId],
-    );
-  };
-
-  const toggleCurrentPageMeetings = () => {
-    if (allPagedMeetingsSelected) {
-      setSelectedMeetingIds((current) =>
-        current.filter((id) => !pagedMeetings.some((meeting) => meeting.id === id)),
-      );
-      return;
-    }
-
-    setSelectedMeetingIds((current) => [
-      ...new Set([...current, ...pagedMeetings.map((meeting) => meeting.id)]),
-    ]);
   };
 
   const loadAdminData = async () => {
@@ -305,102 +298,127 @@ export default function AdminPage() {
     }
 
     if (
-      membersResult.status === "fulfilled" &&
-      Array.isArray(membersResult.value.data)
+        membersResult.status === "fulfilled" &&
+        Array.isArray(membersResult.value.data)
     ) {
       setMembers(
-        membersResult.value.data
-          .filter((member) => (member.role ?? "USER") !== "ADMIN")
-          .map((member) => ({
-            id: member.userId,
-            loginId: member.loginId,
-            nickname: member.nickname,
-            profileImage:
-              typeof member.profileImage === "string" && member.profileImage.trim()
-                ? member.profileImage.trim()
-                : defaultUserImage,
-            region: member.regionName ?? "-",
-            role: member.role ?? "USER",
-            status: member.status ?? "ACTIVE",
-            roleText: roleText[member.role] ?? member.role ?? "유저",
+          membersResult.value.data
+              .filter((member) => (member.role ?? "USER") !== "ADMIN")
+              .map((member) => ({
+                id: member.userId,
+                loginId: member.loginId,
+                nickname: member.nickname,
+                profileImage:
+                    typeof member.profileImage === "string" && member.profileImage.trim()
+                        ? member.profileImage.trim()
+                        : defaultUserImage,
+                region: member.regionName ?? "-",
+                role: member.role ?? "USER",
+                status: member.status ?? "ACTIVE",
+                roleText: roleText[member.role] ?? member.role ?? "유저",
+                statusText:
+                    memberStatusText[member.status] ?? member.status ?? "활동중",
+              })),
+      );
+    }
+
+    if (
+        regionsResult.status === "fulfilled" &&
+        Array.isArray(regionsResult.value.data)
+    ) {
+      setRegions(
+          regionsResult.value.data
+              .map((region) => ({
+                regionId: region.regionId,
+                sido: normalizeText(region.sido),
+                sigungu: normalizeText(region.sigungu),
+                dong: normalizeText(region.dong),
+              }))
+              .filter((region) => region.sido && region.sigungu && region.dong),
+      );
+    }
+
+    if (
+        meetingsResult.status === "fulfilled" &&
+        Array.isArray(meetingsResult.value.data)
+    ) {
+      setMeetings(
+          meetingsResult.value.data.map((meeting) => ({
+            id: meeting.meetingId,
+            title: meeting.title ?? "-",
+            sport: meeting.sportName ?? "-",
+            sportCategory: meeting.sportCategory ?? "기타",
+            region: meeting.regionName ?? "-",
+            meetingDate: formatMeetingDate(meeting.meetingDate),
+            startTime: formatMeetingTime(meeting.startTime),
+            createdAt: formatCreatedDate(meeting.createdAt),
+            current: meeting.approvedCount ?? 0,
+            max: meeting.maxMembers ?? 0,
+            status: meeting.status ?? "RECRUITING",
             statusText:
-              memberStatusText[member.status] ?? member.status ?? "활동중",
+                meetingStatusText[meeting.status] ?? meeting.status ?? "모집중",
+            hostNickname: meeting.hostNickname ?? "-",
           })),
       );
     }
 
     if (
-      regionsResult.status === "fulfilled" &&
-      Array.isArray(regionsResult.value.data)
-    ) {
-      setRegions(
-        regionsResult.value.data
-          .map((region) => ({
-            regionId: region.regionId,
-            sido: normalizeText(region.sido),
-            sigungu: normalizeText(region.sigungu),
-            dong: normalizeText(region.dong),
-          }))
-          .filter((region) => region.sido && region.sigungu && region.dong),
-      );
-    }
-
-    if (
-      meetingsResult.status === "fulfilled" &&
-      Array.isArray(meetingsResult.value.data)
-    ) {
-      setMeetings(
-        meetingsResult.value.data.map((meeting) => ({
-          id: meeting.meetingId,
-          title: meeting.title ?? "-",
-          sport: meeting.sportName ?? "-",
-          sportCategory: meeting.sportCategory ?? "기타",
-          region: meeting.regionName ?? "-",
-          meetingDate: formatMeetingDate(meeting.meetingDate),
-          startTime: formatMeetingTime(meeting.startTime),
-          createdAt: formatCreatedDate(meeting.createdAt),
-          current: meeting.approvedCount ?? 0,
-          max: meeting.maxMembers ?? 0,
-          status: meeting.status ?? "RECRUITING",
-          statusText:
-            meetingStatusText[meeting.status] ?? meeting.status ?? "모집중",
-          hostNickname: meeting.hostNickname ?? "-",
-        })),
-      );
-    }
-
-    if (
-      sportsResult.status === "fulfilled" &&
-      Array.isArray(sportsResult.value.data)
+        sportsResult.status === "fulfilled" &&
+        Array.isArray(sportsResult.value.data)
     ) {
       setSports(
-        sportsResult.value.data.map((sport) => ({
-          id: sport.sportId,
-          name: sport.name ?? "-",
-          category: sport.category ?? "기타",
-          isActive: sport.isActive ?? true,
-        })),
+          sportsResult.value.data.map((sport) => ({
+            id: sport.sportId,
+            name: sport.name ?? "-",
+            category: sport.category ?? "기타",
+            isActive: sport.isActive ?? true,
+          })),
       );
     }
 
     if (
-      reportsResult.status === "fulfilled" &&
-      Array.isArray(reportsResult.value.data)
+        reportsResult.status === "fulfilled" &&
+        Array.isArray(reportsResult.value.data)
     ) {
       setReports(
-        reportsResult.value.data.map((report) => ({
-          id: report.reportId,
-          target: `신고 #${report.reportId}`,
-          reason: report.reason ?? "-",
-          status: report.status ?? "PENDING",
-          statusText:
-            reportStatusText[report.status] ?? report.status ?? "대기중",
-          createdAt: report.createdAt ? String(report.createdAt).slice(0, 10) : "-",
-        })),
+          reportsResult.value.data.map((report) => {
+            // 백엔드에서 닉네임이나 모임 제목을 보내줄 경우를 최우선으로 적용합니다.
+            const targetName =
+                report.reportedNickname ||
+                report.targetNickname ||
+                report.targetName ||
+                report.targetTitle ||
+                report.target;
+
+            let displayTarget = targetName;
+
+            // 만약 데이터가 MEMBER, MEETING 등 타입 문자열로만 들어올 경우에 대한 방어 코드
+            if (targetName === "MEMBER" || targetName === "MEETING" || targetName === "COMMENT") {
+              const translated = translateTarget(targetName);
+              const id = report.targetId || report.reportedId;
+              displayTarget = id ? `${translated} (ID: ${id})` : translated;
+            } else if (report.targetType) {
+              // 회원, 모임 타입 뱃지를 닉네임/제목 앞에 붙여줍니다 (예: [회원] 홍길동)
+              displayTarget = `[${translateTarget(report.targetType)}] ${targetName}`;
+            }
+
+            if (!displayTarget) {
+              displayTarget = `신고 #${report.reportId}`;
+            }
+
+            return {
+              id: report.reportId,
+              target: displayTarget,
+              reason: translateReason(report.reason),
+              status: report.status ?? "PENDING",
+              statusText:
+                  reportStatusText[report.status] ?? report.status ?? "대기중",
+              createdAt: report.createdAt ? String(report.createdAt).slice(0, 10) : "-",
+            };
+          }),
       );
     }
 
-    setSelectedMeetingIds([]);
     setIsLoading(false);
   };
 
@@ -432,63 +450,63 @@ export default function AdminPage() {
     });
 
     return [...grouped.entries()]
-      .sort((left, right) => left[0].localeCompare(right[0], "ko"))
-      .map(([sido, sigunguMap]) => ({
-        sido,
-        sigungus: [...sigunguMap.entries()]
-          .sort((left, right) => left[0].localeCompare(right[0], "ko"))
-          .map(([sigungu, dongs]) => ({
-            sigungu,
-            dongs: [...new Set(dongs)].sort((left, right) =>
-              left.localeCompare(right, "ko"),
-            ),
-          })),
-      }));
+        .sort((left, right) => left[0].localeCompare(right[0], "ko"))
+        .map(([sido, sigunguMap]) => ({
+          sido,
+          sigungus: [...sigunguMap.entries()]
+              .sort((left, right) => left[0].localeCompare(right[0], "ko"))
+              .map(([sigungu, dongs]) => ({
+                sigungu,
+                dongs: [...new Set(dongs)].sort((left, right) =>
+                    left.localeCompare(right, "ko"),
+                ),
+              })),
+        }));
   }, [regions]);
 
   const meetingCategoryOptions = useMemo(
-    () =>
-      [...new Set(meetings.map((meeting) => meeting.sportCategory))].sort(
-        (left, right) => left.localeCompare(right, "ko"),
-      ),
-    [meetings],
+      () =>
+          [...new Set(meetings.map((meeting) => meeting.sportCategory))].sort(
+              (left, right) => left.localeCompare(right, "ko"),
+          ),
+      [meetings],
   );
 
   const sportCategoryOptions = useMemo(
-    () =>
-      [...new Set(sports.map((sport) => sport.category))].sort((left, right) =>
-        left.localeCompare(right, "ko"),
-      ),
-    [sports],
+      () =>
+          [...new Set(sports.map((sport) => sport.category))].sort((left, right) =>
+              left.localeCompare(right, "ko"),
+          ),
+      [sports],
   );
 
   const normalizedSportNames = useMemo(
-    () => new Set(sports.map((sport) => normalizeText(sport.name).toLowerCase())),
-    [sports],
+      () => new Set(sports.map((sport) => normalizeText(sport.name).toLowerCase())),
+      [sports],
   );
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
       const matchesRegion = matchesRegionSelection(
-        member.region,
-        selectedSido,
-        selectedSigungu,
-        selectedDong,
+          member.region,
+          selectedSido,
+          selectedSigungu,
+          selectedDong,
       );
       const matchesStatus =
-        selectedMemberStatus === "ALL" || member.status === selectedMemberStatus;
+          selectedMemberStatus === "ALL" || member.status === selectedMemberStatus;
       const searchBase = [
         member.nickname,
         member.loginId,
         String(member.id),
         member.region,
       ]
-        .join(" ");
+          .join(" ");
 
       return (
-        matchesRegion &&
-        matchesStatus &&
-        includesAllTerms(searchBase, memberKeyword)
+          matchesRegion &&
+          matchesStatus &&
+          includesAllTerms(searchBase, memberKeyword)
       );
     });
   }, [
@@ -505,14 +523,14 @@ export default function AdminPage() {
 
     return meetings.filter((meeting) => {
       const matchesRegion = matchesRegionSelection(
-        meeting.region,
-        selectedSido,
-        selectedSigungu,
-        selectedDong,
+          meeting.region,
+          selectedSido,
+          selectedSigungu,
+          selectedDong,
       );
       const matchesCategory =
-        selectedMeetingCategory === ALL_CATEGORY ||
-        meeting.sportCategory === selectedMeetingCategory;
+          selectedMeetingCategory === ALL_CATEGORY ||
+          meeting.sportCategory === selectedMeetingCategory;
 
       if (!keyword) {
         return matchesRegion && matchesCategory;
@@ -525,8 +543,8 @@ export default function AdminPage() {
         meeting.region,
         `M${String(meeting.id).padStart(3, "0")}`,
       ]
-        .join(" ")
-        .toLowerCase();
+          .join(" ")
+          .toLowerCase();
 
       return matchesRegion && matchesCategory && searchBase.includes(keyword);
     });
@@ -540,22 +558,22 @@ export default function AdminPage() {
   ]);
 
   const filteredSports = useMemo(
-    () =>
-      sports.filter(
-        (sport) =>
-          (selectedSportCategory === ALL_CATEGORY ||
-            sport.category === selectedSportCategory) &&
-          (selectedSportUsage === "ALL" ||
-            (selectedSportUsage === "ACTIVE" && sport.isActive) ||
-            (selectedSportUsage === "INACTIVE" && !sport.isActive)),
-      ),
-    [sports, selectedSportCategory, selectedSportUsage],
+      () =>
+          sports.filter(
+              (sport) =>
+                  (selectedSportCategory === ALL_CATEGORY ||
+                      sport.category === selectedSportCategory) &&
+                  (selectedSportUsage === "ALL" ||
+                      (selectedSportUsage === "ACTIVE" && sport.isActive) ||
+                      (selectedSportUsage === "INACTIVE" && !sport.isActive)),
+          ),
+      [sports, selectedSportCategory, selectedSportUsage],
   );
 
   const memberPageCount = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE));
   const meetingPageCount = Math.max(
-    1,
-    Math.ceil(filteredMeetings.length / PAGE_SIZE),
+      1,
+      Math.ceil(filteredMeetings.length / PAGE_SIZE),
   );
   const reportPageCount = Math.max(1, Math.ceil(reports.length / PAGE_SIZE));
   const sportPageCount = Math.max(1, Math.ceil(filteredSports.length / PAGE_SIZE));
@@ -569,96 +587,31 @@ export default function AdminPage() {
   const pagedMeetings = paginate(filteredMeetings, meetingPage);
   const pagedReports = paginate(reports, reportPage);
   const pagedSports = paginate(filteredSports, sportPage);
-  const allPagedMeetingsSelected =
-    pagedMeetings.length > 0 &&
-    pagedMeetings.every((meeting) => selectedMeetingIds.includes(meeting.id));
-
-  const memberChartData = useMemo(
-    () => [
-      {
-        label: "활동중 회원",
-        value: members.filter((member) => member.status === "ACTIVE").length,
-        tone: "chartBlue",
-      },
-      {
-        label: "정지 회원",
-        value: members.filter((member) => member.status === "SUSPENDED").length,
-        tone: "chartOrange",
-      },
-      {
-        label: "탈퇴 회원",
-        value: members.filter((member) => member.status === "DELETED").length,
-        tone: "chartSlate",
-      },
-    ],
-    [members],
-  );
-
-  const meetingChartData = useMemo(
-    () => [
-      {
-        label: "모집중 모임",
-        value: meetings.filter((meeting) => meeting.status === "RECRUITING").length,
-        tone: "chartBlue",
-      },
-      {
-        label: "모집완료 모임",
-        value: meetings.filter((meeting) => meeting.status === "CLOSED").length,
-        tone: "chartOrange",
-      },
-      {
-        label: "진행중 모임",
-        value: meetings.filter((meeting) => meeting.status === "ONGOING").length,
-        tone: "chartBlue",
-      },
-      {
-        label: "진행완료 모임",
-        value: meetings.filter((meeting) => meeting.status === "COMPLETED").length,
-        tone: "chartGreen",
-      },
-    ],
-    [meetings],
-  );
-
-  const sportChartData = useMemo(
-    () => [
-      {
-        label: "사용중 종목",
-        value: sports.filter((sport) => sport.isActive).length,
-        tone: "chartGreen",
-      },
-      {
-        label: "비활성 종목",
-        value: sports.filter((sport) => !sport.isActive).length,
-        tone: "chartSlate",
-      },
-    ],
-    [sports],
-  );
 
   const regionSummary = [selectedSido, selectedSigungu, selectedDong]
-    .filter(
-      (value) =>
-        value !== ALL_SIDO && value !== ALL_SIGUNGU && value !== ALL_DONG,
-    )
-    .join(" · ");
+      .filter(
+          (value) =>
+              value !== ALL_SIDO && value !== ALL_SIGUNGU && value !== ALL_DONG,
+      )
+      .join(" · ");
 
-  const filterSummaryText =
-    activeTab === "sports"
-      ? `${
-          selectedSportCategory === ALL_CATEGORY
-            ? "전체 카테고리"
-            : selectedSportCategory
-        } 기준으로 종목을 보고 있습니다.`
-      : `${regionSummary || "전체 지역"} 기준으로 목록을 보고 있습니다.`;
+  let filterSummaryText = "";
+  let filterPanelTitle = "";
+  let filterPanelDescription = "";
 
-  const filterPanelTitle =
-    activeTab === "sports" ? "카테고리별 조회" : "지역별 조회";
-
-  const filterPanelDescription =
-    activeTab === "sports"
-      ? "운동 종목은 카테고리별로 나눠서 빠르게 확인할 수 있습니다."
-      : "시도, 시군구, 읍면동을 차례대로 선택해 목록을 좁혀볼 수 있습니다.";
+  if (activeTab === "sports") {
+    filterSummaryText = `${selectedSportCategory === ALL_CATEGORY ? "전체 카테고리" : selectedSportCategory} 기준으로 종목을 보고 있습니다.`;
+    filterPanelTitle = "카테고리별 조회";
+    filterPanelDescription = "운동 종목은 카테고리별로 나눠서 빠르게 확인할 수 있습니다.";
+  } else if (activeTab === "reports") {
+    filterSummaryText = "전체 신고 내역을 보고 있습니다.";
+    filterPanelTitle = "신고 내역 조회";
+    filterPanelDescription = "접수된 신고 내역을 최신순으로 확인합니다.";
+  } else {
+    filterSummaryText = `${regionSummary || "전체 지역"} 기준으로 목록을 보고 있습니다.`;
+    filterPanelTitle = "지역별 조회";
+    filterPanelDescription = "시도, 시군구, 읍면동을 차례대로 선택해 목록을 좁혀볼 수 있습니다.";
+  }
 
   const resetSelection = () => {
     setSelectedSido(ALL_SIDO);
@@ -747,7 +700,7 @@ export default function AdminPage() {
       updatePage("sports", 1);
     } catch (error) {
       setSportFormError(
-        error?.response?.data?.message ?? "종목을 추가하지 못했습니다.",
+          error?.response?.data?.message ?? "종목을 추가하지 못했습니다.",
       );
     }
   };
@@ -762,44 +715,6 @@ export default function AdminPage() {
       toast.error("회원 상태 변경 실패", "잠시 후 다시 시도해주세요.");
     } finally {
       setUpdatingMemberId(null);
-    }
-  };
-
-  const handleMeetingStatusChange = async (meetingId, nextStatus) => {
-    setUpdatingMeetingId(meetingId);
-    try {
-      await updateAdminMeetingStatus(meetingId, nextStatus);
-      await loadAdminData();
-      toast.success("모임 상태 변경", "모임 상태를 저장했습니다.");
-    } catch {
-      toast.error("모임 상태 변경 실패", "잠시 후 다시 시도해주세요.");
-    } finally {
-      setUpdatingMeetingId(null);
-    }
-  };
-
-  const handleBulkMeetingStatusChange = async () => {
-    if (!selectedMeetingIds.length) {
-      toast.info("선택된 모임 없음", "일괄 변경할 모임을 먼저 선택해주세요.");
-      return;
-    }
-
-    setUpdatingMeetingId("bulk");
-    try {
-      await Promise.all(
-        selectedMeetingIds.map((meetingId) =>
-          updateAdminMeetingStatus(meetingId, bulkMeetingStatus),
-        ),
-      );
-      await loadAdminData();
-      toast.success(
-        "일괄 상태 변경 완료",
-        `${selectedMeetingIds.length}개의 모임 상태를 한 번에 변경했습니다.`,
-      );
-    } catch {
-      toast.error("일괄 상태 변경 실패", "모든 모임 상태를 바꾸지 못했습니다.");
-    } finally {
-      setUpdatingMeetingId(null);
     }
   };
 
@@ -835,684 +750,668 @@ export default function AdminPage() {
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageTitle}>
-        <div>
-          <h1>관리자 페이지</h1>
-          <p>회원, 모임, 신고, 운동 종목 현황을 한 화면에서 관리합니다.</p>
-        </div>
-      </div>
-
-      <section className={styles.statGrid}>
-        {summaryCards.map((card) => (
-          <article key={card.key} className={styles[card.toneClass]}>
-            <div className={styles.summaryEyebrow}>{card.label}</div>
-            <strong>{summary[card.key]}</strong>
-            <p className={styles.summaryCaption}>{card.caption}</p>
-          </article>
-        ))}
-      </section>
-
-      <div className={styles.pageTabsShell}>
-        <div className={styles.pageTabs}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={cx(
-                "tabButton",
-                activeTab === tab.id && "tabButtonCurrent",
-              )}
-              onClick={() => changeTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <section className={styles.filterPanel}>
-        <div className={styles.filterHead}>
+      <div className={styles.page}>
+        <div className={styles.pageTitle}>
           <div>
-            <h2>{filterPanelTitle}</h2>
-            <p>{filterPanelDescription}</p>
+            <h1>관리자 페이지</h1>
+            <p>회원, 모임, 신고, 운동 종목 현황을 한 화면에서 관리합니다.</p>
           </div>
-          <button type="button" onClick={resetSelection}>
-            전체 보기
-          </button>
         </div>
 
-        <div className={styles.filterSummaryBar}>
-          <span className={styles.filterSummaryKicker}>조회 기준</span>
-          <strong>{filterSummaryText}</strong>
-        </div>
+        <section className={styles.statGrid}>
+          {summaryCards.map((card) => (
+              <article key={card.key} className={styles[card.toneClass]}>
+                <div className={styles.summaryEyebrow}>{card.label}</div>
+                <strong>{summary[card.key]}</strong>
+                <p className={styles.summaryCaption}>{card.caption}</p>
+              </article>
+          ))}
+        </section>
 
-        {activeTab !== "sports" ? (
-          <div className={styles.regionPickerRow}>
-            <button
-              type="button"
-              className={styles.regionPickerButton}
-              onClick={openRegionModal}
-            >
-              지역 조회
-            </button>
-            <div className={styles.regionPickerSummary}>
-              <span className={styles.regionPickerLabel}>선택 지역</span>
-              <strong>{regionSummary || "전체 지역"}</strong>
-            </div>
-          </div>
-        ) : null}
-
-        {activeTab === "meetings" ? (
-          <div className={styles.categorySection}>
-            <span className={styles.categoryLabel}>운동 카테고리</span>
-            <div className={styles.categoryChips}>
-              {[ALL_CATEGORY, ...meetingCategoryOptions].map((category) => (
+        <div className={styles.pageTabsShell}>
+          <div className={styles.pageTabs}>
+            {tabs.map((tab) => (
                 <button
-                  key={category}
-                  type="button"
-                  className={cx(
-                    "categoryChip",
-                    selectedMeetingCategory === category &&
-                      "categoryChipCurrent",
-                  )}
-                  onClick={() => {
-                    setSelectedMeetingCategory(category);
-                    updatePage("meetings", 1);
-                  }}
+                    key={tab.id}
+                    type="button"
+                    className={cx(
+                        "tabButton",
+                        activeTab === tab.id && "tabButtonCurrent",
+                    )}
+                    onClick={() => changeTab(tab.id)}
                 >
-                  {category}
+                  {tab.label}
                 </button>
-              ))}
-            </div>
+            ))}
           </div>
-        ) : null}
-
-        {activeTab === "sports" ? (
-          <div className={styles.categorySection}>
-            <span className={styles.categoryLabel}>운동 종목 카테고리</span>
-            <div className={styles.categoryChips}>
-              {[ALL_CATEGORY, ...sportCategoryOptions].map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  className={cx(
-                    "categoryChip",
-                    selectedSportCategory === category &&
-                      "categoryChipCurrent",
-                  )}
-                  onClick={() => {
-                    setSelectedSportCategory(category);
-                    updatePage("sports", 1);
-                  }}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        <div className={styles.filterMeta}>
-          <span>{filterSummaryText}</span>
-          <strong>
-            {activeTab === "sports"
-              ? `종목 ${filteredSports.length}개`
-              : `회원 ${filteredMembers.length}명 · 모임 ${filteredMeetings.length}개`}
-          </strong>
         </div>
-      </section>
 
-      {activeTab === "members" ? (
-        <section id="members" className={styles.tableCard}>
-          <div className={styles.tableHead}>
+        <section className={styles.filterPanel}>
+          <div className={styles.filterHead}>
             <div>
-              <h2>회원 관리</h2>
-              <p>닉네임, 로그인 ID로 검색하고 회원 상태를 바로 변경할 수 있습니다.</p>
+              <h2>{filterPanelTitle}</h2>
+              <p>{filterPanelDescription}</p>
             </div>
+            <button type="button" onClick={resetSelection}>
+              전체 보기
+            </button>
           </div>
-          <div className={styles.tableToolbar}>
-            <label className={styles.searchField}>
-              <span>회원 검색</span>
-              <input
-                value={memberKeyword}
-                onChange={(event) => {
-                  setMemberKeyword(event.target.value);
-                  updatePage("members", 1);
-                }}
-                placeholder="닉네임, 로그인 ID, 회원 ID 검색"
-              />
-            </label>
+
+          <div className={styles.filterSummaryBar}>
+            <span className={styles.filterSummaryKicker}>조회 기준</span>
+            <strong>{filterSummaryText}</strong>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>회원 ID</th>
-                <th>닉네임</th>
-                <th>로그인 ID</th>
-                <th>지역</th>
-                <th>권한</th>
-                <th>상태</th>
-                <th>상태 변경</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedMembers.map((member) => (
-                <tr
-                  key={member.id}
-                  className={styles.clickableRow}
-                  onClick={() => setSelectedMemberDetail(member)}
+
+          {activeTab === "members" || activeTab === "meetings" ? (
+              <div className={styles.regionPickerRow}>
+                <button
+                    type="button"
+                    className={styles.regionPickerButton}
+                    onClick={openRegionModal}
                 >
-                  <td>{member.id}</td>
-                  <td>
-                    <div className={styles.memberIdentity}>
-                      <img
-                        src={member.profileImage}
-                        alt={`${member.nickname} 프로필`}
-                        className={styles.memberAvatar}
-                      />
-                      <strong>{member.nickname}</strong>
-                    </div>
-                  </td>
-                  <td>{member.loginId}</td>
-                  <td>{member.region}</td>
-                  <td>{member.roleText}</td>
-                  <td>
+                  지역 조회
+                </button>
+                <div className={styles.regionPickerSummary}>
+                  <span className={styles.regionPickerLabel}>선택 지역</span>
+                  <strong>{regionSummary || "전체 지역"}</strong>
+                </div>
+              </div>
+          ) : null}
+
+          {activeTab === "meetings" ? (
+              <div className={styles.categorySection}>
+                <span className={styles.categoryLabel}>운동 카테고리</span>
+                <div className={styles.categoryChips}>
+                  {[ALL_CATEGORY, ...meetingCategoryOptions].map((category) => (
+                      <button
+                          key={category}
+                          type="button"
+                          className={cx(
+                              "categoryChip",
+                              selectedMeetingCategory === category &&
+                              "categoryChipCurrent",
+                          )}
+                          onClick={() => {
+                            setSelectedMeetingCategory(category);
+                            updatePage("meetings", 1);
+                          }}
+                      >
+                        {category}
+                      </button>
+                  ))}
+                </div>
+              </div>
+          ) : null}
+
+          {activeTab === "sports" ? (
+              <div className={styles.categorySection}>
+                <span className={styles.categoryLabel}>운동 종목 카테고리</span>
+                <div className={styles.categoryChips}>
+                  {[ALL_CATEGORY, ...sportCategoryOptions].map((category) => (
+                      <button
+                          key={category}
+                          type="button"
+                          className={cx(
+                              "categoryChip",
+                              selectedSportCategory === category &&
+                              "categoryChipCurrent",
+                          )}
+                          onClick={() => {
+                            setSelectedSportCategory(category);
+                            updatePage("sports", 1);
+                          }}
+                      >
+                        {category}
+                      </button>
+                  ))}
+                </div>
+              </div>
+          ) : null}
+
+          <div className={styles.filterMeta}>
+            <span>{filterSummaryText}</span>
+            <strong>
+              {activeTab === "sports"
+                  ? `종목 ${filteredSports.length}개`
+                  : activeTab === "reports"
+                      ? `신고 ${reports.length}건`
+                      : `회원 ${filteredMembers.length}명 · 모임 ${filteredMeetings.length}개`}
+            </strong>
+          </div>
+        </section>
+
+        {activeTab === "members" ? (
+            <section id="members" className={styles.tableCard}>
+              <div className={styles.tableHead}>
+                <div>
+                  <h2>회원 관리</h2>
+                  <p>닉네임, 로그인 ID로 검색하고 회원 상태를 바로 변경할 수 있습니다.</p>
+                </div>
+              </div>
+              <div className={styles.tableToolbar}>
+                <label className={styles.searchField}>
+                  <span>회원 검색</span>
+                  <input
+                      value={memberKeyword}
+                      onChange={(event) => {
+                        setMemberKeyword(event.target.value);
+                        updatePage("members", 1);
+                      }}
+                      placeholder="닉네임, 로그인 ID, 회원 ID 검색"
+                  />
+                </label>
+              </div>
+              <table>
+                <thead>
+                <tr>
+                  <th>회원 ID</th>
+                  <th>닉네임</th>
+                  <th>로그인 ID</th>
+                  <th>지역</th>
+                  <th>권한</th>
+                  <th>상태</th>
+                  <th>상태 변경</th>
+                </tr>
+                </thead>
+                <tbody>
+                {pagedMembers.map((member) => (
+                    <tr
+                        key={member.id}
+                        className={styles.clickableRow}
+                        onClick={() => setSelectedMemberDetail(member)}
+                    >
+                      <td>{member.id}</td>
+                      <td>
+                        <div className={styles.memberIdentity}>
+                          <img
+                              src={member.profileImage}
+                              alt={`${member.nickname} 프로필`}
+                              className={styles.memberAvatar}
+                          />
+                          <strong>{member.nickname}</strong>
+                        </div>
+                      </td>
+                      <td>{member.loginId}</td>
+                      <td>{member.region}</td>
+                      <td>{member.roleText}</td>
+                      <td>
                     <span className={cx("badge", badgeToneByMemberStatus(member.status))}>
                       {member.statusText}
                     </span>
-                  </td>
-                  <td>
-                    <select
-                      className={styles.inlineSelect}
-                      value={member.status}
-                      disabled={updatingMemberId === member.id}
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={(event) =>
-                        handleMemberStatusChange(member.id, event.target.value)
-                      }
-                    >
-                      {memberStatusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-              {pagedMembers.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className={styles.emptyCell}>
-                    선택한 조건에 해당하는 회원이 없습니다.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-          <Pagination
-            currentPage={memberPage}
-            totalPages={memberPageCount}
-            totalItems={filteredMembers.length}
-            pageSize={PAGE_SIZE}
-            onPageChange={(page) => updatePage("members", page)}
-          />
-        </section>
-      ) : null}
-
-      {activeTab === "meetings" ? (
-        <section id="meetings" className={styles.tableCard}>
-          <div className={styles.tableHead}>
-            <div>
-              <h2>모임 관리</h2>
-              <p>제목, 주최자, 종목으로 검색하고 모임 상태를 바로 바꿀 수 있습니다.</p>
-            </div>
-          </div>
-          <div className={styles.tableToolbar}>
-            <label className={styles.searchField}>
-              <span>모임 검색</span>
-              <input
-                value={meetingKeyword}
-                onChange={(event) => {
-                  setMeetingKeyword(event.target.value);
-                  updatePage("meetings", 1);
-                }}
-                placeholder="제목, 주최자, 종목, 모임 ID 검색"
+                      </td>
+                      <td>
+                        <select
+                            className={styles.inlineSelect}
+                            value={member.status}
+                            disabled={updatingMemberId === member.id}
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={(event) =>
+                                handleMemberStatusChange(member.id, event.target.value)
+                            }
+                        >
+                          {memberStatusOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                ))}
+                {pagedMembers.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className={styles.emptyCell}>
+                        선택한 조건에 해당하는 회원이 없습니다.
+                      </td>
+                    </tr>
+                ) : null}
+                </tbody>
+              </table>
+              <Pagination
+                  currentPage={memberPage}
+                  totalPages={memberPageCount}
+                  totalItems={filteredMembers.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={(page) => updatePage("members", page)}
               />
-            </label>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>모임 ID</th>
-                <th>제목</th>
-                <th>종목</th>
-                <th>카테고리</th>
-                <th>지역</th>
-                <th>일정</th>
-                <th>참가 인원</th>
-                <th>상태</th>
-                <th>상태 변경</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedMeetings.map((meeting) => (
-                <tr
-                  key={meeting.id}
-                  className={styles.clickableRow}
-                  onClick={() => setSelectedMeetingDetail(meeting)}
-                >
-                  <td>M{String(meeting.id).padStart(3, "0")}</td>
-                  <td>
-                    <div className={styles.stackCell}>
-                      <strong>{meeting.title}</strong>
-                      <span>주최자: {meeting.hostNickname}</span>
-                    </div>
-                  </td>
-                  <td>{meeting.sport}</td>
-                  <td>
-                    <span className={styles.categoryPill}>{meeting.sportCategory}</span>
-                  </td>
-                  <td>{meeting.region}</td>
-                  <td>
-                    <div className={styles.scheduleCell}>
-                      <strong>{meeting.meetingDate}</strong>
-                      <span>{meeting.startTime}</span>
-                      <span>등록 {meeting.createdAt}</span>
-                    </div>
-                  </td>
-                  <td>
-                    {meeting.current}/{meeting.max}
-                  </td>
-                  <td>
+            </section>
+        ) : null}
+
+        {activeTab === "meetings" ? (
+            <section id="meetings" className={styles.tableCard}>
+              <div className={styles.tableHead}>
+                <div>
+                  <h2>모임 관리</h2>
+                  <p>제목, 주최자, 종목으로 검색할 수 있습니다.</p>
+                </div>
+              </div>
+              <div className={styles.tableToolbar}>
+                <label className={styles.searchField}>
+                  <span>모임 검색</span>
+                  <input
+                      value={meetingKeyword}
+                      onChange={(event) => {
+                        setMeetingKeyword(event.target.value);
+                        updatePage("meetings", 1);
+                      }}
+                      placeholder="제목, 주최자, 종목, 모임 ID 검색"
+                  />
+                </label>
+              </div>
+              <table>
+                <thead>
+                <tr>
+                  <th>모임 ID</th>
+                  <th>제목</th>
+                  <th>종목</th>
+                  <th>카테고리</th>
+                  <th>지역</th>
+                  <th>일정</th>
+                  <th>참가 인원</th>
+                  <th>상태</th>
+                </tr>
+                </thead>
+                <tbody>
+                {pagedMeetings.map((meeting) => (
+                    <tr
+                        key={meeting.id}
+                        className={styles.clickableRow}
+                        onClick={() => setSelectedMeetingDetail(meeting)}
+                    >
+                      <td>M{String(meeting.id).padStart(3, "0")}</td>
+                      <td>
+                        <div className={styles.stackCell}>
+                          <strong>{meeting.title}</strong>
+                          <span>주최자: {meeting.hostNickname}</span>
+                        </div>
+                      </td>
+                      <td>{meeting.sport}</td>
+                      <td>
+                        <span className={styles.categoryPill}>{meeting.sportCategory}</span>
+                      </td>
+                      <td>{meeting.region}</td>
+                      <td>
+                        <div className={styles.scheduleCell}>
+                          <strong>{meeting.meetingDate}</strong>
+                          <span>{meeting.startTime}</span>
+                          <span>등록 {meeting.createdAt}</span>
+                        </div>
+                      </td>
+                      <td>
+                        {meeting.current}/{meeting.max}
+                      </td>
+                      <td>
                     <span className={cx("badge", badgeToneByMeetingStatus(meeting.status))}>
                       {meeting.statusText}
                     </span>
-                  </td>
-                  <td>
-                    <select
-                      className={styles.inlineSelect}
-                      value={meeting.status}
-                      disabled={updatingMeetingId === meeting.id}
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={(event) =>
-                        handleMeetingStatusChange(meeting.id, event.target.value)
-                      }
-                    >
-                      {meetingStatusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-              {pagedMeetings.length === 0 ? (
-                <tr>
-                  <td colSpan="9" className={styles.emptyCell}>
-                    조건에 맞는 모임이 없습니다.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-          <Pagination
-            currentPage={meetingPage}
-            totalPages={meetingPageCount}
-            totalItems={filteredMeetings.length}
-            pageSize={PAGE_SIZE}
-            onPageChange={(page) => updatePage("meetings", page)}
-          />
-        </section>
-      ) : null}
+                      </td>
+                    </tr>
+                ))}
+                {pagedMeetings.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className={styles.emptyCell}>
+                        조건에 맞는 모임이 없습니다.
+                      </td>
+                    </tr>
+                ) : null}
+                </tbody>
+              </table>
+              <Pagination
+                  currentPage={meetingPage}
+                  totalPages={meetingPageCount}
+                  totalItems={filteredMeetings.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={(page) => updatePage("meetings", page)}
+              />
+            </section>
+        ) : null}
 
-      {activeTab === "reports" ? (
-        <section id="reports" className={styles.tableCard}>
-          <div className={styles.tableHead}>
-            <div>
-              <h2>신고 내역</h2>
-              <p>최근 신고를 10개씩 확인하면서 처리 상태를 볼 수 있습니다.</p>
-            </div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>신고 ID</th>
-                <th>대상</th>
-                <th>사유</th>
-                <th>상태</th>
-                <th>등록일</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedReports.map((report) => (
-                <tr key={report.id}>
-                  <td>{report.id}</td>
-                  <td>{report.target}</td>
-                  <td>{report.reason}</td>
-                  <td>
+        {activeTab === "reports" ? (
+            <section id="reports" className={styles.tableCard}>
+              <div className={styles.tableHead}>
+                <div>
+                  <h2>신고 내역</h2>
+                  <p>최근 신고를 10개씩 확인하면서 처리 상태를 볼 수 있습니다.</p>
+                </div>
+              </div>
+              <table>
+                <thead>
+                <tr>
+                  <th>신고 ID</th>
+                  <th>대상</th>
+                  <th>사유</th>
+                  <th>상태</th>
+                  <th>등록일</th>
+                </tr>
+                </thead>
+                <tbody>
+                {pagedReports.map((report) => (
+                    <tr key={report.id}>
+                      <td>{report.id}</td>
+                      <td>{report.target}</td>
+                      <td>{report.reason}</td>
+                      <td>
                     <span className={cx("badge", badgeToneByReportStatus(report.status))}>
                       {report.statusText}
                     </span>
-                  </td>
-                  <td>{report.createdAt}</td>
-                </tr>
-              ))}
-              {pagedReports.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className={styles.emptyCell}>
-                    표시할 신고 내역이 없습니다.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-          <Pagination
-            currentPage={reportPage}
-            totalPages={reportPageCount}
-            totalItems={reports.length}
-            pageSize={PAGE_SIZE}
-            onPageChange={(page) => updatePage("reports", page)}
-          />
-        </section>
-      ) : null}
+                      </td>
+                      <td>{report.createdAt}</td>
+                    </tr>
+                ))}
+                {pagedReports.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className={styles.emptyCell}>
+                        표시할 신고 내역이 없습니다.
+                      </td>
+                    </tr>
+                ) : null}
+                </tbody>
+              </table>
+              <Pagination
+                  currentPage={reportPage}
+                  totalPages={reportPageCount}
+                  totalItems={reports.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={(page) => updatePage("reports", page)}
+              />
+            </section>
+        ) : null}
 
-      {activeTab === "sports" ? (
-        <section id="sports" className={styles.tableCard}>
-          <div className={styles.tableHead}>
-            <div>
-              <h2>운동 종목</h2>
-              <p>카테고리별로 10개씩 확인하고 모달에서 새 종목을 추가할 수 있습니다.</p>
-            </div>
-            <button type="button" onClick={() => setIsSportModalOpen(true)}>
-              종목 관리
-            </button>
-          </div>
-          <div className={styles.sectionHint}>
-            카테고리와 사용 상태를 함께 보면 현재 운영 중인 종목을 빠르게 정리할 수
-            있습니다.
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>종목 ID</th>
-                <th>이름</th>
-                <th>카테고리</th>
-                <th>사용 여부</th>
-                <th>활성화 변경</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedSports.map((sport) => (
-                <tr key={sport.id}>
-                  <td>{sport.id}</td>
-                  <td>{sport.name}</td>
-                  <td>{sport.category}</td>
-                  <td>
+        {activeTab === "sports" ? (
+            <section id="sports" className={styles.tableCard}>
+              <div className={styles.tableHead}>
+                <div>
+                  <h2>운동 종목</h2>
+                  <p>카테고리별로 10개씩 확인하고 모달에서 새 종목을 추가할 수 있습니다.</p>
+                </div>
+                <button type="button" onClick={() => setIsSportModalOpen(true)}>
+                  종목 관리
+                </button>
+              </div>
+              <div className={styles.sectionHint}>
+                카테고리와 사용 상태를 함께 보면 현재 운영 중인 종목을 빠르게 정리할 수
+                있습니다.
+              </div>
+              <table>
+                <thead>
+                <tr>
+                  <th>종목 ID</th>
+                  <th>이름</th>
+                  <th>카테고리</th>
+                  <th>사용 여부</th>
+                  <th>활성화 변경</th>
+                </tr>
+                </thead>
+                <tbody>
+                {pagedSports.map((sport) => (
+                    <tr key={sport.id}>
+                      <td>{sport.id}</td>
+                      <td>{sport.name}</td>
+                      <td>{sport.category}</td>
+                      <td>
                     <span className={cx("badge", sport.isActive ? "success" : "warning")}>
                       {sport.isActive ? "사용중" : "비활성"}
                     </span>
-                  </td>
-                  <td>
-                    <select
-                      className={styles.inlineSelect}
-                      value={sport.isActive ? "true" : "false"}
-                      disabled={updatingSportId === sport.id}
-                      onChange={(event) =>
-                        handleSportStatusChange(sport, event.target.value === "true")
-                      }
-                    >
-                      {sportStatusOptions.map((option) => (
-                        <option
-                          key={String(option.value)}
-                          value={String(option.value)}
+                      </td>
+                      <td>
+                        <select
+                            className={styles.inlineSelect}
+                            value={sport.isActive ? "true" : "false"}
+                            disabled={updatingSportId === sport.id}
+                            onChange={(event) =>
+                                handleSportStatusChange(sport, event.target.value === "true")
+                            }
                         >
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-              {pagedSports.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className={styles.emptyCell}>
-                    선택한 카테고리에 해당하는 종목이 없습니다.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-          <Pagination
-            currentPage={sportPage}
-            totalPages={sportPageCount}
-            totalItems={filteredSports.length}
-            pageSize={PAGE_SIZE}
-            onPageChange={(page) => updatePage("sports", page)}
-          />
-        </section>
-      ) : null}
-
-      <AppModal
-        open={isSportModalOpen}
-        eyebrow="운동 종목"
-        title="운동 종목 관리"
-        description="현재 종목 목록을 확인하고 새 종목을 바로 추가할 수 있습니다."
-        confirmText="종목 추가"
-        cancelText="닫기"
-        onConfirm={submitSport}
-        onClose={closeSportModal}
-      >
-        <div className={styles.modalPanel}>
-          <div className={styles.modalSection}>
-            <div className={styles.sportFormGrid}>
-              <label className={styles.modalField}>
-                <span>종목명</span>
-                <input
-                  value={sportForm.name}
-                  onChange={(event) =>
-                    setSportForm((current) => ({
-                      ...current,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="예: 클라이밍"
-                />
-              </label>
-              <label className={styles.modalField}>
-                <span>카테고리</span>
-                <select
-                  value={sportForm.category}
-                  onChange={(event) =>
-                    setSportForm((current) => ({
-                      ...current,
-                      category: event.target.value,
-                    }))
-                  }
-                >
-                  <option value="">카테고리 선택</option>
-                  {sportCategoryOptions.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className={styles.modalCheck}>
-                <input
-                  type="checkbox"
-                  checked={sportForm.isActive}
-                  onChange={(event) =>
-                    setSportForm((current) => ({
-                      ...current,
-                      isActive: event.target.checked,
-                    }))
-                  }
-                />
-                <span>즉시 사용 가능한 상태로 추가</span>
-              </label>
-              {sportFormError ? (
-                <p className={styles.modalErrorText}>{sportFormError}</p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.modalPanel}>
-          <div className={styles.modalSection}>
-            <h3 className={styles.modalTitle}>현재 종목 목록</h3>
-            <div className={styles.sportList}>
-              {sports.map((sport) => (
-                <article key={sport.id} className={styles.sportCard}>
-                  <div className={styles.sportCardBody}>
-                    <strong>{sport.name}</strong>
-                    <p>{sport.category}</p>
-                  </div>
-                  <div className={styles.sportCardControls}>
-                    <select
-                      className={styles.inlineSelect}
-                      value={sport.isActive ? "true" : "false"}
-                      disabled={
-                        updatingSportId === sport.id || deletingSportId === sport.id
-                      }
-                      onChange={(event) =>
-                        handleSportStatusChange(sport, event.target.value === "true")
-                      }
-                    >
-                      {sportStatusOptions.map((option) => (
-                        <option
-                          key={String(option.value)}
-                          value={String(option.value)}
-                        >
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className={styles.deleteButton}
-                      disabled={deletingSportId === sport.id}
-                      onClick={() => handleSportDelete(sport.id)}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </AppModal>
-
-      <RegionPickerModal
-        open={isRegionModalOpen}
-        regions={regionHierarchy}
-        initialSelection={draftRegionSelection}
-        onApply={applyRegionSelection}
-        onClose={closeRegionModal}
-      />
-
-      <AppModal
-        open={Boolean(selectedMemberDetail)}
-        title="회원 정보"
-        confirmText="닫기"
-        onConfirm={() => setSelectedMemberDetail(null)}
-        onClose={() => setSelectedMemberDetail(null)}
-        hideCancel
-      >
-        {selectedMemberDetail ? (
-          <div className={styles.detailModalGrid}>
-            <div className={styles.detailModalProfile}>
-              <img
-                src={selectedMemberDetail.profileImage}
-                alt={`${selectedMemberDetail.nickname} 프로필`}
-                className={styles.detailAvatar}
+                          {sportStatusOptions.map((option) => (
+                              <option
+                                  key={String(option.value)}
+                                  value={String(option.value)}
+                              >
+                                {option.label}
+                              </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                ))}
+                {pagedSports.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className={styles.emptyCell}>
+                        선택한 카테고리에 해당하는 종목이 없습니다.
+                      </td>
+                    </tr>
+                ) : null}
+                </tbody>
+              </table>
+              <Pagination
+                  currentPage={sportPage}
+                  totalPages={sportPageCount}
+                  totalItems={filteredSports.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={(page) => updatePage("sports", page)}
               />
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>회원 ID</span>
-              <strong>{selectedMemberDetail.id}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>닉네임</span>
-              <strong>{selectedMemberDetail.nickname}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>로그인 ID</span>
-              <strong>{selectedMemberDetail.loginId}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>지역</span>
-              <strong>{selectedMemberDetail.region}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>권한</span>
-              <strong>{selectedMemberDetail.roleText}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>상태</span>
-              <strong>{selectedMemberDetail.statusText}</strong>
-            </div>
-          </div>
+            </section>
         ) : null}
-      </AppModal>
 
-      <AppModal
-        open={Boolean(selectedMeetingDetail)}
-        title="모임 정보"
-        confirmText="닫기"
-        onConfirm={() => setSelectedMeetingDetail(null)}
-        onClose={() => setSelectedMeetingDetail(null)}
-        hideCancel
-      >
-        {selectedMeetingDetail ? (
-          <div className={styles.detailModalGrid}>
-            <div className={styles.detailModalItem}>
-              <span>모임 ID</span>
-              <strong>M{String(selectedMeetingDetail.id).padStart(3, "0")}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>제목</span>
-              <strong>{selectedMeetingDetail.title}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>주최자</span>
-              <strong>{selectedMeetingDetail.hostNickname}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>종목</span>
-              <strong>
-                {selectedMeetingDetail.sport} · {selectedMeetingDetail.sportCategory}
-              </strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>지역</span>
-              <strong>{selectedMeetingDetail.region}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>일정</span>
-              <strong>
-                {selectedMeetingDetail.meetingDate} {selectedMeetingDetail.startTime}
-              </strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>등록일</span>
-              <strong>{selectedMeetingDetail.createdAt}</strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>참가 인원</span>
-              <strong>
-                {selectedMeetingDetail.current}/{selectedMeetingDetail.max}
-              </strong>
-            </div>
-            <div className={styles.detailModalItem}>
-              <span>상태</span>
-              <strong>{selectedMeetingDetail.statusText}</strong>
+        <AppModal
+            open={isSportModalOpen}
+            eyebrow="운동 종목"
+            title="운동 종목 관리"
+            description="현재 종목 목록을 확인하고 새 종목을 바로 추가할 수 있습니다."
+            confirmText="종목 추가"
+            cancelText="닫기"
+            onConfirm={submitSport}
+            onClose={closeSportModal}
+        >
+          <div className={styles.modalPanel}>
+            <div className={styles.modalSection}>
+              <div className={styles.sportFormGrid}>
+                <label className={styles.modalField}>
+                  <span>종목명</span>
+                  <input
+                      value={sportForm.name}
+                      onChange={(event) =>
+                          setSportForm((current) => ({
+                            ...current,
+                            name: event.target.value,
+                          }))
+                      }
+                      placeholder="예: 클라이밍"
+                  />
+                </label>
+                <label className={styles.modalField}>
+                  <span>카테고리</span>
+                  <select
+                      value={sportForm.category}
+                      onChange={(event) =>
+                          setSportForm((current) => ({
+                            ...current,
+                            category: event.target.value,
+                          }))
+                      }
+                  >
+                    <option value="">카테고리 선택</option>
+                    {sportCategoryOptions.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={styles.modalCheck}>
+                  <input
+                      type="checkbox"
+                      checked={sportForm.isActive}
+                      onChange={(event) =>
+                          setSportForm((current) => ({
+                            ...current,
+                            isActive: event.target.checked,
+                          }))
+                      }
+                  />
+                  <span>즉시 사용 가능한 상태로 추가</span>
+                </label>
+                {sportFormError ? (
+                    <p className={styles.modalErrorText}>{sportFormError}</p>
+                ) : null}
+              </div>
             </div>
           </div>
-        ) : null}
-      </AppModal>
-    </div>
+
+          <div className={styles.modalPanel}>
+            <div className={styles.modalSection}>
+              <h3 className={styles.modalTitle}>현재 종목 목록</h3>
+              <div className={styles.sportList}>
+                {sports.map((sport) => (
+                    <article key={sport.id} className={styles.sportCard}>
+                      <div className={styles.sportCardBody}>
+                        <strong>{sport.name}</strong>
+                        <p>{sport.category}</p>
+                      </div>
+                      <div className={styles.sportCardControls}>
+                        <select
+                            className={styles.inlineSelect}
+                            value={sport.isActive ? "true" : "false"}
+                            disabled={
+                                updatingSportId === sport.id || deletingSportId === sport.id
+                            }
+                            onChange={(event) =>
+                                handleSportStatusChange(sport, event.target.value === "true")
+                            }
+                        >
+                          {sportStatusOptions.map((option) => (
+                              <option
+                                  key={String(option.value)}
+                                  value={String(option.value)}
+                              >
+                                {option.label}
+                              </option>
+                          ))}
+                        </select>
+                        <button
+                            type="button"
+                            className={styles.deleteButton}
+                            disabled={deletingSportId === sport.id}
+                            onClick={() => handleSportDelete(sport.id)}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </AppModal>
+
+        <RegionPickerModal
+            open={isRegionModalOpen}
+            regions={regionHierarchy}
+            initialSelection={draftRegionSelection}
+            onApply={applyRegionSelection}
+            onClose={closeRegionModal}
+        />
+
+        <AppModal
+            open={Boolean(selectedMemberDetail)}
+            title="회원 정보"
+            confirmText="닫기"
+            onConfirm={() => setSelectedMemberDetail(null)}
+            onClose={() => setSelectedMemberDetail(null)}
+            hideCancel
+        >
+          {selectedMemberDetail ? (
+              <div className={styles.detailModalGrid}>
+                <div className={styles.detailModalProfile}>
+                  <img
+                      src={selectedMemberDetail.profileImage}
+                      alt={`${selectedMemberDetail.nickname} 프로필`}
+                      className={styles.detailAvatar}
+                  />
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>회원 ID</span>
+                  <strong>{selectedMemberDetail.id}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>닉네임</span>
+                  <strong>{selectedMemberDetail.nickname}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>로그인 ID</span>
+                  <strong>{selectedMemberDetail.loginId}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>지역</span>
+                  <strong>{selectedMemberDetail.region}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>권한</span>
+                  <strong>{selectedMemberDetail.roleText}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>상태</span>
+                  <strong>{selectedMemberDetail.statusText}</strong>
+                </div>
+              </div>
+          ) : null}
+        </AppModal>
+
+        <AppModal
+            open={Boolean(selectedMeetingDetail)}
+            title="모임 정보"
+            confirmText="닫기"
+            onConfirm={() => setSelectedMeetingDetail(null)}
+            onClose={() => setSelectedMeetingDetail(null)}
+            hideCancel
+        >
+          {selectedMeetingDetail ? (
+              <div className={styles.detailModalGrid}>
+                <div className={styles.detailModalItem}>
+                  <span>모임 ID</span>
+                  <strong>M{String(selectedMeetingDetail.id).padStart(3, "0")}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>제목</span>
+                  <strong>{selectedMeetingDetail.title}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>주최자</span>
+                  <strong>{selectedMeetingDetail.hostNickname}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>종목</span>
+                  <strong>
+                    {selectedMeetingDetail.sport} · {selectedMeetingDetail.sportCategory}
+                  </strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>지역</span>
+                  <strong>{selectedMeetingDetail.region}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>일정</span>
+                  <strong>
+                    {selectedMeetingDetail.meetingDate} {selectedMeetingDetail.startTime}
+                  </strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>등록일</span>
+                  <strong>{selectedMeetingDetail.createdAt}</strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>참가 인원</span>
+                  <strong>
+                    {selectedMeetingDetail.current}/{selectedMeetingDetail.max}
+                  </strong>
+                </div>
+                <div className={styles.detailModalItem}>
+                  <span>상태</span>
+                  <strong>{selectedMeetingDetail.statusText}</strong>
+                </div>
+              </div>
+          ) : null}
+        </AppModal>
+      </div>
   );
 }
