@@ -139,13 +139,7 @@ public class MeetingServiceImpl implements MeetingService {
     String nextStatus = request.getStatus();
 
     // 1. 상태가 CLOSED(모집완료)로 변경될 때 정원 체크
-    if ("CLOSED".equals(nextStatus)) {
-      Integer approved = participantDao.countApprovedByMeetingId(meetingId);
-      Integer max = meetingDao.selectMaxMembers(meetingId);
-      if (approved == null || max == null || approved < max) {
-        throw new IllegalArgumentException("모집완료는 정원이 모두 찬 경우에만 설정할 수 있습니다.");
-      }
-    }
+    // -> 제거
 
     // 2. 상태를 RECRUITING으로 변경(재모집 등)할 때 시간 체크
     if ("RECRUITING".equals(nextStatus)) {

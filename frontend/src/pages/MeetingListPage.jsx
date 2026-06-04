@@ -162,38 +162,45 @@ const resolveRegionSelectionFromLabel = (regions, label) => {
 };
 
 export default function MeetingListPage() {
-  const [urlSearchParams] = useSearchParams();
+  const [urlSearchParams, setSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  
+  // 1. URL 검색 파라미터 파싱
   const keywordParam = urlSearchParams.get("keyword") ?? "";
   const regionLabelParam = urlSearchParams.get("regionLabel") ?? "";
   const sportNameParam = urlSearchParams.get("sportName") ?? "";
+  const statusParam = urlSearchParams.get("status") ?? "";
   const meetingDateParam = urlSearchParams.get("meetingDate") ?? "";
+  const pageParam = urlSearchParams.get("page") ?? "1";
+  
   const isGlobalSearch =
     urlSearchParams.get("global") === "1" ||
-    Boolean(keywordParam || sportNameParam || regionLabelParam);
+    Boolean(keywordParam || sportNameParam || (regionLabelParam && regionLabelParam !== "전체"));
 
-  const [meetingDate, setMeetingDate] = useState(meetingDateParam);
+  // 2. 파생 상태 (Single Source of Truth)
+  // 로컬 입력 버퍼 (검색창 타자 중에만 사용되며 엔터 칠 때 URL로 동기화)
+  const [tempKeyword, setTempKeyword] = useState(keywordParam);
+  const prevKeywordRef = useRef(keywordParam);
+  
+  const currentPage = useMemo(() => {
+    const parsed = parseInt(pageParam, 10);
+    return isNaN(parsed) ? 1 : parsed;
+  }, [pageParam]);
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
 
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedSport, setSelectedSport] = useState(null);
-
   const [memberRegionId, setMemberRegionId] = useState(null);
   const [memberRegionReady, setMemberRegionReady] = useState(false);
 
-  const [status, setStatus] = useState("");
-  const [keyword, setKeyword] = useState(regionLabelParam ? "" : keywordParam);
   const [meetingList, setMeetingList] = useState([]);
-
   const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isExplicitAll, setIsExplicitAll] = useState(false);
   const [topRegions, setTopRegions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
   const [sportOptions, setSportOptions] = useState([]);
+  const [filterOptionsReady, setFilterOptionsReady] = useState(false);
   
   const [scheduleItems, setScheduleItems] = useState([]);
 
@@ -247,6 +254,8 @@ export default function MeetingListPage() {
         console.error(error);
         setRegionOptions([]);
         setSportOptions([]);
+      } finally {
+        setFilterOptionsReady(true);
       }
     };
 
@@ -293,6 +302,20 @@ export default function MeetingListPage() {
     };
   }, [authLoading, isAuthenticated, user?.memberId]);
 
+  const selectedRegion = useMemo(() => {
+    if (!regionOptions.length || !regionLabelParam || regionLabelParam === "전체") {
+      return null;
+    }
+    return resolveRegionSelectionFromLabel(regionOptions, regionLabelParam);
+  }, [regionOptions, regionLabelParam]);
+
+  const selectedSport = useMemo(() => {
+    if (!sportOptions.length || !sportNameParam) {
+      return null;
+    }
+    return sportOptions.find((sport) => sport.name === sportNameParam) ?? null;
+  }, [sportOptions, sportNameParam]);
+
   const memberRegion = useMemo(
     () =>
       regionOptions.find((region) => region.regionId === memberRegionId) ??
@@ -317,78 +340,70 @@ export default function MeetingListPage() {
   }, [selectedRegion]);
 
   const searchParams = useMemo(
-    () => ({
-      ...regionParams,
-      baseRegionId:
-        selectedRegion || isExplicitAll || isGlobalSearch
-          ? null
-          : memberRegionId,
-      sportId: selectedSport?.sportId ?? null,
-      status,
-      keyword,
-      meetingDate,
-      page: currentPage,
-      size: PAGE_SIZE,
-    }),
+    () => {
+      const isAllRegionSelected = regionLabelParam === "전체" || !regionLabelParam;
+      return {
+        ...regionParams,
+        baseRegionId:
+          selectedRegion || isAllRegionSelected || isGlobalSearch
+            ? null
+            : memberRegionId,
+        sportId: selectedSport?.sportId ?? null,
+        status: statusParam,
+        keyword: keywordParam,
+        meetingDate: meetingDateParam,
+        page: currentPage,
+        size: PAGE_SIZE,
+      };
+    },
     [
       regionParams,
       selectedRegion,
-      isExplicitAll,
+      regionLabelParam,
       memberRegionId,
       isGlobalSearch,
       selectedSport,
-      status,
-      keyword,
-      meetingDate,
+      statusParam,
+      keywordParam,
+      meetingDateParam,
       currentPage,
     ],
   );
 
+  // 1. URL 파라미터가 외부 요인(뒤로가기, 초기화 등)으로 변경될 때 검색창 내용만 동기화
   useEffect(() => {
-    setKeyword(regionLabelParam ? "" : keywordParam);
-    setCurrentPage(1);
-  }, [keywordParam, regionLabelParam]);
+    if (prevKeywordRef.current !== keywordParam) {
+      setTempKeyword(keywordParam);
+      prevKeywordRef.current = keywordParam;
+    }
+  }, [keywordParam]);
 
+  // 3. 최초 진입 시 로그인 유무에 따른 기본 지역 주입 및 전체 지역 리다이렉트
   useEffect(() => {
-    setMeetingDate(meetingDateParam);
-    setCurrentPage(1);
-  }, [meetingDateParam]);
+    if (authLoading || !memberRegionReady || !filterOptionsReady) return;
 
-  useEffect(() => {
-    if (!regionOptions.length) {
+    const hasNoRegionKey = !urlSearchParams.has("regionLabel");
+    const hasNoOtherFilters = !keywordParam && !sportNameParam && !statusParam && !meetingDateParam && urlSearchParams.get("global") !== "1";
+
+    // 완전히 비어있는 깨끗한 최초 접속인 경우 리다이렉트
+    if (hasNoRegionKey && hasNoOtherFilters) {
+      if (isAuthenticated && memberRegion) {
+        const userDefaultRegion = `${memberRegion.sido} ${memberRegion.sigungu}`;
+        updateURLParams({ regionLabel: userDefaultRegion, page: "1" });
+      } else {
+        updateURLParams({ regionLabel: "전체", page: "1" });
+      }
       return;
     }
 
-    if (!regionLabelParam) {
-      setSelectedRegion(null);
-      return;
+    // 메인 등에서 다른 조건은 존재하나 regionLabel만 유실되어 들어온 경우 "전체"로 주입 보완
+    if (hasNoRegionKey && !hasNoOtherFilters) {
+      updateURLParams({ regionLabel: "전체" });
     }
+  }, [authLoading, isAuthenticated, memberRegion, memberRegionReady, filterOptionsReady, urlSearchParams]);
 
-    const resolvedRegion = resolveRegionSelectionFromLabel(
-      regionOptions,
-      regionLabelParam,
-    );
-
-    setSelectedRegion(resolvedRegion);
-    setIsExplicitAll(false);
-    setCurrentPage(1);
-  }, [regionLabelParam, regionOptions]);
-
-  useEffect(() => {
-    if (!sportOptions.length) {
-      return;
-    }
-
-    if (!sportNameParam) {
-      setSelectedSport(null);
-      return;
-    }
-
-    const matchedSport =
-      sportOptions.find((sport) => sport.name === sportNameParam) ?? null;
-    setSelectedSport(matchedSport);
-    setCurrentPage(1);
-  }, [sportNameParam, sportOptions]);
+  // 지역과 운동 모달 인풋 복원을 위한 상태 동기화 useEffect 들은
+  // useMemo 로 완전히 대체되어 제거되었습니다.
 
   useEffect(() => {
     if (authLoading || !memberRegionReady) return;
@@ -427,20 +442,53 @@ export default function MeetingListPage() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const displayedRegionLabel = selectedRegion
-    ? formatRegionLabel(selectedRegion)
-    : (isGlobalSearch || isExplicitAll || !isAuthenticated || !memberRegion)
-      ? ALL_REGION
-      : `${memberRegion.sido} ${memberRegion.sigungu}`;
+  const displayedRegionLabel = useMemo(() => {
+    if (selectedRegion && regionLabelParam !== "전체") {
+      return formatRegionLabel(selectedRegion);
+    }
+    return ALL_REGION;
+  }, [selectedRegion, regionLabelParam]);
 
   const displayedSportLabel = selectedSport?.name ?? ALL_SPORT;
 
   const mobileSummary = `${displayedRegionLabel} · ${displayedSportLabel} · ${
-    status ? STATUS_MAP[status] || status : ALL_STATUS
+    statusParam ? STATUS_MAP[statusParam] || statusParam : ALL_STATUS
   }`;
 
+  const updateURLParams = useCallback((newParams) => {
+    setSearchParams((prevParams) => {
+      const nextParams = new URLSearchParams(prevParams);
+      let hasChanges = false;
+
+      Object.entries(newParams).forEach(([key, value]) => {
+        const currentValue = nextParams.get(key) ?? "";
+        const newValue = value ?? "";
+
+        if (currentValue !== newValue) {
+          hasChanges = true;
+          if (newValue) {
+            nextParams.set(key, newValue);
+          } else {
+            nextParams.delete(key);
+          }
+        }
+      });
+
+      if (!hasChanges) {
+        return prevParams;
+      }
+
+      const isPageChange = "page" in newParams;
+      if (!isPageChange) {
+        nextParams.set("page", "1");
+      }
+
+      return nextParams;
+    });
+  }, [setSearchParams]);
+
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    updateURLParams({ page: String(page) });
 
     if (!listStartRef.current) {
       return;
@@ -453,39 +501,27 @@ export default function MeetingListPage() {
   };
 
   const resetFilters = () => {
-    setSelectedRegion(null);
-    setIsExplicitAll(true);
-    setSelectedSport(null);
-    setStatus("");
-    setKeyword("");
-    setMeetingDate("");
-    setCurrentPage(1);
+    setTempKeyword("");
+    setSearchParams({
+      regionLabel: "전체",
+      page: "1"
+    });
   };
 
   const applyRegionSelection = (selection) => {
-    const normalized = {
-      regionId: selection?.regionId ?? null,
-      sido: selection?.sido ?? "",
-      sigungu: selection?.sigungu ?? "",
-      dong: selection?.dong ?? "",
-    };
-
-    const hasSelection = Boolean(
-      normalized.regionId ||
-      normalized.sido ||
-      normalized.sigungu ||
-      normalized.dong,
-    );
-
-    setSelectedRegion(hasSelection ? normalized : null);
-    setIsExplicitAll(!hasSelection);
-    setCurrentPage(1);
+    const label = formatRegionLabel(selection);
+    updateURLParams({
+      regionLabel: label,
+      page: "1"
+    });
     setIsRegionModalOpen(false);
   };
 
   const applySportSelection = (sport) => {
-    setSelectedSport(sport ?? null);
-    setCurrentPage(1);
+    updateURLParams({
+      sportName: sport ? sport.name : "",
+      page: "1"
+    });
     setIsSportModalOpen(false);
   };
 
@@ -623,9 +659,9 @@ export default function MeetingListPage() {
             {displayedRegionLabel} · {displayedSportLabel}
           </strong>
           <span>
-            {selectedRegion
+            {selectedRegion && regionLabelParam !== "전체"
               ? "선택한 지역 기준으로 조회 중"
-              : isAuthenticated && memberRegion && !isExplicitAll
+              : isAuthenticated && memberRegion && regionLabelParam === `${memberRegion.sido} ${memberRegion.sigungu}`
                 ? "사용자의 지역 기준으로 조회 중"
                 : "전체 지역 기준으로 조회 중"}
           </span>
@@ -649,10 +685,9 @@ export default function MeetingListPage() {
           </button>
 
           <select
-            value={status}
+            value={statusParam}
             onChange={(event) => {
-              setStatus(event.target.value);
-              setCurrentPage(1);
+              updateURLParams({ status: event.target.value });
             }}
           >
             <option value="">전체 상태</option>
@@ -664,19 +699,20 @@ export default function MeetingListPage() {
 
           <input
             type="date"
-            value={meetingDate}
+            value={meetingDateParam}
             onChange={(event) => {
-              setMeetingDate(event.target.value);
-              setCurrentPage(1);
+              updateURLParams({ meetingDate: event.target.value });
             }}
             onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
-            value={keyword}
-            onChange={(event) => {
-              setKeyword(event.target.value);
-              setCurrentPage(1);
+            value={tempKeyword}
+            onChange={(event) => setTempKeyword(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                updateURLParams({ keyword: tempKeyword });
+              }
             }}
             placeholder="운동명, 제목, 지역 검색"
           />
@@ -892,10 +928,9 @@ export default function MeetingListPage() {
 
         <div className={styles.sheetFilterFields}>
           <select
-            value={status}
+            value={statusParam}
             onChange={(event) => {
-              setStatus(event.target.value);
-              setCurrentPage(1);
+              updateURLParams({ status: event.target.value });
             }}
           >
             <option value="">전체 상태</option>
@@ -907,20 +942,16 @@ export default function MeetingListPage() {
 
           <input
             type="date"
-            value={meetingDate}
+            value={meetingDateParam}
             onChange={(event) => {
-              setMeetingDate(event.target.value);
-              setCurrentPage(1);
+              updateURLParams({ meetingDate: event.target.value });
             }}
             onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
-            value={keyword}
-            onChange={(event) => {
-              setKeyword(event.target.value);
-              setCurrentPage(1);
-            }}
+            value={tempKeyword}
+            onChange={(event) => setTempKeyword(event.target.value)}
             placeholder="제목, 장소 검색"
           />
         </div>
