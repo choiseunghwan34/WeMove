@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import styles from "../styles/MeetingCreatePage.module.css";
 import SportPickerModal from "../components/SportPickerModal.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { getSports } from "../api/sportApi.js";
 import { getRegions } from "../api/regionApi.js";
@@ -520,8 +521,8 @@ export default function MeetingFormPage({ initialData, onSubmit, title }) {
         </label>
         <label>
           <span className={styles.requiredLabel}>날짜</span>
-          <input
-            ref={(el) => (inputRefs.current.meetingDate = el)}
+          <ReactCalendarDatePicker
+            inputRef={(el) => (inputRefs.current.meetingDate = el)}
             name="meetingDate"
             value={form.meetingDate}
             onChange={handleChange}
