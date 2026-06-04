@@ -383,7 +383,7 @@ export default function MeetingListPage() {
     if (authLoading || !memberRegionReady || !filterOptionsReady) return;
 
     const hasNoRegionKey = !urlSearchParams.has("regionLabel");
-    const hasNoOtherFilters = !keywordParam && !sportNameParam && !statusParam && !meetingDateParam;
+    const hasNoOtherFilters = !keywordParam && !sportNameParam && !statusParam && !meetingDateParam && urlSearchParams.get("global") !== "1";
 
     // 완전히 비어있는 깨끗한 최초 접속인 경우 리다이렉트
     if (hasNoRegionKey && hasNoOtherFilters) {
