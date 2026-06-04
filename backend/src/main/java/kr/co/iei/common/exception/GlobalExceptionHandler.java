@@ -1,5 +1,6 @@
 package kr.co.iei.common.exception;
 
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -10,23 +11,32 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
   @ExceptionHandler(DuplicateResourceException.class)
   public ResponseEntity<ApiErrorResponse> handleDuplicateResource(
-      DuplicateResourceException exception) {
+          DuplicateResourceException exception) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(new ApiErrorResponse(exception.getMessage()));
+            .body(new ApiErrorResponse(exception.getMessage()));
   }
 
+  // 💡 이 부분이 수정되었습니다!
   @ExceptionHandler(AccountSuspendedException.class)
-  public ResponseEntity<ApiErrorResponse> handleAccountSuspended(
-      AccountSuspendedException exception) {
-    return ResponseEntity.status(HttpStatus.LOCKED)
-        .body(new ApiErrorResponse(exception.getMessage()));
+  public ResponseEntity<?> handleAccountSuspended(
+          AccountSuspendedException exception) {
+
+    // ApiErrorResponse 대신 Map을 사용하여 프론트엔드가 필요한 모든 정지 정보를 담아 보냅니다.
+    return ResponseEntity.status(HttpStatus.LOCKED) // 423 LOCKED
+            .body(Map.of(
+                    "code", "ACCOUNT_SUSPENDED",
+                    "message", exception.getMessage(),
+                    "reason", exception.getReason() != null ? exception.getReason() : "운영원칙 위반",
+                    "suspendedUntil", exception.getSuspendedUntil() != null ? exception.getSuspendedUntil() : "관리자 문의 요망"
+            ));
   }
 
   @ExceptionHandler({
-    IllegalArgumentException.class,
-    MethodArgumentNotValidException.class
+          IllegalArgumentException.class,
+          MethodArgumentNotValidException.class
   })
   public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception exception) {
     return ResponseEntity.badRequest().body(new ApiErrorResponse(exception.getMessage()));
@@ -35,19 +45,19 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ResponseStatusException.class)
   public ResponseEntity<ApiErrorResponse> handleResponseStatus(ResponseStatusException exception) {
     return ResponseEntity.status(exception.getStatusCode())
-        .body(new ApiErrorResponse(exception.getReason()));
+            .body(new ApiErrorResponse(exception.getReason()));
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<ApiErrorResponse> handleMethodNotSupported(
-      HttpRequestMethodNotSupportedException exception) {
+          HttpRequestMethodNotSupportedException exception) {
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-        .body(new ApiErrorResponse(exception.getMessage()));
+            .body(new ApiErrorResponse(exception.getMessage()));
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception exception) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new ApiErrorResponse(exception.getMessage()));
+            .body(new ApiErrorResponse(exception.getMessage()));
   }
 }

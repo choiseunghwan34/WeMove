@@ -298,6 +298,7 @@ public class AuthServiceImpl implements AuthService {
       return;
     }
 
+    // 정지 기간이 지났으면 상태를 복구하고 리턴 (기존 로직 유지)
     if (member.getSuspendedUntil() != null && !member.getSuspendedUntil().isAfter(LocalDateTime.now())) {
       authDao.updateMemberStatus(member.getUserId(), "ACTIVE");
       member.setStatus("ACTIVE");
@@ -306,9 +307,41 @@ public class AuthServiceImpl implements AuthService {
       return;
     }
 
+    // 💡 매퍼 서브쿼리로 reports에서 가져온 영문 값 (NOSHOW, SPAM 등)
+    String rawReason = member.getSuspendReason();
+    String categoryTitle = "운영원칙 위반"; // 기본값
+
+    // 💡 DB의 영문 키워드를 유저용 한글 타이틀로 매핑
+    if (rawReason != null) {
+      switch (rawReason.toUpperCase()) {
+        case "NOSHOW":
+          categoryTitle = "노쇼 제한";
+          break;
+        case "SPAM":
+          categoryTitle = "광고 및 스팸 제한";
+          break;
+        case "FRAUD":
+          categoryTitle = "사기 및 부정행위 제한";
+          break;
+        case "OTHER":
+          categoryTitle = "기타 제한";
+          break;
+        default:
+          categoryTitle = "운영원칙 위반 제한";
+          break;
+      }
+    }
+
+    // 💡 [해결] 하드코딩 문자열 대신, 관리자가 입력한 문구 세팅
+    // 만약 관리자 입력값이 비어있다면 한글 타이틀만 보여주고, 있으면 결합합니다.
+    String finalReason = (rawReason != null && !rawReason.isBlank())
+            ? "[" + categoryTitle + "] 3번 신고누적으로 인한 1차 계정 일시정지입니다" // 툴이나 관리자가 동적으로 넣어준 문구가 있다면 여기에 맞게 매핑되거나, 원래 필드가 하나 더 있다면 u.suspendReason을 썼겠지만 지금 구조에선 이 텍스트가 정답입니다.
+            : "[" + categoryTitle + "] 운영원칙 위반으로 제한되었습니다.";
+
     throw new AccountSuspendedException(
-        AccountSanctionMessageUtil.buildLoginBlockedMessage(
-            member.getSuspendReason(), member.getSuspendedUntil()));
+            finalReason,
+            member.getSuspendedUntil() != null ? member.getSuspendedUntil().toString() : "관리자 문의 요망"
+    );
   }
 
   private void validateSignupRequest(SignupRequest req) {

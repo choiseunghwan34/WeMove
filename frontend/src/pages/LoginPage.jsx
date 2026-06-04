@@ -201,10 +201,16 @@ export default function LoginPage() {
           errData?.message?.includes("suspended") ||
           errData?.message?.includes("정지")
       ) {
+
+        // 💡 백엔드에서 내려온 ISO 일시 문자열 가공 ('T' 제거 및 포맷팅)
+        const rawUntil = errData?.suspendedUntil || "";
+        const formattedUntil = rawUntil.includes("T")
+            ? rawUntil.replace("T", " ")
+            : rawUntil;
+
         setSuspensionDetails({
-          // 백엔드에서 넘겨주는 JSON 키 이름에 맞게 수정 필요 (예: errData.reason)
           reason: errData?.reason || "운영원칙 위반",
-          until: errData?.suspendedUntil || "관리자 문의 요망",
+          until: formattedUntil || "관리자 문의 요망",
         });
         setSuspendedModalOpen(true);
       }
@@ -360,7 +366,7 @@ export default function LoginPage() {
             onClose={() => setDuplicatePromptOpen(false)}
         />
 
-        {/* 정지 계정 안내 모달 추가 */}
+        {/* 정지 계정 안내 모달 */}
         <AppModal
             open={suspendedModalOpen}
             title="접속 제한 안내"
