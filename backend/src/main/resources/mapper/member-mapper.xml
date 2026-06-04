@@ -27,7 +27,7 @@
         FROM userSports us
         JOIN sports s ON us.`sportId` = s.sportId
         WHERE us.`userId`=#{memberId}
-        ORDER BY s.sportId
+        ORDER BY s.category, s.name
     </select>
 
     <update id="updateMember">
