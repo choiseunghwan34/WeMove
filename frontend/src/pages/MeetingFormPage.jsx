@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import styles from "../styles/MeetingCreatePage.module.css";
-import SportPickerModal from "../components/SportPickerModal.jsx";
+import SportPickerModal from "../components/SportPickerModal2.jsx";
 import RegionPickerModal from "../components/RegionPickerModal.jsx";
 import {useAuth} from "../contexts/AuthContext.jsx";
 import {getSports} from "../api/sportApi.js";
@@ -197,8 +197,14 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const handleCustomBtnClick = () => fileInputRef.current.click();
 
     const handleSportApply = (d) => {
-        setForm(p => ({...p, sportId: d.sportId}));
-        setSelectedSportName(d.name);
+        if (d) {
+            setForm(p => ({...p, sportId: d.sportId}));
+            setSelectedSportName(d.name);
+        } else {
+            // "전체 운동" 등 선택 해제 시
+            setForm(p => ({...p, sportId: null}));
+            setSelectedSportName("");
+        }
         setIsSportModalOpen(false);
     };
 
@@ -655,12 +661,8 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             {/*운동 종목 선택 모달*/}
             <SportPickerModal
                 open={isSportModalOpen}
-                sports={sports} // DB에서 가져온 배열 전달
-                initialSelection={{
-                    category: sports.find(s => s.sportId === form.sportId)?.category || "전체 분류",
-                    sportId: form.sportId,
-                    name: selectedSportName
-                }}
+                sports={sports}
+                selectedSportId={form.sportId} // 요렇게 ID 하나만 전달!
                 onApply={handleSportApply}
                 onClose={() => setIsSportModalOpen(false)}
             />
