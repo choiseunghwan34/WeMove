@@ -183,15 +183,12 @@ export default function HomePage() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const nextWeek = new Date(today);
-  nextWeek.setDate(nextWeek.getDate() + 6);
 
   const scheduleItems = [...activityData.approvedMeetings]
     .filter((meeting) => {
       if (!meeting?.meetingDate) return false;
       const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
-      if (Number.isNaN(meetingDay.getTime())) return false;
-      return meetingDay >= today && meetingDay <= nextWeek;
+      return !Number.isNaN(meetingDay.getTime()) && meetingDay >= today;
     })
     .sort((left, right) => {
       const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
@@ -583,10 +580,9 @@ export default function HomePage() {
             scheduleItems.map((meeting) => {
               const relativeDate = buildRelativeText(meeting.meetingDate);
               const weekday = getWeekdayLabel(meeting.meetingDate);
-              const displayDate =
-                relativeDate.includes("일 전") || relativeDate.includes("일 후")
-                  ? `${String(meeting.meetingDate).slice(5).replace("-", "")}${weekday ? ` (${weekday})` : ""}`
-                  : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
+              const displayDate = relativeDate.includes("일 전") || relativeDate.includes("일 후") 
+                ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
+                : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
 
               return (
                 <div

@@ -331,7 +331,23 @@ export default function ActivityPage() {
   }, [activityData]);
 
   const activityFeed = useMemo(() => buildFeedItems(activityData), [activityData]);
-  const scheduleItems = activityData.approvedMeetings.slice(0, 4);
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const scheduleItems = [...activityData.approvedMeetings]
+    .filter((meeting) => {
+      if (!meeting?.meetingDate) return false;
+      const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
+      return !Number.isNaN(meetingDay.getTime()) && meetingDay >= today;
+    })
+    .sort((left, right) => {
+      const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
+      const rightDate = `${right.meetingDate ?? ""} ${right.startTime ?? ""}`;
+      return leftDate.localeCompare(rightDate);
+    })
+    .slice(0, 4);
+
   const scheduledMeetings = activityData.approvedMeetings;
   const waitingMeetings = activityData.pendingMeetings;
   const completedMeetings = activityData.completedMeetings;
