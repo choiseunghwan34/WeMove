@@ -4,6 +4,7 @@ import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import Pagination from "../components/Pagination";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
@@ -165,7 +166,7 @@ export default function MeetingListPage() {
   const [urlSearchParams, setSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  
+
   // 1. URL 검색 파라미터 파싱
   const keywordParam = urlSearchParams.get("keyword") ?? "";
   const regionLabelParam = urlSearchParams.get("regionLabel") ?? "";
@@ -173,16 +174,20 @@ export default function MeetingListPage() {
   const statusParam = urlSearchParams.get("status") ?? "";
   const meetingDateParam = urlSearchParams.get("meetingDate") ?? "";
   const pageParam = urlSearchParams.get("page") ?? "1";
-  
+
   const isGlobalSearch =
     urlSearchParams.get("global") === "1" ||
-    Boolean(keywordParam || sportNameParam || (regionLabelParam && regionLabelParam !== "전체"));
+    Boolean(
+      keywordParam ||
+      sportNameParam ||
+      (regionLabelParam && regionLabelParam !== "전체"),
+    );
 
   // 2. 파생 상태 (Single Source of Truth)
   // 로컬 입력 버퍼 (검색창 타자 중에만 사용되며 엔터 칠 때 URL로 동기화)
   const [tempKeyword, setTempKeyword] = useState(keywordParam);
   const prevKeywordRef = useRef(keywordParam);
-  
+
   const currentPage = useMemo(() => {
     const parsed = parseInt(pageParam, 10);
     return isNaN(parsed) ? 1 : parsed;
@@ -201,7 +206,7 @@ export default function MeetingListPage() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [sportOptions, setSportOptions] = useState([]);
   const [filterOptionsReady, setFilterOptionsReady] = useState(false);
-  
+
   const [scheduleItems, setScheduleItems] = useState([]);
 
   const loadActivity = useCallback(async () => {
@@ -216,7 +221,7 @@ export default function MeetingListPage() {
       const approved = Array.isArray(payload.approvedMeetings)
         ? payload.approvedMeetings.map(normalizeMeeting)
         : [];
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -319,7 +324,11 @@ export default function MeetingListPage() {
   }, [authLoading, isAuthenticated, user?.memberId]);
 
   const selectedRegion = useMemo(() => {
-    if (!regionOptions.length || !regionLabelParam || regionLabelParam === "전체") {
+    if (
+      !regionOptions.length ||
+      !regionLabelParam ||
+      regionLabelParam === "전체"
+    ) {
       return null;
     }
     return resolveRegionSelectionFromLabel(regionOptions, regionLabelParam);
@@ -355,36 +364,34 @@ export default function MeetingListPage() {
     };
   }, [selectedRegion]);
 
-  const searchParams = useMemo(
-    () => {
-      const isAllRegionSelected = regionLabelParam === "전체" || !regionLabelParam;
-      return {
-        ...regionParams,
-        baseRegionId:
-          selectedRegion || isAllRegionSelected || isGlobalSearch
-            ? null
-            : memberRegionId,
-        sportId: selectedSport?.sportId ?? null,
-        status: statusParam,
-        keyword: keywordParam,
-        meetingDate: meetingDateParam,
-        page: currentPage,
-        size: PAGE_SIZE,
-      };
-    },
-    [
-      regionParams,
-      selectedRegion,
-      regionLabelParam,
-      memberRegionId,
-      isGlobalSearch,
-      selectedSport,
-      statusParam,
-      keywordParam,
-      meetingDateParam,
-      currentPage,
-    ],
-  );
+  const searchParams = useMemo(() => {
+    const isAllRegionSelected =
+      regionLabelParam === "전체" || !regionLabelParam;
+    return {
+      ...regionParams,
+      baseRegionId:
+        selectedRegion || isAllRegionSelected || isGlobalSearch
+          ? null
+          : memberRegionId,
+      sportId: selectedSport?.sportId ?? null,
+      status: statusParam,
+      keyword: keywordParam,
+      meetingDate: meetingDateParam,
+      page: currentPage,
+      size: PAGE_SIZE,
+    };
+  }, [
+    regionParams,
+    selectedRegion,
+    regionLabelParam,
+    memberRegionId,
+    isGlobalSearch,
+    selectedSport,
+    statusParam,
+    keywordParam,
+    meetingDateParam,
+    currentPage,
+  ]);
 
   // 1. URL 파라미터가 외부 요인(뒤로가기, 초기화 등)으로 변경될 때 검색창 내용만 동기화
   useEffect(() => {
@@ -399,7 +406,12 @@ export default function MeetingListPage() {
     if (authLoading || !memberRegionReady || !filterOptionsReady) return;
 
     const hasNoRegionKey = !urlSearchParams.has("regionLabel");
-    const hasNoOtherFilters = !keywordParam && !sportNameParam && !statusParam && !meetingDateParam && urlSearchParams.get("global") !== "1";
+    const hasNoOtherFilters =
+      !keywordParam &&
+      !sportNameParam &&
+      !statusParam &&
+      !meetingDateParam &&
+      urlSearchParams.get("global") !== "1";
 
     // 완전히 비어있는 깨끗한 최초 접속인 경우 리다이렉트
     if (hasNoRegionKey && hasNoOtherFilters) {
@@ -416,7 +428,14 @@ export default function MeetingListPage() {
     if (hasNoRegionKey && !hasNoOtherFilters) {
       updateURLParams({ regionLabel: "전체" });
     }
-  }, [authLoading, isAuthenticated, memberRegion, memberRegionReady, filterOptionsReady, urlSearchParams]);
+  }, [
+    authLoading,
+    isAuthenticated,
+    memberRegion,
+    memberRegionReady,
+    filterOptionsReady,
+    urlSearchParams,
+  ]);
 
   // 지역과 운동 모달 인풋 복원을 위한 상태 동기화 useEffect 들은
   // useMemo 로 완전히 대체되어 제거되었습니다.
@@ -471,37 +490,40 @@ export default function MeetingListPage() {
     statusParam ? STATUS_MAP[statusParam] || statusParam : ALL_STATUS
   }`;
 
-  const updateURLParams = useCallback((newParams) => {
-    setSearchParams((prevParams) => {
-      const nextParams = new URLSearchParams(prevParams);
-      let hasChanges = false;
+  const updateURLParams = useCallback(
+    (newParams) => {
+      setSearchParams((prevParams) => {
+        const nextParams = new URLSearchParams(prevParams);
+        let hasChanges = false;
 
-      Object.entries(newParams).forEach(([key, value]) => {
-        const currentValue = nextParams.get(key) ?? "";
-        const newValue = value ?? "";
+        Object.entries(newParams).forEach(([key, value]) => {
+          const currentValue = nextParams.get(key) ?? "";
+          const newValue = value ?? "";
 
-        if (currentValue !== newValue) {
-          hasChanges = true;
-          if (newValue) {
-            nextParams.set(key, newValue);
-          } else {
-            nextParams.delete(key);
+          if (currentValue !== newValue) {
+            hasChanges = true;
+            if (newValue) {
+              nextParams.set(key, newValue);
+            } else {
+              nextParams.delete(key);
+            }
           }
+        });
+
+        if (!hasChanges) {
+          return prevParams;
         }
+
+        const isPageChange = "page" in newParams;
+        if (!isPageChange) {
+          nextParams.set("page", "1");
+        }
+
+        return nextParams;
       });
-
-      if (!hasChanges) {
-        return prevParams;
-      }
-
-      const isPageChange = "page" in newParams;
-      if (!isPageChange) {
-        nextParams.set("page", "1");
-      }
-
-      return nextParams;
-    });
-  }, [setSearchParams]);
+    },
+    [setSearchParams],
+  );
 
   const handlePageChange = (page) => {
     updateURLParams({ page: String(page) });
@@ -520,7 +542,7 @@ export default function MeetingListPage() {
     setTempKeyword("");
     setSearchParams({
       regionLabel: "전체",
-      page: "1"
+      page: "1",
     });
   };
 
@@ -528,7 +550,7 @@ export default function MeetingListPage() {
     const label = formatRegionLabel(selection);
     updateURLParams({
       regionLabel: label,
-      page: "1"
+      page: "1",
     });
     setIsRegionModalOpen(false);
   };
@@ -536,7 +558,7 @@ export default function MeetingListPage() {
   const applySportSelection = (sport) => {
     updateURLParams({
       sportName: sport ? sport.name : "",
-      page: "1"
+      page: "1",
     });
     setIsSportModalOpen(false);
   };
@@ -622,10 +644,12 @@ export default function MeetingListPage() {
                 scheduleItems.map((meeting) => {
                   const relativeDate = buildRelativeText(meeting.meetingDate);
                   const weekday = getWeekdayLabel(meeting.meetingDate);
-                  const displayDate = relativeDate.includes("일 전") || relativeDate.includes("일 후") 
-                    ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
-                    : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
-                  
+                  const displayDate =
+                    relativeDate.includes("일 전") ||
+                    relativeDate.includes("일 후")
+                      ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
+                      : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
+
                   return (
                     <div
                       key={`schedule-${meeting.id}`}
@@ -677,7 +701,10 @@ export default function MeetingListPage() {
           <span>
             {selectedRegion && regionLabelParam !== "전체"
               ? "선택한 지역 기준으로 조회 중"
-              : isAuthenticated && memberRegion && regionLabelParam === `${memberRegion.sido} ${memberRegion.sigungu}`
+              : isAuthenticated &&
+                  memberRegion &&
+                  regionLabelParam ===
+                    `${memberRegion.sido} ${memberRegion.sigungu}`
                 ? "사용자의 지역 기준으로 조회 중"
                 : "전체 지역 기준으로 조회 중"}
           </span>
@@ -713,13 +740,11 @@ export default function MeetingListPage() {
             <option value="COMPLETED">모임완료</option>
           </select>
 
-          <input
-            type="date"
-            value={meetingDateParam}
+          <ReactCalendarDatePicker
+            value={meetingDate}
             onChange={(event) => {
               updateURLParams({ meetingDate: event.target.value });
             }}
-            onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
@@ -885,10 +910,7 @@ export default function MeetingListPage() {
                   </strong>
                 </div>
 
-                <button
-                  type="button"
-                  className={getButtonClass(meeting)}
-                >
+                <button type="button" className={getButtonClass(meeting)}>
                   {getButtonText(meeting)}
                 </button>
               </aside>
@@ -957,13 +979,11 @@ export default function MeetingListPage() {
             <option value="CANCELLED">취소됨</option>
           </select>
 
-          <input
-            type="date"
-            value={meetingDateParam}
+          <ReactCalendarDatePicker
+            value={meetingDate}
             onChange={(event) => {
               updateURLParams({ meetingDate: event.target.value });
             }}
-            onClick={(e) => e.target.showPicker?.()}
           />
 
           <input

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
@@ -718,10 +719,10 @@ export default function HomePage() {
                     className={styles.dashboardInlineIcon}
                   />
                 </span>
-                <input
-                  type="date"
+                <ReactCalendarDatePicker
                   value={selectedDate}
                   onChange={(event) => setSelectedDate(event.target.value)}
+                  buttonClassName={styles.dashboardHeroDateInput}
                 />
               </label>
 
