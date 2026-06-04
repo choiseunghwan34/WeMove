@@ -49,7 +49,9 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
     }
     //댓글 삭제
     const handleDeleteComment = (commentId) => {
-        if (!window.confirm("정말 이 댓글을 삭제하시겠습니까?")) return;
+        if (!window.confirm("이 댓글을 삭제하시겠습니까?")) return;
+        console.log("🚀 [프론트엔드] 서버로 보낼 commentId:", commentId);
+        console.log("🚀 [프론트엔드] 서버로 보낼 requesterId:", user?.memberId);
 
         // user.memberId를 넘겨 백엔드에서 권한 검증 수행
         deleteComment(commentId, user.memberId)

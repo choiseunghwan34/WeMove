@@ -30,11 +30,15 @@ public class CommentServiceImpl implements CommentService {
   @Override
   public void deleteComment(Long commentId, Long requestId) {
     // 1. 댓글 정보 가져오기
+    System.out.println("🔍 [Service 진입] 조회할 commentId: " + commentId);
     Comment comment = commentDao.selectCommentById(commentId);
+
+    System.out.println("📦 [DB 매핑 결과] 꺼내온 comment 객체: " + comment);
     if (comment == null) {
       throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
     }
-
+    System.out.println("🔑 [권한체크 직전] comment.getWriterId(): " + comment.getWriterId());
+    System.out.println("🔑 [권한체크 직전] 요청한 requestId: " + requestId);
     // 2. 모임 정보 가져오기 (주최자가 누군지 확인하기 위함)
     Long hostUserId = meetingDao.selectHostUserId(comment.getMeetingId());
     if (hostUserId == null) {

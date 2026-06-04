@@ -26,6 +26,8 @@ public class CommentController {
 
   @DeleteMapping("/api/comments/{commentId}")
   public ResponseEntity<Void> delete(@PathVariable Long commentId, @RequestParam Long requestId) {
+    System.out.println("🛸 [Controller 도착] URL의 commentId: " + commentId);
+    System.out.println("🛸 [Controller 도착] 쿼리스트링 requestId: " + requestId);
     commentService.deleteComment(commentId, requestId);
     return ResponseEntity.ok().build();
   }
