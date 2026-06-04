@@ -2,7 +2,7 @@
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 6px 12px;
-    margin-bottom: 16px;
+    margin-bottom: 4px;
     padding: 14px 16px;
     border: 1px solid #dbe7f6;
     border-radius: 18px;
@@ -139,7 +139,7 @@
     color: #10233f;
     font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 4px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
