@@ -339,8 +339,7 @@
   font-weight: 800;
 }
 
-.dashboardHeroDateField input,
-.dashboardHeroDateInput {
+.dashboardHeroDateField input {
   width: 100%;
   min-width: 0;
   border: 0;
