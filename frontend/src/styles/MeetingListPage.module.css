@@ -61,6 +61,46 @@
   align-items: center;
 }
 
+.dateFilterButton {
+  position: relative;
+  min-height: 54px !important;
+  height: 54px;
+  padding: 0 42px 0 15px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font: inherit;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.dateFilterButton::after {
+  content: "📅";
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  color: #8ea0b8;
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.dateFilterButton::after {
+  content: "";
+  width: 15px;
+  height: 15px;
+  border: 1.8px solid #6b7280;
+  border-radius: 3px;
+  background:
+    linear-gradient(#6b7280, #6b7280) 0 4px / 100% 1.8px no-repeat,
+    linear-gradient(#6b7280, #6b7280) 4px 0 / 1.8px 4px no-repeat,
+    linear-gradient(#6b7280, #6b7280) 10px 0 / 1.8px 4px no-repeat;
+  color: transparent;
+  font-size: 0;
+}
+
 
 
 .resetButton {

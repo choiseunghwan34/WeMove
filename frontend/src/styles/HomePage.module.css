@@ -30,6 +30,11 @@
 
 .dashboardHeroButton {
   composes: dashboardHeroButton from "./WeMoveShared.module.css";
+  height: 54px !important;
+  min-height: 54px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .dashboardHeroCard {
@@ -329,28 +334,20 @@
   display: block;
 }
 
-.dashboardHeroDateField {
+.dashboardHeroDateInput {
+  width: auto !important;
   min-width: 0;
-  height: 54px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #496079;
-  font-weight: 800;
-}
-
-.dashboardHeroDateField input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
+  height: 54px !important;
+  min-height: 54px !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #496079 !important;
   font: inherit;
   font-weight: 800;
   outline: 0;
+  box-shadow: none !important;
 }
 
 .dashboardCategoryStrip {

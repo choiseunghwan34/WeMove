@@ -7,6 +7,7 @@ import { getMyActivity } from "../api/memberApi";
 import { updateMeetingStatus } from "../api/meetingApi";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import useSidebarInterestItems from "../hooks/useSidebarInterestItems";
 import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/ActivityPage.module.css";
 
@@ -231,6 +232,7 @@ const buildGoogleCalendarUrl = (meeting) => {
 export default function ActivityPage() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const toast = useToast();
+  const sidebarInterestItems = useSidebarInterestItems();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [manageModalMeeting, setManageModalMeeting] = useState(null);
@@ -487,6 +489,7 @@ export default function ActivityPage() {
       active="내활동"
       title="내 활동"
       description="참여 중인 모임, 승인 대기 모임, 내가 만든 모임을 한 번에 확인할 수 있습니다."
+      sidebarInterestItems={sidebarInterestItems}
       aside={
         <>
           <section className={styles.dashboardPanel}>

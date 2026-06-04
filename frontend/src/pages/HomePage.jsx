@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
@@ -17,6 +18,7 @@ import { getMyActivity } from "../api/memberApi";
 import { getParticipants } from "../api/participantApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
+import useSidebarInterestItems from "../hooks/useSidebarInterestItems";
 import { getMeetingThumbnail } from "../utils/meetingVisuals";
 import styles from "../styles/HomePage.module.css";
 // 기본 썸네일 이미지 import
@@ -134,6 +136,7 @@ const getWeekdayLabel = (dateValue) => {
 export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
+  const sidebarInterestItems = useSidebarInterestItems();
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [meetings, setMeetings] = useState([]);
@@ -646,7 +649,11 @@ export default function HomePage() {
   );
 
   return (
-    <DashboardShell active="홈" aside={homeAside}>
+    <DashboardShell
+      active="홈"
+      aside={homeAside}
+      sidebarInterestItems={sidebarInterestItems}
+    >
       <section className={styles.dashboardHeroRow}>
         <div className={styles.dashboardHeroCard}>
           <div className={styles.heroCarousel} aria-hidden="true">
@@ -711,19 +718,22 @@ export default function HomePage() {
                 />
               </button>
 
-              <label className={styles.dashboardHeroDateField}>
+              <ReactCalendarDatePicker
+                value={selectedDate}
+                onChange={(event) => setSelectedDate(event.target.value)}
+                buttonClassName={`${styles.dashboardHeroChoiceButton} ${styles.dashboardHeroDateInput}`}
+              >
                 <span>
                   <UiIcon
                     name="calendar"
                     className={styles.dashboardInlineIcon}
                   />
                 </span>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(event) => setSelectedDate(event.target.value)}
-                />
-              </label>
+                <div className={styles.dashboardHeroChoiceText}>
+                  <small>날짜</small>
+                  <strong>{selectedDate || "날짜 선택"}</strong>
+                </div>
+              </ReactCalendarDatePicker>
 
               <Link
                 to={buildMeetingSearchUrl()}

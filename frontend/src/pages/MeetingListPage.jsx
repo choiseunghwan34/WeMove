@@ -4,6 +4,7 @@ import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import Pagination from "../components/Pagination";
+import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
@@ -11,6 +12,7 @@ import { getMeetings, getTopRegions } from "../api/meetingApi";
 import { getMember, getMyActivity } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
+import useSidebarInterestItems from "../hooks/useSidebarInterestItems";
 import styles from "../styles/MeetingListPage.module.css";
 
 const cx = (...names) =>
@@ -165,6 +167,7 @@ export default function MeetingListPage() {
   const [urlSearchParams, setSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const sidebarInterestItems = useSidebarInterestItems();
   
   // 1. URL 검색 파라미터 파싱
   const keywordParam = urlSearchParams.get("keyword") ?? "";
@@ -589,6 +592,7 @@ export default function MeetingListPage() {
       active="모임 찾기"
       title="모임 찾기"
       description="지역과 운동 종목을 기준으로 지금 참여할 수 있는 모임을 빠르게 골라보세요."
+      sidebarInterestItems={sidebarInterestItems}
       aside={
         <>
           <section className={styles.dashboardPanel}>
@@ -713,13 +717,12 @@ export default function MeetingListPage() {
             <option value="COMPLETED">모임완료</option>
           </select>
 
-          <input
-            type="date"
+          <ReactCalendarDatePicker
             value={meetingDateParam}
+            buttonClassName={styles.dateFilterButton}
             onChange={(event) => {
               updateURLParams({ meetingDate: event.target.value });
             }}
-            onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
@@ -957,13 +960,12 @@ export default function MeetingListPage() {
             <option value="CANCELLED">취소됨</option>
           </select>
 
-          <input
-            type="date"
+          <ReactCalendarDatePicker
             value={meetingDateParam}
+            buttonClassName={styles.dateFilterButton}
             onChange={(event) => {
               updateURLParams({ meetingDate: event.target.value });
             }}
-            onClick={(e) => e.target.showPicker?.()}
           />
 
           <input
