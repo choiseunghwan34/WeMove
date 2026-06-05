@@ -212,45 +212,6 @@
     );
 }
 
-.heroCarouselSecret::before {
-  content: "";
-  position: absolute;
-  inset: -15%;
-  background:
-    radial-gradient(
-      circle at 22% 26%,
-      rgba(125, 211, 252, 0.36),
-      transparent 24%
-    ),
-    radial-gradient(
-      circle at 76% 22%,
-      rgba(96, 165, 250, 0.28),
-      transparent 22%
-    ),
-    radial-gradient(
-      circle at 48% 72%,
-      rgba(255, 255, 255, 0.18),
-      transparent 20%
-    );
-  animation: heroSecretSweep 2.2s ease-out forwards;
-  pointer-events: none;
-  z-index: 1;
-}
-
-@keyframes heroSecretSweep {
-  0% {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.08);
-  }
-}
-
 .heroSlide,
 .heroSlideActive {
   position: absolute;
@@ -284,39 +245,6 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.heroSecretBadge {
-  display: inline-flex;
-  margin-left: 10px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #f8fbff;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  animation: secretBadgePop 0.24s ease-out;
-}
-
-.heroSecretMessage {
-  margin-top: 10px !important;
-  color: rgba(232, 244, 255, 0.9) !important;
-  font-size: 0.93rem !important;
-  letter-spacing: 0.02em;
-  animation: secretBadgePop 0.3s ease-out;
-}
-
-@keyframes secretBadgePop {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .heroDots {

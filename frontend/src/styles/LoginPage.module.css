@@ -70,60 +70,30 @@
   overflow: hidden;
 }
 
-.cursorAura,
-.cursorHalo,
-.cursorCore {
+.cursorLeaf {
   position: absolute;
   left: 0;
   top: 0;
-  border-radius: 999px;
   transform: translate3d(
     calc(var(--cursor-x, 0px) - 50%),
     calc(var(--cursor-y, 0px) - 50%),
     0
-  );
+  )
+  rotate(var(--leaf-rotation, 0deg));
   transition:
-    opacity 0.22s ease,
-    transform 0.18s ease-out;
+    opacity 0.18s ease,
+    transform 0.22s ease-out;
   will-change: transform, opacity;
 }
 
-.cursorAura {
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(
-    circle,
-    rgba(56, 189, 248, 0.22) 0%,
-    rgba(59, 130, 246, 0.12) 30%,
-    transparent 72%
-  );
-  filter: blur(20px);
-}
-
-.cursorHalo {
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(147, 197, 253, 0.12) 42%,
-    transparent 76%
-  );
-  filter: blur(10px);
-}
-
-.cursorCore {
-  width: 28px;
-  height: 28px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(191, 219, 254, 0.68) 52%,
-    transparent 82%
-  );
-  box-shadow:
-    0 0 28px rgba(96, 165, 250, 0.65),
-    0 0 56px rgba(59, 130, 246, 0.34);
+.cursorLeafIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: rgba(210, 245, 224, 0.88);
+  filter:
+    drop-shadow(0 0 6px rgba(52, 211, 153, 0.32))
+    drop-shadow(0 2px 8px rgba(15, 23, 42, 0.18));
 }
 
 .ambientOrb {
@@ -628,13 +598,8 @@
     text-align: center;
   }
 
-  .cursorAura {
-    width: 320px;
-    height: 320px;
-  }
-
-  .cursorHalo {
-    width: 180px;
-    height: 180px;
+  .cursorLeafIcon {
+    width: 15px;
+    height: 15px;
   }
 }
