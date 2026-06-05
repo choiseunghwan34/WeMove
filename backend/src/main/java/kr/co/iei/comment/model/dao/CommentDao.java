@@ -24,7 +24,7 @@ public class CommentDao {
   }
 
     public Comment selectCommentById(Long commentId) {
-      return sqlSession.selectOne("commentMapper.selectCommentById", commentId);
+      return sqlSession.selectOne("comment.selectCommentById", commentId);
     }
 
 }

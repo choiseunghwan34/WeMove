@@ -50,24 +50,16 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
     //댓글 삭제
     const handleDeleteComment = (commentId) => {
         if (!window.confirm("이 댓글을 삭제하시겠습니까?")) return;
-        console.log("🚀 [프론트엔드] 서버로 보낼 commentId:", commentId);
-        console.log("🚀 [프론트엔드] 서버로 보낼 requesterId:", user?.memberId);
-
-        // user.memberId를 넘겨 백엔드에서 권한 검증 수행
         deleteComment(commentId, user.memberId)
             .then(() => {
                 alert("댓글이 삭제되었습니다.");
-                fetchComments(); // 목록 새로고침
+                fetchComments();
             })
             .catch((err) => {
                 console.error("댓글 삭제 실패: ", err);
                 alert("삭제 권한이 없거나 오류가 발생했습니다.");
             });
     }
-
-
-
-
     return(
         <>
             <div className={styles.commentList}>
@@ -75,14 +67,14 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
                 {comments.length === 0 ? (
                     <p>아직 작성된 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
                 ) : (
-                    comments.map((comment) => { // ★ 1. 소괄호 ( 가 아니라 중괄호 { 로 열어야 합니다.
+                    comments.map((comment) => {
 
                         // 권한 체크: 작성자 본인이거나 모임 주최자일 때만 삭제 가능
                         const isAuthor = Number(user?.memberId) === Number(comment.writerId);
                         const isHost = Number(user?.memberId) === Number(hostUserId);
                         const canDelete = isAuthor || isHost;
 
-                        return ( // ★ 2. return 안에 화면에 그릴 article 태그를 묶어줍니다.
+                        return (
                             <article key={comment.commentId} className={styles.commentItem}>
                                 <img
                                     style={!comment.profileImage ? {
@@ -101,12 +93,10 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
                                     </div>
                                     <p>{comment.content}</p>
 
-                                    {/* ★ 3. canDelete가 true일 때만 삭제 버튼이 보이도록 감싸줍니다. */}
                                     {canDelete && (
                                         <div className={styles.buttonWrap}>
                                             <button
                                                 className={styles.deleteBtn}
-                                                // ★ 4. 화살표 함수를 써서 해당 댓글의 ID를 넘겨줘야 합니다.
                                                 onClick={() => handleDeleteComment(comment.commentId)}
                                             >
                                                 댓글 삭제
@@ -115,8 +105,8 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
                                     )}
                                 </div>
                             </article>
-                        ); // ★ return 닫기
-                    }) // ★ map 중괄호 닫기
+                        );
+                    })
                 )}
             </div>
 

@@ -1,6 +1,8 @@
 package kr.co.iei.comment.model.service;
 
 import java.util.List;
+import java.util.Objects;
+
 import kr.co.iei.comment.model.dao.CommentDao;
 import kr.co.iei.comment.model.vo.*;
 import kr.co.iei.meeting.model.dao.MeetingDao;
@@ -29,17 +31,13 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public void deleteComment(Long commentId, Long requestId) {
-    // 1. 댓글 정보 가져오기
-    System.out.println("🔍 [Service 진입] 조회할 commentId: " + commentId);
+    //1. 댓글 정보
     Comment comment = commentDao.selectCommentById(commentId);
 
-    System.out.println("📦 [DB 매핑 결과] 꺼내온 comment 객체: " + comment);
     if (comment == null) {
       throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
     }
-    System.out.println("🔑 [권한체크 직전] comment.getWriterId(): " + comment.getWriterId());
-    System.out.println("🔑 [권한체크 직전] 요청한 requestId: " + requestId);
-    // 2. 모임 정보 가져오기 (주최자가 누군지 확인하기 위함)
+    // 2. 모임 정보 가져오기 (주최자 확인)
     Long hostUserId = meetingDao.selectHostUserId(comment.getMeetingId());
     if (hostUserId == null) {
       throw new IllegalArgumentException("존재하지 않는 모임입니다.");
@@ -49,7 +47,7 @@ public class CommentServiceImpl implements CommentService {
     boolean isHost = hostUserId.equals(requestId);
 
     if (!isWriter && !isHost) {
-      throw new SecurityException("댓글을 삭제할 권한이 없습니다."); // 권한 없을 시 예외 발생
+      throw new SecurityException("댓글을 삭제할 권한이 없습니다.");
     }
 
     // 4. 권한이 확인되었으므로 소프트 삭제 진행
