@@ -77,7 +77,6 @@ export default function Comment({ meetingId, hostUserId, comments, setComments }
         }
         createComment(meetingId, commentData).then((res) => {
             setReplyContent("");
-            setReplyingTo(null); // 등록 후 폼 닫기
             fetchComments();
         }).catch((err) => {
             console.error(err);
@@ -136,7 +135,7 @@ export default function Comment({ meetingId, hostUserId, comments, setComments }
 
                                                     if (isOpen) {
                                                         // 열려있으면 닫기
-                                                        setReplyingTo(null);
+
                                                         setExpandedReplies(prev => prev.filter(id => id !== comment.commentId));
                                                     } else {
                                                         // 닫혀있으면 폼과 리스트 동시에 열기
@@ -207,24 +206,33 @@ export default function Comment({ meetingId, hostUserId, comments, setComments }
                                         })}
                                     </div>
                                 )}
-
                                 {/* --- 대댓글 폼 (리스트 하단에 노출) --- */}
                                 {replyingTo === comment.commentId && !comment.isDeleted && (
                                     <div className={styles.replyIndentBox}>
                                         <form
-                                            className={styles.commentForm}
+                                            className={styles.replyCommentForm}
                                             onSubmit={(e) => handleReplySubmit(e, comment.commentId)}>
                                             <textarea
                                                 value={replyContent}
-                                                onChange={(e) => setReplyContent(e.target.value)}
+                                                maxLength={100}
+                                                onChange={(e) => {
+                                                    if(e.target.value.length <= 100){
+                                                        setReplyContent(e.target.value)
+                                                    }
+                                                }}
                                                 placeholder="답글을 입력하세요."
-
                                             />
-                                            <button type="submit">등록</button>
+                                            <div className={styles.charCount}>
+                                                {replyContent.length} / 100
+                                            </div>
+                                            <div className={styles.replySubmitBtn}>
+                                                <button type="submit" className={styles.submitBtn}>
+                                                    <UiIcon name="arrow" className={styles.actionIcon}/>
+                                                </button>
+                                            </div>
                                         </form>
                                     </div>
                                 )}
-
                             </div>
                         );
                     })
@@ -236,9 +244,17 @@ export default function Comment({ meetingId, hostUserId, comments, setComments }
                 <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
                     <textarea
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                        maxLength={100}
+                        onChange={(e) => {
+                            if(e.target.value.length <= 100){
+                                setContent(e.target.value)
+                            }
+                        }}
                         placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요."
                     />
+                    <div className={styles.charCount}>
+                        {content.length} / 100
+                    </div>
                     <div className={styles.formActions}>
                         <button type="submit">
                             댓글 등록
