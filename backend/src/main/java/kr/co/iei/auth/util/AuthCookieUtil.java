@@ -54,7 +54,7 @@ public class AuthCookieUtil {
     return ResponseCookie.from(name, value)
         .httpOnly(true)
         .secure(secureCookie)
-        .sameSite("Lax")
+        .sameSite(secureCookie ? "None" : "Lax")
         .path("/");
   }
 }
