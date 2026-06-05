@@ -55,6 +55,19 @@ export default function MeetingManagePage() {
         return;
       }
 
+      // 3. 호스트이긴 하지만 모임이 이미 진행 중이거나 완료된 경우
+      if (meetingData.status === "ONGOING" || meetingData.status === "COMPLETED") {
+        if (!alertShown.current) {
+          alertShown.current = true;
+          const statusMessage = meetingData.status === "ONGOING" 
+                              ? "진행중인 모임입니다." 
+                              : "완료된 모임입니다.";
+          alert(statusMessage);
+          navigate(`/meetings/${meetingId}`, { replace: true });
+        }
+        return;
+      }
+
       setMeeting(meetingData);
       const allParticipants = participantsRes.data || [];
       const pureGuests = allParticipants.filter((p) => Number(p.userId) !== Number(meetingData.hostUserId));
