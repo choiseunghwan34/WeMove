@@ -28,6 +28,7 @@
         FROM comments c
         JOIN users u ON c.writerId=u.userId
         WHERE c.meetingId=#{meetingId}
+            AND c.isDeleted = 0 ORDER BY c.createAt
         ORDER BY c.createdAt ASC
     </select>
 
