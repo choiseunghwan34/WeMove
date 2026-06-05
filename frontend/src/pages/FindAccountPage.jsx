@@ -7,6 +7,7 @@ import {
 } from "../api/authApi";
 import bg1 from "../assets/image/bg1.jpg";
 import bg2 from "../assets/image/bg2.jpg";
+import useEcoEffects from "../components/useEcoEffects.js";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { buildWsUrl } from "../config/env";
 import {
@@ -15,6 +16,7 @@ import {
   normalizeText,
 } from "../utils/profileValidation";
 import styles from "../styles/FindAccountPage.module.css";
+import "../styles/Particle.css";
 
 const authBackgrounds = [bg1, bg2];
 const PASSWORD_PATTERN =
@@ -45,6 +47,19 @@ export default function FindAccountPage() {
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
     [],
   );
+  const timeOverlayColor = useMemo(() => {
+    const hour = new Date().getHours();
+
+    if (hour >= 6 && hour < 12) {
+      return "rgba(255, 255, 255, 0.1)";
+    } else if (hour >= 12 && hour < 18) {
+      return "rgba(0, 0, 0, 0.1)";
+    } else if (hour >= 18 && hour < 21) {
+      return "rgba(255, 94, 0, 0.15)";
+    } else {
+      return "rgba(0, 0, 20, 0.6)";
+    }
+  }, []);
 
   useEffect(() => {
     if (emailVerificationStatus !== "pending") {
@@ -257,13 +272,52 @@ export default function FindAccountPage() {
     }
   };
 
+  const { containerRef, bubbleData, bubblesRef, fireflyData } = useEcoEffects();
+
   return (
-    <main className={styles.page}>
+    <main ref={containerRef} className={styles.page}>
       <div
         className={styles.backgroundLayer}
         style={{ backgroundImage: `url(${backgroundImage})` }}
       />
-      <div className={styles.backgroundOverlay} />
+      <div
+        className={styles.backgroundOverlay}
+        style={{
+          backgroundColor: timeOverlayColor,
+          transition: "background-color 2s ease-in-out",
+        }}
+      />
+
+      {fireflyData &&
+        fireflyData.map((style, i) => (
+          <div
+            key={`firefly-${i}`}
+            className="firefly"
+            style={{
+              left: style.left,
+              top: style.top,
+              animationDuration: style.animationDuration,
+              animationDelay: style.animationDelay,
+            }}
+          />
+        ))}
+
+      {bubbleData &&
+        bubbleData.map((style, i) => (
+          <div
+            key={`bubble-${i}`}
+            className="eco-bubble"
+            ref={(el) => (bubblesRef.current[i] = el)}
+            style={{
+              left: style.left,
+              top: style.top,
+              width: style.size,
+              height: style.size,
+              animationDelay: style.delay,
+            }}
+          />
+        ))}
+
       <div className={styles.ambientEffects} aria-hidden="true">
         <div className={`${styles.ambientOrb} ${styles.orb1}`} />
         <div className={`${styles.ambientOrb} ${styles.orb2}`} />
