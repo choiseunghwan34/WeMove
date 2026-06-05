@@ -584,8 +584,8 @@ export default function HomePage() {
   const homeAside = isAdmin ? null : (
     <>
       <section className={styles.dashboardPanel}>
-        <div className={styles.dashboardPanelHead}>
-          <div>
+        <div className={`${styles.dashboardPanelHead} ${styles.dashboardPopularHead}`}>
+          <div className={styles.dashboardPopularTitle}>
             <h3>실시간 인기 모임</h3>
             <span className={styles.dashboardPanelHint}>
               기준: {popularPeriod === "today" ? "오늘" : "최근 7일"} 조회수 · 모집중 모임만 표시

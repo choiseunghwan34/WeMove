@@ -1534,6 +1534,36 @@
   letter-spacing: -0.01em;
 }
 
+.dashboardPopularHead {
+  display: grid !important;
+  grid-template-columns: 4px minmax(0, 1fr);
+  gap: 12px 10px;
+  align-items: center !important;
+}
+
+.dashboardPopularHead::before {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.dashboardPopularTitle {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.dashboardPopularTitle h3 {
+  white-space: nowrap;
+  font-size: 1.08rem !important;
+  line-height: 1.3 !important;
+}
+
+.dashboardPopularTitle .dashboardPanelHint {
+  max-width: 100%;
+  line-height: 1.45;
+}
+
 .dashboardPeriodToggle {
   display: inline-flex;
   align-items: center;
@@ -1542,6 +1572,17 @@
   border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 999px;
   background: #f8fbff;
+}
+
+.dashboardPopularHead .dashboardPeriodToggle {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.dashboardPopularHead .dashboardPeriodToggleButton,
+.dashboardPopularHead .dashboardPeriodToggleActive {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .dashboardPeriodToggleButton,
