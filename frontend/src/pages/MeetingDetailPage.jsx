@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState, useRef} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import AppModal from "../components/AppModal";
 import {useAuth} from "../contexts/AuthContext";
@@ -54,6 +54,7 @@ export default function MeetingDetailPage() {
     const [comments, setComments] = useState([]);
     const {meetingId} = useParams();
     const navigate = useNavigate();
+    const alertShown = useRef(false);
     const {user, isAuthenticated} = useAuth();
 
     const [meeting, setMeeting] = useState(null);
@@ -112,6 +113,16 @@ export default function MeetingDetailPage() {
             ]);
 
             const meetingData = meetingRes.data;
+
+            if (!meetingData || Object.keys(meetingData).length === 0) {
+                if (!alertShown.current) {
+                    alertShown.current = true;
+                    alert("존재하지 않는 모임입니다.");
+                    navigate("/", { replace: true });
+                }
+                return;
+            }
+
             setMeeting(meetingData);
 
             const participantsList = participantsRes.data || [];
@@ -133,6 +144,11 @@ export default function MeetingDetailPage() {
             setIsRejected(isRejectedUser);
         } catch (error) {
             console.error("Failed to fetch meeting detail:", error);
+            if (!alertShown.current) {
+                alertShown.current = true;
+                alert("존재하지 않는 모임입니다.");
+                navigate("/", { replace: true });
+            }
         }
     };
 
