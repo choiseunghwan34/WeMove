@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import UserProfileDetailModal from "../components/UserProfileDetailModal";
@@ -15,6 +15,7 @@ import styles from "../styles/MeetingManagePage.module.css";
 export default function MeetingManagePage() {
   const { meetingId } = useParams();
   const navigate = useNavigate();
+  const alertShown = useRef(false);
   const { user, loading: authLoading } = useAuth();
   const [meeting, setMeeting] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -34,10 +35,23 @@ export default function MeetingManagePage() {
 
       const meetingData = meetingRes.data;
 
-      // 비로그인 상태이거나, 로그인 유저가 이 모임의 호스트가 아니라면 경고 후 상세로 리다이렉션
+      // 1. 모임 데이터가 없거나 잘못된 URL일 경우 (가장 먼저 검증)
+      if (!meetingData || Object.keys(meetingData).length === 0) {
+        if (!alertShown.current) {
+          alertShown.current = true;
+          alert("존재하지 않는 모임입니다.");
+          navigate("/", { replace: true });
+        }
+        return;
+      }
+
+      // 2. 비로그인 상태이거나, 로그인 유저가 이 모임의 호스트가 아니라면 경고 후 상세로 리다이렉션
       if (!user || user.nickname !== meetingData.hostNickname) {
-        alert("이 모임의 관리자(호스트)만 접근할 수 있는 페이지입니다.");
-        navigate(`/meetings/${meetingId}`, { replace: true });
+        if (!alertShown.current) {
+          alertShown.current = true;
+          alert("이 모임의 관리자(호스트)만 접근할 수 있는 페이지입니다.");
+          navigate(`/meetings/${meetingId}`, { replace: true });
+        }
         return;
       }
 
@@ -60,7 +74,11 @@ export default function MeetingManagePage() {
       });
     } catch (error) {
       console.error("Failed to fetch manage data:", error);
-      navigate("/meetings", { replace: true });
+      if (!alertShown.current) {
+        alertShown.current = true;
+        alert("존재하지 않는 모임입니다.");
+        navigate("/", { replace: true });
+      }
     }
   };
 
