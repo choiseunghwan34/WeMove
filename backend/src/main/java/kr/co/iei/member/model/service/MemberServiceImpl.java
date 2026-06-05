@@ -118,10 +118,10 @@ public class MemberServiceImpl implements MemberService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
     }
 
-    if (memberDao.countActiveHostedMeetings(memberId) > 0) {
+    if (memberDao.countActiveHostedMeetingsWithOtherParticipants(memberId) > 0) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT,
-          "모임장인 모임이 있어 회원탈퇴를 할 수 없습니다. 모임을 완료하거나 취소한 뒤 다시 시도해주세요.");
+          "모임장인 모임에 다른 참가자가 있어 회원탈퇴를 할 수 없습니다. 모임을 완료하거나 취소한 뒤 다시 시도해주세요.");
     }
 
     boolean hasParticipatingMeetings = memberDao.countActiveParticipatingMeetings(memberId) > 0;
@@ -132,6 +132,8 @@ public class MemberServiceImpl implements MemberService {
           "가입한 모임이 있습니다. 그래도 탈퇴하시겠습니까?");
     }
 
+    memberDao.cancelParticipatingMeetingsForWithdrawal(memberId);
+    memberDao.cancelSoloHostedMeetingsForWithdrawal(memberId);
     authDao.updateMemberStatus(memberId, "DELETED");
   }
 

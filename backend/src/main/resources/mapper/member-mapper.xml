@@ -68,16 +68,60 @@
           AND status NOT IN ('COMPLETED', 'CANCELLED')
     </select>
 
+    <select id="countActiveHostedMeetingsWithOtherParticipants" resultType="int">
+        SELECT COUNT(*)
+        FROM meetings m
+        WHERE m.hostUserId = #{memberId}
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+          AND EXISTS (
+              SELECT 1
+              FROM meetingParticipants mp
+              WHERE mp.meetingId = m.meetingId
+                AND mp.userId != #{memberId}
+                AND mp.status = 'APPROVED'
+          )
+    </select>
+
     <select id="countActiveParticipatingMeetings" resultType="int">
         SELECT COUNT(*)
         FROM meetingParticipants mp
         JOIN meetings m ON mp.meetingId = m.meetingId
         WHERE mp.userId = #{memberId}
           AND m.hostUserId != #{memberId}
-          AND mp.status = 'APPROVED'
+          AND mp.status IN ('APPROVED', 'PENDING')
           AND m.deletedAt IS NULL
           AND m.status NOT IN ('COMPLETED', 'CANCELLED')
     </select>
+
+    <update id="cancelSoloHostedMeetingsForWithdrawal">
+        UPDATE meetings m
+        SET m.status = 'CANCELLED',
+            m.deletedAt = NOW(),
+            m.updatedAt = NOW()
+        WHERE m.hostUserId = #{memberId}
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+          AND NOT EXISTS (
+              SELECT 1
+              FROM meetingParticipants mp
+              WHERE mp.meetingId = m.meetingId
+                AND mp.userId != #{memberId}
+                AND mp.status = 'APPROVED'
+          )
+    </update>
+
+    <update id="cancelParticipatingMeetingsForWithdrawal">
+        UPDATE meetingParticipants mp
+        JOIN meetings m ON mp.meetingId = m.meetingId
+        SET mp.status = 'CANCELLED',
+            mp.cancelledAt = NOW()
+        WHERE mp.userId = #{memberId}
+          AND m.hostUserId != #{memberId}
+          AND mp.status IN ('APPROVED', 'PENDING')
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+    </update>
 
     <select id="selectHostedActivityMeetings"
             resultType="kr.co.iei.member.model.vo.MemberActivityMeetingResponse">

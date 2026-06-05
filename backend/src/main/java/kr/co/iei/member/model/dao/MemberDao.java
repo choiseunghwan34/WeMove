@@ -49,8 +49,22 @@ public class MemberDao {
     return sqlSession.selectOne("member.countActiveHostedMeetings", Map.of("memberId", memberId));
   }
 
+  public int countActiveHostedMeetingsWithOtherParticipants(Long memberId) {
+    return sqlSession.selectOne(
+        "member.countActiveHostedMeetingsWithOtherParticipants", Map.of("memberId", memberId));
+  }
+
   public int countActiveParticipatingMeetings(Long memberId) {
     return sqlSession.selectOne(
         "member.countActiveParticipatingMeetings", Map.of("memberId", memberId));
+  }
+
+  public int cancelSoloHostedMeetingsForWithdrawal(Long memberId) {
+    return sqlSession.update("member.cancelSoloHostedMeetingsForWithdrawal", Map.of("memberId", memberId));
+  }
+
+  public int cancelParticipatingMeetingsForWithdrawal(Long memberId) {
+    return sqlSession.update(
+        "member.cancelParticipatingMeetingsForWithdrawal", Map.of("memberId", memberId));
   }
 }

@@ -75,14 +75,14 @@ export default function Header() {
           {loading ? null : user ? (
             <>
               <NotificationButton />
-              <div className="header-user-info">
+              <Link to="/mypage" className="header-user-info">
                 <img
                   src={profileImage}
                   alt={user.nickname ? `${user.nickname} 프로필` : "기본 프로필"}
                   className="header-user-avatar"
                 />
                 <span className="header-user-name">{user.nickname || user.loginId}</span>
-              </div>
+              </Link>
               <button
                 type="button"
                 className="header-signup"

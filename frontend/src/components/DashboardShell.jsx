@@ -92,7 +92,11 @@ export default function DashboardShell({
           {loading ? null : user ? (
             <>
               <NotificationButton />
-              <div className={styles.dashboardUserInfo}>
+              <Link
+                to="/mypage"
+                className={styles.dashboardUserInfo}
+                onClick={closeMenu}
+              >
                 <img
                   src={profileImage}
                   alt={user.nickname ? `${user.nickname} 프로필` : "기본 프로필"}
@@ -101,7 +105,7 @@ export default function DashboardShell({
                 <span className={styles.dashboardUserName}>
                   {user.nickname || user.loginId}
                 </span>
-              </div>
+              </Link>
               <button
                 type="button"
                 className={styles.dashboardSignupButton}
