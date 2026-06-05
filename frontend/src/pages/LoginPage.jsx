@@ -6,6 +6,7 @@ import { login } from "../api/authApi";
 import { getLoginPageStats } from "../api/statsApi";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/LoginPage.module.css";
+import "../styles/Particle.css";
 import { parseUserFromAccessToken } from "../utils/jwtPayload";
 import {
   clearRememberedLoginId,
@@ -16,6 +17,7 @@ import {
 // 새로고침 시 번갈아 나올 배경 이미지들 임포트
 import bg1 from "../assets/image/bg1.jpg";
 import bg2 from "../assets/image/bg2.jpg";
+import useEcoEffects from "../components/useEcoEffects.js";
 
 const authBackgrounds = [bg1, bg2];
 
@@ -142,6 +144,21 @@ export default function LoginPage() {
       [],
   );
 
+  // 🌟 [추가됨] 접속한 기기의 현재 시간을 기반으로 오버레이 색상을 결정
+  const timeOverlayColor = useMemo(() => {
+    const hour = new Date().getHours();
+
+    if (hour >= 6 && hour < 12) {
+      return "rgba(255, 255, 255, 0.1)"; // 아침 (6시~11시)
+    } else if (hour >= 12 && hour < 18) {
+      return "rgba(0, 0, 0, 0.1)"; // 낮 (12시~17시)
+    } else if (hour >= 18 && hour < 21) {
+      return "rgba(255, 94, 0, 0.15)"; // 저녁/노을 (18시~20시)
+    } else {
+      return "rgba(0, 0, 20, 0.6)"; // 밤 (21시~5시)
+    }
+  }, []);
+
   const finishLogin = (loginId, nextAccessToken) => {
     const parsedUser = parseUserFromAccessToken(nextAccessToken);
 
@@ -237,16 +254,55 @@ export default function LoginPage() {
     }
   };
 
+  const {containerRef, bubbleData, bubblesRef, fireflyData} = useEcoEffects();
+
   return (
       <>
-        <main className={styles.page}>
+        <main ref={containerRef} className={styles.page}>
           {/* 줌인 애니메이션이 적용되는 배경 레이어 */}
           <div
               className={styles.backgroundLayer}
               style={{ backgroundImage: `url(${backgroundImage})` }}
           />
-          {/* 배경을 살짝 눌러주는 어두운 오버레이 */}
-          <div className={styles.backgroundOverlay} />
+
+          {/* 🌟 [수정됨] 시간에 따라 색상이 바뀌는 오버레이 */}
+          <div
+              className={styles.backgroundOverlay}
+              style={{
+                backgroundColor: timeOverlayColor,
+                transition: "background-color 2s ease-in-out" // 자연스러운 색상 전환 효과
+              }}
+          />
+
+          {/* 🌟 반딧불이 렌더링 */}
+          {fireflyData && fireflyData.map((style, i) => (
+              <div
+                  key={`firefly-${i}`}
+                  className="firefly"
+                  style={{
+                    left: style.left,
+                    top: style.top,
+                    animationDuration: style.animationDuration,
+                    animationDelay: style.animationDelay,
+                  }}
+              />
+          ))}
+
+          {/* 🌟 비눗방울 렌더링 */}
+          {bubbleData && bubbleData.map((style, i) => (
+              <div
+                  key={`bubble-${i}`}
+                  className="eco-bubble"
+                  ref={(el) => (bubblesRef.current[i] = el)}
+                  style={{
+                    left: style.left,
+                    top: style.top,
+                    width: style.size,
+                    height: style.size,
+                    animationDelay: style.delay,
+                  }}
+              />
+          ))}
 
           {/* 둥둥 떠다니는 빛 효과 (Ambient Orbs) */}
           <div className={styles.ambientEffects} aria-hidden="true">
