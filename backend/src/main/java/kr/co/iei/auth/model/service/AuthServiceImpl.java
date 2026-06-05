@@ -350,6 +350,7 @@ public class AuthServiceImpl implements AuthService {
     );
   }
 
+  
   private void validateSignupRequest(SignupRequest req) {
     if (req == null) {
       throw new IllegalArgumentException("회원가입 정보를 입력해주세요.");
