@@ -6975,3 +6975,32 @@
     justify-self: start;
   }
 }
+/*대댓글 추가영역*/
+/* 부모 댓글 + 폼 + 대댓글을 하나로 묶는 큰 덩어리 */
+.commentGroup {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* 대댓글 폼과 대댓글 목록의 들여쓰기 (종속성 표현) */
+.replyIndentBox {
+  padding-left: 50px;
+  margin-top: 10px;
+}
+
+/* 대댓글(자식 댓글) 전용 박스 디자인 */
+.childCommentBox {
+  margin-bottom: 10px;
+  background-color: #f9fafb;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+
+
+
+
+
+
+

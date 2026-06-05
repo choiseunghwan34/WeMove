@@ -12,4 +12,5 @@ public class CommentResponse {
   private LocalDateTime createdAt;
   private Boolean isDeleted;
   private String profileImage;
+  private Long parentCommentId;
 }

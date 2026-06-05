@@ -20,6 +20,7 @@
         SELECT
             c.commentId,
             c.writerId,
+            c.parentCommentId,
             u.nickname,
             c.content,
             c.createdAt,
@@ -38,6 +39,7 @@
             isDeleted=#{isDeleted},
             content="모임 주최자에 의해 삭제된 댓글입니다."
         WHERE commentId=#{commentId}
+        OR parentCommentId = #{commentId}
     </update>
 
     <insert id="insertComment" parameterType="kr.co.iei.comment.model.vo.Comment">

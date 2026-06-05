@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
 import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
@@ -137,6 +137,7 @@ const defaultEmptyRegion = {regionId : null, sido: "", sigungu: "", dong: ""};
 
 export default function HomePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = user?.role === "ADMIN";
   const sidebarInterestItems = useSidebarInterestItems();
 
@@ -900,13 +901,15 @@ export default function HomePage() {
 
                   <div className={styles.dashboardMeetingFooter}>
                     <div className={styles.dashboardMeetingActions}>
-                      <button type="button">
+
+                      <button type="button" onClick={()=> navigate(`/meetings/${meeting.meetingId}`)}>
                         <UiIcon
                           name="comment"
                           className={styles.dashboardActionIcon}
                         />
                         {meeting.commentCount}
                       </button>
+
                       <button type="button">
                         <UiIcon
                           name="share"

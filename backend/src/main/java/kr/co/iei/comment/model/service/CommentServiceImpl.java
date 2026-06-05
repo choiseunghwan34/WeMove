@@ -11,6 +11,7 @@ import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.meeting.model.vo.Meeting;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class CommentServiceImpl implements CommentService {
     return commentDao.selectComments(meetingId);
   }
 
+  @Transactional
   public void createComment(Long meetingId, CommentRequest req) {
     Comment c = new Comment();
     c.setMeetingId(meetingId);
@@ -32,6 +34,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   @Override
+  @Transactional
   public void deleteComment(Long commentId, Long requestId) {
     //1. 댓글 정보
     Comment comment = commentDao.selectCommentById(commentId);
@@ -60,6 +63,8 @@ public class CommentServiceImpl implements CommentService {
 
     commentDao.softDeleteComment(params);
   }
+
+
 
 
 }
