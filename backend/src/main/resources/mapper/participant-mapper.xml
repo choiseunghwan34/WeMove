@@ -62,7 +62,7 @@
             u.birthYear,
             u.createdAt,
             CONCAT(r.sido, ' ', r.sigungu) AS regionName,
-            (SELECT GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR ', ')
+            (SELECT GROUP_CONCAT(s.name ORDER BY s.sportId SEPARATOR ', ')
              FROM userSports us
              JOIN sports s ON us.sportId = s.sportId
              WHERE us.userId = mp.userId) AS sports
