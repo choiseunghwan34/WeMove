@@ -119,7 +119,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     try {
       MimeMessage message = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
-      helper.setFrom(fromEmail);
+      helper.setFrom(fromEmail, "WeMove");
       helper.setTo(email);
       helper.setSubject("[WeMove] 이메일 인증을 완료해주세요");
       helper.setText(buildMailHtml(verificationUrl), true);

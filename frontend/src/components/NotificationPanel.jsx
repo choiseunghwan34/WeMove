@@ -26,7 +26,7 @@ const formatTime = (value) => {
 };
 
 export default function NotificationPanel() {
-  const { notifications, isPanelOpen, closePanel, clearAll } =
+  const { notifications, isPanelOpen, closePanel, clearAll, removeNotification } =
     useNotifications();
 
   useEffect(() => {
@@ -51,6 +51,7 @@ export default function NotificationPanel() {
 
   const handleNotificationClick = (notification) => {
     openNotificationTarget(notification);
+    removeNotification(notification.id);
     closePanel();
   };
 
@@ -95,7 +96,7 @@ export default function NotificationPanel() {
           onClick={clearAll}
           disabled={!notifications.length}
         >
-          모두 지우기
+          지우기
         </button>
       </div>
     </aside>

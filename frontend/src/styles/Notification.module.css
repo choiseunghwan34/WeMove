@@ -217,8 +217,11 @@
   background: transparent;
   box-shadow: none;
   color: #111827;
+  font-family: inherit;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
   cursor: pointer;
 }
 

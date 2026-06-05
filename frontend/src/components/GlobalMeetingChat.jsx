@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createChatMessage,
   createDirectChatMessage,
@@ -139,6 +140,7 @@ const NOTIFICATION_TEST_COMMAND = "noti";
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 export default function GlobalMeetingChat() {
+  const navigate = useNavigate();
   const { user, isAuthenticated, loading } = useAuth();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -213,6 +215,14 @@ export default function GlobalMeetingChat() {
 
   const activeRoomId =
     chatType === "GROUP" ? selectedMeetingId : selectedDirectRoomId;
+
+  const openSelectedMeetingDetail = useCallback(() => {
+    if (chatType !== "GROUP" || !selectedMeetingRoom?.meetingId) {
+      return;
+    }
+
+    navigate(`/meetings/${selectedMeetingRoom.meetingId}`);
+  }, [chatType, navigate, selectedMeetingRoom?.meetingId]);
 
   const appendMessage = useCallback(
     (message, options = {}) => {
@@ -1068,12 +1078,22 @@ export default function GlobalMeetingChat() {
 
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
-                <strong>
+                {chatType === "GROUP" && selectedRoom?.meetingId ? (
+                  <button
+                    type="button"
+                    className={styles.chatTitleLink}
+                    onClick={openSelectedMeetingDetail}
+                  >
+                    {selectedRoom.title}
+                  </button>
+                ) : (
+                  <strong>
                   {chatType === "GROUP"
                     ? selectedRoom?.title || "무브톡을 선택해주세요"
                     : selectedRoom?.targetNickname ||
                       "1대1 대화를 선택해주세요"}
-                </strong>
+                  </strong>
+                )}
                 {selectedRoom && chatType === "GROUP" ? (
                   <span>
                     {[
