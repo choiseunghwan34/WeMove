@@ -133,6 +133,8 @@ const getWeekdayLabel = (dateValue) => {
   return DAY_LABELS[parsedDate.getDay()];
 };
 
+const defaultEmptyRegion = {regionId : null, sido: "", sigungu: "", dong: ""};
+
 export default function HomePage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
@@ -940,13 +942,8 @@ export default function HomePage() {
         initialSelection={
           selectedRegion ??
           (isExplicitAllRegion
-            ? { regionId: null, sido: "", sigungu: "", dong: "" }
-            : (memberRegion ?? {
-                regionId: null,
-                sido: "",
-                sigungu: "",
-                dong: "",
-              }))
+            ? defaultEmptyRegion
+            : (memberRegion ?? defaultEmptyRegion))
         }
         onApply={handleApplyRegion}
         onClose={() => setIsRegionModalOpen(false)}

@@ -15,6 +15,7 @@ export default function SportPickerModal({
 }) {
   const [draftCategory, setDraftCategory] = useState(ALL_CATEGORY);
   const [draftSportId, setDraftSportId] = useState(selectedSportId ?? null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const categories = useMemo(() => {
     const uniqueCategories = new Set(
@@ -34,6 +35,13 @@ export default function SportPickerModal({
   );
 
   const visibleSports = useMemo(() => {
+    if (searchQuery.trim() !== "") {
+      const lowerQuery = searchQuery.trim().toLowerCase();
+      return sports.filter((sport) =>
+        normalizeText(sport.name).toLowerCase().includes(lowerQuery),
+      );
+    }
+
     if (draftCategory === ALL_CATEGORY) {
       return sports;
     }
@@ -41,7 +49,7 @@ export default function SportPickerModal({
     return sports.filter(
       (sport) => normalizeText(sport.category) === draftCategory,
     );
-  }, [draftCategory, sports]);
+  }, [draftCategory, sports, searchQuery]);
 
   useEffect(() => {
     if (!open) {
@@ -52,7 +60,6 @@ export default function SportPickerModal({
       sports.find((sport) => sport.sportId === selectedSportId) ?? null;
     const initialCategory =
       normalizeText(selected?.category) ||
-      normalizeText(sports[0]?.category) ||
       ALL_CATEGORY;
 
     setDraftSportId(selectedSportId ?? null);
@@ -83,7 +90,7 @@ export default function SportPickerModal({
 
   const clearSelection = () => {
     setDraftSportId(null);
-    setDraftCategory(categories[0] ?? ALL_CATEGORY);
+    setDraftCategory(ALL_CATEGORY);
   };
 
   return (
@@ -108,6 +115,14 @@ export default function SportPickerModal({
           전체 운동으로 보기
         </button>
       </div>
+
+      <input
+        type="text"
+        placeholder="운동 이름으로 검색"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className={styles.searchInput}
+      />
 
       <div className={styles.browser}>
         <section className={styles.column}>

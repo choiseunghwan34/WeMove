@@ -4,6 +4,7 @@ import AppModal from "../components/AppModal";
 import {useAuth} from "../contexts/AuthContext";
 import {getMeeting, recordMeetingView} from "../api/meetingApi";
 import {applyMeeting, cancelParticipant, getParticipants,} from "../api/participantApi";
+import {getRegions} from "../api/regionApi";
 import {meetingImages} from "../data/dashboardData";
 import UserProfileDetailModal from "../components/UserProfileDetailModal";
 import styles from "../styles/MeetingDetailPage.module.css";
@@ -65,6 +66,11 @@ export default function MeetingDetailPage() {
     const [applyMessage, setApplyMessage] = useState("");
     const [isAccordionOpen, setIsAccordionOpen] = useState(false);
     const [selectedUserProfileUser, setSelectedUserProfileUser] = useState(null);
+    const [regions, setRegions] = useState([]);
+
+    useEffect(() => {
+        getRegions().then((res) => setRegions(res.data)).catch(console.error);
+    }, []);
 
     const approvedParticipants = useMemo(() => {
         return participants.filter((p) => p.status === "APPROVED");
@@ -214,7 +220,19 @@ export default function MeetingDetailPage() {
             return;
         }
         if (!isClosed && !isAdmin) {
-            setModalType("apply");
+            const userRegion = regions.find((r) => r.regionId === user?.regionId);
+            const meetingParts = meeting.regionName ? meeting.regionName.split(" ") : [];
+            const meetingSido = meetingParts[0] || "";
+            const meetingSigungu = meetingParts[1] || "";
+
+            if (
+                userRegion &&
+                (userRegion.sido !== meetingSido || userRegion.sigungu !== meetingSigungu)
+            ) {
+                setModalType("regionWarning");
+            } else {
+                setModalType("apply");
+            }
         }
     };
 
@@ -657,6 +675,19 @@ export default function MeetingDetailPage() {
                 onConfirm={() => {
                     closeModal();
                     navigate("/login");
+                }}
+            />
+
+            <AppModal
+                open={modalType === "regionWarning"}
+                eyebrow="안내"
+                title="설정하신 지역과 거리가 먼 모임입니다"
+                description="현재 신청하려는 모임이 사용자의 지역과 다릅니다. 그럼에도 참가 신청하시겠습니까?"
+                confirmText="신청하기"
+                cancelText="취소"
+                onClose={closeModal}
+                onConfirm={() => {
+                    setModalType("apply");
                 }}
             />
 
