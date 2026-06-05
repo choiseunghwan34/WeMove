@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
+import AuthCursorGlow from "../components/AuthCursorGlow";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { login } from "../api/authApi";
 import { getLoginPageStats } from "../api/statsApi";
@@ -254,6 +255,7 @@ export default function LoginPage() {
             <div className={`${styles.ambientOrb} ${styles.orb2}`} />
             <div className={`${styles.ambientOrb} ${styles.orb3}`} />
           </div>
+          <AuthCursorGlow styles={styles} />
 
           <div className={styles.layout}>
             <section className={styles.copy}>

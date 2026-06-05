@@ -158,6 +158,7 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isSportModalOpen, setIsSportModalOpen] = useState(false);
+  const [isSecretModeActive, setIsSecretModeActive] = useState(false);
   const [neighborhoodStats, setNeighborhoodStats] = useState({
     recruitingCount: 0,
     applicantCount: 0,
@@ -255,6 +256,48 @@ export default function HomePage() {
       setActiveSlide((index) => (index + 1) % heroSlides.length);
     }, 4200);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let commandBuffer = "";
+    let timeoutId = 0;
+
+    const handleSecretCode = (event) => {
+      const target = event.target;
+      const tagName = target?.tagName?.toLowerCase?.() || "";
+      const isEditable =
+        tagName === "input" ||
+        tagName === "textarea" ||
+        target?.isContentEditable;
+
+      if (
+        isEditable ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.key.length !== 1
+      ) {
+        return;
+      }
+
+      commandBuffer = `${commandBuffer}${event.key.toLowerCase()}`.slice(-6);
+
+      if (commandBuffer === "wemove") {
+        setIsSecretModeActive(true);
+        commandBuffer = "";
+        window.clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => {
+          setIsSecretModeActive(false);
+        }, 2400);
+      }
+    };
+
+    window.addEventListener("keydown", handleSecretCode);
+
+    return () => {
+      window.removeEventListener("keydown", handleSecretCode);
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   // 필터 옵션 로드
@@ -677,7 +720,14 @@ export default function HomePage() {
     >
       <section className={styles.dashboardHeroRow}>
         <div className={styles.dashboardHeroCard}>
-          <div className={styles.heroCarousel} aria-hidden="true">
+          <div
+            className={
+              isSecretModeActive
+                ? `${styles.heroCarousel} ${styles.heroCarouselSecret}`
+                : styles.heroCarousel
+            }
+            aria-hidden="true"
+          >
             {heroSlides.map((slide, index) => (
               <img
                 key={slide.title}
@@ -695,8 +745,16 @@ export default function HomePage() {
           <div className={styles.dashboardHeroContent}>
             <div>
               <span className={styles.heroKicker}>LOCAL FITNESS COMMUNITY</span>
+              {isSecretModeActive ? (
+                <span className={styles.heroSecretBadge}>WEMOVE MODE ON</span>
+              ) : null}
               <h1>{currentHero.title}</h1>
               <p>{currentHero.description}</p>
+              {isSecretModeActive ? (
+                <p className={styles.heroSecretMessage}>
+                  지금부터 동네 운동 레이더를 더 밝게 켭니다.
+                </p>
+              ) : null}
             </div>
 
             <div className={styles.dashboardHeroFilters}>

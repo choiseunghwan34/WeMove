@@ -7,6 +7,7 @@ import {
 } from "../api/authApi";
 import bg1 from "../assets/image/bg1.jpg";
 import bg2 from "../assets/image/bg2.jpg";
+import AuthCursorGlow from "../components/AuthCursorGlow";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { buildWsUrl } from "../config/env";
 import {
@@ -269,6 +270,7 @@ export default function FindAccountPage() {
         <div className={`${styles.ambientOrb} ${styles.orb2}`} />
         <div className={`${styles.ambientOrb} ${styles.orb3}`} />
       </div>
+      <AuthCursorGlow styles={styles} />
 
       <div className={styles.layout}>
         <section className={styles.copy}>

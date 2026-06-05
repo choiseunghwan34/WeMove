@@ -6,6 +6,7 @@ import { updateMySports } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
 import AppModal from "../components/AppModal";
+import AuthCursorGlow from "../components/AuthCursorGlow";
 import RegionPickerModal from "../components/RegionPickerModal";
 import WeMoveLogo from "../components/WeMoveLogo";
 import { buildWsUrl } from "../config/env";
@@ -668,6 +669,7 @@ export default function SignupPage() {
         <div className={`${styles.ambientOrb} ${styles.orb2}`} />
         <div className={`${styles.ambientOrb} ${styles.orb3}`} />
       </div>
+      <AuthCursorGlow styles={styles} />
 
       <div className={`${styles.layout} ${styles.signupLayout}`}>
         <section className={styles.copy}>

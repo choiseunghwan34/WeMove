@@ -14,6 +14,22 @@
   composes: ambientEffects from "./LoginPage.module.css";
 }
 
+.cursorGlowLayer {
+  composes: cursorGlowLayer from "./LoginPage.module.css";
+}
+
+.cursorAura {
+  composes: cursorAura from "./LoginPage.module.css";
+}
+
+.cursorHalo {
+  composes: cursorHalo from "./LoginPage.module.css";
+}
+
+.cursorCore {
+  composes: cursorCore from "./LoginPage.module.css";
+}
+
 .ambientOrb {
   composes: ambientOrb from "./LoginPage.module.css";
 }
