@@ -846,12 +846,21 @@ export default function MeetingListPage() {
                       />
                       {meeting.placeName}
                     </span>
-                    <span>
+                    <span className={styles.participantMetaRow}>
                       <UiIcon
                         name="user"
                         className={styles.dashboardMetaIcon}
                       />
                       {meeting.approvedCount || 1}/{meeting.maxMembers}명
+                      <div className={styles.progressBarBg}>
+                        <div 
+                          className={styles.progressBarFill} 
+                          style={{ width: `${Math.min(100, Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100))}%` }} 
+                        />
+                      </div>
+                      <strong className={styles.progressPercentText}>
+                        {Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100)}%
+                      </strong>
                     </span>
                   </div>
 

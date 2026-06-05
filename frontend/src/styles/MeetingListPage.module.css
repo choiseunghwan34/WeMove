@@ -896,4 +896,119 @@
   box-shadow: none !important;
 }
 
+/* --- 썸네일 이미지 가로형 비율 & 높이 동기화 (데스크탑 전용) --- */
+@media (min-width: 768px) {
+  .listCardBody {
+    display: flex !important;
+    align-items: stretch !important; /* 이미지 높이가 우측 텍스트 내용의 총 높이에 꽉 차게 동기화 */
+    gap: 20px !important; /* 넉넉한 간격을 통해 겹침 방지 (약간 줄임) */
+  }
+
+  .listCardImage {
+    flex: 0 0 clamp(160px, 35%, 260px) !important; /* 카드 너비에 맞춰 유연하게 폭 조절 (최소 160px ~ 최대 260px) */
+    width: clamp(160px, 35%, 260px) !important;
+    height: auto !important; 
+    min-height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 16px !important;
+  }
+
+  .listCardContent {
+    flex: 1 1 0% !important; /* 우측 텍스트 영역이 남은 공간을 정확하게 계산하여 차지함 (겹침의 근본적 원인 차단) */
+    min-width: 0 !important; /* 텍스트가 넘칠 때 이미지를 침범하지 않고 정상적으로 줄바꿈 되도록 강제 */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+}
+
+/* --- 모임 제목 텍스트 크기 대폭 확대 --- */
+.listCardContent h3 {
+  font-size: 1.8rem !important; /* 기존보다 훨씬 크고 시원하게 글씨 크기 증대 */
+  font-weight: 900 !important; /* 강력한 두께로 시선 집중 */
+  margin: 6px 0 !important; /* 상하 여백을 살짝 주어 답답함 해소 */
+  line-height: 1.3 !important; /* 텍스트가 두 줄이 될 경우를 대비한 깔끔한 줄간격 */
+  letter-spacing: -0.02em !important; /* 큰 글씨에 어울리도록 자간 살짝 축소 */
+  overflow: hidden !important; /* 1줄 초과 방지 */
+  white-space: nowrap !important; /* 자동 줄바꿈 방지 */
+  text-overflow: ellipsis !important; /* 넘치면 말줄임표(...) 표시 */
+}
+
+/* --- 모임 부제목(내용) 텍스트 크기 및 스타일 조정 --- */
+.listCardContent p {
+  font-size: 1.05rem !important; /* 기존보다 살짝 더 키워서 가독성 확보 */
+  color: #4b5563 !important; /* 제목을 방해하지 않는 세련된 진회색 톤 */
+  margin-bottom: 8px !important; /* 아래 메타 정보들과의 적절한 간격 */
+  line-height: 1.5 !important; /* 읽기 편안한 줄간격 */
+  overflow: hidden !important; /* 1줄 초과 방지 */
+  white-space: nowrap !important; /* 자동 줄바꿈 방지 */
+  text-overflow: ellipsis !important; /* 넘치면 말줄임표(...) 표시 */
+}
+
+/* --- 메타 정보 (지역, 장소, 인원) 아이콘 및 텍스트 튜닝 --- */
+.listMeta {
+  gap: 12px !important; /* 항목 간의 간격을 살짝 더 띄워서 답답하지 않게 조절 */
+  margin-top: auto !important; /* 메타 정보가 카드 하단부로 예쁘게 밀착되도록 설정 */
+}
+
+.listMeta span {
+  font-size: 0.92rem !important; /* 크기 유지 */
+  font-weight: 500 !important; /* 부제목과 어울리도록 너무 튀지 않는 세련된 기본 두께로 하향 */
+  color: #374151 !important; 
+  display: flex !important;
+  align-items: center !important;
+  gap: 1px !important; /* 아이콘과 글자 사이의 간격을 거의 붙을 정도로 대폭 축소 */
+}
+
+/* --- 인원수 우측 배치 및 진행률 막대바 스타일 --- */
+.listMeta {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important; /* 화면이 좁을 때 아이템들이 넘치지 않고 자연스럽게 줄바꿈 되도록 허용 */
+}
+
+.participantMetaRow {
+  margin-left: auto !important; /* 플렉스 박스의 특성을 이용해 항상 오른쪽 끝으로 밀어내기 */
+  gap: 3px !important; /* 인원수 관련 아이템들(아이콘, 글자, 막대, 퍼센트) 사이의 간격을 대폭 좁힘 */
+}
+
+/* 모바일 좁은 화면 대응: 줄바꿈 되었을 때 오른쪽 끝이 아니라 왼쪽으로 다시 붙어서 정렬되도록 처리 */
+@media (max-width: 640px) {
+  .participantMetaRow {
+    margin-left: 0 !important;
+    margin-top: 4px !important;
+    flex-basis: 100% !important; /* 앞의 주소 텍스트 길이와 무관하게 무조건 다음 줄로 넘어가도록 강제 */
+  }
+}
+
+.progressBarBg {
+  width: 50px !important;
+  height: 6px !important;
+  background-color: #e2e8f0 !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  margin-left: 6px !important; /* 텍스트와 막대 사이 여백 */
+}
+
+.progressBarFill {
+  height: 100% !important;
+  background-color: #22c55e !important; /* 예시 이미지와 동일한 산뜻한 초록색 */
+  border-radius: 999px !important;
+}
+
+.progressPercentText {
+  color: #16a34a !important; /* 텍스트는 얇은 막대보다 조금 더 진한 초록색으로 가독성 확보 */
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  width: 38px !important; /* 1자리수부터 3자리수(100%)까지 어떤 숫자가 와도 폭이 변하지 않도록 엄격한 고정폭 지정 */
+  text-align: right !important;
+}
+
+.dashboardMetaIcon {
+  width: 17px !important; /* 아이콘 크기도 글씨 크기에 비례하여 살짝 확대 */
+  height: 17px !important;
+  margin-right: 3px !important; /* 사용자가 요청한 마진 3px 강제 적용 */
+  color: #4b5563 !important; /* 아이콘 색상 역시 한 톤 더 진하게 변경 */
+}
+
 
