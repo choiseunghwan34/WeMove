@@ -6,8 +6,7 @@ import {
   publishNotification,
 } from "../utils/notificationEvents";
 import { getAccessToken } from "../utils/authTokenStore";
-
-const SOCKET_URL = "ws://localhost:8456/ws/notifications";
+import { buildWsUrl } from "../config/env";
 
 export default function NotificationSocket() {
   const { isAuthenticated, accessToken } = useAuth();
@@ -22,9 +21,7 @@ export default function NotificationSocket() {
       return undefined;
     }
 
-    const socket = new WebSocket(
-      `${SOCKET_URL}?token=${encodeURIComponent(token)}`,
-    );
+    const socket = new WebSocket(buildWsUrl("/notifications", { token }));
 
     socket.onmessage = (event) => {
       try {

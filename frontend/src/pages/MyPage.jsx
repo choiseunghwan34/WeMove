@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import RegionPickerModal from "../components/RegionPickerModal";
+import { buildWsUrl } from "../config/env";
 import { sendEmailVerification } from "../api/authApi";
 import {
   checkMyEmail,
@@ -159,7 +160,7 @@ export default function MyPage() {
     let socket;
 
     try {
-      socket = new WebSocket("ws://localhost:8456/ws/email-verifications");
+      socket = new WebSocket(buildWsUrl("/email-verifications"));
 
       socket.onmessage = (event) => {
         try {

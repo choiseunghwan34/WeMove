@@ -10,6 +10,7 @@ import {
   getDirectChatRooms,
 } from "../api/chatApi";
 import defaultUserImage from "../assets/image/Default-user.png";
+import { buildWsUrl } from "../config/env";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import UserProfileDetailModal from "./UserProfileDetailModal";
@@ -616,9 +617,7 @@ export default function GlobalMeetingChat() {
       }
 
       const socket = new WebSocket(
-        `ws://localhost:8456/ws/meeting-chat?meetingId=${encodeURIComponent(
-          meetingId,
-        )}&token=${encodeURIComponent(token)}`,
+        buildWsUrl("/meeting-chat", { meetingId, token }),
       );
 
       socket.onmessage = (event) => {
@@ -700,9 +699,7 @@ export default function GlobalMeetingChat() {
         return;
       }
       const socket = new WebSocket(
-        `ws://localhost:8456/ws/direct-chat?roomId=${encodeURIComponent(
-          roomId,
-        )}&token=${encodeURIComponent(token)}`,
+        buildWsUrl("/direct-chat", { roomId, token }),
       );
 
       socket.onmessage = (event) => {

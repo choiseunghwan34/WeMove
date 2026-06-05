@@ -8,6 +8,7 @@ import { getSports } from "../api/sportApi";
 import AppModal from "../components/AppModal";
 import RegionPickerModal from "../components/RegionPickerModal";
 import WeMoveLogo from "../components/WeMoveLogo";
+import { buildWsUrl } from "../config/env";
 import { useAuth } from "../contexts/AuthContext";
 import {
   EMAIL_PATTERN,
@@ -208,7 +209,7 @@ export default function SignupPage() {
     let socket;
 
     try {
-      socket = new WebSocket("ws://localhost:8456/ws/email-verifications");
+      socket = new WebSocket(buildWsUrl("/email-verifications"));
 
       socket.onmessage = (event) => {
         try {

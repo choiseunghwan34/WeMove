@@ -8,6 +8,7 @@ import {
 import bg1 from "../assets/image/bg1.jpg";
 import bg2 from "../assets/image/bg2.jpg";
 import WeMoveLogo from "../components/WeMoveLogo";
+import { buildWsUrl } from "../config/env";
 import {
   EMAIL_PATTERN,
   normalizeEmail,
@@ -53,7 +54,7 @@ export default function FindAccountPage() {
     let socket;
 
     try {
-      socket = new WebSocket("ws://localhost:8456/ws/email-verifications");
+      socket = new WebSocket(buildWsUrl("/email-verifications"));
 
       socket.onmessage = (event) => {
         try {
