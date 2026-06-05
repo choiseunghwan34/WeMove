@@ -957,7 +957,7 @@
   color: #374151 !important; 
   display: flex !important;
   align-items: center !important;
-  gap: 3px !important; /* 아이콘과 글자 사이의 간격을 확 좁혀서 단단하게 결합된 느낌 부여 */
+  gap: 1px !important; /* 아이콘과 글자 사이의 간격을 거의 붙을 정도로 대폭 축소 */
 }
 
 /* --- 인원수 우측 배치 및 진행률 막대바 스타일 --- */
@@ -969,7 +969,7 @@
 
 .participantMetaRow {
   margin-left: auto !important; /* 플렉스 박스의 특성을 이용해 항상 오른쪽 끝으로 밀어내기 */
-  gap: 6px !important; /* 인원수 관련 아이템들(글자, 막대, 퍼센트) 사이의 간격 */
+  gap: 3px !important; /* 인원수 관련 아이템들(아이콘, 글자, 막대, 퍼센트) 사이의 간격을 대폭 좁힘 */
 }
 
 /* 모바일 좁은 화면 대응: 줄바꿈 되었을 때 오른쪽 끝이 아니라 왼쪽으로 다시 붙어서 정렬되도록 처리 */
@@ -1007,6 +1007,7 @@
 .dashboardMetaIcon {
   width: 17px !important; /* 아이콘 크기도 글씨 크기에 비례하여 살짝 확대 */
   height: 17px !important;
+  margin-right: 3px !important; /* 사용자가 요청한 마진 3px 강제 적용 */
   color: #4b5563 !important; /* 아이콘 색상 역시 한 톤 더 진하게 변경 */
 }
 
