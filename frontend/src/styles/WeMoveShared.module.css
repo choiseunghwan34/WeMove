@@ -6976,11 +6976,38 @@
   }
 }
 /*대댓글 추가영역*/
-/* 부모 댓글 + 폼 + 대댓글을 하나로 묶는 큰 덩어리 */
+
+/* 부모 댓글 + 대댓글 전체를 묶는 컨테이너 */
 .commentGroup {
   margin-bottom: 20px;
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
+}
+
+/* 하단 버튼들(답글달기, 삭제 등) 가로 정렬 영역 */
+.actionWrap {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  align-items: center;
+  flex-direction: row;
+}
+.replyContentWrap{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.replyCommentWrap{
+  display: flex;
+  justify-content: space-between;
+}
+/* '답글 N개' 강조 버튼 */
+.replyCountBtn {
+  font-weight: bold;
+  color: #3b82f6;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 /* 대댓글 폼과 대댓글 목록의 들여쓰기 (종속성 표현) */
@@ -6995,6 +7022,46 @@
   background-color: #f9fafb;
   padding: 10px;
   border-radius: 8px;
+}
+/* =========================================
+   아이콘 액션 버튼 관련 신규 CSS
+   ========================================= */
+
+/* 아이콘 버튼 공통 스타일 */
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+/* 휴지통 아이콘 호버 시 빨간색 효과 */
+.iconBtnTrash:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+/* 아이콘 크기 고정 */
+.actionIcon {
+  width: 18px;
+  height: 18px;
+}
+.largeIcon {
+  width: 22px;
+  height: 22px;
 }
 
 
