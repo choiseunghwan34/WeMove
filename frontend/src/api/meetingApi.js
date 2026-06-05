@@ -2,7 +2,8 @@ import api from "./axiosInstance";
 
 export const getMeetings = (params) => api.get("/meetings", { params });
 export const getMeeting = (id) => api.get("/meetings/" + id);
-export const getPopularMeetings = () => api.get("/meetings/popular");
+export const getPopularMeetings = (period = "7d") =>
+  api.get("/meetings/popular", { params: { period } });
 
 export const getMainMeetings = (params = {}) => {
   return api.get("/meetings/main", {

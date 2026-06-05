@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 import kr.co.iei.common.service.CloudinaryImageService;
 import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.meeting.model.vo.Meeting;
@@ -39,6 +40,8 @@ public class MeetingServiceImpl implements MeetingService {
   private static final int MAIN_LIMIT = 5;
   private static final int POPULAR_RANKING_LIMIT = 100;
   private static final int POPULAR_RESULT_LIMIT = 5;
+  private static final int POPULAR_PERIOD_TODAY_DAYS = 1;
+  private static final int POPULAR_PERIOD_7D_DAYS = 7;
 
   private final MeetingDao meetingDao;
   private final ParticipantDao participantDao;
@@ -192,9 +195,12 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   @Override
-  public List<MeetingListResponse> getPopularMeetingList() {
+  public List<MeetingListResponse> getPopularMeetingList(String period) {
     try {
-      return getRankedRecruitingMeetings(POPULAR_RANKING_LIMIT, POPULAR_RESULT_LIMIT);
+      return getRankedRecruitingMeetings(
+          parsePopularPeriodDays(period),
+          POPULAR_RANKING_LIMIT,
+          POPULAR_RESULT_LIMIT);
     } catch (Exception e) {
       System.err.println("[meeting] popular meeting load failed: " + e.getMessage());
       return List.of();
@@ -224,8 +230,11 @@ public class MeetingServiceImpl implements MeetingService {
     }
   }
 
-  private List<MeetingListResponse> getRankedRecruitingMeetings(int rankingLimit, int resultLimit) {
-    Map<Long, Integer> rankedMeetingViews = getTodayRankedMeetingViews(rankingLimit);
+  private List<MeetingListResponse> getRankedRecruitingMeetings(
+      int periodDays,
+      int rankingLimit,
+      int resultLimit) {
+    Map<Long, Integer> rankedMeetingViews = getRankedMeetingViews(periodDays, rankingLimit);
     List<Long> rankedMeetingIds = new ArrayList<>(rankedMeetingViews.keySet());
     if (rankedMeetingIds.isEmpty()) {
       return List.of();
@@ -246,34 +255,58 @@ public class MeetingServiceImpl implements MeetingService {
       }
     }
 
+    result.sort(
+        Comparator.comparing(
+                (MeetingListResponse meeting) -> meeting.getViewCount() == null ? 0 : meeting.getViewCount())
+            .reversed()
+            .thenComparing(MeetingListResponse::getMeetingDate, Comparator.nullsLast(Comparator.reverseOrder()))
+            .thenComparing(MeetingListResponse::getStartTime, Comparator.nullsLast(Comparator.reverseOrder()))
+            .thenComparing(MeetingListResponse::getMeetingId, Comparator.nullsLast(Comparator.reverseOrder())));
+
     return result.size() > resultLimit ? result.subList(0, resultLimit) : result;
   }
 
-  private Map<Long, Integer> getTodayRankedMeetingViews(int limit) {
-    Set<TypedTuple<String>> rankedEntries = stringRedisTemplate.opsForZSet().reverseRangeWithScores(todayPopularKey(), 0, limit - 1);
+  private Map<Long, Integer> getRankedMeetingViews(int periodDays, int limit) {
+    Map<Long, Integer> aggregatedViews = new HashMap<>();
+    LocalDate today = LocalDate.now(KOREA_ZONE_ID);
 
-    if (rankedEntries == null || rankedEntries.isEmpty()) {
+    for (int i = 0; i < periodDays; i++) {
+      String popularKey = popularKey(today.minusDays(i));
+      Set<TypedTuple<String>> rankedEntries =
+          stringRedisTemplate.opsForZSet().reverseRangeWithScores(popularKey, 0, limit - 1);
+
+      if (rankedEntries == null || rankedEntries.isEmpty()) {
+        continue;
+      }
+
+      for (TypedTuple<String> rankedEntry : rankedEntries) {
+        if (rankedEntry == null || rankedEntry.getValue() == null || rankedEntry.getScore() == null) {
+          continue;
+        }
+
+        if (rankedEntry.getScore() <= 0D) {
+          continue;
+        }
+
+        try {
+          Long meetingId = Long.valueOf(rankedEntry.getValue());
+          aggregatedViews.merge(meetingId, rankedEntry.getScore().intValue(), Integer::sum);
+        } catch (NumberFormatException ignored) {}
+      }
+    }
+
+    if (aggregatedViews.isEmpty()) {
       return Map.of();
     }
 
-    Map<Long, Integer> meetingViews = new LinkedHashMap<>();
-    for (TypedTuple<String> rankedEntry : rankedEntries) {
-      if (rankedEntry == null || rankedEntry.getValue() == null || rankedEntry.getScore() == null) {
-        continue;
-      }
-
-      if (rankedEntry.getScore() <= 0D) {
-        continue;
-      }
-
-
-      try {
-        Long meetingId = Long.valueOf(rankedEntry.getValue());
-        meetingViews.put(meetingId, rankedEntry.getScore().intValue());
-      } catch (NumberFormatException ignored) {}
-    }
-
-    return meetingViews;
+    return aggregatedViews.entrySet().stream()
+        .sorted((left, right) -> Integer.compare(right.getValue(), left.getValue()))
+        .limit(limit)
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (left, right) -> left,
+            LinkedHashMap::new));
   }
 
   private String normalizeActorKey(String actorKey) {
@@ -289,7 +322,24 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   private String todayPopularKey() {
-    return POPULAR_KEY_PREFIX + LocalDate.now(KOREA_ZONE_ID);
+    return popularKey(LocalDate.now(KOREA_ZONE_ID));
+  }
+
+  private String popularKey(LocalDate date) {
+    return POPULAR_KEY_PREFIX + date;
+  }
+
+  private int parsePopularPeriodDays(String period) {
+    if (period == null) {
+      return POPULAR_PERIOD_7D_DAYS;
+    }
+
+    String normalized = period.trim().toLowerCase();
+    if ("today".equals(normalized) || "1d".equals(normalized)) {
+      return POPULAR_PERIOD_TODAY_DAYS;
+    }
+
+    return POPULAR_PERIOD_7D_DAYS;
   }
 
   private Duration durationUntilTomorrow() {

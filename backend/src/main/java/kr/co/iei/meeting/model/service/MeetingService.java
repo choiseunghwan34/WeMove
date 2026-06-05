@@ -23,7 +23,7 @@ public interface MeetingService {
 
 
 
-  List<MeetingListResponse> getPopularMeetingList();
+  List<MeetingListResponse> getPopularMeetingList(String period);
 
   List<MeetingListResponse> getMainMeetingList();
 

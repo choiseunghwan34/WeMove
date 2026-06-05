@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import AppModal from "../components/AppModal";
 import {useAuth} from "../contexts/AuthContext";
@@ -62,6 +62,7 @@ export default function MeetingDetailPage() {
     const {meetingId} = useParams();
     const navigate = useNavigate();
     const {user, isAuthenticated} = useAuth();
+    const recordedViewKeysRef = useRef(new Set());
 
     const [meeting, setMeeting] = useState(null);
     const [participants, setParticipants] = useState([]);
@@ -158,15 +159,25 @@ export default function MeetingDetailPage() {
         }
 
         const storageKey = buildViewStorageKey(meetingId);
-        if (window.sessionStorage.getItem(storageKey)) {
+        if (
+            recordedViewKeysRef.current.has(storageKey) ||
+            window.sessionStorage.getItem(storageKey)
+        ) {
             return;
         }
 
-        recordMeetingView(meetingId).then(() => {
-            window.sessionStorage.setItem(storageKey, "1");
-        }).catch((error) => {
-            console.error("Failed to record meeting view:", error);
-        });
+        recordedViewKeysRef.current.add(storageKey);
+        window.sessionStorage.setItem(storageKey, "pending");
+
+        recordMeetingView(meetingId)
+            .then(() => {
+                window.sessionStorage.setItem(storageKey, "1");
+            })
+            .catch((error) => {
+                recordedViewKeysRef.current.delete(storageKey);
+                window.sessionStorage.removeItem(storageKey);
+                console.error("Failed to record meeting view:", error);
+            });
     }, [meetingId]);
 
     const handleApplyConfirm = async () => {

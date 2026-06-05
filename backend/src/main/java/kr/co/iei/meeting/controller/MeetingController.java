@@ -34,8 +34,9 @@ public class MeetingController {
   }
 
   @GetMapping("/popular")
-  public ResponseEntity<List<MeetingListResponse>> getPopularList() {
-    return ResponseEntity.ok(meetingService.getPopularMeetingList());
+  public ResponseEntity<List<MeetingListResponse>> getPopularList(
+      @RequestParam(name = "period", defaultValue = "7d") String period) {
+    return ResponseEntity.ok(meetingService.getPopularMeetingList(period));
   }
 
   @GetMapping

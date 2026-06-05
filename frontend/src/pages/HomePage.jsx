@@ -24,6 +24,8 @@ import styles from "../styles/HomePage.module.css";
 // 기본 썸네일 이미지 import
 import defaultThumbnail from "../assets/image/bg1.jpg";
 
+const POPULAR_PERIOD_STORAGE_KEY = "wemove:home:popular-period";
+
 const heroSlides = [
   {
     title: "가볍게 시작하는 5km 러닝",
@@ -143,6 +145,14 @@ export default function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [meetings, setMeetings] = useState([]);
   const [popularMeetings, setPopularMeetings] = useState([]);
+  const [popularPeriod, setPopularPeriod] = useState(() => {
+    if (typeof window === "undefined") {
+      return "today";
+    }
+
+    const savedPeriod = window.localStorage.getItem(POPULAR_PERIOD_STORAGE_KEY);
+    return savedPeriod === "7d" ? "7d" : "today";
+  });
   const [activeCategory, setActiveCategory] = useState("전체");
   const [activityData, setActivityData] = useState({
     hostedMeetings: [],
@@ -305,7 +315,7 @@ export default function HomePage() {
 
     const fetchPopularMeetings = async () => {
       try {
-        const response = await getPopularMeetings();
+        const response = await getPopularMeetings(popularPeriod);
         if (!active) return;
 
         const popularList = Array.isArray(response.data)
@@ -350,7 +360,15 @@ export default function HomePage() {
       if (intervalId) window.clearInterval(intervalId);
       if (midnightTimeoutId) window.clearTimeout(midnightTimeoutId);
     };
-  }, []);
+  }, [popularPeriod]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(POPULAR_PERIOD_STORAGE_KEY, popularPeriod);
+  }, [popularPeriod]);
 
   // 내 활동 데이터 로드
   useEffect(() => {
@@ -570,24 +588,62 @@ export default function HomePage() {
           <div>
             <h3>실시간 인기 모임</h3>
             <span className={styles.dashboardPanelHint}>
-              기준: 오늘 조회수 · 0시 자동 초기화
+              기준: {popularPeriod === "today" ? "오늘" : "최근 7일"} 조회수 · 모집중 모임만 표시
             </span>
+          </div>
+          <div className={styles.dashboardPeriodToggle}>
+            <button
+              type="button"
+              className={
+                popularPeriod === "today"
+                  ? styles.dashboardPeriodToggleActive
+                  : styles.dashboardPeriodToggleButton
+              }
+              onClick={() => setPopularPeriod("today")}
+            >
+              오늘
+            </button>
+            <button
+              type="button"
+              className={
+                popularPeriod === "7d"
+                  ? styles.dashboardPeriodToggleActive
+                  : styles.dashboardPeriodToggleButton
+              }
+              onClick={() => setPopularPeriod("7d")}
+            >
+              최근 7일
+            </button>
           </div>
         </div>
         <div className={styles.dashboardRankList}>
-          {popularMeetings.slice(0, 5).map((meeting, index) => (
-            <Link
-              key={meeting.meetingId}
-              to={`/meetings/${meeting.meetingId}`}
-              className={styles.dashboardRankItem}
-            >
-              <b>{index + 1}</b>
-              <div>
-                <strong>{meeting.title}</strong>
-                <span>{meeting.viewCount ?? meeting.views ?? 0}회 조회</span>
-              </div>
-            </Link>
-          ))}
+          {popularMeetings.length ? (
+            popularMeetings.slice(0, 5).map((meeting, index) => (
+              <Link
+                key={meeting.meetingId}
+                to={`/meetings/${meeting.meetingId}`}
+                className={styles.dashboardRankItem}
+              >
+                <b>{index + 1}</b>
+                <div>
+                  <strong>{meeting.title}</strong>
+                  <span>{meeting.viewCount ?? meeting.views ?? 0}회 조회</span>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className={styles.dashboardPopularEmpty}>
+              <strong>
+                {popularPeriod === "today"
+                  ? "오늘 아직 집계된 인기 모임이 없어요."
+                  : "최근 7일 기준 인기 모임이 아직 없어요."}
+              </strong>
+              <p>모집중인 모임이 조회되면 여기에 순위가 표시됩니다.</p>
+              <Link to="/meetings" className={styles.dashboardPopularEmptyLink}>
+                모임 보러 가기
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
