@@ -7,6 +7,12 @@ export const NOTIFICATION_TYPES = {
   MEETING_REQUEST: "meetingRequest",
   MEETING_APPROVED: "meetingApproved",
   MEETING_REJECTED: "meetingRejected",
+  MEETING_APPROVAL_CANCELLED: "meetingApprovalCancelled",
+  MEETING_CANCELLED: "meetingCancelled",
+  MEETING_UPDATED: "meetingUpdated",
+  MEETING_REMINDER: "meetingReminder",
+  COMMENT: "comment",
+  REPORT_RESULT: "reportResult",
   NOTICE: "notice",
   INFO: "info",
   ACCOUNT_WARNING: "accountWarning",
@@ -15,6 +21,15 @@ export const NOTIFICATION_TYPES = {
 
 export const openNotificationTarget = (notification) => {
   if (typeof window === "undefined" || !notification) {
+    return;
+  }
+
+  if (
+    notification.targetType === "meeting" &&
+    notification.targetId !== undefined &&
+    notification.targetId !== null
+  ) {
+    window.location.assign(`/meetings/${notification.targetId}`);
     return;
   }
 
@@ -43,11 +58,16 @@ export const publishAccountSuspend = ({
 };
 
 export const publishNotification = ({
+  id,
+  notificationId,
   type = NOTIFICATION_TYPES.INFO,
   chatKind,
   title,
   message = "",
+  targetType,
+  targetId,
   sourceId,
+  isRead,
   createdAt = new Date().toISOString(),
   forceLogout,
   suspendedUntil,
@@ -60,12 +80,16 @@ export const publishNotification = ({
   window.dispatchEvent(
     new CustomEvent(WEMOVE_NOTIFICATION_EVENT, {
       detail: {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        id: id || notificationId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        notificationId,
         type,
         chatKind,
         title,
         message,
+        targetType,
+        targetId,
         sourceId,
+        isRead,
         createdAt,
         forceLogout,
         suspendedUntil,

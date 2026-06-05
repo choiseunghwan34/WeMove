@@ -80,6 +80,12 @@
         WHERE reportId = #{reportId}
     </select>
 
+    <select id="selectReportReporterId" resultType="java.lang.Integer">
+        SELECT reporterId
+        FROM reports
+        WHERE reportId = #{reportId}
+    </select>
+
     <select id="selectReports" resultType="kr.co.iei.admin.model.vo.AdminReportResponse">
         SELECT
             r.reportId,

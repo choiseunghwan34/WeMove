@@ -121,4 +121,15 @@
         WHERE participantId=#{participantId}
     </select>
 
+    <select id="selectApprovedUserIds" resultType="long">
+        SELECT mp.userId
+        FROM meetingParticipants mp
+        WHERE mp.meetingId=#{meetingId}
+          AND mp.status='APPROVED'
+          AND (
+              #{excludedUserId} IS NULL
+              OR mp.userId != #{excludedUserId}
+          )
+    </select>
+
 </mapper>

@@ -11,6 +11,7 @@ import kr.co.iei.common.service.CloudinaryImageService;
 import kr.co.iei.common.util.PasswordUtil;
 
 import kr.co.iei.member.model.dao.MemberDao;
+import kr.co.iei.member.model.exception.MemberWithdrawBlockedException;
 import kr.co.iei.member.model.vo.*;
 import kr.co.iei.sport.model.vo.Sport;
 import lombok.RequiredArgsConstructor;
@@ -118,18 +119,23 @@ public class MemberServiceImpl implements MemberService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
     }
 
-    if (memberDao.countActiveHostedMeetingsWithOtherParticipants(memberId) > 0) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "모임장인 모임에 다른 참가자가 있어 회원탈퇴를 할 수 없습니다. 모임을 완료하거나 취소한 뒤 다시 시도해주세요.");
+    List<MemberActivityMeetingResponse> hostedBlockingMeetings =
+        memberDao.selectActiveHostedMeetingsWithOtherParticipants(memberId);
+    if (!hostedBlockingMeetings.isEmpty()) {
+      throw new MemberWithdrawBlockedException(
+          "HOSTED_MEETINGS_EXIST",
+          "모임장인 모임에 다른 참가자가 있어 회원탈퇴를 할 수 없습니다. 모임을 완료하거나 취소한 뒤 다시 시도해주세요.",
+          hostedBlockingMeetings);
     }
 
-    boolean hasParticipatingMeetings = memberDao.countActiveParticipatingMeetings(memberId) > 0;
-    if (hasParticipatingMeetings
+    List<MemberActivityMeetingResponse> participatingMeetings =
+        memberDao.selectActiveParticipatingMeetings(memberId);
+    if (!participatingMeetings.isEmpty()
         && !Boolean.TRUE.equals(request.getConfirmParticipatingMeetings())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "가입한 모임이 있습니다. 그래도 탈퇴하시겠습니까?");
+      throw new MemberWithdrawBlockedException(
+          "PARTICIPATING_MEETINGS_EXIST",
+          "가입한 모임이 있습니다. 그래도 탈퇴하시겠습니까?",
+          participatingMeetings);
     }
 
     memberDao.cancelParticipatingMeetingsForWithdrawal(memberId);

@@ -63,6 +63,18 @@
           )
     </select>
 
+    <select id="isMeetingChatWritable" resultType="int">
+        SELECT COUNT(*)
+        FROM meetings
+        WHERE meetingId = #{meetingId}
+          AND deletedAt IS NULL
+          AND status != 'CANCELLED'
+          AND (
+              status != 'COMPLETED'
+              OR updatedAt &gt; DATE_SUB(NOW(), INTERVAL 7 DAY)
+          )
+    </select>
+
     <select id="selectMessages" resultType="kr.co.iei.chat.model.vo.ChatMessageResponse">
         SELECT
             recent.messageId,
@@ -125,6 +137,27 @@
         JOIN users u ON cm.userId = u.userId
         JOIN meetings m ON cm.meetingId = m.meetingId
         WHERE cm.messageId = #{messageId}
+    </select>
+
+    <select id="selectMeetingTitle" resultType="string">
+        SELECT title
+        FROM meetings
+        WHERE meetingId = #{meetingId}
+    </select>
+
+    <select id="selectNotificationTargetUserIds" resultType="long">
+        SELECT DISTINCT target.userId
+        FROM (
+            SELECT m.hostUserId AS userId
+            FROM meetings m
+            WHERE m.meetingId = #{meetingId}
+            UNION
+            SELECT mp.userId
+            FROM meetingParticipants mp
+            WHERE mp.meetingId = #{meetingId}
+              AND mp.status = 'APPROVED'
+        ) target
+        WHERE target.userId != #{senderUserId}
     </select>
 
 </mapper>

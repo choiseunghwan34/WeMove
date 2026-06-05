@@ -21,6 +21,11 @@ public class ChatDao {
     return count != null && count > 0;
   }
 
+  public boolean isMeetingChatWritable(Long meetingId) {
+    Integer count = sqlSession.selectOne("chat.isMeetingChatWritable", meetingId);
+    return count != null && count > 0;
+  }
+
   public List<ChatRoomResponse> selectChatRooms(Long userId) {
     return sqlSession.selectList("chat.selectChatRooms", userId);
   }
@@ -35,5 +40,15 @@ public class ChatDao {
 
   public ChatMessageResponse selectMessage(Long messageId) {
     return sqlSession.selectOne("chat.selectMessage", messageId);
+  }
+
+  public String selectMeetingTitle(Long meetingId) {
+    return sqlSession.selectOne("chat.selectMeetingTitle", meetingId);
+  }
+
+  public List<Long> selectNotificationTargetUserIds(Long meetingId, Long senderUserId) {
+    return sqlSession.selectList(
+        "chat.selectNotificationTargetUserIds",
+        Map.of("meetingId", meetingId, "senderUserId", senderUserId));
   }
 }

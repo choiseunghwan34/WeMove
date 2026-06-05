@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import RegionPickerModal from "../components/RegionPickerModal";
@@ -34,6 +34,7 @@ const ALL_SIGUNGU = "전체 시군구";
 const ALL_DONG = "전체 읍면동";
 
 export default function MyPage() {
+  const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated, updateUserProfile, logout } =
     useAuth();
   const [member, setMember] = useState(null);
@@ -61,6 +62,9 @@ export default function MyPage() {
   const [withdrawPassword, setWithdrawPassword] = useState("");
   const [withdrawError, setWithdrawError] = useState("");
   const [withdrawRequiresConfirm, setWithdrawRequiresConfirm] = useState(false);
+  const [withdrawBlockCode, setWithdrawBlockCode] = useState("");
+  const [withdrawRelatedMeetings, setWithdrawRelatedMeetings] = useState([]);
+  const [withdrawNoticeChecked, setWithdrawNoticeChecked] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [draftRegionSelection, setDraftRegionSelection] = useState({
     sido: ALL_SIDO,
@@ -288,6 +292,16 @@ export default function MyPage() {
     () => sports.filter((sport) => selectedSportIds.includes(sport.sportId)),
     [selectedSportIds, sports],
   );
+
+  const formatMeetingSchedule = (meeting) => {
+    const date = meeting?.meetingDate ? String(meeting.meetingDate) : "";
+    const time = meeting?.startTime ? String(meeting.startTime).slice(0, 5) : "";
+    return [date, time].filter(Boolean).join(" ");
+  };
+
+  const withdrawIsHostedBlocked = withdrawBlockCode === "HOSTED_MEETINGS_EXIST";
+  const withdrawCanSubmit =
+    withdrawNoticeChecked && !withdrawIsHostedBlocked && !withdrawing;
   const profileImage =
     imagePreview ||
     (typeof member?.profileImage === "string" && member.profileImage.trim()
@@ -352,6 +366,9 @@ export default function MyPage() {
     setWithdrawPassword("");
     setWithdrawError("");
     setWithdrawRequiresConfirm(false);
+    setWithdrawBlockCode("");
+    setWithdrawRelatedMeetings([]);
+    setWithdrawNoticeChecked(false);
     setIsWithdrawOpen(true);
   };
 
@@ -364,6 +381,9 @@ export default function MyPage() {
     setWithdrawPassword("");
     setWithdrawError("");
     setWithdrawRequiresConfirm(false);
+    setWithdrawBlockCode("");
+    setWithdrawRelatedMeetings([]);
+    setWithdrawNoticeChecked(false);
   };
 
   const handleWithdraw = async () => {
@@ -374,19 +394,35 @@ export default function MyPage() {
       return;
     }
 
+    if (!withdrawNoticeChecked) {
+      setWithdrawError("회원탈퇴 유의사항을 확인해주세요.");
+      return;
+    }
+
     setWithdrawing(true);
     setWithdrawError("");
 
     try {
       await withdrawMe(password, withdrawRequiresConfirm);
       await logout();
+      navigate("/", { replace: true });
     } catch (error) {
       const status = error?.response?.status;
-      const message =
-        error?.response?.data?.message || "회원탈퇴 처리 중 오류가 발생했습니다.";
+      const data = error?.response?.data ?? {};
+      const message = data.message || "회원탈퇴 처리 중 오류가 발생했습니다.";
 
       if (status === 409 && message.includes("가입한 모임")) {
         setWithdrawRequiresConfirm(true);
+        setWithdrawBlockCode(data.code || "PARTICIPATING_MEETINGS_EXIST");
+        setWithdrawRelatedMeetings(Array.isArray(data.meetings) ? data.meetings : []);
+        setWithdrawError(message);
+        return;
+      }
+
+      if (status === 409 && data.code === "HOSTED_MEETINGS_EXIST") {
+        setWithdrawBlockCode(data.code);
+        setWithdrawRelatedMeetings(Array.isArray(data.meetings) ? data.meetings : []);
+        setWithdrawRequiresConfirm(false);
         setWithdrawError(message);
         return;
       }
@@ -1010,17 +1046,73 @@ export default function MyPage() {
         open={isWithdrawOpen}
         title="회원탈퇴"
         description={
-          withdrawRequiresConfirm
-            ? "가입한 모임이 있습니다. 그래도 탈퇴하시겠습니까?"
-            : "회원탈퇴를 진행하려면 비밀번호를 입력해주세요."
+          "회원탈퇴 전 아래 유의사항을 반드시 확인해 주세요."
         }
         confirmText={withdrawing ? "처리 중..." : "회원탈퇴"}
         cancelText="취소"
         tone="danger"
         onConfirm={handleWithdraw}
         onClose={closeWithdrawModal}
+        confirmDisabled={!withdrawCanSubmit}
       >
         <div className={styles.withdrawForm}>
+          <div className={styles.withdrawNoticeBox}>
+            <p>
+              회원탈퇴를 진행하시면 회원님의 개인정보 및 서비스 이용 기록은
+              관련 법령과 내부 보관 정책에 따라 처리되며, 탈퇴 완료 후에는
+              계정을 복구할 수 없습니다.
+            </p>
+            <ol>
+              <li>
+                <strong>개인정보 및 이용 기록 삭제</strong>
+                <span>
+                  계정 정보와 개인정보는 원칙적으로 즉시 파기되며, 법령상
+                  보관이 필요한 정보는 정해진 기간 후 파기됩니다.
+                </span>
+              </li>
+              <li>
+                <strong>게시글 및 댓글 유지</strong>
+                <span>
+                  작성한 게시글, 댓글, 리뷰 등은 자동 삭제되지 않고 작성자
+                  정보가 익명 처리되어 유지될 수 있습니다.
+                </span>
+              </li>
+              <li>
+                <strong>재가입 제한</strong>
+                <span>
+                  무분별한 탈퇴와 재가입 방지를 위해 탈퇴 후 일정 기간 동일한
+                  정보로 재가입이 제한될 수 있습니다.
+                </span>
+              </li>
+              <li>
+                <strong>법령에 따른 정보 보관</strong>
+                <span>
+                  결제, 거래, 분쟁 처리 기록 등 일부 정보는 법령상 의무 이행
+                  목적에 한해 일정 기간 보관될 수 있습니다.
+                </span>
+              </li>
+              <li>
+                <strong>탈퇴 후 서비스 이용 제한</strong>
+                <span>
+                  탈퇴 완료 후 기존 계정으로 로그인할 수 없으며 신청 내역,
+                  혜택 및 권한은 복구되지 않습니다.
+                </span>
+              </li>
+            </ol>
+          </div>
+
+          <label className={styles.withdrawCheck}>
+            <input
+              type="checkbox"
+              checked={withdrawNoticeChecked}
+              onChange={(event) => {
+                setWithdrawNoticeChecked(event.target.checked);
+                setWithdrawError("");
+              }}
+            />
+            <span>위 회원탈퇴 유의사항을 모두 확인했습니다.</span>
+          </label>
+
           <label className={styles.formField}>
             <span>비밀번호</span>
             <input
@@ -1034,6 +1126,44 @@ export default function MyPage() {
               autoComplete="current-password"
             />
           </label>
+
+          {withdrawRelatedMeetings.length ? (
+            <div className={styles.withdrawMeetingPanel}>
+              <strong>
+                {withdrawIsHostedBlocked
+                  ? "탈퇴 전 정리가 필요한 주최 모임"
+                  : "탈퇴 시 자동 탈퇴되는 참여 모임"}
+              </strong>
+              <div className={styles.withdrawMeetingList}>
+                {withdrawRelatedMeetings.map((meeting) => (
+                  <Link
+                    key={meeting.meetingId}
+                    to={`/meetings/${meeting.meetingId}`}
+                    className={styles.withdrawMeetingBox}
+                    onClick={closeWithdrawModal}
+                  >
+                    <span>{meeting.title || "모임 상세보기"}</span>
+                    <small>
+                      {[meeting.sportName, meeting.regionName, meeting.placeName]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </small>
+                    <time>{formatMeetingSchedule(meeting)}</time>
+                  </Link>
+                ))}
+              </div>
+              {withdrawIsHostedBlocked ? (
+                <Link
+                  to="/mypage"
+                  className={styles.withdrawManageLink}
+                  onClick={closeWithdrawModal}
+                >
+                  마이페이지에서 모임 정리하기
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+
           {withdrawRequiresConfirm ? (
             <p className={styles.withdrawWarning}>
               탈퇴하면 계정이 비활성화되며, 참여 중인 모임 정보에서 회원 상태가

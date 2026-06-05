@@ -9,6 +9,7 @@ import {
   getDirectChatMessages,
   getDirectChatRooms,
 } from "../api/chatApi";
+import { broadcastNotice } from "../api/notificationApi";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { buildWsUrl } from "../config/env";
 import { useAuth } from "../contexts/AuthContext";
@@ -18,7 +19,6 @@ import { getAccessToken } from "../utils/authTokenStore";
 import {
   NOTIFICATION_TYPES,
   WEMOVE_NOTIFICATION_OPEN_EVENT,
-  publishNotification,
 } from "../utils/notificationEvents";
 import { WEMOVE_DIRECT_CHAT_OPEN_EVENT } from "../utils/directChatEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
@@ -172,6 +172,7 @@ export default function GlobalMeetingChat() {
   const [messages, setMessages] = useState([]);
   const [profileModalUser, setProfileModalUser] = useState(null);
   const directSocketMapRef = useRef(new Map());
+  const isAdmin = String(user?.role || "").toLowerCase() === "admin";
 
   const selectedMeetingRoom = useMemo(
     () =>
@@ -289,7 +290,6 @@ export default function GlobalMeetingChat() {
           sourceId: `chat:${message.meetingId || roomTitle}`,
           target: notificationPayload,
         });
-        publishNotification(notificationPayload);
       }
     },
     [toast],
@@ -359,7 +359,6 @@ export default function GlobalMeetingChat() {
           sourceId: `direct-chat:${message.roomId || roomTitle}`,
           target: notificationPayload,
         });
-        publishNotification(notificationPayload);
       }
     },
     [toast],
@@ -378,10 +377,15 @@ export default function GlobalMeetingChat() {
       sourceId: "chat:move-talk-test",
       target: notificationPayload,
     });
-    publishNotification(notificationPayload);
   }, [toast]);
 
   const loadMeetingRooms = useCallback(async () => {
+    if (isAdmin) {
+      setRooms([]);
+      setSelectedMeetingId(null);
+      return;
+    }
+
     if (!isAuthenticated) {
       setRooms([]);
       setSelectedMeetingId(null);
@@ -412,9 +416,15 @@ export default function GlobalMeetingChat() {
     } finally {
       setLoadingRooms(false);
     }
-  }, [isAuthenticated]);
+  }, [isAdmin, isAuthenticated]);
 
   const loadDirectRooms = useCallback(async () => {
+    if (isAdmin) {
+      setDirectRooms([]);
+      setSelectedDirectRoomId(null);
+      return [];
+    }
+
     if (!isAuthenticated) {
       setDirectRooms([]);
       setSelectedDirectRoomId(null);
@@ -447,7 +457,7 @@ export default function GlobalMeetingChat() {
     } finally {
       setLoadingRooms(false);
     }
-  }, [isAuthenticated]);
+  }, [isAdmin, isAuthenticated]);
 
   const openDirectRoomByTargetUser = useCallback(
     async (targetUserId) => {
@@ -588,6 +598,12 @@ export default function GlobalMeetingChat() {
   }, [activeRoomId, chatType, open]);
 
   useEffect(() => {
+    if (isAdmin) {
+      socketMapRef.current.forEach((socket) => socket.close());
+      socketMapRef.current.clear();
+      return undefined;
+    }
+
     if (!isAuthenticated || !rooms.length) {
       socketMapRef.current.forEach((socket) => socket.close());
       socketMapRef.current.clear();
@@ -639,7 +655,7 @@ export default function GlobalMeetingChat() {
     });
 
     return undefined;
-  }, [appendMessage, isAuthenticated, rooms, user?.memberId]);
+  }, [appendMessage, isAdmin, isAuthenticated, rooms, user?.memberId]);
 
   useEffect(() => {
     if (!listRef.current) {
@@ -673,6 +689,12 @@ export default function GlobalMeetingChat() {
   }, [open, profileModalUser]);
 
   useEffect(() => {
+    if (isAdmin) {
+      directSocketMapRef.current.forEach((socket) => socket.close());
+      directSocketMapRef.current.clear();
+      return undefined;
+    }
+
     if (!isAuthenticated || !directRooms.length) {
       directSocketMapRef.current.forEach((socket) => socket.close());
       directSocketMapRef.current.clear();
@@ -719,7 +741,7 @@ export default function GlobalMeetingChat() {
     });
 
     return undefined;
-  }, [appendDirectMessage, isAuthenticated, directRooms, user?.memberId]);
+  }, [appendDirectMessage, isAdmin, isAuthenticated, directRooms, user?.memberId]);
 
   useEffect(() => {
     if (!open || activeRoomId) {
@@ -824,6 +846,34 @@ export default function GlobalMeetingChat() {
     event.preventDefault();
 
     const content = messageInput.trim();
+    if (isAdmin) {
+      if (!content || sending) {
+        return;
+      }
+
+      setSending(true);
+      setError("");
+
+      try {
+        await broadcastNotice(content);
+        setMessageInput("");
+        toast.info("공지사항", "전체 유저에게 공지사항을 보냈습니다.", {
+          sourceId: "admin-notice-sent",
+        });
+      } catch (requestError) {
+        setError(
+          requestError?.response?.data?.message ||
+            "공지사항 전송에 실패했습니다.",
+        );
+      } finally {
+        setSending(false);
+        window.setTimeout(() => {
+          messageInputRef.current?.focus();
+        }, 0);
+      }
+      return;
+    }
+
     if (!activeRoomId || !content || sending) {
       return;
     }
@@ -967,8 +1017,10 @@ export default function GlobalMeetingChat() {
           />
           <header className={styles.panelHeader}>
             <div>
-              <strong>무브톡</strong>
-              <span>승인된 모임 대화방</span>
+              <strong>{isAdmin ? "공지사항" : "무브톡"}</strong>
+              <span>
+                {isAdmin ? "전체 유저 알림 발송" : "승인된 모임 대화방"}
+              </span>
             </div>
             <button
               type="button"
@@ -981,11 +1033,15 @@ export default function GlobalMeetingChat() {
 
           <div
             className={
-              roomsCollapsed
+              isAdmin
+                ? styles.panelBodyAdmin
+                : roomsCollapsed
                 ? `${styles.panelBody} ${styles.panelBodyCollapsed}`
                 : styles.panelBody
             }
           >
+            {!isAdmin ? (
+            <>
             <aside className={styles.roomList}>
               <div className={styles.roomListHeader}>
                 <div
@@ -1072,10 +1128,14 @@ export default function GlobalMeetingChat() {
             >
               {roomsCollapsed ? "›" : "‹"}
             </button>
+            </>
+            ) : null}
 
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
-                {chatType === "GROUP" && selectedRoom?.meetingId ? (
+                {isAdmin ? (
+                  <strong>공지사항 작성</strong>
+                ) : chatType === "GROUP" && selectedRoom?.meetingId ? (
                   <button
                     type="button"
                     className={styles.chatTitleLink}
@@ -1091,7 +1151,9 @@ export default function GlobalMeetingChat() {
                       "1대1 대화를 선택해주세요"}
                   </strong>
                 )}
-                {selectedRoom && chatType === "GROUP" ? (
+                {isAdmin ? (
+                  <span>입력한 내용은 모든 활성 유저의 알림으로 전송됩니다.</span>
+                ) : selectedRoom && chatType === "GROUP" ? (
                   <span>
                     {[
                       selectedRoom.sportName,
@@ -1113,7 +1175,16 @@ export default function GlobalMeetingChat() {
               </div>
 
               <div className={styles.messageList} ref={listRef}>
-                {!activeRoomId ? (
+                {isAdmin ? (
+                  <div className={styles.adminNoticeGuide}>
+                    <strong>전체 공지 발송</strong>
+                    <p>
+                      아래 입력창에 공지 내용을 입력하고 전송하면 모든 활성
+                      회원에게 공지사항 알림이 저장되고, 접속 중인 회원에게는
+                      실시간으로 전달됩니다.
+                    </p>
+                  </div>
+                ) : !activeRoomId ? (
                   <p className={styles.state}>
                     무브톡 방을 선택하면 대화 내역을 볼 수 있습니다.
                   </p>
@@ -1252,9 +1323,12 @@ export default function GlobalMeetingChat() {
                   onChange={(event) => setMessageInput(event.target.value)}
                   placeholder="메시지 입력"
                   maxLength={1000}
-                  disabled={!activeRoomId || sending}
+                  disabled={isAdmin ? sending : !activeRoomId || sending}
                 />
-                <button type="submit" disabled={!activeRoomId || sending}>
+                <button
+                  type="submit"
+                  disabled={isAdmin ? !messageInput.trim() || sending : !activeRoomId || sending}
+                >
                   전송
                 </button>
               </form>
