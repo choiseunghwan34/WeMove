@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import defaultUserImage from "../assets/image/Default-user.png";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
@@ -858,12 +859,12 @@ export default function MeetingListPage() {
                     <img
                       src={
                         meeting.hostProfileImage ||
-                        "/src/assets/image/default-user.png"
+                        defaultUserImage
                       }
                       alt={meeting.meetingHostName}
                       className={styles.dashboardHostAvatar}
                       onError={(e) => {
-                        e.target.src = "/src/assets/image/default-user.png";
+                        e.currentTarget.src = defaultUserImage;
                       }}
                     />
                     <span>{meeting.meetingHostName || "익명"}</span>

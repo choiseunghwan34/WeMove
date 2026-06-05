@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import defaultUserImage from "../assets/image/Default-user.png";
 import AppModal from "../components/AppModal";
 import UserProfileDetailModal from "../components/UserProfileDetailModal";
 import { getMeeting, updateMeetingStatus } from "../api/meetingApi";
@@ -234,11 +235,11 @@ export default function MeetingManagePage() {
                     <div className={styles.participantMeta}>
                       <div className={styles.clickableName} onClick={() => setSelectedUserProfileUser(item)}>
                         <img
-                          src={item.profileImage || "/src/assets/image/default-user.png"}
+                          src={item.profileImage || defaultUserImage}
                           alt={item.nickname}
                           className={styles.cardAvatar}
                           onError={(e) => {
-                            e.target.src = "/src/assets/image/default-user.png";
+                            e.currentTarget.src = defaultUserImage;
                           }}
                         />
                         <strong>{item.nickname}</strong>
@@ -288,11 +289,11 @@ export default function MeetingManagePage() {
                 <div className={styles.participantMeta}>
                   <div className={styles.clickableName} onClick={() => setSelectedUserProfileUser(hostMember)}>
                     <img
-                      src={meeting.hostProfileImage || "/src/assets/image/default-user.png"}
+                      src={meeting.hostProfileImage || defaultUserImage}
                       alt={meeting.hostNickname}
                       className={styles.cardAvatar}
                       onError={(e) => {
-                        e.target.src = "/src/assets/image/default-user.png";
+                        e.currentTarget.src = defaultUserImage;
                       }}
                     />
                     <strong className={styles.hostNickname}>
@@ -323,11 +324,11 @@ export default function MeetingManagePage() {
                   <div className={styles.participantMeta}>
                     <div className={styles.clickableName} onClick={() => setSelectedUserProfileUser(item)}>
                       <img
-                        src={item.profileImage || "/src/assets/image/default-user.png"}
+                        src={item.profileImage || defaultUserImage}
                         alt={item.nickname}
                         className={styles.cardAvatar}
                         onError={(e) => {
-                          e.target.src = "/src/assets/image/default-user.png";
+                          e.currentTarget.src = defaultUserImage;
                         }}
                       />
                       <strong>{item.nickname}</strong>

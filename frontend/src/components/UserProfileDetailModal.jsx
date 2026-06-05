@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import defaultUserImage from "../assets/image/Default-user.png";
 import styles from "../styles/UserProfileDetailModal.module.css";
 import UiIcon from "./UiIcon";
 import { createReport } from "../api/reportApi";
@@ -200,11 +201,11 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
             <div className={styles.profileContainer}>
               <div className={styles.profileMainRow}>
                 <img
-                  src={user.profileImage || "/src/assets/image/default-user.png"}
+                  src={user.profileImage || defaultUserImage}
                   alt={user.nickname}
                   className={styles.profileAvatar}
                   onError={(e) => {
-                    e.target.src = "/src/assets/image/default-user.png";
+                    e.currentTarget.src = defaultUserImage;
                   }}
                 />
                 <div className={styles.profileMetaGroup}>

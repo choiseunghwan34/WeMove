@@ -5,7 +5,9 @@ import {useAuth} from "../contexts/AuthContext";
 import {getMeeting, recordMeetingView} from "../api/meetingApi";
 import {applyMeeting, cancelParticipant, getParticipants,} from "../api/participantApi";
 import {getRegions} from "../api/regionApi";
+import bg1 from "../assets/image/bg1.jpg";
 import {meetingImages} from "../data/dashboardData";
+import defaultUserImage from "../assets/image/Default-user.png";
 import UserProfileDetailModal from "../components/UserProfileDetailModal";
 import styles from "../styles/MeetingDetailPage.module.css";
 import Comment from "../components/Comment.jsx";
@@ -246,10 +248,13 @@ export default function MeetingDetailPage() {
                                 src={
                                     meeting.thumbnailImage ||
                                     meetingImages[meeting.meetingId] ||
-                                    "/src/assets/image/bg1.jpg"
+                                    bg1
                                 }
                                 alt={meeting.title}
                                 className={styles.detailHeroImage}
+                                onError={(e) => {
+                                    e.currentTarget.src = bg1;
+                                }}
                             />
                         </div>
                         <div className={styles.detailCover}>
@@ -344,12 +349,12 @@ export default function MeetingDetailPage() {
                             <img
                                 src={
                                     meeting.hostProfileImage ||
-                                    "/src/assets/image/default-user.png"
+                                    defaultUserImage
                                 }
                                 alt={meeting.meetingHostName}
                                 className={styles.profileAvatar}
                                 onError={(e) => {
-                                    e.target.src = "/src/assets/image/default-user.png";
+                                    e.currentTarget.src = defaultUserImage;
                                 }}
                             />
                             <div>
@@ -392,12 +397,12 @@ export default function MeetingDetailPage() {
                                                 key={item.participantId || item.userId}
                                                 src={
                                                     item.profileImage ||
-                                                    "/src/assets/image/default-user.png"
+                                                    defaultUserImage
                                                 }
                                                 alt={item.nickname}
                                                 className={styles.miniAvatar}
                                                 onError={(e) => {
-                                                    e.target.src = "/src/assets/image/default-user.png";
+                                                    e.currentTarget.src = defaultUserImage;
                                                 }}
                                             />
                                         ))}
@@ -438,13 +443,13 @@ export default function MeetingDetailPage() {
                                                     <img
                                                         src={
                                                             item.profileImage ||
-                                                            "/src/assets/image/default-user.png"
+                                                            defaultUserImage
                                                         }
                                                         alt={item.nickname}
                                                         className={styles.accordionAvatar}
                                                         onError={(e) => {
                                                             e.target.src =
-                                                                "/src/assets/image/default-user.png";
+                                                                defaultUserImage;
                                                         }}
                                                     />
                                                     <span className={styles.accordionNickname}>
