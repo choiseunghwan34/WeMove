@@ -6798,6 +6798,10 @@
   font-size: 1.15rem !important;
 }
 /*댓글영역 삭제버튼추가*/
+.buttonWrap{
+  display: flex;
+  justify-content: right;
+}
 .deleteBtn{
   font-size: 3px;
   padding: 2px 5px;
@@ -6807,7 +6811,7 @@
   cursor: pointer;
   transition: color 0.2s;
   text-decoration: underline;
-  justify-items: right;
+
 }
 .deleteBtn:hover{
   color: #ef4444;

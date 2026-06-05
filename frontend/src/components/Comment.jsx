@@ -1,7 +1,7 @@
 import {useAuth} from "../contexts/AuthContext.jsx";
 import styles from "../styles/WeMoveShared.module.css";
 import {useEffect, useState} from "react";
-import {createComment, getComments} from "../api/commentApi.js";
+import {createComment, deleteComment, getComments} from "../api/commentApi.js";
 import defaultUserImage from "../assets/image/Default-user.png"
 export default function Comment({meetingId, hostUserId, comments, setComments}) {
     const { user,isAuthenticated } = useAuth();
@@ -48,64 +48,83 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
         })
     }
     //댓글 삭제
-
-
-
-
-
+    const handleDeleteComment = (commentId) => {
+        if (!window.confirm("이 댓글을 삭제하시겠습니까?")) return;
+        deleteComment(commentId, user.memberId)
+            .then(() => {
+                alert("댓글이 삭제되었습니다.");
+                fetchComments();
+            })
+            .catch((err) => {
+                console.error("댓글 삭제 실패: ", err);
+                alert("삭제 권한이 없거나 오류가 발생했습니다.");
+            });
+    }
     return(
         <>
             <div className={styles.commentList}>
 
                 {comments.length === 0 ? (
                     <p>아직 작성된 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
-                ):(
+                ) : (
+                    comments.map((comment) => {
 
-                    comments.map((comment)=>(
-                        <article key={comment.commentId} className={styles.commentItem}>
-                            <img
-                                style={!comment.profileImage ? {
-                                    padding: "2px",
-                                    backgroundColor: "#f3f4f6",
-                                    boxSizing: "border-box",
-                                }:{}}
-                                src={comment.profileImage || defaultUserImage}
-                                alt={`${comment.nickname} 프로필`}
-                                className={styles.commentAvatar}
-                            />
+                        // 권한 체크: 작성자 본인이거나 모임 주최자일 때만 삭제 가능
+                        const isAuthor = Number(user?.memberId) === Number(comment.writerId);
+                        const isHost = Number(user?.memberId) === Number(hostUserId);
+                        const canDelete = isAuthor || isHost;
+
+                        return (
+                            <article key={comment.commentId} className={styles.commentItem}>
+                                <img
+                                    style={!comment.profileImage ? {
+                                        padding: "2px",
+                                        backgroundColor: "#f3f4f6",
+                                        boxSizing: "border-box",
+                                    } : {}}
+                                    src={comment.profileImage || defaultUserImage}
+                                    alt={`${comment.nickname} 프로필`}
+                                    className={styles.commentAvatar}
+                                />
                                 <div>
                                     <div className={styles.commentMeta}>
                                         <strong>{comment.nickname}</strong>
                                         <span>{new Date(comment.createdAt).toLocaleString()}</span>
                                     </div>
                                     <p>{comment.content}</p>
-                                    <div className={styles.buttonWrap}>
-                                        <button className={styles.deleteBtn}>댓글 삭제</button>
-                                    </div>
+
+                                    {canDelete && (
+                                        <div className={styles.buttonWrap}>
+                                            <button
+                                                className={styles.deleteBtn}
+                                                onClick={() => handleDeleteComment(comment.commentId)}
+                                            >
+                                                댓글 삭제
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                        </article>
-                    )))}
-
-
+                            </article>
+                        );
+                    })
+                )}
             </div>
+
             {isAuthenticated ? (
                 <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
-                    <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요."/>
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요." />
                     <div className={styles.formActions}>
-                        <button
-                            type="submit"
-                        >댓글 등록
+                        <button type="submit">
+                            댓글 등록
                         </button>
                     </div>
                 </form>
-            ):(
+            ) : (
                 <p style={{ color: "#666", marginBottom: "20px" }}>댓글을 작성하려면 로그인이 필요합니다.</p>
             )}
-
-
         </>
     )
 }

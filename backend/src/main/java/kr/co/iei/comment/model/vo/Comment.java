@@ -10,7 +10,7 @@ public class Comment {
   private Long writerId;
   private Long parentCommentId;
   private String content;
-  private Boolean isDeleted;
+  private Integer isDeleted;
   private LocalDateTime createdAt;
   private String profileImage;
 
