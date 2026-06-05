@@ -28,9 +28,17 @@
         FROM comments c
         JOIN users u ON c.writerId=u.userId
         WHERE c.meetingId=#{meetingId}
-            AND c.isDeleted = 0 ORDER BY c.createAt
+            AND c.isDeleted != 1
         ORDER BY c.createdAt ASC
     </select>
+
+    <update id="softDeleteComment" parameterType="map">
+        UPDATE comments
+        SET
+            isDeleted=#{isDeleted},
+            content="모임 주최자에 의해 삭제된 댓글입니다."
+        WHERE commentId=#{commentId}
+    </update>
 
     <insert id="insertComment" parameterType="kr.co.iei.comment.model.vo.Comment">
         INSERT INTO comments(
@@ -47,12 +55,6 @@
         )
     </insert>
 
-    <update id="softDeleteComment">
-        UPDATE comments
-        SET
-            isDeleted=1,
-            content="삭제된 댓글입니다."
-        WHERE commentId=#{commentId}
-    </update>
+
 
 </mapper>
