@@ -25,14 +25,19 @@ export const openNotificationTarget = (notification) => {
   );
 };
 
-export const publishAccountSuspend = ({ title = "계정 정지 안내", message = "" }) => {
+export const publishAccountSuspend = ({
+  title = "계정 정지 안내",
+  message = "",
+  suspendedUntil,
+  suspendHours,
+}) => {
   if (typeof window === "undefined" || !message) {
     return;
   }
 
   window.dispatchEvent(
     new CustomEvent(WEMOVE_ACCOUNT_SUSPEND_EVENT, {
-      detail: { title, message },
+      detail: { title, message, suspendedUntil, suspendHours },
     }),
   );
 };

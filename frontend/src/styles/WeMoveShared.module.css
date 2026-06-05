@@ -6712,21 +6712,43 @@
 
 .dashboardScheduleItem {
   display: grid !important;
-  grid-template-columns: 86px 56px minmax(0, 1fr) !important;
+  grid-template-columns: 92px 64px minmax(0, 1fr) !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 14px !important;
   min-height: 0 !important;
-  padding: 12px 14px !important;
-  border: 1px solid #eef0f3 !important;
-  border-radius: 16px !important;
-  background: #ffffff !important;
-  box-shadow: none !important;
+  padding: 14px 16px !important;
+  border: 1px solid rgba(37, 99, 235, 0.08) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%) !important;
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dashboardScheduleItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.14) !important;
+  box-shadow:
+    0 14px 28px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
 }
 
 .dashboardScheduleItem span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #edf3ff;
   font-size: 0.78rem !important;
   font-weight: 800 !important;
-  color: #64748b !important;
+  color: #1d4ed8 !important;
+  white-space: nowrap;
 }
 
 .dashboardScheduleItem strong {
@@ -6797,6 +6819,21 @@
 .dashboardSummaryGrid strong {
   font-size: 1.15rem !important;
 }
+
+@media (max-width: 720px) {
+  .dashboardScheduleItem {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .dashboardScheduleItem span {
+    justify-self: start;
+  }
+
+  .dashboardScheduleItem strong {
+    justify-self: start;
+  }
+}
 /*댓글영역 삭제버튼추가*/
 .buttonWrap{
   display: flex;
@@ -6815,4 +6852,126 @@
 }
 .deleteBtn:hover{
   color: #ef4444;
+}
+
+/* Unified activity cards for Home and Activity pages. */
+.dashboardActivityItem {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dashboardActivityItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.14);
+  box-shadow:
+    0 14px 28px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.dashboardActivityItem i {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eef4ff, #e8f3ff);
+  color: #2563eb;
+  font-style: normal;
+  flex-shrink: 0;
+}
+
+.dashboardActivityBody {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.dashboardActivityHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboardActivityBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.dashboardActivityToneHosted {
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.dashboardActivityToneScheduled {
+  background: #eef4ff;
+  color: #1d4ed8;
+}
+
+.dashboardActivityToneWaiting {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.dashboardActivityTitle {
+  display: block;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.42;
+}
+
+.dashboardActivityMeta {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.dashboardActivityTime {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .dashboardActivityItem {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .dashboardActivityTime {
+    grid-column: 2;
+    justify-self: start;
+  }
 }

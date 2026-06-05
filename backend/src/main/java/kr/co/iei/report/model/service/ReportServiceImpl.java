@@ -17,6 +17,9 @@ public class ReportServiceImpl implements ReportService {
     r.setTargetUserId(req.getTargetUserId());
     r.setReason(req.getReason());
     r.setContent(req.getContent());
+    if (reportDao.countPendingDuplicateReport(r) > 0) {
+      throw new IllegalArgumentException("이미 접수되어 검토 중인 신고입니다.");
+    }
     reportDao.insertReport(r);
   }
 }

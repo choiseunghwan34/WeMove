@@ -25,6 +25,43 @@ const DEFAULT_FORCED_LOGOUT_MODAL = {
   message: "",
 };
 
+const formatSuspendHours = (suspendHours) => {
+  const hours = Number(suspendHours);
+  if (!Number.isFinite(hours) || hours <= 0) {
+    return "";
+  }
+  if (hours >= 876000) {
+    return "영구 정지";
+  }
+  if (hours % 24 === 0) {
+    return `${hours / 24}일`;
+  }
+  return `${hours}시간`;
+};
+
+const formatSuspendedUntil = (value) => {
+  if (!value) {
+    return "";
+  }
+  return String(value).replace("T", " ").slice(0, 16);
+};
+
+const buildAccountSuspendMessage = ({
+  message,
+  reason,
+  suspendedUntil,
+  suspendHours,
+}) => {
+  const lines = [
+    message || "계정이 정지되어 로그아웃됩니다.",
+    reason ? `정지 사유: ${reason}` : "",
+    suspendHours ? `정지 기간: ${formatSuspendHours(suspendHours)}` : "",
+    suspendedUntil ? `해제 예정: ${formatSuspendedUntil(suspendedUntil)}` : "",
+  ].filter(Boolean);
+
+  return lines.join("\n");
+};
+
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [accessToken, setAccessTokenState] = useState(null);
@@ -56,11 +93,15 @@ export function AuthProvider({ children }) {
           setUser(null);
 
           if (error?.response?.status === 423) {
+            const suspendData = error?.response?.data ?? {};
             setForcedLogoutModal({
               title: "계정 정지 안내",
-              message:
-                error?.response?.data?.message ||
-                "정지된 계정입니다. 관리자에게 문의해주세요.",
+              message: buildAccountSuspendMessage({
+                message: suspendData.message || "정지된 계정입니다.",
+                reason: suspendData.reason,
+                suspendedUntil: suspendData.suspendedUntil,
+                suspendHours: suspendData.suspendHours,
+              }),
             });
           }
         }
@@ -121,9 +162,14 @@ export function AuthProvider({ children }) {
         }
 
         if (error?.response?.status === 423) {
+          const suspendData = error?.response?.data ?? {};
           handleRevokedSession(
-            error?.response?.data?.message ||
-              "정지된 계정입니다. 관리자에게 문의해주세요.",
+            buildAccountSuspendMessage({
+              message: suspendData.message || "정지된 계정입니다.",
+              reason: suspendData.reason,
+              suspendedUntil: suspendData.suspendedUntil,
+              suspendHours: suspendData.suspendHours,
+            }),
             "계정 정지 안내",
           );
         }
@@ -138,8 +184,14 @@ export function AuthProvider({ children }) {
       }
 
       handleRevokedSession(
-        event?.detail?.message ||
-          "계정이 정지되어 로그아웃됩니다. 관리자에게 문의해주세요.",
+        buildAccountSuspendMessage({
+          message:
+            event?.detail?.message ||
+            "계정이 정지되어 로그아웃됩니다.",
+          reason: event?.detail?.reason,
+          suspendedUntil: event?.detail?.suspendedUntil,
+          suspendHours: event?.detail?.suspendHours,
+        }),
         event?.detail?.title || "계정 정지 안내",
       );
     };

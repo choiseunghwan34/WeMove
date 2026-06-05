@@ -15,10 +15,15 @@ public class MeetingStatusScheduler {
 
   @Scheduled(fixedDelay = 60_000)
   @Transactional
-  public void startDueMeetings() {
-    int updated = meetingDao.startDueMeetings();
-    if (updated > 0) {
-      log.info("Auto-started {} meeting(s) whose schedule has passed.", updated);
+  public void updateTimeBasedMeetingStatuses() {
+    int startedCount = meetingDao.startDueMeetings();
+    if (startedCount > 0) {
+      log.info("Auto-started {} meeting(s) whose schedule has passed.", startedCount);
+    }
+
+    int completedCount = meetingDao.completeOverdueOngoingMeetings();
+    if (completedCount > 0) {
+      log.info("Auto-completed {} ongoing meeting(s) older than 24 hours.", completedCount);
     }
   }
 }

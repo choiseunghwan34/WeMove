@@ -2,6 +2,34 @@
   composes: page from "./LoginPage.module.css";
 }
 
+.backgroundLayer {
+  composes: backgroundLayer from "./LoginPage.module.css";
+}
+
+.backgroundOverlay {
+  composes: backgroundOverlay from "./LoginPage.module.css";
+}
+
+.ambientEffects {
+  composes: ambientEffects from "./LoginPage.module.css";
+}
+
+.ambientOrb {
+  composes: ambientOrb from "./LoginPage.module.css";
+}
+
+.orb1 {
+  composes: orb1 from "./LoginPage.module.css";
+}
+
+.orb2 {
+  composes: orb2 from "./LoginPage.module.css";
+}
+
+.orb3 {
+  composes: orb3 from "./LoginPage.module.css";
+}
+
 .layout {
   composes: layout from "./LoginPage.module.css";
 }

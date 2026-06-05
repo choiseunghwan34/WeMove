@@ -16,10 +16,11 @@ import {
   getPhoneDigits,
   normalizeText,
 } from "../utils/profileValidation";
-import homeBg from "../assets/images/home-bg.webp";
+import bg1 from "../assets/image/bg1.jpg";
+import bg2 from "../assets/image/bg2.jpg";
 import styles from "../styles/SignupPage.module.css";
 
-const authBackgrounds = [homeBg];
+const authBackgrounds = [bg1, bg2];
 
 const initialForm = {
   loginId: "",
@@ -655,10 +656,18 @@ export default function SignupPage() {
   };
 
   return (
-    <main
-      className={styles.page}
-      style={{ "--auth-bg-image": `url(${backgroundImage})` }}
-    >
+    <main className={styles.page}>
+      <div
+        className={styles.backgroundLayer}
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      />
+      <div className={styles.backgroundOverlay} />
+      <div className={styles.ambientEffects} aria-hidden="true">
+        <div className={`${styles.ambientOrb} ${styles.orb1}`} />
+        <div className={`${styles.ambientOrb} ${styles.orb2}`} />
+        <div className={`${styles.ambientOrb} ${styles.orb3}`} />
+      </div>
+
       <div className={`${styles.layout} ${styles.signupLayout}`}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>

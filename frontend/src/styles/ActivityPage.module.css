@@ -8,8 +8,44 @@
   composes: dashboardActivityItem from "./WeMoveShared.module.css";
 }
 
+.dashboardActivityBody {
+  composes: dashboardActivityBody from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityBadge {
+  composes: dashboardActivityBadge from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityHeader {
+  composes: dashboardActivityHeader from "./WeMoveShared.module.css";
+}
+
 .dashboardActivityList {
   composes: dashboardActivityList from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityMeta {
+  composes: dashboardActivityMeta from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityTime {
+  composes: dashboardActivityTime from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityTitle {
+  composes: dashboardActivityTitle from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityToneHosted {
+  composes: dashboardActivityToneHosted from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityToneScheduled {
+  composes: dashboardActivityToneScheduled from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityToneWaiting {
+  composes: dashboardActivityToneWaiting from "./WeMoveShared.module.css";
 }
 
 .dashboardCompactBody {
@@ -38,6 +74,18 @@
 
 .dashboardPanelHead {
   composes: dashboardPanelHead from "./WeMoveShared.module.css";
+}
+
+.dashboardScheduleItem {
+  composes: dashboardScheduleItem from "./WeMoveShared.module.css";
+  background:
+    radial-gradient(circle at 92% 10%, rgba(96, 165, 250, 0.16), transparent 34%),
+    linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%) !important;
+  border-color: rgba(37, 99, 235, 0.12) !important;
+}
+
+.dashboardScheduleItem:hover {
+  border-color: rgba(37, 99, 235, 0.18) !important;
 }
 
 .dashboardSectionCopy {

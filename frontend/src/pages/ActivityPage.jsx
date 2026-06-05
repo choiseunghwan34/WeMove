@@ -135,21 +135,27 @@ const getToneClassByHostedStatus = (status) => {
 const buildFeedItems = ({ hostedMeetings, approvedMeetings, pendingMeetings }) => {
   const feed = [
     ...hostedMeetings.slice(0, 3).map((meeting) => ({
-      key: `host-${meeting.id}`,
-      title: `${meeting.title} 모임을 만들었어요.`,
-      meta: `${meeting.sport} · ${meeting.region}`,
+      key: 'host-' + meeting.id,
+      kindLabel: "모임 생성",
+      toneClass: styles.dashboardActivityToneHosted,
+      title: meeting.title,
+      meta: meeting.sport + " · " + (meeting.region || "지역 미정"),
       time: buildRelativeText(meeting.createdAt || meeting.meetingDate),
     })),
     ...approvedMeetings.slice(0, 3).map((meeting) => ({
-      key: `approved-${meeting.id}`,
-      title: `${meeting.title} 참여가 확정되었어요.`,
-      meta: `${meeting.sport} · ${formatMeetingDateTime(meeting)}`,
+      key: 'approved-' + meeting.id,
+      kindLabel: "참여 확정",
+      toneClass: styles.dashboardActivityToneScheduled,
+      title: meeting.title,
+      meta: meeting.sport + " · " + formatMeetingDateTime(meeting),
       time: buildRelativeText(meeting.meetingDate),
     })),
     ...pendingMeetings.slice(0, 2).map((meeting) => ({
-      key: `pending-${meeting.id}`,
-      title: `${meeting.title} 신청 결과를 기다리는 중이에요.`,
-      meta: `${meeting.sport} · ${meeting.region}`,
+      key: 'pending-' + meeting.id,
+      kindLabel: "참여 대기",
+      toneClass: styles.dashboardActivityToneWaiting,
+      title: meeting.title,
+      meta: meeting.sport + " · " + (meeting.region || "지역 미정"),
       time: buildRelativeText(meeting.meetingDate),
     })),
   ];
@@ -501,10 +507,11 @@ export default function ActivityPage() {
                 scheduleItems.map((meeting) => {
                   const relativeDate = buildRelativeText(meeting.meetingDate);
                   const weekday = getWeekdayLabel(meeting.meetingDate);
-                  const displayDate = relativeDate.includes("일 전") || relativeDate.includes("일 후") 
-                    ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
-                    : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
-                  
+                  const displayDate =
+                    relativeDate.includes("일 전") || relativeDate.includes("일 후")
+                      ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
+                      : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
+
                   return (
                     <div
                       key={`schedule-${meeting.id}`}
@@ -542,15 +549,24 @@ export default function ActivityPage() {
                         className={styles.dashboardActivityGlyph}
                       />
                     </i>
-                    <div>
-                      <strong>{item.title}</strong>
-                      <p>{item.meta}</p>
+                    <div className={styles.dashboardActivityBody}>
+                      <div className={styles.dashboardActivityHeader}>
+                        <span
+                          className={`${styles.dashboardActivityBadge} ${item.toneClass}`}
+                        >
+                          {item.kindLabel}
+                        </span>
+                      </div>
+                      <strong className={styles.dashboardActivityTitle}>
+                        {item.title}
+                      </strong>
+                      <p className={styles.dashboardActivityMeta}>{item.meta}</p>
                     </div>
-                    <span>{item.time}</span>
+                    <span className={styles.dashboardActivityTime}>{item.time}</span>
                   </div>
                 ))
               ) : (
-                <div className={styles.emptyMessage}>아직 쌓인 활동이 없습니다.</div>
+                <div className={styles.emptyMessage}>최근 활동이 아직 없습니다.</div>
               )}
             </div>
           </section>
