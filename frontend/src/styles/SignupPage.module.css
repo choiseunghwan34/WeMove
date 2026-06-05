@@ -34,18 +34,6 @@
   composes: ambientEffects from "./LoginPage.module.css";
 }
 
-.cursorGlowLayer {
-  composes: cursorGlowLayer from "./LoginPage.module.css";
-}
-
-.cursorLeaf {
-  composes: cursorLeaf from "./LoginPage.module.css";
-}
-
-.cursorLeafIcon {
-  composes: cursorLeafIcon from "./LoginPage.module.css";
-}
-
 .ambientOrb {
   composes: ambientOrb from "./LoginPage.module.css";
 }
