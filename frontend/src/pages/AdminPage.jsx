@@ -13,7 +13,6 @@ import {
   getAdminReports,
   getAdminSports,
   getSummary,
-  updateAdminMemberStatus,
   updateAdminSport,
   processAdminReport,
 } from "../api/adminApi";
@@ -105,12 +104,6 @@ const memberStatusText = {
   DELETED: "탈퇴",
 };
 
-const memberStatusOptions = [
-  { value: "ACTIVE", label: "활동중" },
-  { value: "SUSPENDED", label: "정지" },
-  { value: "DELETED", label: "탈퇴" },
-];
-
 const sportStatusOptions = [
   { value: true, label: "사용중" },
   { value: false, label: "비활성" },
@@ -154,6 +147,65 @@ const getReportContent = (report) => {
     "";
 
   return String(content).trim();
+};
+
+const getReportRawReason = (report) =>
+  report?.rawReason ?? report?.originalData?.reason ?? report?.reason ?? "";
+
+const normalizeReportDetail = (value) =>
+  String(value ?? "")
+    .replace(/^\[상세 내용\]\s*/u, "")
+    .trim();
+
+const parseReportContent = (report) => {
+  const rawContent = getReportContent(report);
+  const rawReason = String(getReportRawReason(report)).toUpperCase();
+  const emptyMessage = "상세 내용 없음";
+
+  const labeledMatch = rawContent.match(
+    /^\[직접 입력 사유\]\s*(.+?)(?:\r?\n\r?\n\[상세 내용\]\r?\n([\s\S]*)|\r?\n([\s\S]*)|$)/u,
+  );
+
+  if (labeledMatch) {
+    const detail = normalizeReportDetail(labeledMatch[2] ?? labeledMatch[3] ?? "");
+    return {
+      customReason: labeledMatch[1].trim(),
+      detail,
+      summary: detail ? detail.replace(/\s+/g, " ") : emptyMessage,
+    };
+  }
+
+  const legacyMatch = rawContent.match(/^\[직접 입력 사유:?\s*(.+?)\]\s*([\s\S]*)$/u);
+
+  if (legacyMatch) {
+    const detail = normalizeReportDetail(legacyMatch[2]);
+    return {
+      customReason: legacyMatch[1].trim(),
+      detail,
+      summary: detail ? detail.replace(/\s+/g, " ") : emptyMessage,
+    };
+  }
+
+  if (rawReason === "OTHER") {
+    const lines = rawContent
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const customReason = lines[0] ?? "";
+    const detail = normalizeReportDetail(lines.slice(1).join("\n"));
+
+    return {
+      customReason,
+      detail,
+      summary: detail ? detail.replace(/\s+/g, " ") : emptyMessage,
+    };
+  }
+
+  return {
+    customReason: "",
+    detail: rawContent,
+    summary: rawContent ? rawContent.replace(/\s+/g, " ") : emptyMessage,
+  };
 };
 
 const parseRegionLabel = (label = "") => {
@@ -250,7 +302,6 @@ export default function AdminPage() {
   const [sportForm, setSportForm] = useState(initialSportForm);
   const [sportFormError, setSportFormError] = useState("");
 
-  const [updatingMemberId, setUpdatingMemberId] = useState(null);
   const [updatingSportId, setUpdatingSportId] = useState(null);
   const [deletingSportId, setDeletingSportId] = useState(null);
 
@@ -428,6 +479,7 @@ export default function AdminPage() {
               target: displayTarget,
               targetUserId,
               targetId: targetUserId,
+              rawReason: report.reason,
               reason: translateReason(report.reason),
               content: getReportContent(report),
               status: report.status ?? "PENDING",
@@ -581,6 +633,9 @@ export default function AdminPage() {
   const pagedMeetings = paginate(filteredMeetings, meetingPage);
   const pagedReports = paginate(reports, reportPage);
   const pagedSports = paginate(filteredSports, sportPage);
+  const selectedReportContent = selectedReportAction
+    ? parseReportContent(selectedReportAction)
+    : null;
 
   const regionSummary = [selectedSido, selectedSigungu, selectedDong]
       .filter((value) => value !== ALL_SIDO && value !== ALL_SIGUNGU && value !== ALL_DONG)
@@ -676,19 +731,6 @@ export default function AdminPage() {
       updatePage("sports", 1);
     } catch (error) {
       setSportFormError(error?.response?.data?.message ?? "종목을 추가하지 못했습니다.");
-    }
-  };
-
-  const handleMemberStatusChange = async (userId, nextStatus) => {
-    setUpdatingMemberId(userId);
-    try {
-      await updateAdminMemberStatus(userId, nextStatus);
-      await loadAdminData();
-      toast.success("회원 상태 변경", "선택한 회원 상태를 저장했습니다.");
-    } catch {
-      toast.error("회원 상태 변경 실패", "잠시 후 다시 시도해주세요.");
-    } finally {
-      setUpdatingMemberId(null);
     }
   };
 
@@ -882,7 +924,7 @@ export default function AdminPage() {
               <div className={styles.tableHead}>
                 <div>
                   <h2>회원 관리</h2>
-                  <p>닉네임, 로그인 ID로 검색하고 회원 상태를 바로 변경할 수 있습니다.</p>
+                  <p>닉네임, 로그인 ID로 회원을 확인합니다. 회원 상태는 신고 처리 결과로만 변경됩니다.</p>
                 </div>
               </div>
               <div className={styles.tableToolbar}>
@@ -904,7 +946,6 @@ export default function AdminPage() {
                   <th>지역</th>
                   <th>권한</th>
                   <th>상태</th>
-                  <th>상태 변경</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -929,23 +970,10 @@ export default function AdminPage() {
                       {member.statusText}
                     </span>
                       </td>
-                      <td>
-                        <select
-                            className={styles.inlineSelect}
-                            value={member.status}
-                            disabled={updatingMemberId === member.id}
-                            onClick={(event) => event.stopPropagation()}
-                            onChange={(event) => handleMemberStatusChange(member.id, event.target.value)}
-                        >
-                          {memberStatusOptions.map((option) => (
-                              <option key={option.value} value={option.value}>{option.label}</option>
-                          ))}
-                        </select>
-                      </td>
                     </tr>
                 ))}
                 {pagedMembers.length === 0 ? (
-                    <tr><td colSpan="7" className={styles.emptyCell}>선택한 조건에 해당하는 회원이 없습니다.</td></tr>
+                    <tr><td colSpan="6" className={styles.emptyCell}>선택한 조건에 해당하는 회원이 없습니다.</td></tr>
                 ) : null}
                 </tbody>
               </table>
@@ -1055,18 +1083,22 @@ export default function AdminPage() {
                 </tr>
                 </thead>
                 <tbody>
-                {pagedReports.map((report) => (
+                {pagedReports.map((report) => {
+                  const reportContent = parseReportContent(report);
+
+                  return (
                     <tr key={report.id}>
                       <td>{report.id}</td>
                       <td><strong>{report.target}</strong></td>
                       <td>
                         <div className={styles.reportReasonCell}>
-                          <strong>{report.reason}</strong>
-                          <span>
-                            {getReportContent(report)
-                              ? getReportContent(report).replace(/\s+/g, " ")
-                              : "상세 내용 없음"}
-                          </span>
+                          <strong className={styles.reportReasonBadge}>[{report.reason}]</strong>
+                          {reportContent.customReason ? (
+                            <em className={styles.reportCustomReasonPreview}>
+                              직접 입력: {reportContent.customReason}
+                            </em>
+                          ) : null}
+                          <span>{reportContent.summary}</span>
                         </div>
                       </td>
                       <td>
@@ -1088,7 +1120,8 @@ export default function AdminPage() {
                         )}
                       </td>
                     </tr>
-                ))}
+                  );
+                })}
                 {pagedReports.length === 0 ? (
                     <tr><td colSpan="6" className={styles.emptyCell}>표시할 신고 내역이 없습니다.</td></tr>
                 ) : null}
@@ -1195,12 +1228,20 @@ export default function AdminPage() {
                     </div>
                     <div className={styles.detailModalItem} style={{ gridColumn: "1 / -1" }}>
                       <span>신고 사유</span>
-                      <strong>{selectedReportAction.reason}</strong>
+                      <strong className={styles.reportReasonBadge}>[{selectedReportAction.reason}]</strong>
                     </div>
+                    {selectedReportContent?.customReason ? (
+                      <div className={styles.detailModalItem} style={{ gridColumn: "1 / -1" }}>
+                        <span>직접 입력 사유</span>
+                        <div className={styles.reportCustomReasonBox}>
+                          <strong>[기타] {selectedReportContent.customReason}</strong>
+                        </div>
+                      </div>
+                    ) : null}
                     <div className={styles.detailModalItem} style={{ gridColumn: "1 / -1" }}>
                       <span>신고 내용</span>
                       <p className={styles.reportContentText}>
-                        {getReportContent(selectedReportAction) ||
+                        {selectedReportContent?.detail ||
                           "신고자가 상세 내용을 입력하지 않았습니다."}
                       </p>
                     </div>

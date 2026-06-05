@@ -134,6 +134,31 @@
   font-weight: 800 !important;
 }
 
+.customReasonPreview {
+  display: grid !important;
+  gap: 4px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #fed7aa !important;
+  border-radius: 12px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(251, 146, 60, 0.16), transparent 34%),
+    linear-gradient(180deg, #fff7ed 0%, #ffffff 100%) !important;
+}
+
+.customReasonPreview span {
+  color: #c2410c !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+}
+
+.customReasonPreview strong {
+  color: #111827 !important;
+  font-size: 13px !important;
+  font-weight: 950 !important;
+  line-height: 1.45 !important;
+  word-break: break-word !important;
+}
+
 .reportForm {
   gap: 12px !important;
 }

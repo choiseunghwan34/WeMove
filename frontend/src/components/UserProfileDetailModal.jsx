@@ -13,6 +13,23 @@ const REPORT_REASON_OPTIONS = [
   { value: "OTHER", label: "기타", hint: "직접 사유를 입력할게요." },
 ];
 
+const buildReportContent = ({ reason, customReason, detail }) => {
+  const detailText = String(detail ?? "").trim();
+
+  if (reason !== "OTHER") {
+    return detailText;
+  }
+
+  const customReasonText = String(customReason ?? "").trim();
+
+  return [
+    customReasonText ? `[직접 입력 사유] ${customReasonText}` : "",
+    detailText ? `[상세 내용]\n${detailText}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+};
+
 const formatJoinDate = (dateStr) => {
   if (!dateStr) return "2026.05";
   try {
@@ -95,9 +112,11 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
       return;
     }
 
-    const finalContent = reportReason === "OTHER"
-      ? `[직접 입력 사유: ${customReason}] \n ${reportDetail || ""}`
-      : (reportDetail || "");
+    const finalContent = buildReportContent({
+      reason: reportReason,
+      customReason,
+      detail: reportDetail,
+    });
 
     try {
       await createReport({
@@ -135,12 +154,11 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
       return;
     }
 
-    const finalContent =
-      reportReason === "OTHER"
-        ? customReason.trim()
-          ? `${customReason.trim()}\n${reportDetail.trim()}`
-          : reportDetail.trim()
-        : reportDetail.trim();
+    const finalContent = buildReportContent({
+      reason: reportReason,
+      customReason,
+      detail: reportDetail,
+    });
 
     setIsReportSubmitting(true);
 
@@ -262,7 +280,7 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
                       setReportError("");
                     }}
                   >
-                    <strong>{option.label}</strong>
+                    <strong>[{option.label}]</strong>
                     <span>{option.hint}</span>
                   </button>
                 ))}
@@ -312,6 +330,12 @@ export default function UserProfileDetailModal({ open, onClose, user, loginUser 
                     maxLength={30}
                     required
                   />
+                  {customReason.trim() ? (
+                    <div className={styles.customReasonPreview}>
+                      <span>관리자 화면 강조 표시</span>
+                      <strong>[기타] {customReason.trim()}</strong>
+                    </div>
+                  ) : null}
                 </div>
               )}
 

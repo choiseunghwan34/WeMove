@@ -650,7 +650,7 @@ export default function HomePage() {
       <section className={styles.dashboardPanel}>
         <div className={styles.dashboardPanelHead}>
           <h3>이번 주 일정</h3>
-          <Link to="/meetings">전체 일정 보기</Link>
+          <Link to="/activity">전체 일정 보기</Link>
         </div>
         <div className={styles.dashboardScheduleList}>
           {scheduleItems.length ? (

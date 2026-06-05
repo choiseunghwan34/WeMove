@@ -575,6 +575,55 @@
   white-space: nowrap;
 }
 
+.reportReasonCell strong.reportReasonBadge,
+.detailModalItem strong.reportReasonBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff7f7 0%, #fef2f2 100%);
+  color: #be123c;
+  font-size: 0.84rem;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.reportCustomReasonPreview {
+  display: block;
+  max-width: 280px;
+  overflow: hidden;
+  color: #c2410c;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reportCustomReasonBox {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(251, 146, 60, 0.16), transparent 32%),
+    linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+}
+
+.reportCustomReasonBox strong {
+  color: #111827;
+  font-size: 0.98rem;
+  font-weight: 950;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
 .processedLabel {
   display: inline-flex;
   align-items: center;

@@ -11,8 +11,6 @@ export const updateAdminSport = (sportId, data) =>
 export const deleteAdminSport = (sportId) =>
   api.delete("/admin/sports/" + sportId);
 export const getAdminReports = () => api.get("/admin/reports");
-export const updateAdminMemberStatus = (userId, status) =>
-  api.patch("/admin/members/" + userId + "/status", { status });
 export const updateAdminMeetingStatus = (meetingId, status) =>
   api.patch("/admin/meetings/" + meetingId + "/status", { status });
 export const resolveReport = (id) =>
