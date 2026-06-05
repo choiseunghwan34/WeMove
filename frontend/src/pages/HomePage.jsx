@@ -202,21 +202,27 @@ export default function HomePage() {
 
   const recentActivities = [
     ...activityData.hostedMeetings.slice(0, 3).map((meeting) => ({
-      key: `host-${meeting.id}`,
-      user: meeting.hostName || "내가",
-      detail: `${meeting.title} 모임을 만들었어요.`,
+      key: 'host-' + meeting.id,
+      kindLabel: "모임 생성",
+      toneClass: styles.dashboardActivityToneHosted,
+      title: meeting.title,
+      meta: meeting.sport + " · " + (meeting.region || "지역 미정"),
       time: buildRelativeText(meeting.createdAt || meeting.meetingDate),
     })),
     ...activityData.approvedMeetings.slice(0, 2).map((meeting) => ({
-      key: `approved-${meeting.id}`,
-      user: meeting.hostName || "참여 예정",
-      detail: `${meeting.title} 참여가 확정됐어요.`,
+      key: 'approved-' + meeting.id,
+      kindLabel: "참여 확정",
+      toneClass: styles.dashboardActivityToneScheduled,
+      title: meeting.title,
+      meta: meeting.sport + " · " + formatMeetingDateTime(meeting.meetingDate, meeting.startTime),
       time: buildRelativeText(meeting.meetingDate),
     })),
     ...activityData.pendingMeetings.slice(0, 2).map((meeting) => ({
-      key: `pending-${meeting.id}`,
-      user: meeting.hostName || "참여 대기",
-      detail: `${meeting.title} 승인 결과를 기다리는 중이에요.`,
+      key: 'pending-' + meeting.id,
+      kindLabel: "참여 대기",
+      toneClass: styles.dashboardActivityToneWaiting,
+      title: meeting.title,
+      meta: meeting.sport + " · " + (meeting.region || "지역 미정"),
       time: buildRelativeText(meeting.meetingDate),
     })),
   ].slice(0, 4);
@@ -305,7 +311,11 @@ export default function HomePage() {
               ? response.data.list
               : [];
 
-        setPopularMeetings(popularList.slice(0, 5));
+        const recruitingMeetings = popularList.filter(
+          (meeting) => meeting?.status === "RECRUITING",
+        );
+
+        setPopularMeetings(recruitingMeetings.slice(0, 5));
       } catch (error) {
         console.error(error);
         if (active) setPopularMeetings([]);
@@ -614,7 +624,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={styles.dashboardPanel}>
+      <section
+        className={`${styles.dashboardPanel} ${styles.dashboardActivityPanelMatchActivity}`}
+      >
         <div className={styles.dashboardPanelHead}>
           <h3>최근 활동</h3>
         </div>
@@ -622,23 +634,30 @@ export default function HomePage() {
           {recentActivities.length ? (
             recentActivities.map((activity) => (
               <div key={activity.key} className={styles.dashboardActivityItem}>
-                <i>{activity.user.slice(0, 1)}</i>
-                <div>
-                  <strong>{activity.user}</strong>
-                  <p>{activity.detail}</p>
+                <i>
+                  <UiIcon
+                    name="activity"
+                    className={styles.dashboardActivityGlyph}
+                  />
+                </i>
+                <div className={styles.dashboardActivityBody}>
+                  <div className={styles.dashboardActivityHeader}>
+                    <span
+                      className={`${styles.dashboardActivityBadge} ${activity.toneClass}`}
+                    >
+                      {activity.kindLabel}
+                    </span>
+                  </div>
+                  <strong className={styles.dashboardActivityTitle}>
+                    {activity.title}
+                  </strong>
+                  <p className={styles.dashboardActivityMeta}>{activity.meta}</p>
                 </div>
-                <span>{activity.time}</span>
+                <span className={styles.dashboardActivityTime}>{activity.time}</span>
               </div>
             ))
           ) : (
-            <div className={styles.dashboardActivityItem}>
-              <i>i</i>
-              <div>
-                <strong>최근 활동이 없어요</strong>
-                <p>모임에 참여하거나 만들면 이곳에 표시됩니다.</p>
-              </div>
-              <span>-</span>
-            </div>
+            <div className={styles.emptyMessage}>최근 활동이 아직 없습니다.</div>
           )}
         </div>
       </section>

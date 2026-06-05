@@ -5,7 +5,8 @@ import {
   resetPassword,
   sendAccountRecoveryEmail,
 } from "../api/authApi";
-import homeBg from "../assets/images/home-bg.webp";
+import bg1 from "../assets/image/bg1.jpg";
+import bg2 from "../assets/image/bg2.jpg";
 import WeMoveLogo from "../components/WeMoveLogo";
 import {
   EMAIL_PATTERN,
@@ -14,7 +15,7 @@ import {
 } from "../utils/profileValidation";
 import styles from "../styles/FindAccountPage.module.css";
 
-const authBackgrounds = [homeBg];
+const authBackgrounds = [bg1, bg2];
 const PASSWORD_PATTERN =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,16}$/;
 const EMAIL_PURPOSE_BY_MODE = {
@@ -256,10 +257,18 @@ export default function FindAccountPage() {
   };
 
   return (
-    <main
-      className={styles.page}
-      style={{ "--auth-bg-image": `url(${backgroundImage})` }}
-    >
+    <main className={styles.page}>
+      <div
+        className={styles.backgroundLayer}
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      />
+      <div className={styles.backgroundOverlay} />
+      <div className={styles.ambientEffects} aria-hidden="true">
+        <div className={`${styles.ambientOrb} ${styles.orb1}`} />
+        <div className={`${styles.ambientOrb} ${styles.orb2}`} />
+        <div className={`${styles.ambientOrb} ${styles.orb3}`} />
+      </div>
+
       <div className={styles.layout}>
         <section className={styles.copy}>
           <Link to="/" className={styles.logo}>

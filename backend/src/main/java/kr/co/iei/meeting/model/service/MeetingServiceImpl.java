@@ -37,6 +37,8 @@ public class MeetingServiceImpl implements MeetingService {
   private static final String POPULAR_KEY_PREFIX = "meeting:popular:";
   private static final String DEDUPE_KEY_PREFIX = "meeting:viewed:";
   private static final int MAIN_LIMIT = 5;
+  private static final int POPULAR_RANKING_LIMIT = 100;
+  private static final int POPULAR_RESULT_LIMIT = 5;
 
   private final MeetingDao meetingDao;
   private final ParticipantDao participantDao;
@@ -192,7 +194,7 @@ public class MeetingServiceImpl implements MeetingService {
   @Override
   public List<MeetingListResponse> getPopularMeetingList() {
     try {
-      return getRankedRecruitingMeetings(MAIN_LIMIT);
+      return getRankedRecruitingMeetings(POPULAR_RANKING_LIMIT, POPULAR_RESULT_LIMIT);
     } catch (Exception e) {
       System.err.println("[meeting] popular meeting load failed: " + e.getMessage());
       return List.of();
@@ -222,8 +224,8 @@ public class MeetingServiceImpl implements MeetingService {
     }
   }
 
-  private List<MeetingListResponse> getRankedRecruitingMeetings(int limit) {
-    Map<Long, Integer> rankedMeetingViews = getTodayRankedMeetingViews(limit);
+  private List<MeetingListResponse> getRankedRecruitingMeetings(int rankingLimit, int resultLimit) {
+    Map<Long, Integer> rankedMeetingViews = getTodayRankedMeetingViews(rankingLimit);
     List<Long> rankedMeetingIds = new ArrayList<>(rankedMeetingViews.keySet());
     if (rankedMeetingIds.isEmpty()) {
       return List.of();
@@ -244,7 +246,7 @@ public class MeetingServiceImpl implements MeetingService {
       }
     }
 
-    return result;
+    return result.size() > resultLimit ? result.subList(0, resultLimit) : result;
   }
 
   private Map<Long, Integer> getTodayRankedMeetingViews(int limit) {

@@ -367,6 +367,15 @@
           AND TIMESTAMP(meetingDate, startTime) &lt;= NOW()
     </update>
 
+    <update id="completeOverdueOngoingMeetings">
+        UPDATE meetings
+        SET status = 'COMPLETED',
+            updatedAt = NOW()
+        WHERE deletedAt IS NULL
+          AND status = 'ONGOING'
+          AND TIMESTAMP(meetingDate, startTime) &lt;= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+    </update>
+
     <select id="selectMaxMembers" resultType="int">
         SELECT maxMembers
         FROM meetings

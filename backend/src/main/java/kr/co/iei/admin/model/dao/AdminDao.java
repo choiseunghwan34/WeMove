@@ -60,4 +60,16 @@ public class AdminDao {
     params.put("suspendReason", suspendReason);
     sqlSession.update("admin.suspendUser", params);
   }
+
+  public int cancelMeetingsHostedByUser(Long userId) {
+    return sqlSession.update("admin.cancelMeetingsHostedByUser", userId);
+  }
+
+  public int cancelParticipationsByUser(Long userId) {
+    return sqlSession.update("admin.cancelParticipationsByUser", userId);
+  }
+
+  public List<Map<String, Object>> selectHostedMeetingCancelNotificationTargets(Long userId) {
+    return sqlSession.selectList("admin.selectHostedMeetingCancelNotificationTargets", userId);
+  }
 }

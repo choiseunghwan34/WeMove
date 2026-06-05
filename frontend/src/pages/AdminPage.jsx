@@ -143,6 +143,19 @@ const translateReason = (reason) => {
   return reason;
 };
 
+const getReportContent = (report) => {
+  const content =
+    report?.content ??
+    report?.reportContent ??
+    report?.detail ??
+    report?.originalData?.content ??
+    report?.originalData?.reportContent ??
+    report?.originalData?.detail ??
+    "";
+
+  return String(content).trim();
+};
+
 const parseRegionLabel = (label = "") => {
   const [sido = "", sigungu = "", dong = ""] = normalizeText(label).split(/\s+/);
   return { sido, sigungu, dong };
@@ -416,6 +429,7 @@ export default function AdminPage() {
               targetUserId,
               targetId: targetUserId,
               reason: translateReason(report.reason),
+              content: getReportContent(report),
               status: report.status ?? "PENDING",
               statusText: reportStatusText[report.status] ?? report.status ?? "대기중",
               createdAt: report.createdAt ? String(report.createdAt).slice(0, 10) : "-",
@@ -1045,7 +1059,16 @@ export default function AdminPage() {
                     <tr key={report.id}>
                       <td>{report.id}</td>
                       <td><strong>{report.target}</strong></td>
-                      <td>{report.reason}</td>
+                      <td>
+                        <div className={styles.reportReasonCell}>
+                          <strong>{report.reason}</strong>
+                          <span>
+                            {getReportContent(report)
+                              ? getReportContent(report).replace(/\s+/g, " ")
+                              : "상세 내용 없음"}
+                          </span>
+                        </div>
+                      </td>
                       <td>
                     <span className={cx("badge", badgeToneByReportStatus(report.status))}>
                       {report.statusText}
@@ -1174,6 +1197,13 @@ export default function AdminPage() {
                       <span>신고 사유</span>
                       <strong>{selectedReportAction.reason}</strong>
                     </div>
+                    <div className={styles.detailModalItem} style={{ gridColumn: "1 / -1" }}>
+                      <span>신고 내용</span>
+                      <p className={styles.reportContentText}>
+                        {getReportContent(selectedReportAction) ||
+                          "신고자가 상세 내용을 입력하지 않았습니다."}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -1185,7 +1215,7 @@ export default function AdminPage() {
                           value={reportActionForm.actionType}
                           onChange={(e) => setReportActionForm(cur => ({ ...cur, actionType: e.target.value }))}
                       >
-                        <option value="WARNING">경고 (웹소켓 알림)</option>
+                        <option value="WARNING">경고 안내</option>
                         <option value="SUSPEND">계정 일시 정지 (로그인 차단)</option>
                         <option value="REJECT">신고 반려 (문제 없음 처리)</option>
                       </select>
@@ -1209,7 +1239,7 @@ export default function AdminPage() {
 
                     {reportActionForm.actionType !== "REJECT" && (
                         <label className={styles.modalField}>
-                          <span>안내 메시지 (실시간 알림)</span>
+                          <span>회원 안내 메시지</span>
                           <textarea
                               rows={3}
                               value={reportActionForm.message}
@@ -1219,7 +1249,7 @@ export default function AdminPage() {
                                     message: e.target.value,
                                   }))
                               }
-                              placeholder="접속 중인 유저에게 웹소켓으로 전달됩니다."
+                              placeholder="처리 사유와 후속 안내를 회원이 이해하기 쉽게 입력해 주세요."
                               style={{
                                 width: "100%",
                                 padding: "12px",

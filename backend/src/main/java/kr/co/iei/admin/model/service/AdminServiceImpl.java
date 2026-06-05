@@ -2,6 +2,7 @@ package kr.co.iei.admin.model.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import kr.co.iei.admin.model.dao.AdminDao;
 import kr.co.iei.admin.model.vo.*;
 import kr.co.iei.auth.model.service.AuthService;
@@ -18,6 +19,43 @@ public class AdminServiceImpl implements AdminService {
   private final AdminDao adminDao;
   private final AuthService authService;
   private final NotificationService notificationService;
+
+  private void notifyHostedMeetingCancellations(List<Map<String, Object>> targets) {
+    if (targets == null || targets.isEmpty()) {
+      return;
+    }
+
+    for (Map<String, Object> target : targets) {
+      Long participantUserId = toLong(target.get("userId"));
+      Long meetingId = toLong(target.get("meetingId"));
+      String meetingTitle = String.valueOf(target.getOrDefault("meetingTitle", "모임"));
+
+      if (participantUserId == null) {
+        continue;
+      }
+
+      notificationService.sendToUser(
+          participantUserId,
+          "notice",
+          "모임 취소 안내",
+          "'" + meetingTitle + "' 모임은 모임장 계정 제재로 취소되었습니다.",
+          meetingId == null ? null : "meeting:" + meetingId);
+    }
+  }
+
+  private Long toLong(Object value) {
+    if (value instanceof Number number) {
+      return number.longValue();
+    }
+    if (value == null) {
+      return null;
+    }
+    try {
+      return Long.valueOf(String.valueOf(value));
+    } catch (NumberFormatException ignored) {
+      return null;
+    }
+  }
 
   public AdminSummary getSummary() {
     return adminDao.selectSummary();
@@ -93,13 +131,18 @@ public class AdminServiceImpl implements AdminService {
       int suspendHours = request.getSuspendDuration();
       LocalDateTime suspendedUntil =
           AccountSanctionMessageUtil.calculateSuspendedUntil(suspendHours);
+      List<Map<String, Object>> hostedMeetingCancelTargets =
+          adminDao.selectHostedMeetingCancelNotificationTargets(userId);
 
       adminDao.suspendUser(userId, suspendHours, reason);
+      adminDao.cancelParticipationsByUser(userId);
+      adminDao.cancelMeetingsHostedByUser(userId);
 
       Runnable afterCommit =
           () -> {
             notificationService.sendAccountSuspend(
                 userId, reason, suspendHours, suspendedUntil, sourceId);
+            notifyHostedMeetingCancellations(hostedMeetingCancelTargets);
             authService.invalidateUserSession(userId);
           };
 

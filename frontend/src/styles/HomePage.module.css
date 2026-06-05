@@ -8,8 +8,44 @@
   composes: dashboardActivityItem from "./WeMoveShared.module.css";
 }
 
+.dashboardActivityBody {
+  composes: dashboardActivityBody from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityBadge {
+  composes: dashboardActivityBadge from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityHeader {
+  composes: dashboardActivityHeader from "./WeMoveShared.module.css";
+}
+
 .dashboardActivityList {
   composes: dashboardActivityList from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityMeta {
+  composes: dashboardActivityMeta from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityTime {
+  composes: dashboardActivityTime from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityTitle {
+  composes: dashboardActivityTitle from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityToneHosted {
+  composes: dashboardActivityToneHosted from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityToneScheduled {
+  composes: dashboardActivityToneScheduled from "./WeMoveShared.module.css";
+}
+
+.dashboardActivityToneWaiting {
+  composes: dashboardActivityToneWaiting from "./WeMoveShared.module.css";
 }
 
 .dashboardCategoryGlyph {
@@ -1522,4 +1558,93 @@
 
 .dashboardSummaryGrid strong {
   font-size: 1.15rem !important;
+}
+
+/* Match the Home recent-activity panel to the Activity page sidebar. */
+.dashboardActivityPanelMatchActivity {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityList {
+  gap: 12px !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityItem {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 14px !important;
+  padding: 14px 16px !important;
+  border: 1px solid #eef0f3 !important;
+  border-radius: 20px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.14) !important;
+  box-shadow:
+    0 14px 28px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityItem i,
+.dashboardActivityPanelMatchActivity .dashboardActivityItem:nth-child(2n) i {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #eef4ff, #e8f3ff) !important;
+  color: #2563eb !important;
+  box-shadow: none !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityBody {
+  gap: 6px !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityBadge {
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityTitle {
+  color: #0f172a !important;
+  font-size: 0.98rem !important;
+  font-weight: 800 !important;
+  line-height: 1.42 !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityMeta {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.86rem !important;
+  line-height: 1.55 !important;
+}
+
+.dashboardActivityPanelMatchActivity .dashboardActivityTime {
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+}
+
+.emptyMessage {
+  padding: 18px;
+  border: 1px dashed #dbe3ef;
+  border-radius: 18px;
+  background: #f8fbff;
+  color: #64748b;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: center;
 }

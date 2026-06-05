@@ -16,6 +16,11 @@ public class ReportDao {
     return sqlSession.insert("report.insertReport", r);
   }
 
+  public int countPendingDuplicateReport(Report r) {
+    Integer count = sqlSession.selectOne("report.countPendingDuplicateReport", r);
+    return count == null ? 0 : count;
+  }
+
   public List<ReportResponse> selectReports() {
     return sqlSession.selectList("report.selectReports");
   }

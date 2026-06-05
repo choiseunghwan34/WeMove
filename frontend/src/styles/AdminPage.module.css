@@ -551,6 +551,30 @@
   vertical-align: middle;
 }
 
+.reportReasonCell {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.reportReasonCell strong {
+  color: #111827;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.reportReasonCell span {
+  display: block;
+  max-width: 280px;
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .processedLabel {
   display: inline-flex;
   align-items: center;
@@ -600,6 +624,19 @@
   color: #111827;
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+.reportContentText {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.65;
+  white-space: pre-wrap;
 }
 
 .filterHead button,

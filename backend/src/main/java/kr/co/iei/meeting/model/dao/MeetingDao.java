@@ -56,6 +56,10 @@ public class MeetingDao {
     return sqlSession.update("meeting.startDueMeetings");
   }
 
+  public int completeOverdueOngoingMeetings() {
+    return sqlSession.update("meeting.completeOverdueOngoingMeetings");
+  }
+
   public List<MeetingListResponse> selectMainMeetingList(Map<String, Object> params) {
     return sqlSession.selectList("meeting.selectMainMeetingList", params);
   }

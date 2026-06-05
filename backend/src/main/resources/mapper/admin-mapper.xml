@@ -84,6 +84,9 @@
         SELECT
             r.reportId,
             r.reason,
+            r.content AS content,
+            r.content AS reportContent,
+            r.content AS detail,
             r.status,
             r.createdAt,
             r.targetUserId,
@@ -91,6 +94,21 @@
         FROM reports r
         LEFT JOIN users u ON r.targetUserId = u.userId
         ORDER BY r.reportId DESC
+    </select>
+
+    <select id="selectHostedMeetingCancelNotificationTargets" resultType="map">
+        SELECT
+            m.meetingId AS meetingId,
+            m.title AS meetingTitle,
+            mp.userId AS userId
+        FROM meetings m
+        JOIN meetingParticipants mp
+          ON mp.meetingId = m.meetingId
+         AND mp.status = 'APPROVED'
+         AND mp.userId != m.hostUserId
+        WHERE m.hostUserId = #{userId}
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
     </select>
 
     <update id="updateReportStatusToProcessed">
@@ -133,6 +151,29 @@
             suspendReason = #{suspendReason},
             updatedAt = NOW()
         WHERE userId = #{userId}
+    </update>
+
+    <update id="cancelMeetingsHostedByUser">
+        UPDATE meetings
+        SET
+            status = 'CANCELLED',
+            deletedAt = COALESCE(deletedAt, NOW()),
+            updatedAt = NOW()
+        WHERE hostUserId = #{userId}
+          AND deletedAt IS NULL
+          AND status NOT IN ('COMPLETED', 'CANCELLED')
+    </update>
+
+    <update id="cancelParticipationsByUser">
+        UPDATE meetingParticipants mp
+        JOIN meetings m ON m.meetingId = mp.meetingId
+        SET
+            mp.status = 'CANCELLED',
+            mp.cancelledAt = NOW()
+        WHERE mp.userId = #{userId}
+          AND mp.status IN ('PENDING', 'APPROVED')
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
     </update>
 
 </mapper>
