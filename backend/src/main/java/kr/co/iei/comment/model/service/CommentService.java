@@ -10,4 +10,5 @@ public interface CommentService {
 
 
     void deleteComment(Long commentId, Long requestId);
+
 }

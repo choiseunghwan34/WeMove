@@ -1,35 +1,37 @@
-import {useAuth} from "../contexts/AuthContext.jsx";
+import { useAuth } from "../contexts/AuthContext.jsx";
 import styles from "../styles/WeMoveShared.module.css";
-import {useEffect, useState} from "react";
-import {createComment, deleteComment, getComments} from "../api/commentApi.js";
-import defaultUserImage from "../assets/image/Default-user.png"
-export default function Comment({meetingId, hostUserId, comments, setComments}) {
-    const { user,isAuthenticated } = useAuth();
+import { useEffect, useState } from "react";
+import { createComment, deleteComment, getComments } from "../api/commentApi.js";
+import defaultUserImage from "../assets/image/Default-user.png";
+import UiIcon from "../components/UiIcon"; // 💡 UiIcon 컴포넌트 임포트 (경로 확인 필수!)
+
+export default function Comment({ meetingId, hostUserId, comments, setComments }) {
+    const { user, isAuthenticated } = useAuth();
+
     const [content, setContent] = useState("");
+    const [replyingTo, setReplyingTo] = useState(null); // 답글 폼을 열어둔 부모댓글 ID
+    const [replyContent, setReplyContent] = useState("");
+    const [expandedReplies, setExpandedReplies] = useState([]); // 💡 누락됐던 대댓글 리스트 열림 상태 배열 복구!
 
-
-    //1.댓글목록조회
-    const fetchComments = ()=>{
-        getComments(meetingId).then((res)=>{
-            console.log(res)
+    // 1. 댓글 목록 조회
+    const fetchComments = () => {
+        getComments(meetingId).then((res) => {
             setComments(res.data);
-        }).catch((err)=>{
-            console.error("댓글불러오기 실패: ",err);
-        })
+        }).catch((err) => {
+            console.error("댓글불러오기 실패: ", err);
+        });
     }
-    useEffect(()=>{
-        if(meetingId){
+
+    useEffect(() => {
+        if (meetingId) {
             fetchComments();
         }
-    },[meetingId]);
+    }, [meetingId]);
 
-    //2.댓글 등록
+    // 2. 부모 댓글 등록
     const handleCommentSubmit = (e) => {
         e.preventDefault();
-
-        console.log("현재 로그인한 유저 아이디: ", user)
-        console.log("유저 아이디 : ", user?.memberId)
-        if(!content.trim()){
+        if (!content.trim()) {
             alert("댓글 내용을 입력해주세요.");
             return;
         }
@@ -38,16 +40,16 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
             content: content,
             parentCommentId: null
         }
-        createComment(meetingId, commentData).then((res)=>{
-            console.log(res);
-            setContent(""); // 입력창 초기화
-            fetchComments(); //목록새로고침
-        }).catch((err)=>{
-            console.log(err);
-            alert("댓글 등록에 실패했습니다.")
-        })
+        createComment(meetingId, commentData).then((res) => {
+            setContent("");
+            fetchComments();
+        }).catch((err) => {
+            console.error(err);
+            alert("댓글 등록에 실패했습니다.");
+        });
     }
-    //댓글 삭제
+
+    // 3. 댓글 삭제
     const handleDeleteComment = (commentId) => {
         if (!window.confirm("이 댓글을 삭제하시겠습니까?")) return;
         deleteComment(commentId, user.memberId)
@@ -60,62 +62,199 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
                 alert("삭제 권한이 없거나 오류가 발생했습니다.");
             });
     }
-    return(
+
+    // 4. 대댓글 등록
+    const handleReplySubmit = (e, parentCommentId) => {
+        e.preventDefault();
+        if (!replyContent.trim()) {
+            alert("답글 내용을 입력해주세요.");
+            return;
+        }
+        const commentData = {
+            writerId: user?.memberId,
+            content: replyContent,
+            parentCommentId: parentCommentId,
+        }
+        createComment(meetingId, commentData).then((res) => {
+            setReplyContent("");
+            fetchComments();
+        }).catch((err) => {
+            console.error(err);
+            alert("답글 등록에 실패했습니다.");
+        });
+    }
+
+    // 부모 댓글만 필터링
+    const parentComments = comments.filter(c => !c.parentCommentId);
+
+    return (
         <>
             <div className={styles.commentList}>
-
                 {comments.length === 0 ? (
                     <p>아직 작성된 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
                 ) : (
-                    comments.map((comment) => {
+                    parentComments.map((comment) => {
 
-                        // 권한 체크: 작성자 본인이거나 모임 주최자일 때만 삭제 가능
+                        // 권한 체크
                         const isAuthor = Number(user?.memberId) === Number(comment.writerId);
                         const isHost = Number(user?.memberId) === Number(hostUserId);
                         const canDelete = isAuthor || isHost;
 
-                        return (
-                            <article key={comment.commentId} className={styles.commentItem}>
-                                <img
-                                    style={!comment.profileImage ? {
-                                        padding: "2px",
-                                        backgroundColor: "#f3f4f6",
-                                        boxSizing: "border-box",
-                                    } : {}}
-                                    src={comment.profileImage || defaultUserImage}
-                                    alt={`${comment.nickname} 프로필`}
-                                    className={styles.commentAvatar}
-                                />
-                                <div>
-                                    <div className={styles.commentMeta}>
-                                        <strong>{comment.nickname}</strong>
-                                        <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                                    </div>
-                                    <p>{comment.content}</p>
+                        // 현재 부모의 자식 댓글 필터링
+                        const childComments = comments.filter(c => c.parentCommentId === comment.commentId);
 
-                                    {canDelete && (
-                                        <div className={styles.buttonWrap}>
-                                            <button
-                                                className={styles.deleteBtn}
-                                                onClick={() => handleDeleteComment(comment.commentId)}
-                                            >
-                                                댓글 삭제
-                                            </button>
+                        console.log("댓글 삭제 여부:", comment.commentId, comment.isDeleted);
+                        return (
+                            <div key={comment.commentId} className={styles.commentGroup}>
+
+                                {/* --- 부모 댓글 영역 --- */}
+                                <article className={styles.commentItem}>
+                                    <img
+                                        src={comment.profileImage || defaultUserImage}
+                                        alt={`${comment.nickname} 프로필`}
+                                        className={`${styles.commentAvatar} ${!comment.profileImage ? styles.defaultAvatar : ""}`}
+                                    />
+                                    <div>
+                                        <div className={styles.commentMeta}>
+                                            <strong>{comment.nickname}</strong>
+                                            <span>{new Date(comment.createdAt).toLocaleString()}</span>
                                         </div>
-                                    )}
-                                </div>
-                            </article>
+                                        <p>{comment.content}</p>
+
+                                        {/* 아이콘 액션 버튼 영역 */}
+                                        <div className={styles.actionWrap}>
+                                            {/* 1. 답글 아이콘 버튼 */}
+                                            {!comment.isDeleted && (
+
+                                            <button
+                                                className={styles.iconBtn}
+                                                onClick={() => {
+                                                    if (!isAuthenticated) return alert("로그인이 필요합니다.");
+
+                                                    const isOpen = replyingTo === comment.commentId;
+
+                                                    if (isOpen) {
+                                                        // 열려있으면 닫기
+
+                                                        setExpandedReplies(prev => prev.filter(id => id !== comment.commentId));
+                                                    } else {
+                                                        // 닫혀있으면 폼과 리스트 동시에 열기
+                                                        setReplyingTo(comment.commentId);
+                                                        setExpandedReplies(prev => [...prev, comment.commentId]);
+                                                    }
+                                                }}
+                                            >
+                                                <UiIcon name="comment" className={styles.actionIcon}/>
+                                                <span>{childComments.length}</span>
+                                            </button>
+                                            )}
+
+                                            {canDelete && (
+                                                <button
+                                                    className={`${styles.iconBtn} ${styles.iconBtnTrash}`}
+                                                    onClick={() => handleDeleteComment(comment.commentId)}
+                                                    title="댓글 삭제"
+                                                >
+                                                    <UiIcon name="trash" className={styles.actionIcon} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </article>
+
+                                {/* --- 대댓글 리스트 렌더링 --- */}
+                                {childComments.length > 0 && expandedReplies.includes(comment.commentId) && (
+                                    <div className={styles.replyIndentBox}>
+                                        {childComments.map((child) => {
+                                            const isChildAuthor = user?.memberId && child.writerId && String(user.memberId) === String(child.writerId);
+                                            const isChildHost = user?.memberId && hostUserId && String(user.memberId) === String(hostUserId);
+                                            const canChildDelete = isChildAuthor || isChildHost;
+
+                                            return(
+                                                <article key={child.commentId} className={`${styles.commentItem} ${styles.childCommentBox}`}>
+                                                    <img
+                                                        src={child.profileImage || defaultUserImage}
+                                                        alt={`${child.nickname} 프로필`}
+                                                        className={`${styles.commentAvatar} ${!child.profileImage ? styles.defaultAvatar : ""}`}
+                                                    />
+                                                    <div>
+                                                        <div className={styles.commentMeta}>
+                                                            <strong>{child.nickname}</strong>
+                                                            <span>{new Date(child.createdAt).toLocaleString()}</span>
+                                                        </div>
+                                                        <div className={styles.replyContentWrap}>
+                                                            <p>{child.content}</p>
+
+                                                            {/* 자식 댓글 삭제 휴지통 아이콘 */}
+                                                            {canChildDelete && (
+                                                                <div className={styles.actionWrap}>
+                                                                    <button
+                                                                        className={`${styles.iconBtn} ${styles.iconBtnTrash}`}
+                                                                        onClick={() => handleDeleteComment(child.commentId)}
+                                                                        title="대댓글 삭제"
+                                                                    >
+                                                                        <UiIcon name="trash"
+                                                                                className={styles.actionIcon}/>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+
+                                                        </div>
+                                                    </div>
+                                                </article>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                                {/* --- 대댓글 폼 (리스트 하단에 노출) --- */}
+                                {replyingTo === comment.commentId && !comment.isDeleted && (
+                                    <div className={styles.replyIndentBox}>
+                                        <form
+                                            className={styles.replyCommentForm}
+                                            onSubmit={(e) => handleReplySubmit(e, comment.commentId)}>
+                                            <textarea
+                                                value={replyContent}
+                                                maxLength={100}
+                                                onChange={(e) => {
+                                                    if(e.target.value.length <= 100){
+                                                        setReplyContent(e.target.value)
+                                                    }
+                                                }}
+                                                placeholder="답글을 입력하세요."
+                                            />
+                                            <div className={styles.charCount}>
+                                                {replyContent.length} / 100
+                                            </div>
+                                            <div className={styles.replySubmitBtn}>
+                                                <button type="submit" className={styles.submitBtn}>
+                                                    <UiIcon name="arrow" className={styles.actionIcon}/>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+                            </div>
                         );
                     })
                 )}
             </div>
 
+            {/* 최하단 메인 댓글 작성 폼 */}
             {isAuthenticated ? (
                 <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
-                <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요." />
+                    <textarea
+                        value={content}
+                        maxLength={100}
+                        onChange={(e) => {
+                            if(e.target.value.length <= 100){
+                                setContent(e.target.value)
+                            }
+                        }}
+                        placeholder="모임장에게 궁금한 점이나 참여 전에 확인하고 싶은 내용을 남겨보세요."
+                    />
+                    <div className={styles.charCount}>
+                        {content.length} / 100
+                    </div>
                     <div className={styles.formActions}>
                         <button type="submit">
                             댓글 등록
@@ -123,7 +262,7 @@ export default function Comment({meetingId, hostUserId, comments, setComments}) 
                     </div>
                 </form>
             ) : (
-                <p style={{ color: "#666", marginBottom: "20px" }}>댓글을 작성하려면 로그인이 필요합니다.</p>
+                <p className={styles.loginMessage}>댓글을 작성하려면 로그인이 필요합니다.</p>
             )}
         </>
     )
