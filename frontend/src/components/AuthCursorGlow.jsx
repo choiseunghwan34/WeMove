@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 
 const INITIAL_POINT = { x: 0, y: 0, visible: false };
-const TRAIL_COUNT = 3;
-
-const LEAF_ROTATIONS = [-18, 9, -6];
 
 function LeafIcon({ className }) {
   return (
@@ -14,29 +11,46 @@ function LeafIcon({ className }) {
 }
 
 export default function AuthCursorGlow({ styles }) {
-  const [trail, setTrail] = useState(
-    Array.from({ length: TRAIL_COUNT }, () => INITIAL_POINT),
-  );
+  const [pointer, setPointer] = useState(INITIAL_POINT);
+  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     let frameId = 0;
 
-    const updateTrail = (x, y, visible) => {
+    const updatePointer = (x, y, visible) => {
       cancelAnimationFrame(frameId);
       frameId = window.requestAnimationFrame(() => {
-        setTrail((current) => {
-          const head = { x, y, visible };
-          return [head, ...current.slice(0, TRAIL_COUNT - 1)];
-        });
+        setPointer({ x, y, visible });
       });
     };
 
+    const updateHoverState = (target) => {
+      if (!(target instanceof Element)) {
+        setIsHovering(false);
+        return;
+      }
+
+      const interactiveTarget = target.closest(
+        'a, button, [role="button"], input, select, textarea, summary, label',
+      );
+
+      if (interactiveTarget) {
+        setIsHovering(true);
+        return;
+      }
+
+      const computedStyle = window.getComputedStyle(target);
+      setIsHovering(computedStyle.cursor === "pointer");
+    };
+
     const handleMove = (event) => {
-      updateTrail(event.clientX, event.clientY, true);
+      updatePointer(event.clientX, event.clientY, true);
+      updateHoverState(event.target);
     };
 
     const handleLeave = () => {
-      setTrail((current) => current.map((item) => ({ ...item, visible: false })));
+      setPointer((current) => ({ ...current, visible: false }));
+      setIsHovering(false);
     };
 
     window.addEventListener("pointermove", handleMove);
@@ -55,20 +69,17 @@ export default function AuthCursorGlow({ styles }) {
 
   return (
     <div className={styles.cursorGlowLayer} aria-hidden="true">
-      {trail.map((point, index) => (
-        <div
-          key={`leaf-${index}`}
-          className={styles.cursorLeaf}
-          style={{
-            "--cursor-x": `${point.x}px`,
-            "--cursor-y": `${point.y}px`,
-            "--leaf-rotation": `${LEAF_ROTATIONS[index] || 0}deg`,
-            opacity: point.visible ? 1 - index * 0.22 : 0,
-          }}
-        >
-          <LeafIcon className={styles.cursorLeafIcon} />
-        </div>
-      ))}
+      <div
+        className={styles.cursorLeaf}
+        style={{
+          "--cursor-x": `${pointer.x}px`,
+          "--cursor-y": `${pointer.y}px`,
+          "--leaf-scale": isHovering ? 1.18 : 1,
+          opacity: pointer.visible ? 0.92 : 0,
+        }}
+      >
+        <LeafIcon className={styles.cursorLeafIcon} />
+      </div>
     </div>
   );
 }

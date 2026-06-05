@@ -52,6 +52,11 @@ const formatJoinDate = (dateStr) => {
     }
 };
 
+const buildViewStorageKey = (meetingId) => {
+    const today = new Date().toISOString().slice(0, 10);
+    return `wemove:view:${meetingId}:${today}`;
+};
+
 export default function MeetingDetailPage() {
     const [comments, setComments] = useState([]);
     const {meetingId} = useParams();
@@ -152,7 +157,14 @@ export default function MeetingDetailPage() {
             return;
         }
 
-        recordMeetingView(meetingId).catch((error) => {
+        const storageKey = buildViewStorageKey(meetingId);
+        if (window.sessionStorage.getItem(storageKey)) {
+            return;
+        }
+
+        recordMeetingView(meetingId).then(() => {
+            window.sessionStorage.setItem(storageKey, "1");
+        }).catch((error) => {
             console.error("Failed to record meeting view:", error);
         });
     }, [meetingId]);
