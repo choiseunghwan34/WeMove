@@ -1,85 +1,116 @@
 import { useEffect, useState } from "react";
 
-const INITIAL_POINT = { x: 0, y: 0, visible: false };
+const LEAF_SYMBOL = "\uD83C\uDF3F";
+const TRAIL_COUNT = 3;
 
-function LeafIcon({ className }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d="M19.4 4.6c-4.5-.8-8.2.4-10.9 3.1-3.8 3.8-3.5 8.9-3.1 11 .2.9 1 1.6 1.9 1.8 2 .4 7.2.7 11-3.1 2.7-2.7 3.8-6.4 3.1-10.9-.1-.9-.8-1.6-1.7-1.9l-.3-.1Zm-9.7 11.9 5.9-5.9 1.4 1.4-5.9 5.9-1.4-1.4Z" />
-    </svg>
+const buildTrail = () =>
+  Array.from({ length: TRAIL_COUNT }, (_, index) => ({
+    id: index,
+    x: 0,
+    y: 0,
+    scale: 1 - index * 0.12,
+    rotation: -10 + index * 8,
+    opacity: 0,
+  }));
+
+const isInteractiveTarget = (target) => {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  const clickable = target.closest(
+    'a, button, [role="button"], input, select, textarea, summary, label',
   );
-}
 
-export default function AuthCursorGlow({ styles }) {
-  const [pointer, setPointer] = useState(INITIAL_POINT);
-  const [isHovering, setIsHovering] = useState(false);
+  if (clickable) {
+    return true;
+  }
+
+  return window.getComputedStyle(target).cursor === "pointer";
+};
+
+export default function AuthCursorGlow({ styles, leaf = LEAF_SYMBOL }) {
+  const [trail, setTrail] = useState(buildTrail);
 
   useEffect(() => {
     let frameId = 0;
+    let hoverScale = 1;
+    let visible = false;
+    const target = { x: 0, y: 0 };
+    let nodes = buildTrail();
 
-    const updatePointer = (x, y, visible) => {
-      cancelAnimationFrame(frameId);
-      frameId = window.requestAnimationFrame(() => {
-        setPointer({ x, y, visible });
+    const animate = () => {
+      let leadX = target.x;
+      let leadY = target.y;
+
+      nodes = nodes.map((item, index) => {
+        const followStrength = index === 0 ? 0.19 : 0.16 - index * 0.02;
+        const nextX = item.x + (leadX - item.x) * followStrength;
+        const nextY = item.y + (leadY - item.y) * followStrength;
+
+        leadX = nextX - 6;
+        leadY = nextY + 6;
+
+        return {
+          ...item,
+          x: nextX,
+          y: nextY,
+          scale: (1 - index * 0.12) * hoverScale,
+          rotation:
+            -16 + index * 9 + Math.sin((nextX + nextY) * 0.012 + index) * 8,
+          opacity: visible ? 0.9 - index * 0.22 : 0,
+        };
       });
+
+      setTrail(nodes);
+      frameId = window.requestAnimationFrame(animate);
     };
 
-    const updateHoverState = (target) => {
-      if (!(target instanceof Element)) {
-        setIsHovering(false);
-        return;
-      }
-
-      const interactiveTarget = target.closest(
-        'a, button, [role="button"], input, select, textarea, summary, label',
-      );
-
-      if (interactiveTarget) {
-        setIsHovering(true);
-        return;
-      }
-
-      const computedStyle = window.getComputedStyle(target);
-      setIsHovering(computedStyle.cursor === "pointer");
+    const handlePointerMove = (event) => {
+      target.x = event.clientX + 10;
+      target.y = event.clientY + 12;
+      hoverScale = isInteractiveTarget(event.target) ? 1.12 : 1;
+      visible = true;
     };
 
-    const handleMove = (event) => {
-      updatePointer(event.clientX, event.clientY, true);
-      updateHoverState(event.target);
+    const hideTrail = () => {
+      visible = false;
     };
 
-    const handleLeave = () => {
-      setPointer((current) => ({ ...current, visible: false }));
-      setIsHovering(false);
-    };
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerdown", handlePointerMove);
+    window.addEventListener("pointerleave", hideTrail);
+    window.addEventListener("blur", hideTrail);
 
-    window.addEventListener("pointermove", handleMove);
-    window.addEventListener("pointerdown", handleMove);
-    window.addEventListener("pointerleave", handleLeave);
-    window.addEventListener("blur", handleLeave);
+    frameId = window.requestAnimationFrame(animate);
 
     return () => {
-      cancelAnimationFrame(frameId);
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerdown", handleMove);
-      window.removeEventListener("pointerleave", handleLeave);
-      window.removeEventListener("blur", handleLeave);
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerdown", handlePointerMove);
+      window.removeEventListener("pointerleave", hideTrail);
+      window.removeEventListener("blur", hideTrail);
     };
   }, []);
 
   return (
     <div className={styles.cursorGlowLayer} aria-hidden="true">
-      <div
-        className={styles.cursorLeaf}
-        style={{
-          "--cursor-x": `${pointer.x}px`,
-          "--cursor-y": `${pointer.y}px`,
-          "--leaf-scale": isHovering ? 1.18 : 1,
-          opacity: pointer.visible ? 0.92 : 0,
-        }}
-      >
-        <LeafIcon className={styles.cursorLeafIcon} />
-      </div>
+      {trail.map((item, index) => (
+        <span
+          key={item.id}
+          className={styles.cursorLeaf}
+          style={{
+            "--leaf-x": `${item.x}px`,
+            "--leaf-y": `${item.y}px`,
+            "--leaf-rotation": `${item.rotation}deg`,
+            "--leaf-scale": item.scale,
+            opacity: item.opacity,
+            zIndex: TRAIL_COUNT - index,
+          }}
+        >
+          <span className={styles.cursorLeafIcon}>{leaf}</span>
+        </span>
+      ))}
     </div>
   );
 }
