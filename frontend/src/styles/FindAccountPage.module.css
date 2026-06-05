@@ -72,14 +72,20 @@
 
 .form {
   display: grid;
+  gap: 10px;
 }
 
 .form label {
   display: grid;
   gap: 8px;
+  margin: 0;
   color: #304761;
   font-size: 13px;
   font-weight: 900;
+}
+
+.card .form label {
+  margin-bottom: 0;
 }
 
 .form input {
@@ -226,5 +232,36 @@
 
   .inlineField {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 721px) and (min-height: 900px) {
+  .page {
+    height: 100dvh;
+    min-height: 0;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .card {
+    padding: 34px 40px;
+  }
+
+  .cardHead {
+    margin-bottom: 18px;
+  }
+
+  .tabRow {
+    margin-bottom: 12px;
+  }
+
+  .form {
+    gap: 6px;
+  }
+
+  .form input,
+  .inlineField button {
+    height: 52px;
   }
 }

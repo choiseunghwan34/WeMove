@@ -12,3 +12,6 @@ export const deleteNotification = (notificationId) =>
   api.delete(`/notifications/${notificationId}`);
 
 export const deleteNotifications = () => api.delete("/notifications");
+
+export const broadcastNotice = (message, title = "공지사항") =>
+  api.post("/notifications/notice", { title, message });
