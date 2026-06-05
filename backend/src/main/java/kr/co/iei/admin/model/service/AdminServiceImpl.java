@@ -36,7 +36,7 @@ public class AdminServiceImpl implements AdminService {
 
       notificationService.sendToUser(
           participantUserId,
-          "notice",
+          "meetingCancelled",
           "모임 취소 안내",
           "'" + meetingTitle + "' 모임은 모임장 계정 제재로 취소되었습니다.",
           meetingId == null ? null : "meeting:" + meetingId);
@@ -93,11 +93,13 @@ public class AdminServiceImpl implements AdminService {
     }
 
     String actionType = request.getActionType().trim().toUpperCase();
+    Integer reporterId = adminDao.selectReportReporterId(reportId);
 
     String reportStatus = "REJECT".equals(actionType) ? "REJECTED" : "RESOLVED";
     adminDao.updateReportStatusToProcessed(reportId, reportStatus);
 
     if ("REJECT".equals(actionType)) {
+      notifyReportResult(reporterId, reportId, "신고가 반려되었습니다.");
       return;
     }
 
@@ -120,6 +122,7 @@ public class AdminServiceImpl implements AdminService {
 
     if ("WARNING".equals(actionType)) {
       notificationService.sendAccountWarning(userId, reason, sourceId);
+      notifyReportResult(reporterId, reportId, "신고가 처리되었습니다.");
       return;
     }
 
@@ -142,6 +145,7 @@ public class AdminServiceImpl implements AdminService {
           () -> {
             notificationService.sendAccountSuspend(
                 userId, reason, suspendHours, suspendedUntil, sourceId);
+            notifyReportResult(reporterId, reportId, "신고가 처리되었습니다.");
             notifyHostedMeetingCancellations(hostedMeetingCancelTargets);
             authService.invalidateUserSession(userId);
           };
@@ -161,5 +165,18 @@ public class AdminServiceImpl implements AdminService {
     }
 
     throw new IllegalArgumentException("지원하지 않는 처리 방법입니다.");
+  }
+
+  private void notifyReportResult(Integer reporterId, Long reportId, String message) {
+    if (reporterId == null) {
+      return;
+    }
+
+    notificationService.sendToUser(
+        reporterId.longValue(),
+        "reportResult",
+        "신고 처리 결과",
+        message,
+        "report:" + reportId);
   }
 }

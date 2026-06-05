@@ -49,4 +49,11 @@ public class ParticipantDao {
   public Long selectMeetingIdByParticipantId(Long participantId) {
     return sqlSession.selectOne("participant.selectMeetingIdByParticipantId", participantId);
   }
+
+  public java.util.List<Long> selectApprovedUserIds(Long meetingId, Long excludedUserId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("meetingId", meetingId);
+    params.put("excludedUserId", excludedUserId);
+    return sqlSession.selectList("participant.selectApprovedUserIds", params);
+  }
 }

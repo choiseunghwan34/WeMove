@@ -35,6 +35,10 @@ public class AdminDao {
     return sqlSession.selectOne("admin.selectReportTargetUserId", reportId);
   }
 
+  public Integer selectReportReporterId(Long reportId) {
+    return sqlSession.selectOne("admin.selectReportReporterId", reportId);
+  }
+
   public int updateMemberStatus(Long userId, String status) {
     return sqlSession.update(
         "admin.updateMemberStatus", Map.of("userId", userId, "status", status));

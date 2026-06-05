@@ -83,6 +83,33 @@
           )
     </select>
 
+    <select id="selectActiveHostedMeetingsWithOtherParticipants"
+            resultType="kr.co.iei.member.model.vo.MemberActivityMeetingResponse">
+        SELECT
+            m.meetingId AS meetingId,
+            m.title,
+            m.placeName AS placeName,
+            m.meetingDate AS meetingDate,
+            m.startTime AS startTime,
+            m.status,
+            s.name AS sportName,
+            CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, '')) AS regionName
+        FROM meetings m
+        JOIN sports s ON m.sportId = s.sportId
+        JOIN regions r ON m.regionId = r.regionId
+        WHERE m.hostUserId = #{memberId}
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+          AND EXISTS (
+              SELECT 1
+              FROM meetingParticipants mp
+              WHERE mp.meetingId = m.meetingId
+                AND mp.userId != #{memberId}
+                AND mp.status = 'APPROVED'
+          )
+        ORDER BY m.meetingDate ASC, m.startTime ASC, m.meetingId DESC
+    </select>
+
     <select id="countActiveParticipatingMeetings" resultType="int">
         SELECT COUNT(*)
         FROM meetingParticipants mp
@@ -92,6 +119,30 @@
           AND mp.status IN ('APPROVED', 'PENDING')
           AND m.deletedAt IS NULL
           AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+    </select>
+
+    <select id="selectActiveParticipatingMeetings"
+            resultType="kr.co.iei.member.model.vo.MemberActivityMeetingResponse">
+        SELECT
+            m.meetingId AS meetingId,
+            m.title,
+            m.placeName AS placeName,
+            m.meetingDate AS meetingDate,
+            m.startTime AS startTime,
+            m.status,
+            mp.status AS participationStatus,
+            s.name AS sportName,
+            CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, '')) AS regionName
+        FROM meetingParticipants mp
+        JOIN meetings m ON mp.meetingId = m.meetingId
+        JOIN sports s ON m.sportId = s.sportId
+        JOIN regions r ON m.regionId = r.regionId
+        WHERE mp.userId = #{memberId}
+          AND m.hostUserId != #{memberId}
+          AND mp.status IN ('APPROVED', 'PENDING')
+          AND m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+        ORDER BY m.meetingDate ASC, m.startTime ASC, m.meetingId DESC
     </select>
 
     <update id="cancelSoloHostedMeetingsForWithdrawal">

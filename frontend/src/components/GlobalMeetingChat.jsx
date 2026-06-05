@@ -17,7 +17,6 @@ import { getAccessToken } from "../utils/authTokenStore";
 import {
   NOTIFICATION_TYPES,
   WEMOVE_NOTIFICATION_OPEN_EVENT,
-  publishNotification,
 } from "../utils/notificationEvents";
 import { WEMOVE_DIRECT_CHAT_OPEN_EVENT } from "../utils/directChatEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
@@ -288,7 +287,6 @@ export default function GlobalMeetingChat() {
           sourceId: `chat:${message.meetingId || roomTitle}`,
           target: notificationPayload,
         });
-        publishNotification(notificationPayload);
       }
     },
     [toast],
@@ -358,7 +356,6 @@ export default function GlobalMeetingChat() {
           sourceId: `direct-chat:${message.roomId || roomTitle}`,
           target: notificationPayload,
         });
-        publishNotification(notificationPayload);
       }
     },
     [toast],
@@ -377,7 +374,6 @@ export default function GlobalMeetingChat() {
       sourceId: "chat:move-talk-test",
       target: notificationPayload,
     });
-    publishNotification(notificationPayload);
   }, [toast]);
 
   const loadMeetingRooms = useCallback(async () => {

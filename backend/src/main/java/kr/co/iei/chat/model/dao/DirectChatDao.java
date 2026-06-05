@@ -85,4 +85,11 @@ public class DirectChatDao {
     public DirectChatMessageResponse selectMessage(Long messageId) {
         return sqlSession.selectOne("directChat.selectMessage", messageId);
     }
+
+    public List<Long> selectNotificationTargetUserIds(Long roomId, Long senderUserId) {
+        return sqlSession.selectList(
+                "directChat.selectNotificationTargetUserIds",
+                Map.of("roomId", roomId, "senderUserId", senderUserId)
+        );
+    }
 }

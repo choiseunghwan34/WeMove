@@ -60,6 +60,14 @@ public class MeetingDao {
     return sqlSession.update("meeting.completeOverdueOngoingMeetings");
   }
 
+  public List<Map<String, Object>> selectTodayReminderNotificationTargets() {
+    return sqlSession.selectList("meeting.selectTodayReminderNotificationTargets");
+  }
+
+  public List<Map<String, Object>> selectCompletedChatCloseTargets() {
+    return sqlSession.selectList("meeting.selectCompletedChatCloseTargets");
+  }
+
   public List<MeetingListResponse> selectMainMeetingList(Map<String, Object> params) {
     return sqlSession.selectList("meeting.selectMainMeetingList", params);
   }

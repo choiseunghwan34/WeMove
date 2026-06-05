@@ -187,4 +187,11 @@
         WHERE dcm.messageId = #{messageId}
     </select>
 
+    <select id="selectNotificationTargetUserIds" resultType="long">
+        SELECT userId
+        FROM directChatParticipants
+        WHERE roomId = #{roomId}
+          AND userId != #{senderUserId}
+    </select>
+
 </mapper>

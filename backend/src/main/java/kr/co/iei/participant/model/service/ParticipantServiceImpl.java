@@ -5,6 +5,7 @@ import java.util.*;
 import kr.co.iei.chat.model.service.ChatService;
 import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.meeting.model.vo.MeetingDetailResponse;
+import kr.co.iei.notification.model.service.NotificationService;
 import kr.co.iei.participant.model.dao.ParticipantDao;
 import kr.co.iei.participant.model.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class ParticipantServiceImpl implements ParticipantService {
   private final ParticipantDao participantDao;
   private final MeetingDao meetingDao;
   private final ChatService chatService;
+  private final NotificationService notificationService;
 
   @Transactional
   public void apply(Long meetingId, ParticipantRequest req) {
@@ -34,6 +36,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     MeetingParticipant existing = participantDao.selectParticipantByMeetingIdAndUserId(meetingId, req.getUserId());
+    Long participantId;
     if (existing != null) {
       if ("PENDING".equals(existing.getStatus()) || "APPROVED".equals(existing.getStatus())) {
         throw new IllegalArgumentException("이미 신청한 모임입니다.");
@@ -44,6 +47,7 @@ public class ParticipantServiceImpl implements ParticipantService {
       existing.setStatus("PENDING");
       existing.setMessage(req.getMessage());
       participantDao.updateParticipantForReapply(existing);
+      participantId = existing.getParticipantId();
     } else {
       MeetingParticipant p = new MeetingParticipant();
       p.setMeetingId(meetingId);
@@ -51,7 +55,18 @@ public class ParticipantServiceImpl implements ParticipantService {
       p.setMessage(req.getMessage());
       p.setStatus("PENDING");
       participantDao.insertParticipant(p);
+      participantId = p.getParticipantId();
     }
+
+    ParticipantResponse participant = participantDao.selectParticipant(participantId);
+    String nickname =
+        participant == null || participant.getNickname() == null ? "참가자" : participant.getNickname();
+    notificationService.sendToUser(
+        hostUserId,
+        "meetingRequest",
+        "모임 신청이 도착했습니다",
+        nickname + "님이 '" + meeting.getTitle() + "' 모임에 참가 신청했습니다.",
+        "meeting:" + meetingId);
   }
 
   public List<ParticipantResponse> getParticipants(Long meetingId) {
@@ -68,6 +83,12 @@ public class ParticipantServiceImpl implements ParticipantService {
       String nickname = participant.getNickname() == null ? "참가자" : participant.getNickname();
       chatService.createSystemMessage(
           meetingId, participant.getUserId(), nickname + "님의 모임 가입이 완료되었습니다.");
+      notificationService.sendToUser(
+          participant.getUserId(),
+          "meetingApproved",
+          "모임 신청이 승인되었습니다",
+          "'" + meeting.getTitle() + "' 모임 참여가 승인되었습니다.",
+          "meeting:" + meetingId);
     }
     Integer approved = participantDao.countApprovedByMeetingId(meetingId);
     Integer max = meetingDao.selectMaxMembers(meetingId);
@@ -78,8 +99,20 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
   }
 
+  @Transactional
   public void reject(Long participantId) {
+    Long meetingId = participantDao.selectMeetingIdByParticipantId(participantId);
+    MeetingDetailResponse meeting = meetingId == null ? null : meetingDao.selectMeetingDetail(meetingId);
+    ParticipantResponse participant = participantDao.selectParticipant(participantId);
     participantDao.updateStatus(participantId, "REJECTED");
+    if (meeting != null && participant != null) {
+      notificationService.sendToUser(
+          participant.getUserId(),
+          "meetingRejected",
+          "모임 신청이 거절되었습니다",
+          "'" + meeting.getTitle() + "' 모임 참여가 거절되었습니다.",
+          "meeting:" + meetingId);
+    }
   }
 
   public void cancel(Long participantId) {
@@ -97,7 +130,16 @@ public class ParticipantServiceImpl implements ParticipantService {
         throw new IllegalArgumentException("이미 진행중이거나 종료/취소된 모임의 참가자는 상태를 변경할 수 없습니다.");
       }
       
+      ParticipantResponse participant = participantDao.selectParticipant(participantId);
       participantDao.updateStatus(participantId, "PENDING");
+      if (meeting != null && participant != null) {
+        notificationService.sendToUser(
+            participant.getUserId(),
+            "meetingApprovalCancelled",
+            "모임 승인이 취소되었습니다",
+            "'" + meeting.getTitle() + "' 모임 승인이 취소되었습니다.",
+            "meeting:" + meetingId);
+      }
     } else {
       participantDao.updateStatus(participantId, "PENDING");
     }

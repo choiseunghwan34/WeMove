@@ -9,6 +9,8 @@ import kr.co.iei.comment.model.dao.CommentDao;
 import kr.co.iei.comment.model.vo.*;
 import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.meeting.model.vo.Meeting;
+import kr.co.iei.meeting.model.vo.MeetingDetailResponse;
+import kr.co.iei.notification.model.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class CommentServiceImpl implements CommentService {
   private final CommentDao commentDao;
   private final MeetingDao meetingDao;
+  private final NotificationService notificationService;
 
   public List<CommentResponse> getComments(Long meetingId) {
     return commentDao.selectComments(meetingId);
@@ -29,6 +32,17 @@ public class CommentServiceImpl implements CommentService {
     c.setParentCommentId(req.getParentCommentId());
     c.setContent(req.getContent());
     commentDao.insertComment(c);
+
+    MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
+    Long hostUserId = meeting == null ? null : meeting.getHostUserId();
+    if (hostUserId != null && !Objects.equals(hostUserId, req.getWriterId())) {
+      notificationService.sendToUser(
+          hostUserId,
+          "comment",
+          "새 댓글이 작성되었습니다",
+          "'" + meeting.getTitle() + "' 모임에 댓글이 작성되었습니다.",
+          "meeting:" + meetingId);
+    }
   }
 
   @Override

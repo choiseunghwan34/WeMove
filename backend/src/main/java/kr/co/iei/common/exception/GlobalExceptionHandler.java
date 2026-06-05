@@ -1,6 +1,7 @@
 package kr.co.iei.common.exception;
 
 import java.util.Map;
+import kr.co.iei.member.model.exception.MemberWithdrawBlockedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -31,6 +32,17 @@ public class GlobalExceptionHandler {
                     "message", exception.getMessage(),
                     "reason", exception.getReason() != null ? exception.getReason() : "운영원칙 위반",
                     "suspendedUntil", exception.getSuspendedUntil() != null ? exception.getSuspendedUntil() : "관리자 문의 요망"
+            ));
+  }
+
+  @ExceptionHandler(MemberWithdrawBlockedException.class)
+  public ResponseEntity<?> handleMemberWithdrawBlocked(
+          MemberWithdrawBlockedException exception) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(Map.of(
+                    "code", exception.getCode(),
+                    "message", exception.getMessage(),
+                    "meetings", exception.getMeetings()
             ));
   }
 

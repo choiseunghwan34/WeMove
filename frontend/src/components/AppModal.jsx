@@ -14,6 +14,7 @@ export default function AppModal({
   variant = "default",
   tone = "primary",
   hideCancel = false,
+  confirmDisabled = false,
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -88,6 +89,7 @@ export default function AppModal({
               type="button"
               className={confirmClassName}
               onClick={onConfirm}
+              disabled={confirmDisabled}
             >
               {confirmText}
             </button>

@@ -7,6 +7,13 @@ import {
   useState,
 } from "react";
 import {
+  deleteNotification as deleteNotificationApi,
+  deleteNotifications,
+  getNotifications,
+  markNotificationsReadAll,
+} from "../api/notificationApi";
+import { useAuth } from "./AuthContext";
+import {
   NOTIFICATION_TYPES,
   WEMOVE_NOTIFICATION_EVENT,
 } from "../utils/notificationEvents";
@@ -18,12 +25,17 @@ const NotificationContext = createContext(null);
 const createNotification = (detail) => ({
   id:
     detail?.id ||
+    detail?.notificationId ||
     `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  notificationId: detail?.notificationId || detail?.id,
   type: detail?.type || NOTIFICATION_TYPES.INFO,
   chatKind: detail?.chatKind,
   title: detail?.title || "",
   message: detail?.message || "",
+  targetType: detail?.targetType,
+  targetId: detail?.targetId,
   sourceId: detail?.sourceId,
+  isRead: detail?.isRead === true || detail?.isRead === 1,
   createdAt: detail?.createdAt || new Date().toISOString(),
 });
 
@@ -38,6 +50,7 @@ const getNotificationKey = (notification) => {
 };
 
 export function NotificationProvider({ children }) {
+  const { isAuthenticated, loading } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadKeys, setUnreadKeys] = useState(() => new Set());
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -71,6 +84,52 @@ export function NotificationProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    let active = true;
+
+    const loadNotifications = async () => {
+      if (loading) {
+        return;
+      }
+
+      if (!isAuthenticated) {
+        setNotifications([]);
+        setUnreadKeys(new Set());
+        return;
+      }
+
+      try {
+        const { data } = await getNotifications();
+        if (!active) {
+          return;
+        }
+
+        const nextNotifications = Array.isArray(data)
+          ? data.map(createNotification)
+          : [];
+        setNotifications(nextNotifications);
+        setUnreadKeys(
+          new Set(
+            nextNotifications
+              .filter((notification) => !notification.isRead)
+              .map(getNotificationKey),
+          ),
+        );
+      } catch {
+        if (active) {
+          setNotifications([]);
+          setUnreadKeys(new Set());
+        }
+      }
+    };
+
+    loadNotifications();
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, loading]);
+
+  useEffect(() => {
     const handleNotification = (event) => {
       pushNotification(event.detail);
     };
@@ -84,6 +143,7 @@ export function NotificationProvider({ children }) {
   const openPanel = useCallback(() => {
     setIsPanelOpen(true);
     setUnreadKeys(new Set());
+    markNotificationsReadAll().catch(() => {});
   }, []);
 
   const closePanel = useCallback(() => {
@@ -94,6 +154,7 @@ export function NotificationProvider({ children }) {
     setIsPanelOpen((current) => {
       if (!current) {
         setUnreadKeys(new Set());
+        markNotificationsReadAll().catch(() => {});
       }
       return !current;
     });
@@ -102,6 +163,7 @@ export function NotificationProvider({ children }) {
   const clearAll = useCallback(() => {
     setNotifications([]);
     setUnreadKeys(new Set());
+    deleteNotifications().catch(() => {});
   }, []);
 
   const removeNotification = useCallback((notificationId) => {
@@ -116,6 +178,9 @@ export function NotificationProvider({ children }) {
       }
       return current.filter((item) => item.id !== notificationId);
     });
+    if (Number.isFinite(Number(notificationId))) {
+      deleteNotificationApi(notificationId).catch(() => {});
+    }
   }, []);
 
   const value = useMemo(

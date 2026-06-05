@@ -11,8 +11,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import kr.co.iei.chat.model.service.ChatService;
 import kr.co.iei.common.service.CloudinaryImageService;
 import kr.co.iei.meeting.model.dao.MeetingDao;
 import kr.co.iei.meeting.model.vo.Meeting;
@@ -22,11 +24,13 @@ import kr.co.iei.meeting.model.vo.MeetingListResponse;
 import kr.co.iei.meeting.model.vo.MeetingSearchCondition;
 import kr.co.iei.meeting.model.vo.MeetingStatusUpdateRequest;
 import kr.co.iei.meeting.model.vo.MeetingUpdateRequest;
+import kr.co.iei.notification.model.service.NotificationService;
 import kr.co.iei.participant.model.dao.ParticipantDao;
 import kr.co.iei.participant.model.vo.MeetingParticipant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 
@@ -44,6 +48,8 @@ public class MeetingServiceImpl implements MeetingService {
   private final ParticipantDao participantDao;
   private final CloudinaryImageService cloudinaryImageService;
   private final StringRedisTemplate stringRedisTemplate;
+  private final ChatService chatService;
+  private final NotificationService notificationService;
 
   @Override
   public Map<String, Object> getMeetings(MeetingSearchCondition c) {
@@ -104,7 +110,13 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   @Override
+  @Transactional
   public void updateMeeting(Long meetingId, MeetingUpdateRequest request, MultipartFile image) {
+    MeetingDetailResponse currentMeeting = meetingDao.selectMeetingDetail(meetingId);
+    if (currentMeeting == null) {
+      throw new IllegalArgumentException("존재하지 않는 모임입니다.");
+    }
+
     LocalDate meetingDate = request.getMeetingDate();
     LocalTime startTime = request.getStartTime();
 
@@ -124,14 +136,34 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     meetingDao.updateMeeting(request);
+
+    if (isScheduleOrPlaceChanged(currentMeeting, request)) {
+      notifyApprovedParticipants(
+          currentMeeting,
+          "meetingUpdated",
+          "모임 정보가 변경되었습니다",
+          "'" + currentMeeting.getTitle() + "' 모임의 시간 또는 장소 정보가 변경되었습니다.");
+    }
   }
 
   @Override
+  @Transactional
   public void deleteMeeting(Long meetingId) {
+    MeetingDetailResponse meeting = meetingDao.selectMeetingDetail(meetingId);
     meetingDao.softDeleteMeeting(meetingId);
+    if (meeting != null) {
+      createChatSystemMessage(
+          meetingId, meeting.getHostUserId(), "모임이 취소되어 모임톡이 비활성화되었습니다.");
+      notifyApprovedParticipants(
+          meeting,
+          "meetingCancelled",
+          "모임이 취소되었습니다",
+          "'" + meeting.getTitle() + "' 모임이 취소되었습니다.");
+    }
   }
 
   @Override
+  @Transactional
   public void updateMeetingStatus(Long meetingId, MeetingStatusUpdateRequest request) {
     MeetingDetailResponse currentMeeting = meetingDao.selectMeetingDetail(meetingId);
     if (currentMeeting == null) {
@@ -160,6 +192,16 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     meetingDao.updateMeetingStatus(meetingId, nextStatus);
+
+    if ("CANCELLED".equals(nextStatus)) {
+      createChatSystemMessage(
+          meetingId, currentMeeting.getHostUserId(), "모임이 취소되어 모임톡이 비활성화되었습니다.");
+      notifyApprovedParticipants(
+          currentMeeting,
+          "meetingCancelled",
+          "모임이 취소되었습니다",
+          "'" + currentMeeting.getTitle() + "' 모임이 취소되었습니다.");
+    }
   }
 
   @Override
@@ -296,5 +338,35 @@ public class MeetingServiceImpl implements MeetingService {
     ZonedDateTime now = ZonedDateTime.now(KOREA_ZONE_ID);
     ZonedDateTime tomorrowStart = now.toLocalDate().plusDays(1).atStartOfDay(KOREA_ZONE_ID);
     return Duration.between(now, tomorrowStart);
+  }
+
+  private boolean isScheduleOrPlaceChanged(MeetingDetailResponse current, MeetingUpdateRequest request) {
+    return !Objects.equals(current.getMeetingDate(), request.getMeetingDate())
+        || !Objects.equals(current.getStartTime(), request.getStartTime())
+        || !Objects.equals(normalizeText(current.getPlaceName()), normalizeText(request.getPlaceName()))
+        || !Objects.equals(normalizeText(current.getAddress()), normalizeText(request.getAddress()));
+  }
+
+  private String normalizeText(String value) {
+    return value == null ? "" : value.trim();
+  }
+
+  private void notifyApprovedParticipants(
+      MeetingDetailResponse meeting, String type, String title, String message) {
+    if (meeting == null || meeting.getMeetingId() == null) {
+      return;
+    }
+
+    List<Long> userIds = participantDao.selectApprovedUserIds(meeting.getMeetingId(), meeting.getHostUserId());
+    for (Long userId : userIds) {
+      notificationService.sendToUser(userId, type, title, message, "meeting:" + meeting.getMeetingId());
+    }
+  }
+
+  private void createChatSystemMessage(Long meetingId, Long userId, String content) {
+    if (meetingId == null || userId == null) {
+      return;
+    }
+    chatService.createSystemMessage(meetingId, userId, content);
   }
 }

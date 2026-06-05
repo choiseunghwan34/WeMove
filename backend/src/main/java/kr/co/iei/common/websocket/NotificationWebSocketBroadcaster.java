@@ -30,10 +30,16 @@ public class NotificationWebSocketBroadcaster {
 
   private Map<String, Object> toPayload(NotificationRecord notification) {
     Map<String, Object> payload = new LinkedHashMap<>();
+    payload.put("notificationId", notification.getNotificationId());
+    payload.put("id", notification.getNotificationId());
     payload.put("type", notification.getType());
     payload.put("title", notification.getTitle());
     payload.put("message", notification.getMessage());
+    payload.put("targetType", notification.getTargetType());
+    payload.put("targetId", notification.getTargetId());
+    payload.put("chatKind", notification.getChatKind());
     payload.put("sourceId", notification.getSourceId());
+    payload.put("isRead", notification.getIsRead());
     payload.put(
         "createdAt",
         notification.getCreatedAt() == null ? null : notification.getCreatedAt().toString());

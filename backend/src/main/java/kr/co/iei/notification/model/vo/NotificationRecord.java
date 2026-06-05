@@ -10,7 +10,10 @@ public class NotificationRecord {
   private String type;
   private String title;
   private String message;
+  private String targetType;
+  private Long targetId;
   private String sourceId;
+  private String chatKind;
   private Boolean forceLogout;
   private LocalDateTime suspendedUntil;
   private Integer suspendHours;

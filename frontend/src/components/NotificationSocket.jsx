@@ -44,10 +44,15 @@ export default function NotificationSocket() {
         }
 
         publishNotification({
+          id: payload.id || payload.notificationId,
+          notificationId: payload.notificationId || payload.id,
           type: payload.type || NOTIFICATION_TYPES.INFO,
           title: payload.title,
           message: payload.message || "",
+          targetType: payload.targetType,
+          targetId: payload.targetId,
           sourceId: payload.sourceId,
+          isRead: payload.isRead,
           createdAt: payload.createdAt,
           suspendedUntil: payload.suspendedUntil,
           suspendHours: payload.suspendHours,

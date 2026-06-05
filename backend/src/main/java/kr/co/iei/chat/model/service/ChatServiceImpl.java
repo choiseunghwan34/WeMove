@@ -42,6 +42,9 @@ public class ChatServiceImpl implements ChatService {
   public ChatMessageResponse createMessage(
       Long meetingId, Long userId, ChatMessageRequest request) {
     assertCanAccess(meetingId, userId);
+    if (!chatDao.isMeetingChatWritable(meetingId)) {
+      throw new ResponseStatusException(HttpStatus.GONE, "비활성화된 모임톡입니다.");
+    }
 
     String content = request == null ? "" : normalizeContent(request.getContent());
     if (content.isBlank()) {
