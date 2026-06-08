@@ -9,7 +9,7 @@ import {
   getDirectChatMessages,
   getDirectChatRooms,
 } from "../api/chatApi";
-import { broadcastNotice } from "../api/notificationApi";
+import { broadcastNotice, getNotifications } from "../api/notificationApi";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -119,8 +119,12 @@ const mergeMessagesById = (...messageGroups) => {
   });
 
   return [...messageMap.values()].sort((a, b) => {
-    const timeA = a?.createdAt ? new Date(String(a.createdAt).replace(" ", "T")).getTime() : 0;
-    const timeB = b?.createdAt ? new Date(String(b.createdAt).replace(" ", "T")).getTime() : 0;
+    const timeA = a?.createdAt
+      ? new Date(String(a.createdAt).replace(" ", "T")).getTime()
+      : 0;
+    const timeB = b?.createdAt
+      ? new Date(String(b.createdAt).replace(" ", "T")).getTime()
+      : 0;
     if (timeA !== timeB) {
       return timeA - timeB;
     }
@@ -169,6 +173,8 @@ export default function GlobalMeetingChat() {
   const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [selectedDirectRoomId, setSelectedDirectRoomId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [noticeMessages, setNoticeMessages] = useState([]);
+  const [loadingNotices, setLoadingNotices] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState(null);
   const directSocketMapRef = useRef(new Map());
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
@@ -189,6 +195,7 @@ export default function GlobalMeetingChat() {
   );
   const selectedRoom =
     chatType === "GROUP" ? selectedMeetingRoom : selectedDirectRoom;
+  const isNoticeMode = chatType === "NOTICE";
 
   useEffect(() => {
     roomsRef.current = rooms;
@@ -215,7 +222,66 @@ export default function GlobalMeetingChat() {
   }, [selectedDirectRoomId]);
 
   const activeRoomId =
-    chatType === "GROUP" ? selectedMeetingId : selectedDirectRoomId;
+    chatType === "GROUP"
+      ? selectedMeetingId
+      : chatType === "PRIVATE"
+        ? selectedDirectRoomId
+        : null;
+
+  const loadNoticeMessages = useCallback(async () => {
+    if (!isAuthenticated) {
+      setNoticeMessages([]);
+      return;
+    }
+
+    setLoadingNotices(true);
+    setError("");
+
+    try {
+      const { data } = await getNotifications();
+      const nextNotices = Array.isArray(data)
+        ? data
+            .filter((notification) => notification.type === "notice")
+            .map((notification) => ({
+              notificationId:
+                notification.notificationId || notification.id || notification.createdAt,
+              title: notification.title || "공지사항",
+              message: notification.message || "",
+              createdAt: notification.createdAt,
+            }))
+            .sort((left, right) => {
+              const leftTime = left.createdAt
+                ? new Date(String(left.createdAt).replace(" ", "T")).getTime()
+                : 0;
+              const rightTime = right.createdAt
+                ? new Date(String(right.createdAt).replace(" ", "T")).getTime()
+                : 0;
+              return leftTime - rightTime;
+            })
+        : [];
+      setNoticeMessages(nextNotices);
+    } catch (requestError) {
+      setNoticeMessages([]);
+      setError(
+        requestError?.response?.data?.message ||
+          "공지사항을 불러오지 못했습니다.",
+      );
+    } finally {
+      setLoadingNotices(false);
+    }
+  }, [isAuthenticated]);
+
+  const openNoticeCollection = useCallback(() => {
+    setOpen(true);
+    setChatType("NOTICE");
+    setSelectedMeetingId(null);
+    setSelectedDirectRoomId(null);
+    loadNoticeMessages();
+  }, [loadNoticeMessages]);
+
+  const closeNoticeCollection = useCallback(() => {
+    setChatType("GROUP");
+  }, []);
 
   const openSelectedMeetingDetail = useCallback(() => {
     if (chatType !== "GROUP" || !selectedMeetingRoom?.meetingId) {
@@ -460,7 +526,6 @@ export default function GlobalMeetingChat() {
 
   const openDirectRoomByTargetUser = useCallback(
     async (targetUserId) => {
-
       if (!isAuthenticated || !targetUserId) {
         return;
       }
@@ -470,7 +535,6 @@ export default function GlobalMeetingChat() {
       setError("");
 
       try {
-
         const { data } = await createDirectChatRoom(targetUserId);
 
         const nextRooms = await loadDirectRooms();
@@ -495,7 +559,6 @@ export default function GlobalMeetingChat() {
         );
         setSelectedDirectRoomId(createdRoom.roomId);
       } catch (requestError) {
-
         const message =
           requestError?.response?.data?.message ||
           "1:1 대화를 시작하지 못했습니다.";
@@ -744,7 +807,13 @@ export default function GlobalMeetingChat() {
     });
 
     return undefined;
-  }, [appendDirectMessage, isAdmin, isAuthenticated, directRooms, user?.memberId]);
+  }, [
+    appendDirectMessage,
+    isAdmin,
+    isAuthenticated,
+    directRooms,
+    user?.memberId,
+  ]);
 
   useEffect(() => {
     if (!open || activeRoomId) {
@@ -832,7 +901,10 @@ export default function GlobalMeetingChat() {
       openDirectRoomByTargetUser(event.detail?.targetUserId);
     };
 
-    window.addEventListener(WEMOVE_DIRECT_CHAT_OPEN_EVENT, handleDirectChatOpen);
+    window.addEventListener(
+      WEMOVE_DIRECT_CHAT_OPEN_EVENT,
+      handleDirectChatOpen,
+    );
     return () => {
       window.removeEventListener(
         WEMOVE_DIRECT_CHAT_OPEN_EVENT,
@@ -1020,9 +1092,28 @@ export default function GlobalMeetingChat() {
           />
           <header className={styles.panelHeader}>
             <div>
-              <strong>{isAdmin ? "공지사항" : "무브톡"}</strong>
+              <div className={styles.panelTitleLine}>
+                <strong>{isAdmin ? "공지사항" : "무브톡"}</strong>
+                <button
+                  type="button"
+                  className={styles.noticeCollectionButton}
+                  onClick={
+                    isNoticeMode && isAdmin
+                      ? closeNoticeCollection
+                      : openNoticeCollection
+                  }
+                >
+                  {isNoticeMode && isAdmin
+                    ? "[공지사항 작성]"
+                    : "[공지사항 모아보기]"}
+                </button>
+              </div>
               <span>
-                {isAdmin ? "전체 유저 알림 발송" : "승인된 모임 대화방"}
+                {isNoticeMode
+                  ? "전체 공지사항을 한 곳에서 확인합니다."
+                  : isAdmin
+                    ? "전체 유저 알림 발송"
+                    : "모임 참여자들과 대화하기"}
               </span>
             </div>
             <button
@@ -1039,104 +1130,109 @@ export default function GlobalMeetingChat() {
               isAdmin
                 ? styles.panelBodyAdmin
                 : roomsCollapsed
-                ? `${styles.panelBody} ${styles.panelBodyCollapsed}`
-                : styles.panelBody
+                  ? `${styles.panelBody} ${styles.panelBodyCollapsed}`
+                  : styles.panelBody
             }
           >
             {!isAdmin ? (
-            <>
-            <aside className={styles.roomList}>
-              <div className={styles.roomListHeader}>
-                <div
-                  className={chatType === "GROUP" ? styles.active : ""}
-                  onClick={() => setChatType("GROUP")}
-                >
-                  모임
-                </div>
-                <div
-                  className={chatType === "PRIVATE" ? styles.active : ""}
-                  onClick={() => {
-                    setChatType("PRIVATE");
-                    loadDirectRooms();
-                  }}
-                >
-                  1대1 대화
-                </div>
-              </div>
-              {loadingRooms ? (
-                <p>불러오는 중</p>
-              ) : chatType === "GROUP" ? (
-                rooms.length ? (
-                  rooms.map((room) => (
-                    <button
-                      key={room.meetingId}
-                      type="button"
-                      className={
-                        Number(room.meetingId) === Number(selectedMeetingId)
-                          ? styles.roomActive
-                          : styles.room
-                      }
-                      onClick={() => setSelectedMeetingId(room.meetingId)}
+              <>
+                <aside className={styles.roomList}>
+                  <div className={styles.roomListHeader}>
+                    <div
+                      className={chatType === "GROUP" ? styles.active : ""}
+                      onClick={() => setChatType("GROUP")}
                     >
-                      <strong>{room.title}</strong>
-                      <span>
-                        {[room.sportName, room.regionName, room.placeName]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                      <small>
-                        {room.lastMessage ||
-                          formatSchedule(room.meetingDate, room.startTime) ||
-                          room.address ||
-                          "대화 내역 없음"}
-                      </small>
-                    </button>
-                  ))
-                ) : (
-                  <p>참여 가능한 무브톡이 없습니다.</p>
-                )
-              ) : directRooms.length ? (
-                directRooms.map((room) => (
-                  <button
-                    key={room.roomId}
-                    type="button"
-                    className={
-                      Number(room.roomId) === Number(selectedDirectRoomId)
-                        ? styles.roomActive
-                        : styles.room
-                    }
-                    onClick={() => setSelectedDirectRoomId(room.roomId)}
-                  >
-                    <strong>{room.targetNickname || "1:1 대화"}</strong>
-                    <span>1:1 대화</span>
-                    <small>
-                      {room.lastMessage || "아직 메시지가 없습니다."}
-                    </small>
-                  </button>
-                ))
-              ) : (
-                <div className={styles.emptyState}>
-                  <p>아직 대화 중인 친구가 없습니다.</p>
-                  <small>모임 참여자 프로필에서 대화를 시작해보세요!</small>
-                </div>
-              )}
-            </aside>
-            <button
-              type="button"
-              className={styles.roomToggle}
-              aria-label={
-                roomsCollapsed ? "모임방 모음 펼치기" : "모임방 모음 숨기기"
-              }
-              onClick={() => setRoomsCollapsed((current) => !current)}
-            >
-              {roomsCollapsed ? "›" : "‹"}
-            </button>
-            </>
+                      모임
+                    </div>
+                    <div
+                      className={chatType === "PRIVATE" ? styles.active : ""}
+                      onClick={() => {
+                        setChatType("PRIVATE");
+                        loadDirectRooms();
+                      }}
+                    >
+                      1대1 대화
+                    </div>
+                  </div>
+                  {loadingRooms ? (
+                    <p>불러오는 중</p>
+                  ) : chatType === "GROUP" ? (
+                    rooms.length ? (
+                      rooms.map((room) => (
+                        <button
+                          key={room.meetingId}
+                          type="button"
+                          className={
+                            Number(room.meetingId) === Number(selectedMeetingId)
+                              ? styles.roomActive
+                              : styles.room
+                          }
+                          onClick={() => setSelectedMeetingId(room.meetingId)}
+                        >
+                          <strong>{room.title}</strong>
+                          <span>
+                            {[room.sportName, room.regionName, room.placeName]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                          <small>
+                            {room.lastMessage ||
+                              formatSchedule(
+                                room.meetingDate,
+                                room.startTime,
+                              ) ||
+                              room.address ||
+                              "대화 내역 없음"}
+                          </small>
+                        </button>
+                      ))
+                    ) : (
+                      <p>참여 가능한 무브톡이 없습니다.</p>
+                    )
+                  ) : directRooms.length ? (
+                    directRooms.map((room) => (
+                      <button
+                        key={room.roomId}
+                        type="button"
+                        className={
+                          Number(room.roomId) === Number(selectedDirectRoomId)
+                            ? styles.roomActive
+                            : styles.room
+                        }
+                        onClick={() => setSelectedDirectRoomId(room.roomId)}
+                      >
+                        <strong>{room.targetNickname || "1:1 대화"}</strong>
+                        <span>1:1 대화</span>
+                        <small>
+                          {room.lastMessage || "아직 메시지가 없습니다."}
+                        </small>
+                      </button>
+                    ))
+                  ) : (
+                    <div className={styles.emptyState}>
+                      <p>아직 대화 중인 친구가 없습니다.</p>
+                      <small>모임 참여자 프로필에서 대화를 시작해보세요!</small>
+                    </div>
+                  )}
+                </aside>
+                <button
+                  type="button"
+                  className={styles.roomToggle}
+                  aria-label={
+                    roomsCollapsed ? "모임방 모음 펼치기" : "모임방 모음 숨기기"
+                  }
+                  onClick={() => setRoomsCollapsed((current) => !current)}
+                >
+                  {roomsCollapsed ? "›" : "‹"}
+                </button>
+              </>
             ) : null}
 
             <main className={styles.chatArea}>
               <div className={styles.chatTitle}>
-                {isAdmin ? (
+                {isNoticeMode ? (
+                  <strong>공지사항 모아보기</strong>
+                ) : isAdmin ? (
                   <strong>공지사항 작성</strong>
                 ) : chatType === "GROUP" && selectedRoom?.meetingId ? (
                   <button
@@ -1148,14 +1244,18 @@ export default function GlobalMeetingChat() {
                   </button>
                 ) : (
                   <strong>
-                  {chatType === "GROUP"
-                    ? selectedRoom?.title || "무브톡을 선택해주세요"
-                    : selectedRoom?.targetNickname ||
-                      "1대1 대화를 선택해주세요"}
+                    {chatType === "GROUP"
+                      ? selectedRoom?.title || "무브톡을 선택해주세요"
+                      : selectedRoom?.targetNickname ||
+                        "1대1 대화를 선택해주세요"}
                   </strong>
                 )}
-                {isAdmin ? (
-                  <span>입력한 내용은 모든 활성 유저의 알림으로 전송됩니다.</span>
+                {isNoticeMode ? (
+                  <span>최근 공지사항 알림을 시간순으로 모아봅니다.</span>
+                ) : isAdmin ? (
+                  <span>
+                    입력한 내용은 모든 활성 유저의 알림으로 전송됩니다.
+                  </span>
                 ) : selectedRoom && chatType === "GROUP" ? (
                   <span>
                     {[
@@ -1178,7 +1278,41 @@ export default function GlobalMeetingChat() {
               </div>
 
               <div className={styles.messageList} ref={listRef}>
-                {isAdmin ? (
+                {isNoticeMode ? (
+                  loadingNotices ? (
+                    <p className={styles.state}>공지사항을 불러오는 중입니다.</p>
+                  ) : noticeMessages.length ? (
+                    noticeMessages.map((notice, index) => {
+                      const previousNotice = noticeMessages[index - 1];
+                      const shouldShowDate =
+                        index === 0 ||
+                        getDateKey(previousNotice?.createdAt) !==
+                          getDateKey(notice.createdAt);
+
+                      return (
+                        <div
+                          key={notice.notificationId}
+                          className={styles.messageGroup}
+                        >
+                          {shouldShowDate ? (
+                            <div className={styles.messageDateDivider}>
+                              {formatDateLabel(notice.createdAt)}
+                            </div>
+                          ) : null}
+                          <article className={styles.noticeMessageCard}>
+                            <div className={styles.noticeMessageHead}>
+                              <strong>{notice.title}</strong>
+                              <time>{formatTime(notice.createdAt)}</time>
+                            </div>
+                            {notice.message ? <p>{notice.message}</p> : null}
+                          </article>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className={styles.state}>아직 등록된 공지사항이 없습니다.</p>
+                  )
+                ) : isAdmin ? (
                   <div className={styles.adminNoticeGuide}>
                     <strong>전체 공지 발송</strong>
                     <p>
@@ -1319,22 +1453,28 @@ export default function GlobalMeetingChat() {
 
               {error ? <p className={styles.error}>{error}</p> : null}
 
-              <form className={styles.messageForm} onSubmit={submitMessage}>
-                <input
-                  ref={messageInputRef}
-                  value={messageInput}
-                  onChange={(event) => setMessageInput(event.target.value)}
-                  placeholder="메시지 입력"
-                  maxLength={1000}
-                  disabled={isAdmin ? sending : !activeRoomId || sending}
-                />
-                <button
-                  type="submit"
-                  disabled={isAdmin ? !messageInput.trim() || sending : !activeRoomId || sending}
-                >
-                  전송
-                </button>
-              </form>
+              {!isNoticeMode ? (
+                <form className={styles.messageForm} onSubmit={submitMessage}>
+                  <input
+                    ref={messageInputRef}
+                    value={messageInput}
+                    onChange={(event) => setMessageInput(event.target.value)}
+                    placeholder="메시지 입력"
+                    maxLength={1000}
+                    disabled={isAdmin ? sending : !activeRoomId || sending}
+                  />
+                  <button
+                    type="submit"
+                    disabled={
+                      isAdmin
+                        ? !messageInput.trim() || sending
+                        : !activeRoomId || sending
+                    }
+                  >
+                    전송
+                  </button>
+                </form>
+              ) : null}
             </main>
           </div>
         </section>
