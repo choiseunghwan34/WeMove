@@ -803,7 +803,7 @@
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  margin-top: 10px !important;
+  margin-top: auto !important; /* 남는 빈 공간을 모두 밀어내어 맨 아랫바닥(이미지 하단선)에 딱 붙게 함 */
   padding-top: 10px !important;
   border-top: 1px solid #eef0f3 !important;
 }
@@ -900,14 +900,14 @@
 @media (min-width: 768px) {
   .listCardBody {
     display: flex !important;
-    align-items: flex-start !important; /* 이미지 높이가 우측 텍스트 길이에 영향 받지 않고 독립적으로 유지되도록 변경 */
-    gap: 20px !important; /* 넉넉한 간격을 통해 겹침 방지 (약간 줄임) */
+    align-items: stretch !important; /* 좌우 양측의 높이를 동일하게 맞춰, 텍스트가 적어도 우측 박스가 이미지 하단선까지 길어지게 함 */
+    gap: 20px !important; /* 넉넉한 간격을 통해 겹침 방지 */
   }
 
   .listCardImage {
-    flex: 0 0 clamp(200px, 42%, 330px) !important; /* 16:9 비율에서 충분한 높이를 확보하기 위해 가로폭을 크게 확장 */
+    flex: 0 0 clamp(200px, 42%, 330px) !important; /* 3:2 비율에서 충분한 높이를 확보하기 위해 가로폭 확장 유지 */
     width: clamp(200px, 42%, 330px) !important;
-    aspect-ratio: 16 / 9 !important; /* 가로로 더 넓게 출력하도록 비율 수정 (16:9) */
+    aspect-ratio: 3 / 2 !important; /* 이미지 출력 비율을 16:9에서 3:2로 수정 */
     height: auto !important; /* 종횡비를 유지하기 위한 기본 설정 */
     object-fit: cover !important; /* 비율을 맞추느라 찌그러지지 않게 꽉 채움 */
     border-radius: 16px !important;
@@ -922,37 +922,41 @@
   }
 }
 
-/* --- 모임 제목 텍스트 크기 대폭 확대 --- */
+/* --- 텍스트 크기 및 간격 정밀 튜닝 (참고 이미지 기반) --- */
+.listCardContent .listTags {
+  margin-bottom: 8px !important; /* 태그와 제목 사이에 적절한 숨쉴 틈 제공 */
+}
+
 .listCardContent h3 {
-  font-size: 1.8rem !important; /* 기존보다 훨씬 크고 시원하게 글씨 크기 증대 */
-  font-weight: 900 !important; /* 강력한 두께로 시선 집중 */
-  margin: 6px 0 !important; /* 상하 여백을 살짝 주어 답답함 해소 */
-  line-height: 1.3 !important; /* 텍스트가 두 줄이 될 경우를 대비한 깔끔한 줄간격 */
-  letter-spacing: -0.02em !important; /* 큰 글씨에 어울리도록 자간 살짝 축소 */
-  overflow: hidden !important; /* 1줄 초과 방지 */
-  white-space: nowrap !important; /* 자동 줄바꿈 방지 */
-  text-overflow: ellipsis !important; /* 넘치면 말줄임표(...) 표시 */
+  font-size: 2.1rem !important; /* 다시 시원하고 큼직하게 폰트 크기 확대 */
+  font-weight: 800 !important; 
+  margin: 0 0 10px 0 !important; /* 제목과 아래 본문 사이의 간격을 넉넉하게 띄움 */
+  line-height: 1.3 !important;
+  letter-spacing: -0.02em !important;
+  overflow: hidden !important; 
+  white-space: nowrap !important; 
+  text-overflow: ellipsis !important; 
 }
 
 /* --- 모임 부제목(내용) 텍스트 크기 및 스타일 조정 --- */
 .listCardContent p {
-  font-size: 1.05rem !important; /* 기존보다 살짝 더 키워서 가독성 확보 */
-  color: #4b5563 !important; /* 제목을 방해하지 않는 세련된 진회색 톤 */
-  margin-bottom: 8px !important; /* 아래 메타 정보들과의 적절한 간격 */
-  line-height: 1.5 !important; /* 읽기 편안한 줄간격 */
-  overflow: hidden !important; /* 1줄 초과 방지 */
-  white-space: nowrap !important; /* 자동 줄바꿈 방지 */
-  text-overflow: ellipsis !important; /* 넘치면 말줄임표(...) 표시 */
+  font-size: 1.25rem !important; /* 본문 폰트 크기도 다시 키워서 가독성 확보 */
+  color: #4b5563 !important; /* 조금 더 또렷한 진회색으로 복구 */
+  margin-bottom: 20px !important; /* 본문과 지역 정보 사이의 공간을 충분히 벌려서 꽉 찬 느낌을 줌 */
+  line-height: 1.5 !important; 
+  overflow: hidden !important; 
+  white-space: nowrap !important; 
+  text-overflow: ellipsis !important; 
 }
 
 /* --- 메타 정보 (지역, 장소, 인원) 아이콘 및 텍스트 튜닝 --- */
 .listMeta {
-  gap: 12px !important; /* 항목 간의 간격을 살짝 더 띄워서 답답하지 않게 조절 */
-  margin-top: auto !important; /* 메타 정보가 카드 하단부로 예쁘게 밀착되도록 설정 */
+  gap: 12px !important; 
+  margin-top: 4px !important; /* 위쪽 본문과의 여백은 위 p태그의 margin-bottom으로 커버함 */
 }
 
 .listMeta span {
-  font-size: 0.92rem !important; /* 크기 유지 */
+  font-size: 1rem !important; /* 크기 확대 */
   font-weight: 500 !important; /* 부제목과 어울리도록 너무 튀지 않는 세련된 기본 두께로 하향 */
   color: #374151 !important; 
   display: flex !important;
@@ -964,30 +968,71 @@
 .listMeta {
   display: flex !important;
   align-items: center !important;
-  flex-wrap: wrap !important; /* 화면이 좁을 때 아이템들이 넘치지 않고 자연스럽게 줄바꿈 되도록 허용 */
+  flex-wrap: nowrap !important; /* 텍스트가 길어져도 줄바꿈되지 않고 한 줄을 유지하도록 강제 */
+  overflow: hidden !important; /* 부모 영역을 벗어나는 텍스트는 숨김 */
+}
+
+/* 지역(첫 번째)은 절대로 찌그러지거나 줄바꿈되지 않도록 철벽 방어 */
+.listMeta span:first-child {
+  white-space: nowrap !important; /* 줄바꿈 절대 금지 */
+  flex-shrink: 0 !important; /* 공간이 부족해도 이 영역은 양보하지 않고 크기 유지 */
+}
+
+/* 지역이 차지하고 남은 공간만 만나는 장소(두 번째)가 차지하며, 길어지면 ... 처리 */
+.listMeta span:nth-child(2) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important; 
+  max-width: 100% !important; 
+  line-height: 1.2 !important; 
+  flex-shrink: 1 !important; /* 남은 공간에 맞춰 자신이 알아서 줄어듦 */
+  min-width: 0 !important; /* flexbox 내에서 텍스트 말줄임표가 고장나지 않도록 최소 너비 제한 해제 */
+}
+.listMeta span:nth-child(2) svg {
+  vertical-align: top !important; /* 아이콘이 글씨보다 위로 뜨지 않게 눌러줌 */
+  margin-right: 3px !important;
 }
 
 .participantMetaRow {
-  margin-left: auto !important; /* 플렉스 박스의 특성을 이용해 항상 오른쪽 끝으로 밀어내기 */
-  gap: 3px !important; /* 인원수 관련 아이템들(아이콘, 글자, 막대, 퍼센트) 사이의 간격을 대폭 좁힘 */
+  display: flex !important;
+  flex-direction: column !important; /* 위아래로 배치 */
+  width: 130px !important; /* 가로 길이를 충분히 줘서 게이지바가 길게 늘어나도록 함 */
+  margin-left: auto !important; /* 우측 끝 정렬 */
+  gap: 6px !important; /* 윗줄 텍스트와 아랫줄 게이지바 사이의 간격 */
 }
 
-/* 모바일 좁은 화면 대응: 줄바꿈 되었을 때 오른쪽 끝이 아니라 왼쪽으로 다시 붙어서 정렬되도록 처리 */
+.participantMetaHeader {
+  display: flex !important;
+  justify-content: space-between !important; /* 좌측 인원수, 우측 퍼센트 배치 */
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.participantCount {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  color: #4b5563 !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+}
+
 @media (max-width: 640px) {
   .participantMetaRow {
     margin-left: 0 !important;
     margin-top: 4px !important;
-    flex-basis: 100% !important; /* 앞의 주소 텍스트 길이와 무관하게 무조건 다음 줄로 넘어가도록 강제 */
+    width: 100% !important; /* 모바일에서는 가로를 꽉 채움 */
   }
 }
 
 .progressBarBg {
-  width: 50px !important;
-  height: 6px !important;
+  width: 100% !important; /* 부모인 130px을 꽉 채우도록 수정 (기존 50px에서 확장) */
+  height: 5px !important; /* 너무 두껍지 않게 세련된 두께로 */
   background-color: #e2e8f0 !important;
   border-radius: 999px !important;
   overflow: hidden !important;
-  margin-left: 6px !important; /* 텍스트와 막대 사이 여백 */
+  margin: 0 !important; /* 위쪽 텍스트 아이콘과 좌측 정렬이 완벽하게 맞도록 모든 마진 강제 초기화 */
 }
 
 .progressBarFill {

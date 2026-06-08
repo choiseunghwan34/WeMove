@@ -846,37 +846,43 @@ export default function MeetingListPage() {
                       />
                       {meeting.placeName}
                     </span>
-                    <span className={styles.participantMetaRow}>
-                      <UiIcon
-                        name="user"
-                        className={styles.dashboardMetaIcon}
+                  </div>
+
+                  <div className={styles.host} style={{ display: "flex", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <img
+                        src={
+                          meeting.hostProfileImage ||
+                          defaultUserImage
+                        }
+                        alt={meeting.meetingHostName}
+                        className={styles.dashboardHostAvatar}
+                        onError={(e) => {
+                          e.currentTarget.src = defaultUserImage;
+                        }}
                       />
-                      {meeting.approvedCount || 1}/{meeting.maxMembers}명
+                      <span>{meeting.meetingHostName || "익명"}</span>
+                    </div>
+                    <div className={styles.participantMetaRow}>
+                      <div className={styles.participantMetaHeader}>
+                        <span className={styles.participantCount}>
+                          <UiIcon
+                            name="user"
+                            className={styles.dashboardMetaIcon}
+                          />
+                          {meeting.approvedCount || 1}/{meeting.maxMembers}명
+                        </span>
+                        <strong className={styles.progressPercentText}>
+                          {Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100)}%
+                        </strong>
+                      </div>
                       <div className={styles.progressBarBg}>
                         <div 
                           className={styles.progressBarFill} 
                           style={{ width: `${Math.min(100, Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100))}%` }} 
                         />
                       </div>
-                      <strong className={styles.progressPercentText}>
-                        {Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100)}%
-                      </strong>
-                    </span>
-                  </div>
-
-                  <div className={styles.host}>
-                    <img
-                      src={
-                        meeting.hostProfileImage ||
-                        defaultUserImage
-                      }
-                      alt={meeting.meetingHostName}
-                      className={styles.dashboardHostAvatar}
-                      onError={(e) => {
-                        e.currentTarget.src = defaultUserImage;
-                      }}
-                    />
-                    <span>{meeting.meetingHostName || "익명"}</span>
+                    </div>
                   </div>
                 </div>
               </div>
