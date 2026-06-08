@@ -1795,20 +1795,15 @@
   text-align: center;
 }
 /* 홈 화면 모임 카드 */
-
-/* 1. 썸네일 가로 260px 고정 */
 .homeCardOverride {
   grid-template-columns: 260px minmax(0, 1fr) !important;
   align-items: stretch !important;
 }
-
 @media (max-width: 720px) {
   .homeCardOverride {
     grid-template-columns: 1fr !important;
   }
 }
-
-/* 2. 이미지는 3:2 비율을 무조건 유지 */
 .homeImageOverride {
   width: 100% !important;
   height: auto !important;
@@ -1816,25 +1811,6 @@
   object-fit: cover !important;
   margin: 0 !important;
 }
-
-/* 3. [핵심] 글씨가 길어져서 사진 아래 여백을 만드는 현상 차단 */
-.homeCardOverride h3 {
-  display: -webkit-box !important;
-  -webkit-line-clamp: 1 !important; /* 제목은 1줄까지만 허용 (넘치면 ...) */
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.homeCardOverride p {
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important; /* 내용은 2줄까지만 허용 (넘치면 ...) */
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* 4. 버튼 영역을 사진 제일 밑바닥 라인에 완벽하게 맞춤 */
 .footerContainerOverride {
   width: 100% !important;
   display: flex !important;
