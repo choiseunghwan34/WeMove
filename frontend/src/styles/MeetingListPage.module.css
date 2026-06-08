@@ -1,4 +1,4 @@
-/* Auto-split from MeetingListPage.jsx. Page/component styles compose shared WeMove design rules. */
+﻿/* Auto-split from MeetingListPage.jsx. Page/component styles compose shared WeMove design rules. */
 
 .actionClosed {
   composes: actionClosed from "./WeMoveShared.module.css";
@@ -50,12 +50,12 @@
 .filterRow {
   composes: filterRow from "./WeMoveShared.module.css";
   display: grid !important;
-  grid-template-columns: 
-    100px 
-    100px 
-    minmax(150px, 1.1fr) 
-    minmax(150px, 1.1fr) 
-    minmax(200px, 2.3fr) 
+  grid-template-columns:
+    100px
+    100px
+    minmax(150px, 1.1fr)
+    minmax(150px, 1.1fr)
+    minmax(200px, 2.3fr)
     auto !important;
   gap: 10px !important;
   align-items: center;
@@ -88,8 +88,6 @@
   background-repeat: no-repeat;
   pointer-events: none;
 }
-
-
 
 .resetButton {
   height: 48px;
@@ -239,7 +237,11 @@
 .success {
   composes: success from "./WeMoveShared.module.css";
   border: 1px solid rgba(21, 128, 61, 0.12);
-  background: linear-gradient(180deg, rgba(220, 252, 231, 0.96), rgba(240, 253, 244, 0.96));
+  background: linear-gradient(
+    180deg,
+    rgba(220, 252, 231, 0.96),
+    rgba(240, 253, 244, 0.96)
+  );
   color: #166534;
 }
 
@@ -258,7 +260,11 @@
 .warning {
   composes: warning from "./WeMoveShared.module.css";
   border: 1px solid rgba(180, 83, 9, 0.12);
-  background: linear-gradient(180deg, rgba(255, 237, 213, 0.96), rgba(255, 247, 237, 0.96));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 237, 213, 0.96),
+    rgba(255, 247, 237, 0.96)
+  );
   color: #b45309;
 }
 
@@ -557,7 +563,13 @@
 }
 
 .dateBox {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important; /* 위아래 빈 공간의 정중앙에 텍스트 배치 */
+  align-items: center !important; /* 가로 정중앙 정렬 */
+  flex: 1 1 auto !important; /* 아래에 있는 버튼(상태 뱃지) 바로 위까지 상자의 길이를 쭉 늘림 */
   padding: 14px 10px !important;
+  margin-bottom: 12px !important; /* 버튼과 상자가 너무 꽉 붙지 않도록 적당히 띄움 */
 }
 
 .dateBox strong {
@@ -675,7 +687,11 @@
   border-radius: 28px;
   background:
     radial-gradient(circle at top, rgba(96, 165, 250, 0.12), transparent 38%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98));
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(248, 250, 252, 0.98)
+    );
   text-align: center;
 }
 
@@ -812,7 +828,7 @@
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  margin-top: 10px !important;
+  margin-top: auto !important; /* 남는 빈 공간을 모두 밀어내어 맨 아랫바닥(이미지 하단선)에 딱 붙게 함 */
   padding-top: 10px !important;
   border-top: 1px solid #eef0f3 !important;
 }
@@ -909,16 +925,16 @@
 @media (min-width: 768px) {
   .listCardBody {
     display: flex !important;
-    align-items: stretch !important; /* 이미지 높이가 우측 텍스트 내용의 총 높이에 꽉 차게 동기화 */
-    gap: 20px !important; /* 넉넉한 간격을 통해 겹침 방지 (약간 줄임) */
+    align-items: stretch !important; /* 좌우 양측의 높이를 동일하게 맞춰, 텍스트가 적어도 우측 박스가 이미지 하단선까지 길어지게 함 */
+    gap: 20px !important; /* 넉넉한 간격을 통해 겹침 방지 */
   }
 
   .listCardImage {
-    flex: 0 0 clamp(160px, 35%, 260px) !important; /* 카드 너비에 맞춰 유연하게 폭 조절 (최소 160px ~ 최대 260px) */
-    width: clamp(160px, 35%, 260px) !important;
-    height: 168px !important;
-    min-height: 168px !important;
-    object-fit: cover !important;
+    flex: 0 0 clamp(200px, 42%, 330px) !important; /* 3:2 비율에서 충분한 높이를 확보하기 위해 가로폭 확장 유지 */
+    width: clamp(200px, 42%, 330px) !important;
+    aspect-ratio: 3 / 2 !important; /* 이미지 출력 비율을 16:9에서 3:2로 수정 */
+    height: auto !important; /* 종횡비를 유지하기 위한 기본 설정 */
+    object-fit: cover !important; /* 비율을 맞추느라 찌그러지지 않게 꽉 채움 */
     border-radius: 16px !important;
     align-self: center !important;
   }
@@ -932,39 +948,52 @@
   }
 }
 
-/* --- 모임 제목 텍스트 크기 대폭 확대 --- */
+/* --- 텍스트 크기 및 간격 정밀 튜닝 (참고 이미지 기반) --- */
+.listCardContent .listTags {
+  margin-bottom: 8px !important; /* 태그와 제목 사이에 적절한 숨쉴 틈 제공 */
+}
+
 .listCardContent h3 {
-  font-size: 1.8rem !important; /* 기존보다 훨씬 크고 시원하게 글씨 크기 증대 */
-  font-weight: 900 !important; /* 강력한 두께로 시선 집중 */
-  margin: 6px 0 !important; /* 상하 여백을 살짝 주어 답답함 해소 */
-  line-height: 1.3 !important; /* 텍스트가 두 줄이 될 경우를 대비한 깔끔한 줄간격 */
-  letter-spacing: -0.02em !important; /* 큰 글씨에 어울리도록 자간 살짝 축소 */
-  overflow: hidden !important; /* 1줄 초과 방지 */
-  white-space: nowrap !important; /* 자동 줄바꿈 방지 */
-  text-overflow: ellipsis !important; /* 넘치면 말줄임표(...) 표시 */
+  font-size: 2.1rem !important; /* 다시 시원하고 큼직하게 폰트 크기 확대 */
+  font-weight: 800 !important;
+  margin: 0 0 10px 0 !important; /* 제목과 아래 본문 사이의 간격을 넉넉하게 띄움 */
+  line-height: 1.3 !important;
+  letter-spacing: -0.02em !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
 }
 
 /* --- 모임 부제목(내용) 텍스트 크기 및 스타일 조정 --- */
 .listCardContent p {
-  font-size: 1.05rem !important; /* 기존보다 살짝 더 키워서 가독성 확보 */
-  color: #4b5563 !important; /* 제목을 방해하지 않는 세련된 진회색 톤 */
-  margin-bottom: 8px !important; /* 아래 메타 정보들과의 적절한 간격 */
-  line-height: 1.5 !important; /* 읽기 편안한 줄간격 */
-  overflow: hidden !important; /* 1줄 초과 방지 */
-  white-space: nowrap !important; /* 자동 줄바꿈 방지 */
-  text-overflow: ellipsis !important; /* 넘치면 말줄임표(...) 표시 */
+  font-size: 1.25rem !important; /* 본문 폰트 크기도 다시 키워서 가독성 확보 */
+  color: #4b5563 !important; /* 조금 더 또렷한 진회색으로 복구 */
+  margin-bottom: 20px !important; /* 본문과 지역 정보 사이의 공간을 충분히 벌려서 꽉 찬 느낌을 줌 */
+  line-height: 1.5 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
 }
 
 /* --- 메타 정보 (지역, 장소, 인원) 아이콘 및 텍스트 튜닝 --- */
 .listMeta {
-  gap: 12px !important; /* 항목 간의 간격을 살짝 더 띄워서 답답하지 않게 조절 */
-  margin-top: auto !important; /* 메타 정보가 카드 하단부로 예쁘게 밀착되도록 설정 */
+  gap: 12px !important;
+  margin-top: 4px !important; /* 위쪽 본문과의 여백은 위 p태그의 margin-bottom으로 커버함 */
+}
+
+.metaDivider {
+  display: inline-block !important;
+  width: 1px !important;
+  height: 12px !important; /* 파이프 높이 */
+  background-color: #d1d5db !important; /* 연한 회색 */
+  margin: 0 4px !important; /* 양옆 띄움 */
+  flex-shrink: 0 !important; /* 좁아져도 찌그러지지 않음 */
 }
 
 .listMeta span {
-  font-size: 0.92rem !important; /* 크기 유지 */
+  font-size: 1rem !important; /* 크기 확대 */
   font-weight: 500 !important; /* 부제목과 어울리도록 너무 튀지 않는 세련된 기본 두께로 하향 */
-  color: #374151 !important; 
+  color: #374151 !important;
   display: flex !important;
   align-items: center !important;
   gap: 1px !important; /* 아이콘과 글자 사이의 간격을 거의 붙을 정도로 대폭 축소 */
@@ -974,30 +1003,71 @@
 .listMeta {
   display: flex !important;
   align-items: center !important;
-  flex-wrap: wrap !important; /* 화면이 좁을 때 아이템들이 넘치지 않고 자연스럽게 줄바꿈 되도록 허용 */
+  flex-wrap: nowrap !important; /* 텍스트가 길어져도 줄바꿈되지 않고 한 줄을 유지하도록 강제 */
+  overflow: hidden !important; /* 부모 영역을 벗어나는 텍스트는 숨김 */
+}
+
+/* 지역(첫 번째)은 절대로 찌그러지거나 줄바꿈되지 않도록 철벽 방어 */
+.listMeta span:first-child {
+  white-space: nowrap !important; /* 줄바꿈 절대 금지 */
+  flex-shrink: 0 !important; /* 공간이 부족해도 이 영역은 양보하지 않고 크기 유지 */
+}
+
+/* --- 만나는 장소 (세 번째 span)가 너무 길면 ... 처리 --- */
+.listMeta span:nth-child(3) {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+  max-width: 100% !important;
+  line-height: 1.2 !important;
+  flex-shrink: 1 !important; /* 남은 공간에 맞춰 자신이 알아서 줄어듦 */
+  min-width: 0 !important; /* flexbox 내에서 텍스트 말줄임표가 고장나지 않도록 최소 너비 제한 해제 */
+}
+.listMeta span:nth-child(3) svg {
+  vertical-align: top !important; /* 아이콘이 글씨보다 위로 뜨지 않게 눌러줌 */
+  margin-right: 3px !important;
 }
 
 .participantMetaRow {
-  margin-left: auto !important; /* 플렉스 박스의 특성을 이용해 항상 오른쪽 끝으로 밀어내기 */
-  gap: 3px !important; /* 인원수 관련 아이템들(아이콘, 글자, 막대, 퍼센트) 사이의 간격을 대폭 좁힘 */
+  display: flex !important;
+  flex-direction: column !important; /* 위아래로 배치 */
+  width: 130px !important; /* 가로 길이를 충분히 줘서 게이지바가 길게 늘어나도록 함 */
+  margin-left: auto !important; /* 우측 끝 정렬 */
+  gap: 6px !important; /* 윗줄 텍스트와 아랫줄 게이지바 사이의 간격 */
 }
 
-/* 모바일 좁은 화면 대응: 줄바꿈 되었을 때 오른쪽 끝이 아니라 왼쪽으로 다시 붙어서 정렬되도록 처리 */
+.participantMetaHeader {
+  display: flex !important;
+  justify-content: space-between !important; /* 좌측 인원수, 우측 퍼센트 배치 */
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.participantCount {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  color: #4b5563 !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+}
+
 @media (max-width: 640px) {
   .participantMetaRow {
     margin-left: 0 !important;
     margin-top: 4px !important;
-    flex-basis: 100% !important; /* 앞의 주소 텍스트 길이와 무관하게 무조건 다음 줄로 넘어가도록 강제 */
+    width: 100% !important; /* 모바일에서는 가로를 꽉 채움 */
   }
 }
 
 .progressBarBg {
-  width: 50px !important;
-  height: 6px !important;
+  width: 100% !important; /* 부모인 130px을 꽉 채우도록 수정 (기존 50px에서 확장) */
+  height: 5px !important; /* 너무 두껍지 않게 세련된 두께로 */
   background-color: #e2e8f0 !important;
   border-radius: 999px !important;
   overflow: hidden !important;
-  margin-left: 6px !important; /* 텍스트와 막대 사이 여백 */
+  margin: 0 !important; /* 위쪽 텍스트 아이콘과 좌측 정렬이 완벽하게 맞도록 모든 마진 강제 초기화 */
 }
 
 .progressBarFill {
@@ -1021,4 +1091,34 @@
   color: #4b5563 !important; /* 아이콘 색상 역시 한 톤 더 진하게 변경 */
 }
 
+/* ����� �ʱ�ȭ ��ư �߰� */
+.mobileResetBtn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 12px !important;
+  margin-top: 10px !important;
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.mobileResetIcon {
+  margin-right: 6px !important;
+}
 
+.mobileResetIcon {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+}
+.sheetSearchIcon {
+  width: 20px !important;
+  height: 20px !important;
+  color: #94a3b8 !important;
+  margin-right: 8px !important;
+  flex-shrink: 0 !important;
+}

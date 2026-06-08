@@ -433,9 +433,14 @@ export default function MeetingManagePage() {
       >
         {actionModal?.applicant ? (
           <div className={styles.applicantModalCard}>
-            <div className={styles.applicantAvatar}>
-              {(actionModal.applicant.nickname || "").slice(0, 1)}
-            </div>
+            <img
+              src={actionModal.applicant.profileImage || defaultUserImage}
+              alt={actionModal.applicant.nickname}
+              className={styles.applicantAvatar}
+              onError={(e) => {
+                e.currentTarget.src = defaultUserImage;
+              }}
+            />
             <div>
               <strong>{actionModal.applicant.nickname}</strong>
               <p>{actionModal.applicant.message || "참가 메시지가 없습니다."}</p>

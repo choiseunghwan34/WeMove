@@ -81,8 +81,8 @@ export default function SportPickerModal({
   }, [categories, draftCategory]);
 
   const previewText = selectedSport
-    ? `${selectedSport.name}${selectedSport.category ? ` · ${selectedSport.category}` : ""}`
-    : "전체 운동";
+      ? `${selectedSport.category ? `${selectedSport.category} · ` : ""}${selectedSport.name}`
+      : (draftCategory !== ALL_CATEGORY ? draftCategory : "전체 운동");
 
   const applySelection = () => {
     onApply?.(selectedSport);

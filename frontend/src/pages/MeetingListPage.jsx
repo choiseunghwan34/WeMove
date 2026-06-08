@@ -850,44 +850,51 @@ export default function MeetingListPage() {
                       />
                       {meeting.regionName}
                     </span>
+                    <span className={styles.metaDivider}></span>
                     <span>
                       <UiIcon
-                        name="calendar"
+                        name="compass"
                         className={styles.dashboardMetaIcon}
                       />
                       {meeting.placeName}
                     </span>
-                    <span className={styles.participantMetaRow}>
-                      <UiIcon
-                        name="user"
-                        className={styles.dashboardMetaIcon}
+                  </div>
+
+                  <div className={styles.host} style={{ display: "flex", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <img
+                        src={
+                          meeting.hostProfileImage ||
+                          defaultUserImage
+                        }
+                        alt={meeting.meetingHostName}
+                        className={styles.dashboardHostAvatar}
+                        onError={(e) => {
+                          e.currentTarget.src = defaultUserImage;
+                        }}
                       />
-                      {meeting.approvedCount || 1}/{meeting.maxMembers}명
+                      <span>{meeting.meetingHostName || "익명"}</span>
+                    </div>
+                    <div className={styles.participantMetaRow}>
+                      <div className={styles.participantMetaHeader}>
+                        <span className={styles.participantCount}>
+                          <UiIcon
+                            name="user"
+                            className={styles.dashboardMetaIcon}
+                          />
+                          {meeting.approvedCount || 1}/{meeting.maxMembers}명
+                        </span>
+                        <strong className={styles.progressPercentText}>
+                          {Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100)}%
+                        </strong>
+                      </div>
                       <div className={styles.progressBarBg}>
                         <div 
                           className={styles.progressBarFill} 
                           style={{ width: `${Math.min(100, Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100))}%` }} 
                         />
                       </div>
-                      <strong className={styles.progressPercentText}>
-                        {Math.round(((meeting.approvedCount || 1) / meeting.maxMembers) * 100)}%
-                      </strong>
-                    </span>
-                  </div>
-
-                  <div className={styles.host}>
-                    <img
-                      src={
-                        meeting.hostProfileImage ||
-                        defaultUserImage
-                      }
-                      alt={meeting.meetingHostName}
-                      className={styles.dashboardHostAvatar}
-                      onError={(e) => {
-                        e.currentTarget.src = defaultUserImage;
-                      }}
-                    />
-                    <span>{meeting.meetingHostName || "익명"}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -979,7 +986,6 @@ export default function MeetingListPage() {
             <option value="CLOSED">모집완료</option>
             <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
-            <option value="CANCELLED">취소됨</option>
           </select>
 
           <ReactCalendarDatePicker
@@ -990,11 +996,32 @@ export default function MeetingListPage() {
             }}
           />
 
-          <input
-            value={tempKeyword}
-            onChange={(event) => setTempKeyword(event.target.value)}
-            placeholder="제목, 장소 검색"
-          />
+          <div className={styles.sheetSearchBox}>
+
+            <input
+              value={tempKeyword}
+              onChange={(event) => setTempKeyword(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  updateURLParams({ keyword: tempKeyword });
+                  setIsFilterOpen(false); // 엔터치면 모달도 닫히게 처리
+                }
+              }}
+              placeholder="검색어를 입력하세요"
+            />
+          </div>
+
+          <button
+            type="button"
+            className={styles.mobileResetBtn}
+            onClick={() => {
+              resetFilters();
+              setIsFilterOpen(false);
+            }}
+          >
+            <UiIcon name="refresh" className={styles.mobileResetIcon} />
+            필터 초기화
+          </button>
         </div>
       </AppModal>
 
