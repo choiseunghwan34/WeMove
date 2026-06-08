@@ -1,6 +1,8 @@
 package kr.co.iei.common.websocket;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import kr.co.iei.auth.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +48,7 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     return Arrays.stream(uri.getQuery().split("&"))
         .map((part) -> part.split("=", 2))
         .filter((pair) -> pair.length == 2 && pair[0].equals(name))
-        .map((pair) -> pair[1])
+        .map((pair) -> URLDecoder.decode(pair[1], StandardCharsets.UTF_8))
         .findFirst()
         .orElse(null);
   }

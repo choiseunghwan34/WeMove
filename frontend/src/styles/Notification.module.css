@@ -219,7 +219,7 @@
   color: #111827;
   font-family: inherit;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 700 !important;
   line-height: 1.2;
   letter-spacing: 0;
   cursor: pointer;

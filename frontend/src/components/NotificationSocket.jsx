@@ -8,25 +8,38 @@ import {
 import { getAccessToken } from "../utils/authTokenStore";
 
 const SOCKET_URL = "ws://localhost:8456/ws/notifications";
+const RECONNECT_DELAY_MS = 3000;
 
 export default function NotificationSocket() {
   const { isAuthenticated, accessToken } = useAuth();
   const socketRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
 
   useEffect(() => {
-    const token = accessToken || getAccessToken();
+    let closedByEffect = false;
 
-    if (!isAuthenticated || !token) {
+    const clearReconnectTimer = () => {
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+
+    const closeSocket = () => {
       socketRef.current?.close();
       socketRef.current = null;
-      return undefined;
-    }
+    };
 
-    const socket = new WebSocket(
-      `${SOCKET_URL}?token=${encodeURIComponent(token)}`,
-    );
+    const scheduleReconnect = (connect) => {
+      if (closedByEffect || !isAuthenticated) {
+        return;
+      }
 
-    socket.onmessage = (event) => {
+      clearReconnectTimer();
+      reconnectTimerRef.current = setTimeout(connect, RECONNECT_DELAY_MS);
+    };
+
+    const handleMessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
 
@@ -47,6 +60,7 @@ export default function NotificationSocket() {
           id: payload.id || payload.notificationId,
           notificationId: payload.notificationId || payload.id,
           type: payload.type || NOTIFICATION_TYPES.INFO,
+          chatKind: payload.chatKind,
           title: payload.title,
           message: payload.message || "",
           targetType: payload.targetType,
@@ -62,19 +76,41 @@ export default function NotificationSocket() {
       }
     };
 
-    socket.onclose = () => {
-      if (socketRef.current === socket) {
-        socketRef.current = null;
+    const connect = () => {
+      const token = accessToken || getAccessToken();
+
+      if (!isAuthenticated || !token || closedByEffect) {
+        closeSocket();
+        return;
       }
+
+      closeSocket();
+
+      const socket = new WebSocket(
+        `${SOCKET_URL}?token=${encodeURIComponent(token)}`,
+      );
+
+      socket.onmessage = handleMessage;
+      socket.onerror = () => {
+        socket.close();
+      };
+      socket.onclose = () => {
+        if (socketRef.current === socket) {
+          socketRef.current = null;
+        }
+        scheduleReconnect(connect);
+      };
+
+      socketRef.current = socket;
     };
 
-    socketRef.current = socket;
+    clearReconnectTimer();
+    connect();
 
     return () => {
-      socket.close();
-      if (socketRef.current === socket) {
-        socketRef.current = null;
-      }
+      closedByEffect = true;
+      clearReconnectTimer();
+      closeSocket();
     };
   }, [accessToken, isAuthenticated]);
 

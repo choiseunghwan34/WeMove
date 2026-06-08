@@ -3,6 +3,7 @@ package kr.co.iei.chat.model.service;
 import kr.co.iei.chat.model.dao.DirectChatDao;
 import kr.co.iei.chat.model.vo.*;
 import kr.co.iei.chat.websocket.DirectChatBroadcaster;
+import kr.co.iei.notification.model.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class DirectChatServiceImpl implements DirectChatService {
 
   private final DirectChatDao directChatDao;
   private final DirectChatBroadcaster directChatBroadcaster;
+  private final NotificationService notificationService;
 
   @Override
   public List<DirectChatRoomResponse> getRooms(Long userId) {
@@ -99,6 +101,7 @@ public class DirectChatServiceImpl implements DirectChatService {
             roomId,
             new ChatMessageEvent("DIRECT_CHAT_MESSAGE_CREATED", savedMessage)
     );
+    sendMessageNotifications(roomId, userId, savedMessage);
 
     return savedMessage;
   }
@@ -122,5 +125,32 @@ public class DirectChatServiceImpl implements DirectChatService {
 
   private String normalizeContent(String content) {
     return String.valueOf(content == null ? "" : content).trim();
+  }
+
+  private void sendMessageNotifications(
+          Long roomId, Long senderUserId, DirectChatMessageResponse message) {
+    if (roomId == null || senderUserId == null || message == null) {
+      return;
+    }
+
+    String senderName =
+            message.getNickname() == null || message.getNickname().isBlank()
+                    ? "상대방"
+                    : message.getNickname();
+    String title = senderName + "님의 메시지";
+    String notificationMessage = summarizeContent(message.getContent());
+
+    for (Long targetUserId : directChatDao.selectNotificationTargetUserIds(roomId, senderUserId)) {
+      notificationService.sendToUser(
+              targetUserId, "chat", title, notificationMessage, "directChat:" + roomId);
+    }
+  }
+
+  private String summarizeContent(String content) {
+    String normalized = normalizeContent(content);
+    if (normalized.isBlank()) {
+      return "새 메시지가 도착했습니다.";
+    }
+    return normalized.length() > 80 ? normalized.substring(0, 80) + "..." : normalized;
   }
 }

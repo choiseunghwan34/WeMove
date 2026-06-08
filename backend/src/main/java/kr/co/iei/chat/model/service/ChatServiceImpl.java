@@ -8,6 +8,7 @@ import kr.co.iei.chat.model.vo.ChatMessageRequest;
 import kr.co.iei.chat.model.vo.ChatMessageResponse;
 import kr.co.iei.chat.model.vo.ChatRoomResponse;
 import kr.co.iei.chat.websocket.MeetingChatBroadcaster;
+import kr.co.iei.notification.model.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class ChatServiceImpl implements ChatService {
 
   private final ChatDao chatDao;
   private final MeetingChatBroadcaster meetingChatBroadcaster;
+  private final NotificationService notificationService;
 
   @Override
   public List<ChatRoomResponse> getRooms(Long userId) {
@@ -64,6 +66,7 @@ public class ChatServiceImpl implements ChatService {
     ChatMessageResponse savedMessage = chatDao.selectMessage(message.getMessageId());
     meetingChatBroadcaster.broadcast(
         meetingId, new ChatMessageEvent("CHAT_MESSAGE_CREATED", savedMessage));
+    sendMessageNotifications(meetingId, userId, savedMessage);
     return savedMessage;
   }
 
@@ -108,5 +111,34 @@ public class ChatServiceImpl implements ChatService {
 
   private String normalizeContent(String content) {
     return String.valueOf(content == null ? "" : content).trim();
+  }
+
+  private void sendMessageNotifications(
+      Long meetingId, Long senderUserId, ChatMessageResponse message) {
+    if (meetingId == null || senderUserId == null || message == null) {
+      return;
+    }
+
+    String meetingTitle = chatDao.selectMeetingTitle(meetingId);
+    String title =
+        meetingTitle == null || meetingTitle.isBlank() ? "무브톡 새 메시지" : meetingTitle;
+    String senderName =
+        message.getNickname() == null || message.getNickname().isBlank()
+            ? "참가자"
+            : message.getNickname();
+    String notificationMessage = senderName + ": " + summarizeContent(message.getContent());
+
+    for (Long targetUserId : chatDao.selectNotificationTargetUserIds(meetingId, senderUserId)) {
+      notificationService.sendToUser(
+          targetUserId, "chat", title, notificationMessage, "meetingChat:" + meetingId);
+    }
+  }
+
+  private String summarizeContent(String content) {
+    String normalized = normalizeContent(content);
+    if (normalized.isBlank()) {
+      return "새 메시지가 도착했습니다.";
+    }
+    return normalized.length() > 80 ? normalized.substring(0, 80) + "..." : normalized;
   }
 }
