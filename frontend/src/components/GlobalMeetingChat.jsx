@@ -9,7 +9,7 @@ import {
   getDirectChatMessages,
   getDirectChatRooms,
 } from "../api/chatApi";
-import { broadcastNotice, getNotifications } from "../api/notificationApi";
+import { broadcastNotice, getNoticeNotifications } from "../api/notificationApi";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -238,10 +238,9 @@ export default function GlobalMeetingChat() {
     setError("");
 
     try {
-      const { data } = await getNotifications();
+      const { data } = await getNoticeNotifications();
       const nextNotices = Array.isArray(data)
         ? data
-            .filter((notification) => notification.type === "notice")
             .map((notification) => ({
               notificationId:
                 notification.notificationId || notification.id || notification.createdAt,

@@ -301,6 +301,8 @@
 
 .room span,
 .roomActive span {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   color: #64748b;
   font-size: 12px;
@@ -333,11 +335,16 @@
 .chatTitle {
   display: grid;
   gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 12px 14px;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .chatTitle strong {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   color: #10233d;
   font-size: 15px;
@@ -347,8 +354,9 @@
 }
 
 .chatTitleLink {
+  display: block;
   min-width: 0;
-  width: max-content;
+  width: 100%;
   max-width: 100%;
   overflow: hidden;
   border: 0;
@@ -370,6 +378,8 @@
 }
 
 .chatTitle span {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   color: #64748b;
   font-size: 12px;
