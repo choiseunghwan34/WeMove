@@ -55,8 +55,13 @@ const formatJoinDate = (dateStr) => {
   }
 };
 
+const pad2 = (value) => String(value).padStart(2, "0");
+
 const buildViewStorageKey = (meetingId) => {
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(
+    now.getDate(),
+  )}`;
   return `wemove:view:${meetingId}:${today}`;
 };
 

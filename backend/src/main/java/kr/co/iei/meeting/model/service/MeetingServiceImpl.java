@@ -46,6 +46,7 @@ public class MeetingServiceImpl implements MeetingService {
   private static final int POPULAR_RESULT_LIMIT = 5;
   private static final int POPULAR_PERIOD_TODAY_DAYS = 1;
   private static final int POPULAR_PERIOD_7D_DAYS = 7;
+  private static final long POPULAR_KEY_TTL_DAYS = POPULAR_PERIOD_7D_DAYS + 1L;
 
   private final MeetingDao meetingDao;
   private final ParticipantDao participantDao;
@@ -220,15 +221,16 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     String dedupeKey = buildDedupeKey(meetingId, normalizedActorKey);
-    Duration ttl = durationUntilTomorrow();
-    Boolean firstView = stringRedisTemplate.opsForValue().setIfAbsent(dedupeKey, "1", ttl);
+    Duration dedupeTtl = durationUntilTomorrow();
+    Boolean firstView =
+        stringRedisTemplate.opsForValue().setIfAbsent(dedupeKey, "1", dedupeTtl);
     if (!Boolean.TRUE.equals(firstView)) {
       return;
     }
 
     String popularKey = todayPopularKey();
     stringRedisTemplate.opsForZSet().incrementScore(popularKey, String.valueOf(meetingId), 1D);
-    stringRedisTemplate.expire(popularKey, ttl);
+    stringRedisTemplate.expire(popularKey, Duration.ofDays(POPULAR_KEY_TTL_DAYS));
   }
 
   @Override
