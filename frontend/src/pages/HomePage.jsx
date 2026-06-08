@@ -200,6 +200,11 @@ export default function HomePage() {
 
   const currentHero = heroSlides[activeSlide];
 
+  const truncateText = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -907,12 +912,12 @@ export default function HomePage() {
             meetings.slice(0, 5).map((meeting, index) => (
               <article
                 key={meeting.meetingId}
-                className={styles.dashboardMeetingCard}
+                className={`${styles.dashboardMeetingCard} ${styles.homeCardOverride}`}
               >
                 <img
                   src={getMeetingThumbnail(meeting) || defaultThumbnail}
                   alt={meeting.title}
-                  className={styles.dashboardMeetingImage}
+                  className={`${styles.dashboardMeetingImage} ${styles.homeImageOverride}`}
                   onError={(e) => {
                     e.currentTarget.src = defaultThumbnail;
                   }}
@@ -926,7 +931,7 @@ export default function HomePage() {
                   </div>
 
                   <h3>{meeting.title}</h3>
-                  <p>{meeting.content}</p>
+                  <p>{truncateText(meeting.content, 80)}</p>
 
                   <div className={styles.dashboardMeetingMeta}>
                     <span>
@@ -955,7 +960,7 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  <div className={styles.dashboardMeetingFooter}>
+                  <div className={`${styles.dashboardMeetingFooter} ${styles.footerContainerOverride}`}>
                     <div className={styles.dashboardMeetingActions}>
 
                       <button type="button" onClick={()=> navigate(`/meetings/${meeting.meetingId}`)}>

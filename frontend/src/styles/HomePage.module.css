@@ -475,14 +475,16 @@
 
 .dashboardMeetingBody h3 {
   font-size: clamp(1.38rem, 1.82vw, 1.63rem) !important;
-  line-height: 1.15 !important;
+  line-height: 1.8 !important;
 }
 
 .dashboardMeetingBody p {
-  line-height: 1.58 !important;
+  line-height: 1.5 !important;
+  font-size: 1.1rem !important;
 }
 
 .dashboardMeetingMeta {
+  margin-top: 10px;
   gap: 8px !important;
   font-size: 0.82rem !important;
 }
@@ -623,6 +625,7 @@
 
 .dashboardMeetingBody h3 {
   font-size: clamp(1.32rem, 1.72vw, 1.52rem) !important;
+  margin-top: 10px !important;
 }
 
 .dashboardMeetingImage {
@@ -1790,4 +1793,27 @@
   font-size: 0.92rem;
   font-weight: 700;
   text-align: center;
+}
+/* 홈 화면 모임 카드 */
+.homeCardOverride {
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+  align-items: stretch !important;
+}
+@media (max-width: 720px) {
+  .homeCardOverride {
+    grid-template-columns: 1fr !important;
+  }
+}
+.homeImageOverride {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 3 / 2 !important;
+  object-fit: cover !important;
+  margin: 0 !important;
+}
+.footerContainerOverride {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin-top: auto !important; /* 💡 윗 공간을 싹 다 밀어내고 바닥에 밀착시킵니다 */
 }

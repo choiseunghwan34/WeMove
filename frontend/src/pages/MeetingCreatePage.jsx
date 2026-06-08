@@ -2,11 +2,26 @@
 import {createMeeting} from "../api/meetingApi.js";
 import MeetingFormPage from "./MeetingFormPage.jsx";
 import {useNavigate} from "react-router-dom";
+import {useAuth} from "../contexts/AuthContext.jsx";
+import {useEffect, useState} from "react";
 
 
 export default function MeetingCreatePage() {
-  console.log("★★★★ 지금 MeetingCreatePage 파일이 실행되었습니다 ★★★★");
   const navigate = useNavigate();
+  const {isAuthenticated, loading} = useAuth();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(()=>{
+    if(!isAuthenticated){
+      alert("로그인이 필요한 서비스입니다.")
+      navigate(-1, {replace: true});
+    }else{
+      setIsAuthorized(true);
+    }
+  },[isAuthenticated, loading, navigate]);
+  if(!isAuthorized){
+    return null;
+  }
 
   const handleCreate = (formData) =>{
     createMeeting(formData).then((res)=>{
