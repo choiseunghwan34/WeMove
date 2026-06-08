@@ -14,6 +14,7 @@ import { getMeetings, getTopRegions } from "../api/meetingApi";
 import { getMember, getMyActivity } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
+import { meetingImages } from "../data/dashboardData";
 import useSidebarInterestItems from "../hooks/useSidebarInterestItems";
 import styles from "../styles/MeetingListPage.module.css";
 
@@ -792,27 +793,33 @@ export default function MeetingListPage() {
             </div>
           </div>
         ) : (
-          meetingList.map((meeting) => (
-            <Link
-              key={meeting.meetingId}
-              className={cx(
-                "listCard",
-                meeting.status === "RECRUITING" && "listCardRecruiting",
-                meeting.status === "ONGOING" && "listCardOngoing",
-                meeting.status === "COMPLETED" && "listCardCompleted",
-                (meeting.status === "CLOSED" ||
-                  meeting.status === "CANCELLED") &&
-                  "listCardClosed",
-              )}
-              to={`/meetings/${meeting.meetingId}`}
-            >
+          meetingList.map((meeting) => {
+            const fallbackThumbnail =
+              meetingImages[meeting.meetingId] ||
+              meetingImages[meeting.id] ||
+              defaultThumbnail;
+
+            return (
+              <Link
+                key={meeting.meetingId}
+                className={cx(
+                  "listCard",
+                  meeting.status === "RECRUITING" && "listCardRecruiting",
+                  meeting.status === "ONGOING" && "listCardOngoing",
+                  meeting.status === "COMPLETED" && "listCardCompleted",
+                  (meeting.status === "CLOSED" ||
+                    meeting.status === "CANCELLED") &&
+                    "listCardClosed",
+                )}
+                to={`/meetings/${meeting.meetingId}`}
+              >
               <div className={styles.listCardBody}>
                 <img
-                  src={meeting.thumbnailImage || defaultThumbnail}
+                  src={meeting.thumbnailImage || fallbackThumbnail}
                   alt={meeting.title}
                   className={styles.listCardImage}
                   onError={(e) => {
-                    e.currentTarget.src = defaultThumbnail;
+                    e.currentTarget.src = fallbackThumbnail;
                   }}
                 />
 
@@ -909,8 +916,9 @@ export default function MeetingListPage() {
                   {getButtonText(meeting)}
                 </button>
               </aside>
-            </Link>
-          ))
+              </Link>
+            );
+          })
         )}
       </section>
 
