@@ -224,6 +224,17 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
 
     const handleChange = (e) => {
         const {name, value} = e.target;
+        const limits = {
+            title: 40,
+            placeName: 40,
+            supplies: 100,
+            content: 100
+        }
+        if(limits[name] && value.length > limits[name]) {
+            alert(`${limits[name]}자까지만 입력 가능합니다.`);
+            setForm(p => ({...p, [name]: value.substring(0, limits[name])}));
+            return;
+        }
         setForm(p => ({...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value}));
     };
 
@@ -416,7 +427,8 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         name="title"
                         value={form.title}
                         onChange={handleChange}
-                        placeholder="예: 야당역 5km 러닝 크루 모집"
+                        placeholder="예: 야당역 5km 러닝 크루 모집 (최대 40글자)"
+                        maxLength="40"
                     />
 
                 </label>
@@ -486,7 +498,8 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         name="placeName"
                         value={form.placeName}
                         onChange={handleChange}
-                        placeholder="예: 야당역 2번 출구 앞"
+                        placeholder="예: 야당역 2번 출구 앞(최대 40글자)"
+                        max="40"
                     />
                 </label>
                 <label>
@@ -580,8 +593,12 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         name="supplies"
                         value={form.supplies}
                         onChange={handleChange}
-                        placeholder="편한 운동복, 물, 개인 이어폰"
+                        placeholder="예: 편한 운동복, 물, 개인 이어폰 (최대 100글자)"
+                        maxLength="100"
                     />
+                    <div style={{ textAlign: "right", fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
+                        {form.supplies.length} / 100
+                    </div>
                 </label>
 
                 <label className={styles.full}>
@@ -590,8 +607,11 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         name="content"
                         value={form.content}
                         onChange={handleChange}
-                        placeholder="모임 분위기 등 간단한 모임 소개를 적어주세요."
+                        placeholder="모임 분위기 등 간단한 모임 소개를 적어주세요. (최대 100글자)"
                     />
+                    <div style={{ textAlign: "right", fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
+                        {form.content.length} / 100
+                    </div>
                 </label>
 
                 <label className={styles.full}>
