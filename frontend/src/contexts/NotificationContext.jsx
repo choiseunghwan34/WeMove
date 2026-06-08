@@ -14,6 +14,7 @@ import {
 } from "../api/notificationApi";
 import { useAuth } from "./AuthContext";
 import {
+  createLocalDateTimeStamp,
   NOTIFICATION_TYPES,
   WEMOVE_NOTIFICATION_EVENT,
 } from "../utils/notificationEvents";
@@ -36,7 +37,7 @@ const createNotification = (detail) => ({
   targetId: detail?.targetId,
   sourceId: detail?.sourceId,
   isRead: detail?.isRead === true || detail?.isRead === 1,
-  createdAt: detail?.createdAt || new Date().toISOString(),
+  createdAt: detail?.createdAt || createLocalDateTimeStamp(),
 });
 
 const getNotificationKey = (notification) => {

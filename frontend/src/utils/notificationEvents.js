@@ -2,6 +2,26 @@ export const WEMOVE_NOTIFICATION_EVENT = "wemove:notification";
 export const WEMOVE_NOTIFICATION_OPEN_EVENT = "wemove:notification-open";
 export const WEMOVE_ACCOUNT_SUSPEND_EVENT = "wemove:account-suspend";
 
+export const createLocalDateTimeStamp = (value = new Date()) => {
+  const date =
+    value instanceof Date
+      ? value
+      : new Date(String(value).replace(" ", "T"));
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 export const NOTIFICATION_TYPES = {
   CHAT: "chat",
   MEETING_REQUEST: "meetingRequest",
@@ -68,7 +88,7 @@ export const publishNotification = ({
   targetId,
   sourceId,
   isRead,
-  createdAt = new Date().toISOString(),
+  createdAt = createLocalDateTimeStamp(),
   forceLogout,
   suspendedUntil,
   suspendHours,
