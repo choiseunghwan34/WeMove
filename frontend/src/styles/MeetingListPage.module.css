@@ -961,6 +961,15 @@
   margin-top: 4px !important; /* 위쪽 본문과의 여백은 위 p태그의 margin-bottom으로 커버함 */
 }
 
+.metaDivider {
+  display: inline-block !important;
+  width: 1px !important;
+  height: 12px !important; /* 파이프 높이 */
+  background-color: #d1d5db !important; /* 연한 회색 */
+  margin: 0 4px !important; /* 양옆 띄움 */
+  flex-shrink: 0 !important; /* 좁아져도 찌그러지지 않음 */
+}
+
 .listMeta span {
   font-size: 1rem !important; /* 크기 확대 */
   font-weight: 500 !important; /* 부제목과 어울리도록 너무 튀지 않는 세련된 기본 두께로 하향 */
@@ -984,8 +993,8 @@
   flex-shrink: 0 !important; /* 공간이 부족해도 이 영역은 양보하지 않고 크기 유지 */
 }
 
-/* 지역이 차지하고 남은 공간만 만나는 장소(두 번째)가 차지하며, 길어지면 ... 처리 */
-.listMeta span:nth-child(2) {
+/* --- 만나는 장소 (세 번째 span)가 너무 길면 ... 처리 --- */
+.listMeta span:nth-child(3) {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -995,7 +1004,7 @@
   flex-shrink: 1 !important; /* 남은 공간에 맞춰 자신이 알아서 줄어듦 */
   min-width: 0 !important; /* flexbox 내에서 텍스트 말줄임표가 고장나지 않도록 최소 너비 제한 해제 */
 }
-.listMeta span:nth-child(2) svg {
+.listMeta span:nth-child(3) svg {
   vertical-align: top !important; /* 아이콘이 글씨보다 위로 뜨지 않게 눌러줌 */
   margin-right: 3px !important;
 }

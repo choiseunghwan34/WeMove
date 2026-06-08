@@ -839,9 +839,10 @@ export default function MeetingListPage() {
                       />
                       {meeting.regionName}
                     </span>
+                    <span className={styles.metaDivider}></span>
                     <span>
                       <UiIcon
-                        name="calendar"
+                        name="compass"
                         className={styles.dashboardMetaIcon}
                       />
                       {meeting.placeName}
