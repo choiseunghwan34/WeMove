@@ -8,7 +8,6 @@ import {
 import { getAccessToken } from "../utils/authTokenStore";
 import { buildWsUrl } from "../config/env";
 
-const SOCKET_URL = "ws://localhost:8456/ws/notifications";
 const RECONNECT_DELAY_MS = 3000;
 
 export default function NotificationSocket() {
@@ -31,7 +30,6 @@ export default function NotificationSocket() {
       socketRef.current = null;
     };
 
-    const socket = new WebSocket(buildWsUrl("/notifications", { token }));
     const scheduleReconnect = (connect) => {
       if (closedByEffect || !isAuthenticated) {
         return;
@@ -88,9 +86,7 @@ export default function NotificationSocket() {
 
       closeSocket();
 
-      const socket = new WebSocket(
-        `${SOCKET_URL}?token=${encodeURIComponent(token)}`,
-      );
+      const socket = new WebSocket(buildWsUrl("/notifications", { token }));
 
       socket.onmessage = handleMessage;
       socket.onerror = () => {
