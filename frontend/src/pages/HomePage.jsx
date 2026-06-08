@@ -907,12 +907,12 @@ export default function HomePage() {
             meetings.slice(0, 5).map((meeting, index) => (
               <article
                 key={meeting.meetingId}
-                className={styles.dashboardMeetingCard}
+                className={`${styles.dashboardMeetingCard} ${styles.homeCardOverride}`}
               >
                 <img
                   src={getMeetingThumbnail(meeting) || defaultThumbnail}
                   alt={meeting.title}
-                  className={styles.dashboardMeetingImage}
+                  className={`${styles.dashboardMeetingImage} ${styles.homeImageOverride}`}
                   onError={(e) => {
                     e.currentTarget.src = defaultThumbnail;
                   }}
@@ -955,7 +955,7 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  <div className={styles.dashboardMeetingFooter}>
+                  <div className={`${styles.dashboardMeetingFooter} ${styles.footerContainerOverride}`}>
                     <div className={styles.dashboardMeetingActions}>
 
                       <button type="button" onClick={()=> navigate(`/meetings/${meeting.meetingId}`)}>

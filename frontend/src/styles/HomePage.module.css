@@ -1791,3 +1791,33 @@
   font-weight: 700;
   text-align: center;
 }
+/* =========================================
+   🚀 홈 화면 모임 카드 최종 덮어쓰기
+   ========================================= */
+
+/* 1. 썸네일 가로 넓이를 260px로 키워서 세로 빈 공간 꽉 채우기 */
+.homeCardOverride {
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+}
+
+@media (max-width: 720px) {
+  .homeCardOverride {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 2. 썸네일 3:2 비율 고정 */
+.homeImageOverride {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 3 / 2 !important;
+  object-fit: cover !important;
+  margin: 0 !important;
+}
+
+/* 3. 하단 버튼 3개 통째로 우측 정렬 */
+.footerContainerOverride {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+}
