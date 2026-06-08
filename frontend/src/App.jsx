@@ -18,15 +18,15 @@ import ActivityPage from "./pages/ActivityPage";
 import FindAccountPage from "./pages/FindAccountPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import MeetingCreatePage from "./pages/MeetingCreatePage";
 import MeetingDetailPage from "./pages/MeetingDetailPage";
-import MeetingEditPage from "./pages/MeetingEditPage";
 import MeetingListPage from "./pages/MeetingListPage";
 import MeetingManagePage from "./pages/MeetingManagePage";
 import MyPage from "./pages/MyPage";
 import ReviewPage from "./pages/ReviewPage";
 import SearchPage from "./pages/SearchPage";
 import SignupPage from "./pages/SignupPage";
+import MeetingCreatePage from "./pages/MeetingCreatePage.jsx";
+import MeetingEditPage from "./pages/MeetingEditPage.jsx";
 
 const ACCESS_WARNING = {
   title: "접근 권한이 없습니다",

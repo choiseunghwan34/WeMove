@@ -17,7 +17,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
     const isEditMode = !!meetingId;
 
     const navigate = useNavigate();
-    const {isAuthenticated} = useAuth();
+    const {isAuthenticated,user} = useAuth();
     const fileInputRef = useRef(null);
     const inputRefs = useRef({});
 
@@ -359,7 +359,14 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
         const formData = new FormData();
         formData.append("request", new Blob([JSON.stringify(finalForm)], {type: "application/json"}));
         if (files.length > 0) formData.append("image", files[0]);
-        onSubmit(formData);
+
+        // 💡 3. 부모가 onSubmit을 제대로 줬는지 확인 후 실행
+        if (typeof onSubmit === "function") {
+            onSubmit(formData);
+        } else {
+            alert("저장 기능이 연결되지 않았습니다. 상위 페이지(Create/Edit) 컴포넌트를 확인해주세요.");
+            console.error("props로 전달받은 onSubmit이 없습니다.");
+        }
     };
 
     return (
@@ -411,6 +418,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         onChange={handleChange}
                         placeholder="예: 야당역 5km 러닝 크루 모집"
                     />
+
                 </label>
                 {/* 운동 종목 선택 영역 */}
                 <label>
@@ -552,10 +560,6 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         type="number"
                         min={isEditMode && initialData?.approvedCount ? initialData?.approvedCount : "2"}
                     />
-                    {isEditMode && initialData?.approvedCount && Number(form.maxMembers) < initialData.approvedCount && (
-                        <small style={{color: "#d32f2f", marginTop: "4px", display: "block", fontSize: "0.85rem"}}>* 현재
-                            승인된 인원 ({initialData.approvedCount}명) 미만으로 줄일 수 없습니다.</small>
-                    )}
                 </label>
                 <label>
                     <span className={styles.requiredLabel}>모집 상태</span>
