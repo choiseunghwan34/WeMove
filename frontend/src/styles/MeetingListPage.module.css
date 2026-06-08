@@ -900,16 +900,16 @@
 @media (min-width: 768px) {
   .listCardBody {
     display: flex !important;
-    align-items: stretch !important; /* 이미지 높이가 우측 텍스트 내용의 총 높이에 꽉 차게 동기화 */
+    align-items: flex-start !important; /* 이미지 높이가 우측 텍스트 길이에 영향 받지 않고 독립적으로 유지되도록 변경 */
     gap: 20px !important; /* 넉넉한 간격을 통해 겹침 방지 (약간 줄임) */
   }
 
   .listCardImage {
-    flex: 0 0 clamp(160px, 35%, 260px) !important; /* 카드 너비에 맞춰 유연하게 폭 조절 (최소 160px ~ 최대 260px) */
-    width: clamp(160px, 35%, 260px) !important;
-    height: auto !important; 
-    min-height: 100% !important;
-    object-fit: cover !important;
+    flex: 0 0 clamp(200px, 42%, 330px) !important; /* 16:9 비율에서 충분한 높이를 확보하기 위해 가로폭을 크게 확장 */
+    width: clamp(200px, 42%, 330px) !important;
+    aspect-ratio: 16 / 9 !important; /* 가로로 더 넓게 출력하도록 비율 수정 (16:9) */
+    height: auto !important; /* 종횡비를 유지하기 위한 기본 설정 */
+    object-fit: cover !important; /* 비율을 맞추느라 찌그러지지 않게 꽉 채움 */
     border-radius: 16px !important;
   }
 
