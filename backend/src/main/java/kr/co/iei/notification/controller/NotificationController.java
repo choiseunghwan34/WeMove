@@ -33,6 +33,13 @@ public class NotificationController {
     return ResponseEntity.ok(notificationService.getNotifications(userId));
   }
 
+  @GetMapping("/notices")
+  public ResponseEntity<List<NotificationRecord>> notices(
+      @RequestHeader(value = "Authorization", required = false) String authorization) {
+    Long userId = resolveUserId(authorization);
+    return ResponseEntity.ok(notificationService.getNoticeNotifications(userId));
+  }
+
   @GetMapping("/unread-count")
   public ResponseEntity<Integer> unreadCount(
       @RequestHeader(value = "Authorization", required = false) String authorization) {

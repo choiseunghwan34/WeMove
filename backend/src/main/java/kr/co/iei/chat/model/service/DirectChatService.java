@@ -17,6 +17,8 @@ public interface DirectChatService {
 
     DirectChatMessageResponse createMessage(Long roomId, Long userId, ChatMessageRequest request);
 
+    void leaveRoom(Long roomId, Long userId);
+
     boolean canAccess(Long roomId, Long userId);
 }
 

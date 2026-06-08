@@ -115,8 +115,25 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
   }
 
+  @Transactional
   public void cancel(Long participantId) {
+    ParticipantResponse participant = participantDao.selectParticipant(participantId);
+    Long meetingId = participant == null ? null : participant.getMeetingId();
+    MeetingDetailResponse meeting = meetingId == null ? null : meetingDao.selectMeetingDetail(meetingId);
     participantDao.updateStatus(participantId, "CANCELLED");
+    if (participant == null || meeting == null || meeting.getHostUserId() == null) {
+      return;
+    }
+
+    String nickname = participant.getNickname() == null ? "참가자" : participant.getNickname();
+    boolean wasApproved = "APPROVED".equals(participant.getStatus());
+    notificationService.sendToUser(
+        meeting.getHostUserId(),
+        wasApproved ? "meetingParticipantCancelled" : "meetingRequestCancelled",
+        wasApproved ? "모임 참가자가 참가를 취소했습니다" : "모임 신청자가 신청을 취소했습니다",
+        nickname + "님이 '" + meeting.getTitle() + "' 모임 "
+            + (wasApproved ? "참가를 취소했습니다." : "신청을 취소했습니다."),
+        "meeting:" + meetingId);
   }
 
   @Transactional

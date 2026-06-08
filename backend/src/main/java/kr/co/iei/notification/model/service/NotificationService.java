@@ -7,6 +7,8 @@ import kr.co.iei.notification.model.vo.NotificationRecord;
 public interface NotificationService {
   List<NotificationRecord> getNotifications(Long userId);
 
+  List<NotificationRecord> getNoticeNotifications(Long userId);
+
   int countUnread(Long userId);
 
   void markAllRead(Long userId);

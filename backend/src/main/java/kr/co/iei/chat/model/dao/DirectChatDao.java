@@ -47,6 +47,10 @@ public class DirectChatDao {
         );
     }
 
+    public int reactivateRoom(Long roomId) {
+        return sqlSession.update("directChat.reactivateRoom", Map.of("roomId", roomId));
+    }
+
     public int insertRoom(DirectChatRoom room) {
         return sqlSession.insert("directChat.insertRoom", room);
     }
@@ -71,10 +75,10 @@ public class DirectChatDao {
         return count != null && count > 0;
     }
 
-    public List<DirectChatMessageResponse> selectMessages(Long roomId, int limit) {
+    public List<DirectChatMessageResponse> selectMessages(Long roomId, Long userId, int limit) {
         return sqlSession.selectList(
                 "directChat.selectMessages",
-                Map.of("roomId", roomId, "limit", limit)
+                Map.of("roomId", roomId, "userId", userId, "limit", limit)
         );
     }
 
@@ -91,5 +95,13 @@ public class DirectChatDao {
                 "directChat.selectNotificationTargetUserIds",
                 Map.of("roomId", roomId, "senderUserId", senderUserId)
         );
+    }
+
+    public int leaveRoom(Long roomId, Long userId) {
+        return sqlSession.update("directChat.leaveRoom", Map.of("roomId", roomId, "userId", userId));
+    }
+
+    public int deactivateRoomIfEmpty(Long roomId) {
+        return sqlSession.update("directChat.deactivateRoomIfEmpty", Map.of("roomId", roomId));
     }
 }

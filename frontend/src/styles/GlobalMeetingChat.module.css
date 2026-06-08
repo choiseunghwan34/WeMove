@@ -99,11 +99,41 @@
   gap: 3px;
 }
 
+.panelTitleLine {
+  display: inline-flex !important;
+  align-items: baseline;
+  gap: 8px !important;
+  min-width: 0;
+}
+
 .panelHeader strong {
   color: #10233d;
   font-size: 17px;
   font-weight: 900;
 }
+
+.noticeCollectionButton {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.noticeCollectionButton:hover {
+  color: #2563eb !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 
 .panelHeader span {
   color: #64748b;
@@ -271,6 +301,8 @@
 
 .room span,
 .roomActive span {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   color: #64748b;
   font-size: 12px;
@@ -292,6 +324,35 @@
   white-space: nowrap;
 }
 
+.roomContextMenu {
+  position: fixed;
+  z-index: 1500;
+  min-width: 128px;
+  overflow: hidden;
+  border: 1px solid #dbe5f2;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
+}
+
+.roomContextMenu button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: #ef4444;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roomContextMenu button:hover {
+  background: #fff1f2;
+}
+
 .chatArea {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
@@ -303,11 +364,16 @@
 .chatTitle {
   display: grid;
   gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 12px 14px;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .chatTitle strong {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   color: #10233d;
   font-size: 15px;
@@ -317,8 +383,9 @@
 }
 
 .chatTitleLink {
+  display: block;
   min-width: 0;
-  width: max-content;
+  width: 100%;
   max-width: 100%;
   overflow: hidden;
   border: 0;
@@ -340,6 +407,8 @@
 }
 
 .chatTitle span {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   color: #64748b;
   font-size: 12px;
@@ -383,6 +452,55 @@
   font-size: 13px;
   font-weight: 700;
   line-height: 1.65;
+}
+
+.noticeMessageCard {
+  display: grid;
+  gap: 8px;
+  max-width: min(520px, 92%);
+  padding: 12px 14px;
+  border: 1px solid #dbe7f6;
+  border-radius: 14px;
+  background: #fff;
+  color: #10233d;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.noticeMessageHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.noticeMessageHead strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #10233d;
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noticeMessageHead time {
+  flex: 0 0 auto;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.noticeMessageCard p {
+  max-width: 100%;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
 }
 
 .roomList::-webkit-scrollbar,

@@ -29,6 +29,16 @@
             ORDER BY dcm.createdAt DESC, dcm.messageId DESC
             LIMIT 1
           )
+        WHERE r.isActive = 1
+          AND (
+              me.leftAt IS NULL
+              OR EXISTS (
+                  SELECT 1
+                  FROM directChatMessages visibleMessage
+                  WHERE visibleMessage.roomId = r.roomId
+                    AND visibleMessage.createdAt > me.leftAt
+              )
+          )
         ORDER BY COALESCE(lm.createdAt, r.updatedAt, r.createdAt) DESC, r.roomId DESC
     </select>
 
@@ -97,6 +107,13 @@
         LIMIT 1
     </select>
 
+    <update id="reactivateRoom">
+        UPDATE directChatRooms
+        SET isActive = 1,
+            updatedAt = NOW()
+        WHERE roomId = #{roomId}
+    </update>
+
     <insert id="insertRoom" parameterType="kr.co.iei.chat.model.vo.DirectChatRoom" useGeneratedKeys="true" keyProperty="roomId">
         INSERT INTO directChatRooms(
             createdAt,
@@ -121,9 +138,12 @@
 
     <select id="canAccessRoom" resultType="int">
         SELECT COUNT(*)
-        FROM directChatParticipants
-        WHERE roomId = #{roomId}
-          AND userId = #{userId}
+        FROM directChatRooms r
+        JOIN directChatParticipants p
+          ON p.roomId = r.roomId
+         AND p.userId = #{userId}
+        WHERE r.roomId = #{roomId}
+          AND r.isActive = 1
     </select>
 
     <select id="selectMessages" resultType="kr.co.iei.chat.model.vo.DirectChatMessageResponse">
@@ -149,7 +169,14 @@
             FROM directChatMessages dcm
             JOIN users u
               ON u.userId = dcm.userId
+            JOIN directChatParticipants viewer
+              ON viewer.roomId = dcm.roomId
+             AND viewer.userId = #{userId}
             WHERE dcm.roomId = #{roomId}
+              AND (
+                  viewer.leftAt IS NULL
+                  OR dcm.createdAt > viewer.leftAt
+              )
             ORDER BY dcm.createdAt DESC, dcm.messageId DESC
             LIMIT #{limit}
         ) recent
@@ -193,5 +220,25 @@
         WHERE roomId = #{roomId}
           AND userId != #{senderUserId}
     </select>
+
+    <update id="leaveRoom">
+        UPDATE directChatParticipants
+        SET leftAt = NOW()
+        WHERE roomId = #{roomId}
+          AND userId = #{userId}
+    </update>
+
+    <update id="deactivateRoomIfEmpty">
+        UPDATE directChatRooms
+        SET isActive = 0,
+            updatedAt = NOW()
+        WHERE roomId = #{roomId}
+          AND NOT EXISTS (
+              SELECT 1
+              FROM directChatParticipants p
+              WHERE p.roomId = #{roomId}
+                AND p.leftAt IS NULL
+          )
+    </update>
 
 </mapper>

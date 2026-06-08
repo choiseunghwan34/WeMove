@@ -14,5 +14,7 @@ public interface ChatService {
 
   ChatMessageResponse createSystemMessage(Long meetingId, Long userId, String content);
 
+  void leaveRoom(Long meetingId, Long userId);
+
   boolean canAccess(Long meetingId, Long userId);
 }

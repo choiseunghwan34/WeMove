@@ -25,9 +25,11 @@ export const createLocalDateTimeStamp = (value = new Date()) => {
 export const NOTIFICATION_TYPES = {
   CHAT: "chat",
   MEETING_REQUEST: "meetingRequest",
+  MEETING_REQUEST_CANCELLED: "meetingRequestCancelled",
   MEETING_APPROVED: "meetingApproved",
   MEETING_REJECTED: "meetingRejected",
   MEETING_APPROVAL_CANCELLED: "meetingApprovalCancelled",
+  MEETING_PARTICIPANT_CANCELLED: "meetingParticipantCancelled",
   MEETING_CANCELLED: "meetingCancelled",
   MEETING_UPDATED: "meetingUpdated",
   MEETING_REMINDER: "meetingReminder",

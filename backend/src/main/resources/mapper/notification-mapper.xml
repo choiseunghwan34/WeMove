@@ -47,6 +47,30 @@
         LIMIT #{limit}
     </select>
 
+    <select id="selectNoticeNotifications"
+            resultType="kr.co.iei.notification.model.vo.NotificationRecord">
+        SELECT
+            MIN(notificationId) AS notificationId,
+            MIN(userId) AS userId,
+            type,
+            title,
+            message,
+            targetType,
+            targetId,
+            0 AS isRead,
+            createdAt
+        FROM notifications
+        WHERE type = 'notice'
+        GROUP BY
+            type,
+            title,
+            message,
+            targetType,
+            targetId,
+            createdAt
+        ORDER BY createdAt ASC, notificationId ASC
+    </select>
+
     <select id="countUnread" resultType="int">
         SELECT COUNT(*)
         FROM notifications

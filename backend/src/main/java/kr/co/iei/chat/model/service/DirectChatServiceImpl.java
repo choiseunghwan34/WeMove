@@ -3,6 +3,7 @@ package kr.co.iei.chat.model.service;
 import kr.co.iei.chat.model.dao.DirectChatDao;
 import kr.co.iei.chat.model.vo.*;
 import kr.co.iei.chat.websocket.DirectChatBroadcaster;
+import kr.co.iei.notification.model.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class DirectChatServiceImpl implements DirectChatService {
 
   private final DirectChatDao directChatDao;
   private final DirectChatBroadcaster directChatBroadcaster;
+  private final NotificationService notificationService;
 
   @Override
   public List<DirectChatRoomResponse> getRooms(Long userId) {
@@ -45,6 +47,7 @@ public class DirectChatServiceImpl implements DirectChatService {
 
     Long existingRoomId = directChatDao.selectExistingRoomId(userId, targetUserId);
     if (existingRoomId != null) {
+      directChatDao.reactivateRoom(existingRoomId);
       return directChatDao.selectRoom(existingRoomId, userId);
     }
 
@@ -67,7 +70,7 @@ public class DirectChatServiceImpl implements DirectChatService {
   @Override
   public List<DirectChatMessageResponse> getMessages(Long roomId, Long userId) {
     assertCanAccess(roomId, userId);
-    return directChatDao.selectMessages(roomId, MESSAGE_LIMIT);
+    return directChatDao.selectMessages(roomId, userId, MESSAGE_LIMIT);
   }
 
   @Override
@@ -75,6 +78,7 @@ public class DirectChatServiceImpl implements DirectChatService {
   public DirectChatMessageResponse createMessage(
           Long roomId, Long userId, ChatMessageRequest request) {
     assertCanAccess(roomId, userId);
+    directChatDao.reactivateRoom(roomId);
 
     String content = request == null ? "" : normalizeContent(request.getContent());
     if (content.isBlank()) {
@@ -99,8 +103,23 @@ public class DirectChatServiceImpl implements DirectChatService {
             roomId,
             new ChatMessageEvent("DIRECT_CHAT_MESSAGE_CREATED", savedMessage)
     );
+    sendMessageNotifications(roomId, userId, savedMessage);
 
     return savedMessage;
+  }
+
+  @Override
+  @Transactional
+  public void leaveRoom(Long roomId, Long userId) {
+    if (roomId == null || userId == null) {
+      throw new IllegalArgumentException("나갈 채팅방 정보가 없습니다.");
+    }
+
+    int updated = directChatDao.leaveRoom(roomId, userId);
+    if (updated <= 0) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "참여 중인 1:1 대화방만 나갈 수 있습니다.");
+    }
+    directChatDao.deactivateRoomIfEmpty(roomId);
   }
 
   @Override
@@ -122,5 +141,32 @@ public class DirectChatServiceImpl implements DirectChatService {
 
   private String normalizeContent(String content) {
     return String.valueOf(content == null ? "" : content).trim();
+  }
+
+  private void sendMessageNotifications(
+          Long roomId, Long senderUserId, DirectChatMessageResponse message) {
+    if (roomId == null || senderUserId == null || message == null) {
+      return;
+    }
+
+    String senderName =
+            message.getNickname() == null || message.getNickname().isBlank()
+                    ? "상대방"
+                    : message.getNickname();
+    String title = senderName + "님의 메시지";
+    String notificationMessage = summarizeContent(message.getContent());
+
+    for (Long targetUserId : directChatDao.selectNotificationTargetUserIds(roomId, senderUserId)) {
+      notificationService.sendToUser(
+              targetUserId, "chat", title, notificationMessage, "directChat:" + roomId);
+    }
+  }
+
+  private String summarizeContent(String content) {
+    String normalized = normalizeContent(content);
+    if (normalized.isBlank()) {
+      return "새 메시지가 도착했습니다.";
+    }
+    return normalized.length() > 80 ? normalized.substring(0, 80) + "..." : normalized;
   }
 }

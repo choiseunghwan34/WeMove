@@ -141,13 +141,16 @@ public class MeetingServiceImpl implements MeetingService {
 
     meetingDao.updateMeeting(request);
 
-    if (isScheduleOrPlaceChanged(currentMeeting, request)) {
-      notifyApprovedParticipants(
-          currentMeeting,
-          "meetingUpdated",
-          "모임 정보가 변경되었습니다",
-          "'" + currentMeeting.getTitle() + "' 모임의 시간 또는 장소 정보가 변경되었습니다.");
-    }
+    createChatSystemMessage(
+        meetingId,
+        currentMeeting.getHostUserId(),
+        "모임장이 모임 상세내용을 수정하였습니다. 참가자들은 내용을 확인해주세요.");
+    notifyApprovedParticipants(
+        currentMeeting,
+        "meetingUpdated",
+        "모임 정보가 변경되었습니다",
+        "'" + currentMeeting.getTitle() + "' 모임 상세내용이 변경되었습니다. 내용을 확인해주세요.");
+
   }
 
   @Override

@@ -30,8 +30,10 @@ public class ChatDao {
     return sqlSession.selectList("chat.selectChatRooms", userId);
   }
 
-  public List<ChatMessageResponse> selectMessages(Long meetingId, int limit) {
-    return sqlSession.selectList("chat.selectMessages", Map.of("meetingId", meetingId, "limit", limit));
+  public List<ChatMessageResponse> selectMessages(Long meetingId, Long userId, int limit) {
+    return sqlSession.selectList(
+        "chat.selectMessages",
+        Map.of("meetingId", meetingId, "userId", userId, "limit", limit));
   }
 
   public int insertMessage(ChatMessage message) {
@@ -50,5 +52,9 @@ public class ChatDao {
     return sqlSession.selectList(
         "chat.selectNotificationTargetUserIds",
         Map.of("meetingId", meetingId, "senderUserId", senderUserId));
+  }
+
+  public int leaveRoom(Long meetingId, Long userId) {
+    return sqlSession.update("chat.leaveRoom", Map.of("meetingId", meetingId, "userId", userId));
   }
 }

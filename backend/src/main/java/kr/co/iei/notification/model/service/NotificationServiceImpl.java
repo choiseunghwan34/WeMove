@@ -30,6 +30,14 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
+  public List<NotificationRecord> getNoticeNotifications(Long userId) {
+    requireUser(userId);
+    List<NotificationRecord> notifications = notificationDao.selectNoticeNotifications(userId);
+    notifications.forEach(this::restoreSourceId);
+    return notifications;
+  }
+
+  @Override
   public int countUnread(Long userId) {
     requireUser(userId);
     return notificationDao.countUnread(userId);
