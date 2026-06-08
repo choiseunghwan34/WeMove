@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import defaultUserImage from "../assets/image/Default-user.png";
+import defaultThumbnail from "../assets/image/bg1.jpg";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
@@ -807,9 +808,12 @@ export default function MeetingListPage() {
             >
               <div className={styles.listCardBody}>
                 <img
-                  src={meeting.thumbnailImage || "/src/assets/image/bg1.jpg"}
+                  src={meeting.thumbnailImage || defaultThumbnail}
                   alt={meeting.title}
                   className={styles.listCardImage}
+                  onError={(e) => {
+                    e.currentTarget.src = defaultThumbnail;
+                  }}
                 />
 
                 <div className={styles.listCardContent}>
