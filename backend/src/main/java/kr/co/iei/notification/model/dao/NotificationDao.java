@@ -21,7 +21,7 @@ public class NotificationDao {
   }
 
   public List<NotificationRecord> selectNoticeNotifications(Long userId) {
-    return sqlSession.selectList("notification.selectNoticeNotifications", Map.of("userId", userId));
+    return sqlSession.selectList("notification.selectNoticeNotifications");
   }
 
   public int countUnread(Long userId) {

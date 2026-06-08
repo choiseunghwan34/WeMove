@@ -50,18 +50,24 @@
     <select id="selectNoticeNotifications"
             resultType="kr.co.iei.notification.model.vo.NotificationRecord">
         SELECT
-            notificationId,
-            userId,
+            MIN(notificationId) AS notificationId,
+            MIN(userId) AS userId,
             type,
             title,
             message,
             targetType,
             targetId,
-            isRead,
+            0 AS isRead,
             createdAt
         FROM notifications
-        WHERE userId = #{userId}
-          AND type = 'notice'
+        WHERE type = 'notice'
+        GROUP BY
+            type,
+            title,
+            message,
+            targetType,
+            targetId,
+            createdAt
         ORDER BY createdAt ASC, notificationId ASC
     </select>
 

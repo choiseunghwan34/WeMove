@@ -9,7 +9,11 @@ import {
   getDirectChatMessages,
   getDirectChatRooms,
 } from "../api/chatApi";
-import { broadcastNotice, getNoticeNotifications } from "../api/notificationApi";
+import {
+  broadcastNotice,
+  getNoticeNotifications,
+  getNotifications,
+} from "../api/notificationApi";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -238,9 +242,16 @@ export default function GlobalMeetingChat() {
     setError("");
 
     try {
-      const { data } = await getNoticeNotifications();
+      let response;
+      try {
+        response = await getNoticeNotifications();
+      } catch (noticeRequestError) {
+        response = await getNotifications();
+      }
+      const { data } = response;
       const nextNotices = Array.isArray(data)
         ? data
+            .filter((notification) => notification.type === "notice")
             .map((notification) => ({
               notificationId:
                 notification.notificationId || notification.id || notification.createdAt,
@@ -726,6 +737,20 @@ export default function GlobalMeetingChat() {
     }
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    if (!open || !isNoticeMode || loadingNotices || !listRef.current) {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (listRef.current) {
+        listRef.current.scrollTop = listRef.current.scrollHeight;
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isNoticeMode, loadingNotices, noticeMessages, open]);
 
   useEffect(() => {
     if (!open) {
