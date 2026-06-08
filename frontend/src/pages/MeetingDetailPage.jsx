@@ -57,12 +57,12 @@ const formatJoinDate = (dateStr) => {
 
 const pad2 = (value) => String(value).padStart(2, "0");
 
-const buildViewStorageKey = (meetingId) => {
+const buildViewStorageKey = (meetingId, viewerKey = "guest") => {
   const now = new Date();
   const today = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(
     now.getDate(),
   )}`;
-  return `wemove:view:${meetingId}:${today}`;
+  return `wemove:view:${viewerKey}:${meetingId}:${today}`;
 };
 
 export default function MeetingDetailPage() {
@@ -184,7 +184,8 @@ export default function MeetingDetailPage() {
       return;
     }
 
-    const storageKey = buildViewStorageKey(meetingId);
+    const viewerKey = user?.memberId ? `member:${user.memberId}` : "guest";
+    const storageKey = buildViewStorageKey(meetingId, viewerKey);
     if (
       recordedViewKeysRef.current.has(storageKey) ||
       window.sessionStorage.getItem(storageKey)
@@ -204,7 +205,7 @@ export default function MeetingDetailPage() {
         window.sessionStorage.removeItem(storageKey);
         console.error("Failed to record meeting view:", error);
       });
-  }, [meetingId]);
+  }, [meetingId, user?.memberId]);
 
   const handleApplyConfirm = async () => {
     try {
