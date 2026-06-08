@@ -33,18 +33,33 @@
   flex: 1;
   display: grid;
   gap: 4px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .copy strong {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   color: #0f172a;
   font-size: 0.96rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .copy p {
+  display: -webkit-box;
+  max-width: 100%;
   margin: 0;
+  overflow: hidden;
   color: #64748b;
   font-size: 0.88rem;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .closeButton {
