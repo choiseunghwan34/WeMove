@@ -974,7 +974,6 @@ export default function MeetingListPage() {
             <option value="CLOSED">모집완료</option>
             <option value="ONGOING">진행중</option>
             <option value="COMPLETED">모임완료</option>
-            <option value="CANCELLED">취소됨</option>
           </select>
 
           <ReactCalendarDatePicker
@@ -985,11 +984,32 @@ export default function MeetingListPage() {
             }}
           />
 
-          <input
-            value={tempKeyword}
-            onChange={(event) => setTempKeyword(event.target.value)}
-            placeholder="제목, 장소 검색"
-          />
+          <div className={styles.sheetSearchBox}>
+
+            <input
+              value={tempKeyword}
+              onChange={(event) => setTempKeyword(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  updateURLParams({ keyword: tempKeyword });
+                  setIsFilterOpen(false); // 엔터치면 모달도 닫히게 처리
+                }
+              }}
+              placeholder="검색어를 입력하세요"
+            />
+          </div>
+
+          <button
+            type="button"
+            className={styles.mobileResetBtn}
+            onClick={() => {
+              resetFilters();
+              setIsFilterOpen(false);
+            }}
+          >
+            <UiIcon name="refresh" className={styles.mobileResetIcon} />
+            필터 초기화
+          </button>
         </div>
       </AppModal>
 

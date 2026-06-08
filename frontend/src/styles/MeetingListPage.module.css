@@ -1,4 +1,4 @@
-/* Auto-split from MeetingListPage.jsx. Page/component styles compose shared WeMove design rules. */
+﻿/* Auto-split from MeetingListPage.jsx. Page/component styles compose shared WeMove design rules. */
 
 .actionClosed {
   composes: actionClosed from "./WeMoveShared.module.css";
@@ -1072,3 +1072,25 @@
 }
 
 
+
+/* ����� �ʱ�ȭ ��ư �߰� */
+.mobileResetBtn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 12px !important;
+  margin-top: 10px !important;
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.mobileResetIcon {
+  margin-right: 6px !important;
+}
+
+.mobileResetIcon { width: 18px !important; height: 18px !important; flex-shrink: 0 !important; }
+.sheetSearchIcon { width: 20px !important; height: 20px !important; color: #94a3b8 !important; margin-right: 8px !important; flex-shrink: 0 !important; }
