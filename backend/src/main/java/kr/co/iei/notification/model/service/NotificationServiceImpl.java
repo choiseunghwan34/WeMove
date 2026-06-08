@@ -1,6 +1,7 @@
 package kr.co.iei.notification.model.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import kr.co.iei.admin.model.service.AccountSanctionMessageUtil;
 import kr.co.iei.common.websocket.NotificationWebSocketBroadcaster;
@@ -15,6 +16,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
   private static final int DEFAULT_LIMIT = 50;
+  private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 
   private final NotificationDao notificationDao;
   private final NotificationWebSocketBroadcaster notificationWebSocketBroadcaster;
@@ -121,7 +123,7 @@ public class NotificationServiceImpl implements NotificationService {
     notification.setSuspendedUntil(suspendedUntil);
     notification.setSuspendHours(suspendHours);
     notification.setIsRead(false);
-    notification.setCreatedAt(LocalDateTime.now());
+    notification.setCreatedAt(LocalDateTime.now(KOREA_ZONE_ID));
     return notification;
   }
 
