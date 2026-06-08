@@ -548,7 +548,13 @@
 }
 
 .dateBox {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important; /* 위아래 빈 공간의 정중앙에 텍스트 배치 */
+  align-items: center !important; /* 가로 정중앙 정렬 */
+  flex: 1 1 auto !important; /* 아래에 있는 버튼(상태 뱃지) 바로 위까지 상자의 길이를 쭉 늘림 */
   padding: 14px 10px !important;
+  margin-bottom: 12px !important; /* 버튼과 상자가 너무 꽉 붙지 않도록 적당히 띄움 */
 }
 
 .dateBox strong {
