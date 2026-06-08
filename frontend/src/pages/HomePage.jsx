@@ -200,6 +200,11 @@ export default function HomePage() {
 
   const currentHero = heroSlides[activeSlide];
 
+  const truncateText = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -926,7 +931,7 @@ export default function HomePage() {
                   </div>
 
                   <h3>{meeting.title}</h3>
-                  <p>{meeting.content}</p>
+                  <p>{truncateText(meeting.content, 80)}</p>
 
                   <div className={styles.dashboardMeetingMeta}>
                     <span>
