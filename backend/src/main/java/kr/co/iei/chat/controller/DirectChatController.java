@@ -49,6 +49,15 @@ public class DirectChatController {
         return ResponseEntity.ok(directChatService.createMessage(roomId, userId, request));
     }
 
+    @PatchMapping("/api/direct-chat/rooms/{roomId}/leave")
+    public ResponseEntity<Void> leaveRoom(
+            @PathVariable Long roomId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
+        Long userId = jwtTokenProvider.parseUserId(extractBearerToken(authorizationHeader));
+        directChatService.leaveRoom(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
+
     private String extractBearerToken(String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             throw new IllegalArgumentException("유효한 인증 토큰이 없습니다.");

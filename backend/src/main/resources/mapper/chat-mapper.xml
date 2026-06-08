@@ -41,6 +41,7 @@
                 WHERE mp.meetingId = m.meetingId
                   AND mp.userId = #{userId}
                   AND mp.status = 'APPROVED'
+                  AND mp.chatLeftAt IS NULL
             )
           )
         ORDER BY COALESCE(lm.createdAt, m.meetingDate, m.createdAt) DESC, m.meetingId DESC
@@ -59,6 +60,7 @@
                 WHERE mp.meetingId = m.meetingId
                   AND mp.userId = #{userId}
                   AND mp.status = 'APPROVED'
+                  AND mp.chatLeftAt IS NULL
             )
           )
     </select>
@@ -100,7 +102,14 @@
             FROM meetingChatMessages cm
             JOIN users u ON cm.userId = u.userId
             JOIN meetings m ON cm.meetingId = m.meetingId
+            LEFT JOIN meetingParticipants viewer
+              ON viewer.meetingId = cm.meetingId
+             AND viewer.userId = #{userId}
             WHERE cm.meetingId = #{meetingId}
+              AND (
+                  viewer.chatLeftAt IS NULL
+                  OR cm.createdAt > viewer.chatLeftAt
+              )
             ORDER BY cm.createdAt DESC, cm.messageId DESC
             LIMIT #{limit}
         ) recent
@@ -156,8 +165,18 @@
             FROM meetingParticipants mp
             WHERE mp.meetingId = #{meetingId}
               AND mp.status = 'APPROVED'
+              AND mp.chatLeftAt IS NULL
         ) target
         WHERE target.userId != #{senderUserId}
     </select>
+
+    <update id="leaveRoom">
+        UPDATE meetingParticipants
+        SET chatLeftAt = NOW()
+        WHERE meetingId = #{meetingId}
+          AND userId = #{userId}
+          AND status = 'APPROVED'
+          AND chatLeftAt IS NULL
+    </update>
 
 </mapper>

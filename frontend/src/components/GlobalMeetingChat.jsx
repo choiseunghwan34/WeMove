@@ -8,6 +8,8 @@ import {
   getChatRooms,
   getDirectChatMessages,
   getDirectChatRooms,
+  leaveDirectChatRoom,
+  leaveMeetingChatRoom,
 } from "../api/chatApi";
 import {
   broadcastNotice,
@@ -180,6 +182,7 @@ export default function GlobalMeetingChat() {
   const [noticeMessages, setNoticeMessages] = useState([]);
   const [loadingNotices, setLoadingNotices] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState(null);
+  const [roomMenu, setRoomMenu] = useState(null);
   const directSocketMapRef = useRef(new Map());
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
 
@@ -579,6 +582,74 @@ export default function GlobalMeetingChat() {
     [isAuthenticated, loadDirectRooms, toast],
   );
 
+  const openRoomMenu = useCallback(
+    (event, type, room) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (type === "GROUP" && Number(room?.hostUserId) === Number(user?.memberId)) {
+        toast.info("모임톡", "모임장은 모임톡을 나갈 수 없습니다.");
+        return;
+      }
+
+      setRoomMenu({
+        type,
+        room,
+        x: event.clientX,
+        y: event.clientY,
+      });
+    },
+    [toast, user?.memberId],
+  );
+
+  const closeRoomMenu = useCallback(() => {
+    setRoomMenu(null);
+  }, []);
+
+  const leaveSelectedRoom = useCallback(async () => {
+    if (!roomMenu?.room) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "채팅방을 나가면 이전 대화는 복구할 수 없습니다. 정말 나가시겠습니까?",
+    );
+    if (!confirmed) {
+      closeRoomMenu();
+      return;
+    }
+
+    try {
+      if (roomMenu.type === "GROUP") {
+        const meetingId = roomMenu.room.meetingId;
+        await leaveMeetingChatRoom(meetingId);
+        setRooms((current) =>
+          current.filter((room) => Number(room.meetingId) !== Number(meetingId)),
+        );
+        setSelectedMeetingId((current) =>
+          Number(current) === Number(meetingId) ? null : current,
+        );
+      } else {
+        const roomId = roomMenu.room.roomId;
+        await leaveDirectChatRoom(roomId);
+        setDirectRooms((current) =>
+          current.filter((room) => Number(room.roomId) !== Number(roomId)),
+        );
+        setSelectedDirectRoomId((current) =>
+          Number(current) === Number(roomId) ? null : current,
+        );
+      }
+      setMessages([]);
+      closeRoomMenu();
+    } catch (requestError) {
+      closeRoomMenu();
+      toast.error(
+        "채팅방 나가기 실패",
+        requestError?.response?.data?.message || "채팅방을 나가지 못했습니다.",
+      );
+    }
+  }, [closeRoomMenu, roomMenu, toast]);
+
   useEffect(() => {
     if (loading) {
       return;
@@ -737,6 +808,19 @@ export default function GlobalMeetingChat() {
     }
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    if (!roomMenu) {
+      return undefined;
+    }
+
+    const closeOnPointerDown = () => {
+      setRoomMenu(null);
+    };
+
+    window.addEventListener("pointerdown", closeOnPointerDown);
+    return () => window.removeEventListener("pointerdown", closeOnPointerDown);
+  }, [roomMenu]);
 
   useEffect(() => {
     if (!open || !isNoticeMode || loadingNotices || !listRef.current) {
@@ -1192,6 +1276,9 @@ export default function GlobalMeetingChat() {
                               : styles.room
                           }
                           onClick={() => setSelectedMeetingId(room.meetingId)}
+                          onContextMenu={(event) =>
+                            openRoomMenu(event, "GROUP", room)
+                          }
                         >
                           <strong>{room.title}</strong>
                           <span>
@@ -1224,6 +1311,9 @@ export default function GlobalMeetingChat() {
                             : styles.room
                         }
                         onClick={() => setSelectedDirectRoomId(room.roomId)}
+                        onContextMenu={(event) =>
+                          openRoomMenu(event, "PRIVATE", room)
+                        }
                       >
                         <strong>{room.targetNickname || "1:1 대화"}</strong>
                         <span>1:1 대화</span>
@@ -1502,6 +1592,18 @@ export default function GlobalMeetingChat() {
             </main>
           </div>
         </section>
+      ) : null}
+
+      {roomMenu ? (
+        <div
+          className={styles.roomContextMenu}
+          style={{ left: roomMenu.x, top: roomMenu.y }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <button type="button" onClick={leaveSelectedRoom}>
+            톡방 나가기
+          </button>
+        </div>
       ) : null}
 
       <UserProfileDetailModal

@@ -36,7 +36,7 @@ public class ChatServiceImpl implements ChatService {
   @Override
   public List<ChatMessageResponse> getMessages(Long meetingId, Long userId) {
     assertCanAccess(meetingId, userId);
-    return chatDao.selectMessages(meetingId, MESSAGE_LIMIT);
+    return chatDao.selectMessages(meetingId, userId, MESSAGE_LIMIT);
   }
 
   @Override
@@ -93,6 +93,19 @@ public class ChatServiceImpl implements ChatService {
     meetingChatBroadcaster.broadcast(
         meetingId, new ChatMessageEvent("CHAT_MESSAGE_CREATED", savedMessage));
     return savedMessage;
+  }
+
+  @Override
+  @Transactional
+  public void leaveRoom(Long meetingId, Long userId) {
+    if (meetingId == null || userId == null) {
+      throw new IllegalArgumentException("나갈 채팅방 정보가 없습니다.");
+    }
+
+    int updated = chatDao.leaveRoom(meetingId, userId);
+    if (updated <= 0) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "참가 중인 모임톡만 나갈 수 있습니다.");
+    }
   }
 
   @Override

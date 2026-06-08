@@ -9,6 +9,7 @@ import kr.co.iei.chat.model.vo.ChatRoomResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,6 +45,15 @@ public class ChatController {
       @RequestBody ChatMessageRequest request) {
     Long userId = jwtTokenProvider.parseUserId(extractBearerToken(authorizationHeader));
     return ResponseEntity.ok(chatService.createMessage(meetingId, userId, request));
+  }
+
+  @PatchMapping("/api/meetings/{meetingId}/chat/leave")
+  public ResponseEntity<Void> leaveRoom(
+      @PathVariable Long meetingId,
+      @RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
+    Long userId = jwtTokenProvider.parseUserId(extractBearerToken(authorizationHeader));
+    chatService.leaveRoom(meetingId, userId);
+    return ResponseEntity.ok().build();
   }
 
   private String extractBearerToken(String authorizationHeader) {
