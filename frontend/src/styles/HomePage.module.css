@@ -2175,3 +2175,188 @@
     flex-wrap: wrap !important;
   }
 }
+
+/* Home badge recovery: make sport/status pills match the list-page design. */
+.homeCardOverride .dashboardMeetingBadges {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.homeCardOverride .dashboardMeetingBadges span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid #e5e7eb !important;
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+}
+
+.homeCardOverride .dashboardMeetingBadges span:first-child {
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #1d4ed8, #38bdf8) !important;
+  color: #ffffff !important;
+}
+
+.homeCardOverride .dashboardStatusBadge {
+  border: 1px solid rgba(21, 128, 61, 0.12) !important;
+  background: #ecfdf3 !important;
+  color: #15803d !important;
+}
+
+/* Home original-density pass: compact list cards like the reference screen. */
+.dashboardFeed {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.dashboardMeetingCard.homeCardOverride {
+  display: grid !important;
+  grid-template-columns: 184px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-height: 146px !important;
+  padding: 12px 14px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035) !important;
+}
+
+.homeCardOverride .homeImageOverride,
+.homeCardOverride .dashboardMeetingImage {
+  width: 184px !important;
+  height: 122px !important;
+  aspect-ratio: auto !important;
+  object-fit: cover !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.homeCardOverride .dashboardMeetingBody {
+  min-width: 0;
+  display: grid !important;
+  align-content: center !important;
+  gap: 7px !important;
+}
+
+.homeCardOverride .dashboardMeetingBadges {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+.homeCardOverride .dashboardMeetingBadges span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 24px !important;
+  padding: 0 9px !important;
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.homeCardOverride .dashboardMeetingBadges span:first-child {
+  border: 0 !important;
+  background: #2f80ed !important;
+  color: #ffffff !important;
+}
+
+.homeCardOverride .dashboardStatusBadge {
+  border: 1px solid #dfe6ee !important;
+  background: #f3f6f9 !important;
+  color: #334155 !important;
+}
+
+.homeCardOverride .dashboardMeetingBody h3 {
+  margin: 0 !important;
+  color: #0f172a !important;
+  font-size: 1.08rem !important;
+  font-weight: 900 !important;
+  line-height: 1.28 !important;
+  letter-spacing: 0 !important;
+}
+
+.homeCardOverride .dashboardMeetingBody p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.88rem !important;
+  line-height: 1.45 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.homeCardOverride .dashboardMeetingMeta {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 2px !important;
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+}
+
+.homeCardOverride .dashboardMeetingFooter {
+  margin-top: 2px !important;
+}
+
+.homeCardOverride .dashboardMeetingActions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.homeCardOverride .dashboardMeetingActions button,
+.homeCardOverride .dashboardMeetingActions a {
+  height: 34px !important;
+  min-width: 38px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+}
+
+.homeCardOverride .dashboardMeetingActions button {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.homeCardOverride .dashboardMeetingActions a:last-child {
+  border: 0 !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 720px) {
+  .dashboardMeetingCard.homeCardOverride {
+    grid-template-columns: 1fr !important;
+  }
+
+  .homeCardOverride .homeImageOverride,
+  .homeCardOverride .dashboardMeetingImage {
+    width: 100% !important;
+    height: 180px !important;
+  }
+
+  .homeCardOverride .dashboardMeetingActions {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+}
