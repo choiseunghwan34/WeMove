@@ -636,6 +636,44 @@
   line-height: 1.6;
 }
 
+@keyframes smoothZoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes fadeInOrb {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes floatOrb {
+  from {
+    transform: translate3d(-2%, -2%, 0) scale(0.98);
+  }
+  to {
+    transform: translate3d(3%, 4%, 0) scale(1.04);
+  }
+}
+
+@keyframes copyFadeIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cardSlideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* 2026-05-18 auth metric contrast recovery */
 .metrics article {
   background: rgba(255, 255, 255, 0.12) !important;
