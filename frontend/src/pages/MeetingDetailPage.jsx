@@ -645,9 +645,12 @@ export default function MeetingDetailPage() {
             src={
               meeting.thumbnailImage ||
               meetingImages[meeting.meetingId] ||
-              "/src/assets/image/bg1.jpg"
+              bg1
             }
             alt={meeting.title}
+            onError={(e) => {
+              e.currentTarget.src = bg1;
+            }}
           />
           <div>
             <span>

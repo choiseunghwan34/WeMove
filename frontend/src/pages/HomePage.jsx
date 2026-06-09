@@ -141,7 +141,7 @@ const getWeekdayLabel = (dateValue) => {
 const getWeekEnd = (baseDate) => {
   const weekEnd = new Date(baseDate);
   weekEnd.setHours(0, 0, 0, 0);
-  weekEnd.setDate(weekEnd.getDate() + (6 - weekEnd.getDay()));
+  weekEnd.setDate(weekEnd.getDate() + ((7 - weekEnd.getDay()) % 7));
   return weekEnd;
 };
 
@@ -698,19 +698,32 @@ export default function HomePage() {
                   ? `${String(meeting.meetingDate).slice(5).replace("-", ".")}${weekday ? ` (${weekday})` : ""}`
                   : `${relativeDate}${weekday ? ` (${weekday})` : ""}`;
 
-              return (
-                <div
-                  key={`schedule-${meeting.id}`}
-                  className={styles.dashboardScheduleItem}
-                >
-                  <span>{displayDate}</span>
-                  <strong>
-                    {String(meeting.startTime ?? "").slice(0, 5) || "--:--"}
-                  </strong>
-                  <p>{meeting.title}</p>
-                </div>
-              );
-            })
+                return (
+                  <div
+                    key={`schedule-${meeting.id}`}
+                    className={styles.dashboardScheduleItem}
+                  >
+                    <span>{displayDate}</span>
+                    <strong>
+                      {String(meeting.startTime ?? "").slice(0, 5) || "--:--"}
+                    </strong>
+                    <div className={styles.dashboardScheduleBody}>
+                      <em
+                        className={
+                          meeting.scheduleSource === "hosted"
+                            ? styles.dashboardScheduleBadgeHosted
+                            : styles.dashboardScheduleBadgeApproved
+                        }
+                      >
+                        {meeting.scheduleSource === "hosted"
+                          ? "내가 만든 모임"
+                          : "참여 확정"}
+                      </em>
+                      <p>{meeting.title}</p>
+                    </div>
+                  </div>
+                );
+              })
           ) : (
             <div className={styles.dashboardScheduleItem}>
               <span>-</span>
