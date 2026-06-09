@@ -29,6 +29,53 @@ import {
 import { WEMOVE_DIRECT_CHAT_OPEN_EVENT } from "../utils/directChatEvents";
 import styles from "../styles/GlobalMeetingChat.module.css";
 
+const stickerModules = import.meta.glob(
+  "../stickers/wemoveticker/*.{png,PNG}",
+  {
+    eager: true,
+    import: "default",
+    query: "?url",
+  },
+);
+
+const WEMOVE_STICKER_MESSAGE_PATTERN = /^::wemove-sticker:([^:]+)::$/;
+
+const wemoveStickers = Object.entries(stickerModules)
+  .map(([path, src]) => {
+    const fileName = path.split("/").pop();
+
+    return {
+      id: encodeURIComponent(fileName),
+      name: fileName.replace(/\.[^.]+$/, ""),
+      src,
+    };
+  })
+  .sort((left, right) =>
+    left.name.localeCompare(right.name, "ko", {
+      numeric: true,
+      sensitivity: "base",
+    }),
+  );
+
+const stickerMap = new Map(
+  wemoveStickers.map((sticker) => [sticker.id, sticker]),
+);
+
+const createStickerContent = (sticker) => `::wemove-sticker:${sticker.id}::`;
+
+const getStickerFromContent = (content) => {
+  const match = String(content || "").match(WEMOVE_STICKER_MESSAGE_PATTERN);
+
+  if (!match) {
+    return null;
+  }
+
+  return stickerMap.get(match[1]) || null;
+};
+
+const getChatPreview = (content, fallback = "") =>
+  getStickerFromContent(content) ? "[스티커]" : content || fallback;
+
 const formatTime = (value) => {
   if (!value) {
     return "";
@@ -163,6 +210,7 @@ export default function GlobalMeetingChat() {
   const [error, setError] = useState("");
   const [panelSize, setPanelSize] = useState(null);
   const [roomsCollapsed, setRoomsCollapsed] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState("ROOMS");
   const panelRef = useRef(null);
   const listRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -204,6 +252,7 @@ export default function GlobalMeetingChat() {
   const selectedRoom =
     chatType === "GROUP" ? selectedMeetingRoom : selectedDirectRoom;
   const isNoticeMode = chatType === "NOTICE";
+  const isStickerMode = sidebarMode === "STICKERS";
 
   useEffect(() => {
     roomsRef.current = rooms;
@@ -258,7 +307,9 @@ export default function GlobalMeetingChat() {
             .filter((notification) => notification.type === "notice")
             .map((notification) => ({
               notificationId:
-                notification.notificationId || notification.id || notification.createdAt,
+                notification.notificationId ||
+                notification.id ||
+                notification.createdAt,
               title: notification.title || "공지사항",
               message: notification.message || "",
               createdAt: notification.createdAt,
@@ -355,7 +406,7 @@ export default function GlobalMeetingChat() {
           )?.title || MOVE_TALK_FALLBACK_TITLE;
         const notificationMessage = `${
           message.nickname || CHAT_PARTICIPANT_FALLBACK
-        }: ${message.content}`;
+        }: ${getChatPreview(message.content)}`;
         const notificationPayload = {
           type: NOTIFICATION_TYPES.CHAT,
           chatKind: "MEETING",
@@ -424,7 +475,7 @@ export default function GlobalMeetingChat() {
           )?.targetNickname || "1:1 대화";
         const notificationMessage = `${
           message.nickname || CHAT_PARTICIPANT_FALLBACK
-        }: ${message.content}`;
+        }: ${getChatPreview(message.content)}`;
         const notificationPayload = {
           type: NOTIFICATION_TYPES.CHAT,
           chatKind: "DIRECT",
@@ -588,7 +639,10 @@ export default function GlobalMeetingChat() {
       event.preventDefault();
       event.stopPropagation();
 
-      if (type === "GROUP" && Number(room?.hostUserId) === Number(user?.memberId)) {
+      if (
+        type === "GROUP" &&
+        Number(room?.hostUserId) === Number(user?.memberId)
+      ) {
         toast.info("모임톡", "모임장은 모임톡을 나갈 수 없습니다.");
         return;
       }
@@ -625,7 +679,9 @@ export default function GlobalMeetingChat() {
         const meetingId = roomMenu.room.meetingId;
         await leaveMeetingChatRoom(meetingId);
         setRooms((current) =>
-          current.filter((room) => Number(room.meetingId) !== Number(meetingId)),
+          current.filter(
+            (room) => Number(room.meetingId) !== Number(meetingId),
+          ),
         );
         setSelectedMeetingId((current) =>
           Number(current) === Number(meetingId) ? null : current,
@@ -1085,6 +1141,38 @@ export default function GlobalMeetingChat() {
     }
   };
 
+  const sendStickerMessage = async (sticker) => {
+    if (isAdmin || isNoticeMode || !activeRoomId || sending || !sticker) {
+      return;
+    }
+
+    setSending(true);
+    setError("");
+
+    try {
+      const content = createStickerContent(sticker);
+      const { data } =
+        chatType === "GROUP"
+          ? await createChatMessage(activeRoomId, content)
+          : await createDirectChatMessage(activeRoomId, content);
+
+      if (chatType === "GROUP") {
+        appendMessage(data, { notify: false });
+      } else {
+        appendDirectMessage(data, { notify: false });
+      }
+    } catch (requestError) {
+      setError(
+        requestError?.response?.data?.message || "스티커 전송에 실패했습니다.",
+      );
+    } finally {
+      setSending(false);
+      window.setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 0);
+    }
+  };
+
   const startPanelResize = (event, direction) => {
     event.preventDefault();
 
@@ -1245,13 +1333,17 @@ export default function GlobalMeetingChat() {
                   <div className={styles.roomListHeader}>
                     <div
                       className={chatType === "GROUP" ? styles.active : ""}
-                      onClick={() => setChatType("GROUP")}
+                      onClick={() => {
+                        setSidebarMode("ROOMS");
+                        setChatType("GROUP");
+                      }}
                     >
                       모임
                     </div>
                     <div
                       className={chatType === "PRIVATE" ? styles.active : ""}
                       onClick={() => {
+                        setSidebarMode("ROOMS");
                         setChatType("PRIVATE");
                         loadDirectRooms();
                       }}
@@ -1259,7 +1351,37 @@ export default function GlobalMeetingChat() {
                       1대1 대화
                     </div>
                   </div>
-                  {loadingRooms ? (
+                  {isStickerMode ? (
+                    <div className={styles.stickerPanel}>
+                      <div className={styles.stickerPanelHeader}>
+                        <strong>WeMove 스티커</strong>
+                        <span>더블클릭하면 전송됩니다.</span>
+                      </div>
+                      {wemoveStickers.length ? (
+                        <div className={styles.stickerGrid}>
+                          {wemoveStickers.map((sticker) => (
+                            <button
+                              key={sticker.id}
+                              type="button"
+                              className={styles.stickerItem}
+                              disabled={!activeRoomId || sending}
+                              onDoubleClick={() => sendStickerMessage(sticker)}
+                              title={`${sticker.name} 스티커 보내기`}
+                            >
+                              <img src={sticker.src} alt={sticker.name} />
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={styles.emptyState}>
+                          <p>등록된 스티커가 없습니다.</p>
+                          <small>
+                            src/stickers/wemoveticker 폴더에 PNG를 넣어주세요.
+                          </small>
+                        </div>
+                      )}
+                    </div>
+                  ) : loadingRooms ? (
                     <p>불러오는 중</p>
                   ) : chatType === "GROUP" ? (
                     rooms.length ? (
@@ -1284,7 +1406,7 @@ export default function GlobalMeetingChat() {
                               .join(" · ")}
                           </span>
                           <small>
-                            {room.lastMessage ||
+                            {getChatPreview(room.lastMessage) ||
                               formatSchedule(
                                 room.meetingDate,
                                 room.startTime,
@@ -1315,7 +1437,8 @@ export default function GlobalMeetingChat() {
                         <strong>{room.targetNickname || "1:1 대화"}</strong>
                         <span>1:1 대화</span>
                         <small>
-                          {room.lastMessage || "아직 메시지가 없습니다."}
+                          {getChatPreview(room.lastMessage) ||
+                            "아직 메시지가 없습니다."}
                         </small>
                       </button>
                     ))
@@ -1391,7 +1514,9 @@ export default function GlobalMeetingChat() {
               <div className={styles.messageList} ref={listRef}>
                 {isNoticeMode ? (
                   loadingNotices ? (
-                    <p className={styles.state}>공지사항을 불러오는 중입니다.</p>
+                    <p className={styles.state}>
+                      공지사항을 불러오는 중입니다.
+                    </p>
                   ) : noticeMessages.length ? (
                     noticeMessages.map((notice, index) => {
                       const previousNotice = noticeMessages[index - 1];
@@ -1421,7 +1546,9 @@ export default function GlobalMeetingChat() {
                       );
                     })
                   ) : (
-                    <p className={styles.state}>아직 등록된 공지사항이 없습니다.</p>
+                    <p className={styles.state}>
+                      아직 등록된 공지사항이 없습니다.
+                    </p>
                   )
                 ) : isAdmin ? (
                   <div className={styles.adminNoticeGuide}>
@@ -1461,6 +1588,7 @@ export default function GlobalMeetingChat() {
                       message.profileImage.trim()
                         ? message.profileImage.trim()
                         : defaultUserImage;
+                    const sticker = getStickerFromContent(message.content);
 
                     return (
                       <div
@@ -1536,15 +1664,27 @@ export default function GlobalMeetingChat() {
                                     {formatTime(message.createdAt)}
                                   </span>
                                 ) : null}
-                                <p
-                                  className={
-                                    isMine
-                                      ? styles.messageMineBubble
-                                      : styles.messageBubble
-                                  }
-                                >
-                                  {message.content}
-                                </p>
+                                {sticker ? (
+                                  <div
+                                    className={
+                                      isMine
+                                        ? styles.messageMineStickerBubble
+                                        : styles.messageStickerBubble
+                                    }
+                                  >
+                                    <img src={sticker.src} alt={sticker.name} />
+                                  </div>
+                                ) : (
+                                  <p
+                                    className={
+                                      isMine
+                                        ? styles.messageMineBubble
+                                        : styles.messageBubble
+                                    }
+                                  >
+                                    {message.content}
+                                  </p>
+                                )}
                                 {!isMine ? (
                                   <span className={styles.messageTime}>
                                     {formatTime(message.createdAt)}
@@ -1565,7 +1705,34 @@ export default function GlobalMeetingChat() {
               {error ? <p className={styles.error}>{error}</p> : null}
 
               {!isNoticeMode ? (
-                <form className={styles.messageForm} onSubmit={submitMessage}>
+                <form
+                  className={
+                    isAdmin
+                      ? `${styles.messageForm} ${styles.messageFormAdmin}`
+                      : styles.messageForm
+                  }
+                  onSubmit={submitMessage}
+                >
+                  {!isAdmin ? (
+                    <button
+                      type="button"
+                      className={
+                        isStickerMode
+                          ? `${styles.stickerToggleButton} ${styles.stickerToggleButtonActive}`
+                          : styles.stickerToggleButton
+                      }
+                      aria-label="스티커 목록 열기"
+                      title="스티커"
+                      onClick={() =>
+                        setSidebarMode((current) => {
+                          setRoomsCollapsed(false);
+                          return current === "STICKERS" ? "ROOMS" : "STICKERS";
+                        })
+                      }
+                    >
+                      🙂
+                    </button>
+                  ) : null}
                   <input
                     ref={messageInputRef}
                     value={messageInput}
