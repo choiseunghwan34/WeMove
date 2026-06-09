@@ -67,6 +67,20 @@ const getWeekdayLabel = (dateValue) => {
   return DAY_LABELS[parsedDate.getDay()];
 };
 
+const getWeekRange = (baseDate) => {
+  const weekStart = new Date(baseDate);
+  weekStart.setHours(0, 0, 0, 0);
+  const day = weekStart.getDay();
+  weekStart.setDate(weekStart.getDate() - (day === 0 ? 6 : day - 1));
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  return { weekStart, weekEnd };
+};
+
+const isVisibleWeeklyScheduleStatus = (status) =>
+  ["RECRUITING", "CLOSED", "ONGOING"].includes(status);
+
 const normalizeMeeting = (meeting) => ({
   ...meeting,
   id: meeting.meetingId ?? meeting.id,
@@ -219,24 +233,45 @@ export default function MeetingListPage() {
     try {
       const response = await getMyActivity(user.memberId);
       const payload = response.data ?? {};
+      const hosted = Array.isArray(payload.hostedMeetings)
+        ? payload.hostedMeetings
+            .map(normalizeMeeting)
+            .filter((meeting) => isVisibleWeeklyScheduleStatus(meeting.status))
+            .map((meeting) => ({
+              ...meeting,
+              scheduleSource: "hosted",
+            }))
+        : [];
       const approved = Array.isArray(payload.approvedMeetings)
-        ? payload.approvedMeetings.map(normalizeMeeting)
+        ? payload.approvedMeetings.map(normalizeMeeting).map((meeting) => ({
+            ...meeting,
+            scheduleSource: "approved",
+          }))
         : [];
       
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const { weekStart, weekEnd } = getWeekRange(today);
 
-      const filteredAndSorted = approved
+      const filteredAndSorted = [...hosted, ...approved]
         .filter((meeting) => {
           if (!meeting?.meetingDate) return false;
           const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
-          return !Number.isNaN(meetingDay.getTime()) && meetingDay >= today;
+          return (
+            !Number.isNaN(meetingDay.getTime()) &&
+            meetingDay >= weekStart &&
+            meetingDay <= weekEnd
+          );
         })
         .sort((left, right) => {
           const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
           const rightDate = `${right.meetingDate ?? ""} ${right.startTime ?? ""}`;
           return leftDate.localeCompare(rightDate);
-        });
+        })
+        .filter(
+          (meeting, index, array) =>
+            array.findIndex((item) => item.id === meeting.id) === index,
+        );
 
       setScheduleItems(filteredAndSorted.slice(0, 4));
     } catch (error) {
@@ -642,7 +677,20 @@ export default function MeetingListPage() {
                       <strong>
                         {String(meeting.startTime || "").slice(0, 5) || "-"}
                       </strong>
-                      <p>{meeting.title}</p>
+                      <div className={styles.dashboardScheduleBody}>
+                        <em
+                          className={
+                            meeting.scheduleSource === "hosted"
+                              ? styles.dashboardScheduleBadgeHosted
+                              : styles.dashboardScheduleBadgeApproved
+                          }
+                        >
+                          {meeting.scheduleSource === "hosted"
+                            ? "내가 만든 모임"
+                            : "참여 확정"}
+                        </em>
+                        <p>{meeting.title}</p>
+                      </div>
                     </div>
                   );
                 })

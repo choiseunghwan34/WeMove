@@ -238,6 +238,109 @@
   color: #0369a1 !important;
 }
 
+/* Unified weekly schedule card used by Home, Find Meetings, and Activity. */
+.dashboardScheduleList {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.dashboardScheduleItem {
+  display: grid !important;
+  grid-template-columns: 84px 56px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 14px 16px !important;
+  border: 1px solid rgba(37, 99, 235, 0.08) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%) !important;
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.dashboardScheduleItem > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  background: #edf3ff !important;
+  color: #1d4ed8 !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.dashboardScheduleItem > strong {
+  color: #111827 !important;
+  font-size: 0.98rem !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.dashboardScheduleBody {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.dashboardScheduleBadgeHosted,
+.dashboardScheduleBadgeApproved {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: flex-start !important;
+  width: fit-content !important;
+  min-width: max-content !important;
+  max-width: 100% !important;
+  padding: 3px 9px !important;
+  border-radius: 999px !important;
+  font-size: 0.66rem !important;
+  font-weight: 800 !important;
+  font-style: normal !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+.dashboardScheduleBadgeHosted {
+  background: rgba(37, 99, 235, 0.12) !important;
+  color: #1d4ed8 !important;
+}
+
+.dashboardScheduleBadgeApproved {
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #047857 !important;
+}
+
+.dashboardScheduleItem p {
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: #475569 !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+@media (max-width: 720px) {
+  .dashboardScheduleItem {
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+    gap: 8px !important;
+  }
+
+  .dashboardScheduleItem > span,
+  .dashboardScheduleItem > strong {
+    justify-self: start !important;
+  }
+}
+
 .badgeOngoing {
   background: #dbeafe !important;
   color: #1d4ed8 !important;

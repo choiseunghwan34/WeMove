@@ -145,6 +145,17 @@ const getWeekEnd = (baseDate) => {
   return weekEnd;
 };
 
+const getWeekRange = (baseDate) => {
+  const weekStart = new Date(baseDate);
+  weekStart.setHours(0, 0, 0, 0);
+  const day = weekStart.getDay();
+  weekStart.setDate(weekStart.getDate() - (day === 0 ? 6 : day - 1));
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  return { weekStart, weekEnd };
+};
+
 const defaultEmptyRegion = {regionId : null, sido: "", sigungu: "", dong: ""};
 
 export default function HomePage() {
@@ -217,7 +228,7 @@ export default function HomePage() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const weekEnd = getWeekEnd(today);
+  const { weekStart, weekEnd } = getWeekRange(today);
 
   const scheduleItems = [
     ...activityData.hostedMeetings
@@ -236,7 +247,7 @@ export default function HomePage() {
       const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
       return (
         !Number.isNaN(meetingDay.getTime()) &&
-        meetingDay >= today &&
+        meetingDay >= weekStart &&
         meetingDay <= weekEnd
       );
     })
