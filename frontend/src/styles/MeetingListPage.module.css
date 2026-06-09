@@ -4322,6 +4322,165 @@
   flex-shrink: 0 !important;
 }
 
+/* Find-page meeting cards: keep them denser than Home cards. */
+.listCard {
+  grid-template-columns: minmax(0, 1fr) 112px !important;
+  gap: 12px !important;
+  padding: 12px !important;
+  min-height: 128px !important;
+  border-radius: 18px !important;
+}
+
+.listCardBody {
+  grid-template-columns: 108px minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+.listCardImage {
+  width: 108px !important;
+  height: 108px !important;
+  border-radius: 13px !important;
+}
+
+.listCardContent {
+  display: grid !important;
+  align-content: center !important;
+  gap: 6px !important;
+}
+
+.listCardContent .listTags,
+.listTags {
+  gap: 5px !important;
+  margin: 0 !important;
+}
+
+.listCard .badge,
+.listCardContent .badge {
+  min-height: 22px !important;
+  padding: 0 8px !important;
+  font-size: 0.68rem !important;
+  border-radius: 999px !important;
+}
+
+.listCard h3,
+.listCardContent h3 {
+  margin: 0 !important;
+  font-size: 1rem !important;
+  line-height: 1.28 !important;
+}
+
+.listCard p,
+.listCardContent p {
+  margin: 0 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.42 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.listCard .listMeta {
+  gap: 8px !important;
+  margin-top: 2px !important;
+  font-size: 0.72rem !important;
+}
+
+.listCard .dashboardMetaIcon {
+  width: 13px !important;
+  height: 13px !important;
+}
+
+.listCard .host {
+  margin-top: 2px !important;
+  gap: 8px !important;
+  font-size: 0.72rem !important;
+}
+
+.listCard .dashboardHostAvatar {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.listCard .participantMetaRow {
+  max-width: 150px !important;
+  gap: 3px !important;
+}
+
+.listCard .participantCount,
+.listCard .progressPercentText {
+  font-size: 0.72rem !important;
+}
+
+.listCard .progressBarBg {
+  height: 4px !important;
+}
+
+.listCard aside {
+  gap: 8px !important;
+}
+
+.listCard .dateBox {
+  width: 92px !important;
+  min-height: 86px !important;
+  padding: 10px 8px !important;
+  border-radius: 14px !important;
+}
+
+.listCard .dateBox span {
+  font-size: 0.72rem !important;
+}
+
+.listCard .dateBox strong {
+  font-size: 1.2rem !important;
+}
+
+.listCard aside button {
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 11px !important;
+  font-size: 0.76rem !important;
+}
+
+@media (max-width: 720px) {
+  .listCard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .listCardBody {
+    grid-template-columns: 96px minmax(0, 1fr) !important;
+  }
+
+  .listCardImage {
+    width: 96px !important;
+    height: 96px !important;
+  }
+
+  .listCard aside {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .listCard .dateBox {
+    width: auto !important;
+    min-height: 44px !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .listCardBody {
+    grid-template-columns: 1fr !important;
+  }
+
+  .listCardImage {
+    width: 100% !important;
+    height: 150px !important;
+  }
+}
+
 /* Unified weekly schedule card used by Home, Find Meetings, and Activity. */
 .dashboardScheduleList {
   display: grid !important;

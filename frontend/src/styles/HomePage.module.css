@@ -2504,91 +2504,91 @@
   }
 }
 
-/* Home meeting card density fix: reduce oversized cards to the original list feel. */
+/* Home meeting card density: home cards should be larger than find-page cards. */
 .dashboardMeetingCard.homeCardOverride {
-  grid-template-columns: 152px minmax(0, 1fr) !important;
-  gap: 12px !important;
-  min-height: 118px !important;
-  padding: 10px 12px !important;
-  border-radius: 16px !important;
+  grid-template-columns: 214px minmax(0, 1fr) !important;
+  gap: 18px !important;
+  min-height: 168px !important;
+  padding: 16px 18px !important;
+  border-radius: 22px !important;
 }
 
 .homeCardOverride .homeImageOverride,
 .homeCardOverride .dashboardMeetingImage {
-  width: 152px !important;
-  height: 96px !important;
-  border-radius: 12px !important;
+  width: 214px !important;
+  height: 136px !important;
+  border-radius: 16px !important;
 }
 
 .homeCardOverride .dashboardMeetingBody {
-  gap: 5px !important;
+  gap: 9px !important;
 }
 
 .homeCardOverride .dashboardMeetingBadges {
-  gap: 5px !important;
+  gap: 8px !important;
 }
 
 .homeCardOverride .dashboardMeetingBadges span {
-  min-height: 20px !important;
-  padding: 0 8px !important;
-  font-size: 0.58rem !important;
+  min-height: 28px !important;
+  padding: 0 11px !important;
+  font-size: 0.8rem !important;
 }
 
 .homeCardOverride .dashboardMeetingBody h3 {
-  font-size: 0.88rem !important;
-  line-height: 1.24 !important;
+  font-size: 1.22rem !important;
+  line-height: 1.28 !important;
 }
 
 .homeCardOverride .dashboardMeetingBody p {
-  font-size: 0.72rem !important;
-  line-height: 1.35 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.45 !important;
 }
 
 .homeCardOverride .dashboardMeetingMeta {
-  gap: 8px !important;
-  font-size: 0.64rem !important;
-  line-height: 1.3 !important;
+  gap: 12px !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
 }
 
 .homeCardOverride .dashboardMetaIcon {
-  width: 12px !important;
-  height: 12px !important;
+  width: 15px !important;
+  height: 15px !important;
 }
 
 .homeCardOverride .dashboardMeetingFooter,
 .homeCardOverride .footerContainerOverride {
-  margin-top: 1px !important;
+  margin-top: 4px !important;
   padding-top: 0 !important;
 }
 
 .homeCardOverride .dashboardMeetingActions {
-  gap: 6px !important;
+  gap: 8px !important;
 }
 
 .homeCardOverride .dashboardMeetingActions button,
 .homeCardOverride .dashboardMeetingActions a {
-  height: 28px !important;
-  min-width: 32px !important;
-  padding: 0 10px !important;
-  border-radius: 9px !important;
-  font-size: 0.64rem !important;
+  height: 38px !important;
+  min-width: 42px !important;
+  padding: 0 14px !important;
+  border-radius: 12px !important;
+  font-size: 0.86rem !important;
 }
 
 .homeCardOverride .dashboardActionIcon {
-  width: 12px !important;
-  height: 12px !important;
+  width: 15px !important;
+  height: 15px !important;
 }
 
 @media (max-width: 720px) {
   .dashboardMeetingCard.homeCardOverride {
-    grid-template-columns: 116px minmax(0, 1fr) !important;
+    grid-template-columns: 148px minmax(0, 1fr) !important;
     align-items: start !important;
   }
 
   .homeCardOverride .homeImageOverride,
   .homeCardOverride .dashboardMeetingImage {
-    width: 116px !important;
-    height: 86px !important;
+    width: 148px !important;
+    height: 110px !important;
   }
 
   .homeCardOverride .dashboardMeetingActions {
