@@ -943,3 +943,88 @@
     align-self: flex-end;
   }
 }
+
+/* Activity recovery: restore summary buckets and compact meeting cards. */
+.dashboardStatGrid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.dashboardStatGrid article {
+  display: grid !important;
+  gap: 8px !important;
+  padding: 18px 18px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
+}
+
+.dashboardStatGrid article span {
+  color: #64748b !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardStatGrid article strong {
+  color: #111827 !important;
+  font-size: 1.1rem !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.dashboardCompactCard {
+  min-height: 112px !important;
+  padding: 14px 16px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 16px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035) !important;
+}
+
+.dashboardCompactBody {
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: 88px minmax(0, 1fr) !important;
+  gap: 14px !important;
+  align-items: center !important;
+}
+
+.dashboardMiniImage {
+  width: 88px !important;
+  height: 88px !important;
+  object-fit: cover !important;
+  border-radius: 14px !important;
+}
+
+.dashboardMeetingBadges {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+@media (max-width: 900px) {
+  .dashboardStatGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboardStatGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboardCompactCard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboardCompactBody {
+    grid-template-columns: 1fr !important;
+  }
+}

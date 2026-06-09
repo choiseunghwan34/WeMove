@@ -1,7 +1,7 @@
-export const navItems = [
+﻿export const navItems = [
   { label: "홈", icon: "home", to: "/" },
   { label: "모임 찾기", icon: "search", to: "/meetings" },
-  { label: "내 활동", icon: "activity", to: "/activity" },
+  { label: "내활동", icon: "activity", to: "/activity" },
   { label: "마이페이지", icon: "user", to: "/mypage" },
 ];
 
@@ -12,9 +12,7 @@ export const interestItems = [
   { label: "등산", icon: "mountain" },
   { label: "배드민턴", icon: "badminton" },
 ];
-/*
-*
-* */
+
 export const categoryItems = [
   { name: "전체", accent: "blue", icon: "spark" },
   { name: "유산소", accent: "sky", icon: "running" },
@@ -28,7 +26,6 @@ export const categoryItems = [
   { name: "댄스·생활체육", accent: "lime", icon: "dance" },
   { name: "기타스포츠", accent: "lime", icon: "more" },
 ];
-
 
 export const meetingImages = {
   1: "https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=1200&q=80",
