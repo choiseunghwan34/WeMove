@@ -4584,3 +4584,129 @@
   }
 }
 
+/* Final find-page card layout guard: compact, aligned, and not stretched. */
+.listCard {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 104px !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  min-height: 132px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+}
+
+.listCardBody {
+  display: grid !important;
+  grid-template-columns: 132px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-width: 0 !important;
+}
+
+.listCardImage {
+  display: block !important;
+  width: 132px !important;
+  min-width: 132px !important;
+  max-width: 132px !important;
+  height: 104px !important;
+  object-fit: cover !important;
+  border-radius: 14px !important;
+}
+
+.listCardContent {
+  min-width: 0 !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 6px !important;
+}
+
+.listCardContent .listTags {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+.listCard h3 {
+  margin: 0 !important;
+  font-size: 1rem !important;
+  line-height: 1.25 !important;
+}
+
+.listCard p {
+  margin: 0 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.35 !important;
+}
+
+.listCard .listMeta {
+  margin-top: 1px !important;
+  gap: 8px !important;
+  font-size: 0.72rem !important;
+}
+
+.listCard .host {
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-top: 2px !important;
+  font-size: 0.72rem !important;
+}
+
+.listCard .participantMetaRow {
+  width: 132px !important;
+  max-width: 132px !important;
+  flex: 0 0 132px !important;
+}
+
+.listCard aside {
+  display: grid !important;
+  grid-template-rows: 1fr auto !important;
+  align-items: stretch !important;
+  justify-items: stretch !important;
+  gap: 10px !important;
+  padding-left: 14px !important;
+  border-left: 1px solid #edf1f7 !important;
+}
+
+.listCard .dateBox {
+  width: 100% !important;
+  min-height: 84px !important;
+  padding: 10px 8px !important;
+}
+
+.listCard aside button {
+  width: 100% !important;
+  min-height: 34px !important;
+}
+
+@media (max-width: 720px) {
+  .listCard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .listCardBody {
+    grid-template-columns: 118px minmax(0, 1fr) !important;
+  }
+
+  .listCardImage {
+    width: 118px !important;
+    min-width: 118px !important;
+    max-width: 118px !important;
+    height: 92px !important;
+  }
+
+  .listCard aside {
+    grid-template-columns: auto minmax(96px, 1fr) !important;
+    grid-template-rows: auto !important;
+    align-items: center !important;
+    padding-left: 0 !important;
+    padding-top: 10px !important;
+    border-left: 0 !important;
+    border-top: 1px solid #edf1f7 !important;
+  }
+
+  .listCard .dateBox {
+    min-height: 42px !important;
+  }
+}
+
