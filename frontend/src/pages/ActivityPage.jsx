@@ -54,6 +54,13 @@ const getWeekdayLabel = (dateValue) => {
   return DAY_LABELS[parsedDate.getDay()];
 };
 
+const getWeekEnd = (baseDate) => {
+  const weekEnd = new Date(baseDate);
+  weekEnd.setHours(0, 0, 0, 0);
+  weekEnd.setDate(weekEnd.getDate() + (6 - weekEnd.getDay()));
+  return weekEnd;
+};
+
 const normalizeMeeting = (meeting) => ({
   ...meeting,
   id: meeting.meetingId ?? meeting.id,
@@ -71,6 +78,9 @@ const normalizeMeeting = (meeting) => ({
   participationStatus: meeting.participationStatus ?? meeting.status ?? "",
   image: getMeetingThumbnail(meeting),
 });
+
+const isVisibleWeeklyScheduleStatus = (status) =>
+  ["RECRUITING", "CLOSED", "ONGOING"].includes(status);
 
 const getParticipationLabel = (status) => {
   switch (status) {
@@ -342,18 +352,38 @@ export default function ActivityPage() {
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const weekEnd = getWeekEnd(today);
 
-  const scheduleItems = [...activityData.approvedMeetings]
+  const scheduleItems = [
+    ...activityData.hostedMeetings
+      .filter((meeting) => isVisibleWeeklyScheduleStatus(meeting.status))
+      .map((meeting) => ({
+        ...meeting,
+        scheduleSource: "hosted",
+      })),
+    ...activityData.approvedMeetings.map((meeting) => ({
+      ...meeting,
+      scheduleSource: "approved",
+    })),
+  ]
     .filter((meeting) => {
       if (!meeting?.meetingDate) return false;
       const meetingDay = new Date(`${meeting.meetingDate}T00:00:00`);
-      return !Number.isNaN(meetingDay.getTime()) && meetingDay >= today;
+      return (
+        !Number.isNaN(meetingDay.getTime()) &&
+        meetingDay >= today &&
+        meetingDay <= weekEnd
+      );
     })
     .sort((left, right) => {
       const leftDate = `${left.meetingDate ?? ""} ${left.startTime ?? ""}`;
       const rightDate = `${right.meetingDate ?? ""} ${right.startTime ?? ""}`;
       return leftDate.localeCompare(rightDate);
     })
+    .filter(
+      (meeting, index, array) =>
+        array.findIndex((item) => item.id === meeting.id) === index,
+    )
     .slice(0, 4);
 
   const scheduledMeetings = activityData.approvedMeetings;
