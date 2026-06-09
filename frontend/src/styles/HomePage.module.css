@@ -274,6 +274,7 @@
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
+  min-width: 0;
   padding: 14px 14px !important;
   margin-bottom: 0 !important;
   border: 1px solid rgba(37, 99, 235, 0.1) !important;
@@ -1614,12 +1615,22 @@
   color: #10233f !important;
   font-size: 0.95rem !important;
   line-height: 1.35 !important;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .dashboardRankItem span {
   color: #64748b !important;
   font-size: 0.82rem !important;
   font-weight: 700 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dashboardRankItem:nth-child(1) {
@@ -1990,4 +2001,177 @@
   display: flex !important;
   justify-content: flex-end !important;
   margin-top: auto !important; /* 💡 윗 공간을 싹 다 밀어내고 바닥에 밀착시킵니다 */
+}
+
+/* Home recovery: restore summary and meeting card layout after shared-style split. */
+.dashboardSummaryCard {
+  padding: 20px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 24px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
+}
+
+.dashboardSidebarHead {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 16px !important;
+}
+
+.dashboardSidebarHead strong {
+  color: #0f172a !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  line-height: 1.3 !important;
+}
+
+.dashboardSidebarHead span {
+  color: #64748b !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  text-align: right;
+}
+
+.dashboardSummaryGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+}
+
+.dashboardSummaryGrid article {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0;
+  padding: 14px 12px !important;
+  border: 1px solid #eef0f3 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.dashboardSummaryGrid i {
+  width: 40px !important;
+  height: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  background: #eef4ff !important;
+  color: #2563eb !important;
+  box-shadow: none !important;
+}
+
+.dashboardSummaryGrid article > div {
+  min-width: 0;
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.dashboardSummaryGrid span {
+  color: #64748b !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardSummaryGrid strong {
+  color: #111827 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.dashboardMeetingCard,
+.homeCardOverride {
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+  padding: 14px !important;
+  border: 1px solid #dbe7ff !important;
+  border-radius: 24px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04) !important;
+}
+
+.dashboardMeetingBody {
+  min-width: 0;
+  display: grid !important;
+  align-content: start !important;
+  gap: 10px !important;
+}
+
+.dashboardMeetingBody h3 {
+  margin: 4px 0 0 !important;
+  color: #111827 !important;
+  font-size: 1.08rem !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardMeetingBody p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.92rem !important;
+  line-height: 1.55 !important;
+}
+
+.dashboardMeetingMeta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-top: 2px !important;
+  color: #64748b !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+}
+
+.dashboardMeetingActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  width: 100%;
+}
+
+.dashboardMeetingActions button,
+.dashboardMeetingActions a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid #111827 !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+}
+
+.dashboardMeetingActions a:last-child {
+  border-color: transparent !important;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 56%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 720px) {
+  .dashboardSummaryGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .dashboardMeetingCard,
+  .homeCardOverride {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboardMeetingActions {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
 }
