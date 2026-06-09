@@ -27,7 +27,7 @@ export default function MeetingCreatePage() {
     createMeeting(formData).then((res)=>{
       console.log(res);
       alert("모임 등록 완료");
-      navigate("/meetings");
+      navigate("/");
     }).catch((err)=>{console.log(err);
       if(err.response?.status === 401){
         alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
