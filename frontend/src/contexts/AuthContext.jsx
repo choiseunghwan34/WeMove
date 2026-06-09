@@ -159,6 +159,29 @@ export function AuthProvider({ children }) {
       setForcedLogoutModal({ title, message });
     };
 
+    const tryRefreshAccessToken = async () => {
+      try {
+        const { data } = await refreshSession();
+        const refreshedAccessToken = data?.accessToken ?? null;
+        const parsedUser = parseUserFromAccessToken(refreshedAccessToken);
+
+        if (!refreshedAccessToken || !parsedUser) {
+          return false;
+        }
+
+        if (active) {
+          setAccessToken(refreshedAccessToken);
+          setAccessTokenState(refreshedAccessToken);
+          setUser(parsedUser);
+          revocationHandledRef.current = false;
+        }
+
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
     const verifySession = async () => {
       try {
         await checkSessionStatus();
@@ -173,6 +196,11 @@ export function AuthProvider({ children }) {
         }
 
         if (code === "SESSION_EXPIRED" || error?.response?.status === 401) {
+          const refreshed = await tryRefreshAccessToken();
+          if (refreshed) {
+            return;
+          }
+
           handleRevokedSession(
             error?.response?.data?.message || SESSION_EXPIRED_MESSAGE,
           );
