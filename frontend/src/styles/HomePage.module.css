@@ -1,161 +1,314 @@
-/* Auto-split from HomePage.jsx. Page/component styles compose shared WeMove design rules. */
+/* HomePage styles are intentionally self-contained. */
 
 .dashboardActionIcon {
-  composes: dashboardActionIcon from "./WeMoveShared.module.css";
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
 }
 
 .dashboardActivityItem {
-  composes: dashboardActivityItem from "./WeMoveShared.module.css";
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .dashboardActivityBody {
-  composes: dashboardActivityBody from "./WeMoveShared.module.css";
+  min-width: 0;
+  display: grid;
+  gap: 6px;
 }
 
 .dashboardActivityBadge {
-  composes: dashboardActivityBadge from "./WeMoveShared.module.css";
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .dashboardActivityHeader {
-  composes: dashboardActivityHeader from "./WeMoveShared.module.css";
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dashboardActivityList {
-  composes: dashboardActivityList from "./WeMoveShared.module.css";
+  display: grid;
+  gap: 10px;
 }
 
 .dashboardActivityMeta {
-  composes: dashboardActivityMeta from "./WeMoveShared.module.css";
+  margin: 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 
 .dashboardActivityTime {
-  composes: dashboardActivityTime from "./WeMoveShared.module.css";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .dashboardActivityTitle {
-  composes: dashboardActivityTitle from "./WeMoveShared.module.css";
+  display: block;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.42;
 }
 
 .dashboardActivityToneHosted {
-  composes: dashboardActivityToneHosted from "./WeMoveShared.module.css";
+  background: #ecfdf5;
+  color: #0f766e;
 }
 
 .dashboardActivityToneScheduled {
-  composes: dashboardActivityToneScheduled from "./WeMoveShared.module.css";
+  background: #eef4ff;
+  color: #1d4ed8;
 }
 
 .dashboardActivityToneWaiting {
-  composes: dashboardActivityToneWaiting from "./WeMoveShared.module.css";
+  background: #fff7ed;
+  color: #c2410c;
 }
 
 .dashboardCategoryGlyph {
-  composes: dashboardCategoryGlyph from "./WeMoveShared.module.css";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .dashboardCategoryItem {
-  composes: dashboardCategoryItem from "./WeMoveShared.module.css";
+  padding: 8px 4px 2px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: #5e738d;
+  font-weight: 700;
 }
 
 .dashboardCategoryStrip {
-  composes: dashboardCategoryStrip from "./WeMoveShared.module.css";
+  padding: 14px 18px;
+  border-radius: 24px;
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 6px;
 }
 
 .dashboardFeed {
-  composes: dashboardFeed from "./WeMoveShared.module.css";
+  display: grid;
+  gap: 14px;
 }
 
 .dashboardHeroButton {
-  composes: dashboardHeroButton from "./WeMoveShared.module.css";
+  min-width: 128px;
   height: 54px !important;
   min-height: 54px !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2a73ff, #58a7ff);
+  color: #fff;
+  font-weight: 900;
 }
 
 .dashboardHeroCard {
-  composes: dashboardHeroCard from "./WeMoveShared.module.css";
+  position: relative;
+  min-height: 250px;
+  padding: 32px;
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(8, 25, 65, 0.96), rgba(29, 72, 164, 0.9)),
+    url("https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1400&q=80")
+      center/cover no-repeat;
   overflow: hidden;
 }
 
 .dashboardHeroContent {
-  composes: dashboardHeroContent from "./WeMoveShared.module.css";
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: space-between;
+  height: 100%;
 }
 
 .dashboardHeroFilters {
-  composes: dashboardHeroFilters from "./WeMoveShared.module.css";
+  margin-top: 24px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.95fr 0.95fr auto;
+  gap: 10px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px);
 }
 
 .dashboardHeroRow {
-  composes: dashboardHeroRow from "./WeMoveShared.module.css";
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 308px;
+  gap: 18px;
 }
 
 .dashboardHostMeta {
-  composes: dashboardHostMeta from "./WeMoveShared.module.css";
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .dashboardInlineIcon {
-  composes: dashboardInlineIcon from "./WeMoveShared.module.css";
+  width: 16px;
+  height: 16px;
+  color: #5272a6;
 }
 
 .dashboardMeetingActions {
-  composes: dashboardMeetingActions from "./WeMoveShared.module.css";
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dashboardMeetingBadges {
-  composes: dashboardMeetingBadges from "./WeMoveShared.module.css";
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dashboardMeetingBody {
-  composes: dashboardMeetingBody from "./WeMoveShared.module.css";
+  display: grid;
+  gap: 10px;
+  min-width: 0;
 }
 
 .dashboardMeetingCard {
-  composes: dashboardMeetingCard from "./WeMoveShared.module.css";
+  padding: 14px;
+  border-radius: 24px;
+  display: grid;
+  grid-template-columns: 182px minmax(0, 1fr);
+  gap: 18px;
 }
 
 .dashboardMeetingFooter {
-  composes: dashboardMeetingFooter from "./WeMoveShared.module.css";
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 .dashboardMeetingImage {
-  composes: dashboardMeetingImage from "./WeMoveShared.module.css";
+  width: 100%;
+  height: 132px;
+  object-fit: cover;
+  border-radius: 18px;
 }
 
 .dashboardMeetingMeta {
-  composes: dashboardMeetingMeta from "./WeMoveShared.module.css";
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: #6a7f98;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .dashboardMetaIcon {
-  composes: dashboardMetaIcon from "./WeMoveShared.module.css";
+  width: 15px;
+  height: 15px;
+  margin-right: 3px;
+  color: #7b91aa;
 }
 
 .dashboardPanel {
-  composes: dashboardPanel from "./WeMoveShared.module.css";
+  padding: 20px;
+  border-radius: 24px;
 }
 
 .dashboardPanelHead {
-  composes: dashboardPanelHead from "./WeMoveShared.module.css";
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .dashboardPills {
-  composes: dashboardPills from "./WeMoveShared.module.css";
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dashboardRankItem {
-  composes: dashboardRankItem from "./WeMoveShared.module.css";
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 14px !important;
+  margin-bottom: 0 !important;
+  border: 1px solid rgba(37, 99, 235, 0.1) !important;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.1), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%) !important;
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 .dashboardRankList {
-  composes: dashboardRankList from "./WeMoveShared.module.css";
+  display: grid;
+  gap: 10px !important;
 }
 
 .dashboardScheduleItem {
-  composes: dashboardScheduleItem from "./WeMoveShared.module.css";
+  display: grid !important;
+  grid-template-columns: 84px 56px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 14px 16px !important;
+  border: 1px solid rgba(37, 99, 235, 0.08) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%) !important;
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
 }
 
 .dashboardScheduleList {
-  composes: dashboardScheduleList from "./WeMoveShared.module.css";
+  display: grid;
+  gap: 10px !important;
 }
 
 .dashboardScheduleBody {
@@ -168,12 +321,13 @@
 .dashboardScheduleBadgeHosted,
 .dashboardScheduleBadgeApproved {
   align-self: flex-start;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 800;
   font-style: normal;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .dashboardScheduleBadgeHosted {
@@ -187,31 +341,45 @@
 }
 
 .dashboardSection {
-  composes: dashboardSection from "./WeMoveShared.module.css";
+  display: grid;
+  gap: 18px;
 }
 
 .dashboardSectionHead {
-  composes: dashboardSectionHead from "./WeMoveShared.module.css";
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .dashboardSidebarHead {
-  composes: dashboardSidebarHead from "./WeMoveShared.module.css";
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .dashboardStatIcon {
-  composes: dashboardStatIcon from "./WeMoveShared.module.css";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .dashboardStatusBadge {
-  composes: dashboardStatusBadge from "./WeMoveShared.module.css";
+  background: #ecfbf3 !important;
+  color: #17a56e !important;
 }
 
 .dashboardSummaryCard {
-  composes: dashboardSummaryCard from "./WeMoveShared.module.css";
+  padding: 22px;
+  border-radius: 26px;
 }
 
 .dashboardSummaryGrid {
-  composes: dashboardSummaryGrid from "./WeMoveShared.module.css";
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 14px;
+  margin-top: 22px;
 }
 
 .heroCarousel {
@@ -907,22 +1075,6 @@
   color: #2e7d78 !important;
 }
 
-.dashboardCategoryItem:nth-child(3n) i {
-  background: #faf6ef !important;
-  color: #a96a1b !important;
-}
-
-.dashboardRankItem b {
-  color: #667085 !important;
-}
-
-.dashboardRankItem:first-child b,
-.dashboardRankItem:nth-child(2) b,
-.dashboardRankItem:nth-child(3) b {
-  background: #f4f5f7 !important;
-  color: #3f6fd8 !important;
-}
-
 /* Absolute final home-only neutral background pass. */
 .dashboardPanel,
 .dashboardSummaryCard,
@@ -934,19 +1086,6 @@
   box-shadow:
     0 14px 36px rgba(15, 23, 42, 0.045),
     inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
-}
-
-.dashboardPanel::before,
-.dashboardSummaryCard::before,
-.dashboardMeetingCard::before,
-.dashboardPanel::after,
-.dashboardSummaryCard::after,
-.dashboardMeetingCard::after {
-  display: none !important;
-  content: none !important;
-  background: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
 }
 
 .dashboardCategoryItem,

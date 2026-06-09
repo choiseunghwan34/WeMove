@@ -1,5 +1,5 @@
 import {useAuth} from "../contexts/AuthContext.jsx";
-import styles from "../styles/WeMoveShared.module.css";
+import styles from "../styles/Comment.module.css";
 import {useEffect, useState} from "react";
 import {createComment, deleteComment, getComments} from "../api/commentApi.js";
 import defaultUserImage from "../assets/image/Default-user.png";
