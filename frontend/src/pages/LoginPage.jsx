@@ -45,6 +45,20 @@ const normalizeServerMessage = (message) => {
   return message;
 };
 
+const normalizeSuspensionText = (value, fallback) => {
+  const text = String(value || "").trim();
+  if (!text) {
+    return fallback;
+  }
+
+  const looksLikeCode = /[A-Z_]{3,}|ACCOUNT|SUSPEND|TOKEN|SESSION|ERROR/i.test(
+    text,
+  );
+  const hasKorean = /[가-힣]/.test(text);
+
+  return looksLikeCode && !hasKorean ? fallback : text;
+};
+
 const getLoginErrorMessage = (error) => {
   const serverMessage = normalizeServerMessage(error?.response?.data?.message);
 
@@ -226,8 +240,8 @@ export default function LoginPage() {
             : rawUntil;
 
         setSuspensionDetails({
-          reason: errData?.reason || "운영원칙 위반",
-          until: formattedUntil || "관리자 문의 요망",
+          reason: normalizeSuspensionText(errData?.reason, "운영원칙 위반"),
+          until: normalizeSuspensionText(formattedUntil, "관리자 문의 요망"),
         });
         setSuspendedModalOpen(true);
       }

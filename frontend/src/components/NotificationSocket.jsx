@@ -50,6 +50,7 @@ export default function NotificationSocket() {
           publishAccountSuspend({
             title: payload.title || "계정 정지 안내",
             message: payload.message || "",
+            reason: payload.reason,
             suspendedUntil: payload.suspendedUntil,
             suspendHours: payload.suspendHours,
           });

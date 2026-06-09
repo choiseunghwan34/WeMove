@@ -46,15 +46,33 @@ const formatSuspendedUntil = (value) => {
   return String(value).replace("T", " ").slice(0, 16);
 };
 
+const getKoreanOnlyMessage = (value) => {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "";
+  }
+
+  const looksLikeCode = /[A-Z_]{3,}|ACCOUNT|SUSPEND|TOKEN|SESSION|ERROR/i.test(
+    text,
+  );
+  const hasKorean = /[가-힣]/.test(text);
+
+  return looksLikeCode && !hasKorean ? "" : text;
+};
+
 const buildAccountSuspendMessage = ({
   message,
   reason,
   suspendedUntil,
   suspendHours,
 }) => {
+  const safeMessage =
+    getKoreanOnlyMessage(message) || "계정이 정지되어 로그아웃됩니다.";
+  const safeReason = getKoreanOnlyMessage(reason);
+
   const lines = [
-    message || "계정이 정지되어 로그아웃됩니다.",
-    reason ? `정지 사유: ${reason}` : "",
+    safeMessage,
+    safeReason ? `정지 사유: ${safeReason}` : "",
     suspendHours ? `정지 기간: ${formatSuspendHours(suspendHours)}` : "",
     suspendedUntil ? `해제 예정: ${formatSuspendedUntil(suspendedUntil)}` : "",
   ].filter(Boolean);

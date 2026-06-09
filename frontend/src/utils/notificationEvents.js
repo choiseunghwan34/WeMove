@@ -64,17 +64,18 @@ export const openNotificationTarget = (notification) => {
 
 export const publishAccountSuspend = ({
   title = "계정 정지 안내",
-  message = "",
+  message = "계정이 정지되어 로그아웃됩니다.",
+  reason,
   suspendedUntil,
   suspendHours,
 }) => {
-  if (typeof window === "undefined" || !message) {
+  if (typeof window === "undefined") {
     return;
   }
 
   window.dispatchEvent(
     new CustomEvent(WEMOVE_ACCOUNT_SUSPEND_EVENT, {
-      detail: { title, message, suspendedUntil, suspendHours },
+      detail: { title, message, reason, suspendedUntil, suspendHours },
     }),
   );
 };
