@@ -247,6 +247,76 @@
   opacity: 0.8;
 }
 
+.stickerPanel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+}
+
+.stickerPanelHeader {
+  display: grid;
+  gap: 3px;
+  padding: 0 2px;
+}
+
+.stickerPanelHeader strong {
+  color: #10233d;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.stickerPanelHeader span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.stickerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 92px;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.stickerItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 92px;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.stickerItem:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.stickerItem:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.stickerItem img {
+  display: block;
+  max-width: 72px;
+  max-height: 72px;
+  object-fit: contain;
+}
+
 .roomToggle {
   align-self: stretch;
   width: 18px;
@@ -681,6 +751,34 @@
   border: 1px solid #cfe1f7;
 }
 
+.messageStickerBubble,
+.messageMineStickerBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 148px;
+  padding: 6px;
+  border-radius: 14px;
+}
+
+.messageStickerBubble {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.messageMineStickerBubble {
+  background: #eaf3ff;
+  border: 1px solid #cfe1f7;
+}
+
+.messageStickerBubble img,
+.messageMineStickerBubble img {
+  display: block;
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+}
+
 .messageTime {
   flex: 0 0 auto;
   color: #a8b3c3;
@@ -700,7 +798,7 @@
 
 .messageForm {
   display: grid;
-  grid-template-columns: 1fr 76px;
+  grid-template-columns: 42px 1fr 76px;
   align-items: center;
   gap: 8px;
   height: 66px;
@@ -708,6 +806,10 @@
   padding: 10px 12px;
   border-top: 1px solid #e5e7eb;
   background: #fff;
+}
+
+.messageFormAdmin {
+  grid-template-columns: 1fr 76px;
 }
 
 .messageForm input {
@@ -730,6 +832,24 @@
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
+}
+
+.stickerToggleButton {
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #10233d !important;
+  font-size: 19px !important;
+  line-height: 1;
+}
+
+.stickerToggleButton:hover:not(:disabled),
+.stickerToggleButtonActive {
+  border-color: #93c5fd !important;
+  background: #eff6ff !important;
 }
 
 .messageForm button:disabled {
