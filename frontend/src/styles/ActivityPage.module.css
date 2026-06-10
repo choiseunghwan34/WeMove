@@ -748,6 +748,43 @@
     box-shadow 0.16s ease;
 }
 
+.activityMeetingCard > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.activityMeetingCard .dashboardMeetingBadges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.activityMeetingCard .dashboardMeetingBadges > span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.activityMeetingCard .dashboardMeetingBadges > span:first-child {
+  color: #111827;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.activityMeetingCard .dashboardStatusBadge {
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
 .activityMeetingCard:hover {
   transform: translateY(-1px);
   border-color: #bfdbfe;
@@ -770,6 +807,7 @@
 }
 
 .activityMeetingCard b {
+  flex: 0 0 auto;
   color: #2563eb;
   font-size: 0.82rem;
   font-weight: 900;
