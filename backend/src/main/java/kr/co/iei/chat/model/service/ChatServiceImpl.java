@@ -20,6 +20,8 @@ import org.springframework.http.HttpStatus;
 public class ChatServiceImpl implements ChatService {
   private static final int MESSAGE_LIMIT = 100;
   private static final int MAX_CONTENT_LENGTH = 1000;
+  private static final String WEMOVE_STICKER_PREFIX = "::wemove-sticker:";
+  private static final String WEMOVE_STICKER_SUFFIX = "::";
 
   private final ChatDao chatDao;
   private final MeetingChatBroadcaster meetingChatBroadcaster;
@@ -149,9 +151,18 @@ public class ChatServiceImpl implements ChatService {
 
   private String summarizeContent(String content) {
     String normalized = normalizeContent(content);
+    if (isStickerContent(normalized)) {
+      return "이모티콘을 보냈습니다.";
+    }
     if (normalized.isBlank()) {
       return "새 메시지가 도착했습니다.";
     }
     return normalized.length() > 80 ? normalized.substring(0, 80) + "..." : normalized;
+  }
+
+  private boolean isStickerContent(String content) {
+    return content != null
+        && content.startsWith(WEMOVE_STICKER_PREFIX)
+        && content.endsWith(WEMOVE_STICKER_SUFFIX);
   }
 }
