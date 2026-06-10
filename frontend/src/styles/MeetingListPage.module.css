@@ -4431,8 +4431,8 @@
   gap: 12px !important;
 }
 
-.listCard aside .shareButton,
-.listCard aside .shareButton:visited {
+.listCard aside button.shareButton,
+.listCard aside button.shareButton:visited {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -4451,9 +4451,9 @@
   font-weight: 900 !important;
 }
 
-.listCard aside .shareButton:hover,
-.listCard aside .shareButton:focus,
-.listCard aside .shareButton:active {
+.listCard aside button.shareButton:hover,
+.listCard aside button.shareButton:focus,
+.listCard aside button.shareButton:active {
   background: #eff6ff !important;
   color: #2563eb !important;
   border-color: #2563eb !important;
@@ -4461,10 +4461,10 @@
   opacity: 1 !important;
 }
 
-.listCard aside .shareButton svg,
-.listCard aside .shareButton:hover svg,
-.listCard aside .shareButton:focus svg,
-.listCard aside .shareButton:active svg {
+.listCard aside button.shareButton svg,
+.listCard aside button.shareButton:hover svg,
+.listCard aside button.shareButton:focus svg,
+.listCard aside button.shareButton:active svg {
   color: #2563eb !important;
   stroke: currentColor !important;
 }
