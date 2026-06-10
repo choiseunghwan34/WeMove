@@ -31,7 +31,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
   private static final String RESET_PASSWORD_PURPOSE = "RESET_PASSWORD";
   private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
   private static final Duration VERIFIED_TTL = Duration.ofMinutes(30);
-  private static final URI RESEND_EMAILS_URI = URI.create("https://api.resend.com/emails");
+  private static final URI EMAILJS_SEND_URI =
+      URI.create("https://api.emailjs.com/api/v1.0/email/send");
 
   private final AuthDao authDao;
   private final StringRedisTemplate stringRedisTemplate;
@@ -45,8 +46,17 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
   @Value("${wemove.email.from:no-reply@wemove.local}")
   private String fromEmail;
 
-  @Value("${resend.api.key:}")
-  private String resendApiKey;
+  @Value("${emailjs.service.id:}")
+  private String emailjsServiceId;
+
+  @Value("${emailjs.template.id:}")
+  private String emailjsTemplateId;
+
+  @Value("${emailjs.public.key:}")
+  private String emailjsPublicKey;
+
+  @Value("${emailjs.private.key:}")
+  private String emailjsPrivateKey;
 
   @Override
   public EmailVerificationSendResponse sendVerificationEmail(String email) {
@@ -121,8 +131,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
   }
 
   private void sendMailIfAvailable(String email, String verificationUrl) {
-    if (resendApiKey != null && !resendApiKey.isBlank()) {
-      sendMailWithResend(email, verificationUrl);
+    if (isEmailJsConfigured()) {
+      sendMailWithEmailJs(email, verificationUrl);
       return;
     }
 
@@ -144,24 +154,47 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     }
   }
 
-  private void sendMailWithResend(String email, String verificationUrl) {
+  private boolean isEmailJsConfigured() {
+    return hasText(emailjsServiceId) && hasText(emailjsTemplateId) && hasText(emailjsPublicKey);
+  }
+
+  private void sendMailWithEmailJs(String email, String verificationUrl) {
+    String accessTokenField =
+        hasText(emailjsPrivateKey)
+            ? """
+              "accessToken": "%s",
+        """
+                .formatted(escapeJson(emailjsPrivateKey.trim()))
+            : "";
     String body =
         """
         {
-          "from": "%s",
-          "to": ["%s"],
-          "subject": "WeMove email verification",
-          "html": "%s"
+          "service_id": "%s",
+          "template_id": "%s",
+          "user_id": "%s",
+          %s
+          "template_params": {
+            "to_email": "%s",
+            "to_name": "%s",
+            "from_name": "WeMove",
+            "subject": "WeMove email verification",
+            "verification_url": "%s",
+            "message_html": "%s"
+          }
         }
         """
             .formatted(
-                escapeJson(formatFromAddress()),
+                escapeJson(emailjsServiceId.trim()),
+                escapeJson(emailjsTemplateId.trim()),
+                escapeJson(emailjsPublicKey.trim()),
+                accessTokenField,
                 escapeJson(email),
+                escapeJson(email),
+                escapeJson(verificationUrl),
                 escapeJson(buildMailHtml(verificationUrl)));
 
     HttpRequest request =
-        HttpRequest.newBuilder(RESEND_EMAILS_URI)
-            .header("Authorization", "Bearer " + resendApiKey.trim())
+        HttpRequest.newBuilder(EMAILJS_SEND_URI)
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .build();
@@ -172,26 +205,17 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         throw new IllegalStateException(
-            "Resend email delivery failed: HTTP "
+            "EmailJS delivery failed: HTTP "
                 + response.statusCode()
                 + " "
                 + response.body());
       }
     } catch (IOException e) {
-      throw new IllegalStateException("Resend email delivery failed.", e);
+      throw new IllegalStateException("EmailJS delivery failed.", e);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new IllegalStateException("Resend email delivery was interrupted.", e);
+      throw new IllegalStateException("EmailJS delivery was interrupted.", e);
     }
-  }
-
-  private String formatFromAddress() {
-    String sender =
-        fromEmail == null || fromEmail.isBlank() ? "onboarding@resend.dev" : fromEmail.trim();
-    if (sender.contains("<")) {
-      return sender;
-    }
-    return "WeMove <" + sender + ">";
   }
 
   private String buildMailHtml(String verificationUrl) {
@@ -235,6 +259,10 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
   private String verifiedKey(String email, String purpose) {
     return VERIFIED_EMAIL_KEY_PREFIX + purpose + ":" + email;
+  }
+
+  private boolean hasText(String value) {
+    return value != null && !value.isBlank();
   }
 
   private String escapeJson(String value) {
