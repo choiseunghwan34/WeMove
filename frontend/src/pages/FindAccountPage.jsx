@@ -212,7 +212,8 @@ export default function FindAccountPage() {
       setFieldErrors((current) => ({
         ...current,
         submit:
-          error?.response?.data?.message || "일치하는 계정 정보를 찾지 못했습니다.",
+          error?.response?.data?.message ||
+          "일치하는 계정 정보를 찾지 못했습니다.",
       }));
     } finally {
       setIsSubmitting(false);
@@ -255,7 +256,9 @@ export default function FindAccountPage() {
         email: normalizeEmail(form.email),
         password,
       });
-      setResultMessage("비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요.");
+      setResultMessage(
+        "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요.",
+      );
       setForm((current) => ({
         ...current,
         password: "",
@@ -378,12 +381,12 @@ export default function FindAccountPage() {
           {mode === "id" ? (
             <form className={styles.form} onSubmit={handleFindId}>
               <label>
-                <span>이름 또는 닉네임</span>
+                <span>닉네임</span>
                 <input
                   name="nickname"
                   value={form.nickname}
                   onChange={handleChange}
-                  placeholder="러너민수"
+                  placeholder="계정 닉네임을 입력하세요"
                 />
                 <small className={styles.fieldError}>
                   {fieldErrors.nickname || "\u00a0"}
@@ -404,8 +407,7 @@ export default function FindAccountPage() {
                     type="button"
                     onClick={requestEmailVerification}
                     disabled={
-                      isSendingEmail ||
-                      emailVerificationStatus === "verified"
+                      isSendingEmail || emailVerificationStatus === "verified"
                     }
                   >
                     {emailVerificationStatus === "verified"
@@ -427,7 +429,11 @@ export default function FindAccountPage() {
                     : fieldErrors.email || "\u00a0"}
                 </small>
               </label>
-              <button className={styles.submit} type="submit" disabled={isSubmitting}>
+              <button
+                className={styles.submit}
+                type="submit"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "확인 중..." : "아이디 확인"}
               </button>
             </form>
@@ -460,8 +466,7 @@ export default function FindAccountPage() {
                     type="button"
                     onClick={requestEmailVerification}
                     disabled={
-                      isSendingEmail ||
-                      emailVerificationStatus === "verified"
+                      isSendingEmail || emailVerificationStatus === "verified"
                     }
                   >
                     {emailVerificationStatus === "verified"
@@ -511,7 +516,11 @@ export default function FindAccountPage() {
                   {fieldErrors.passwordConfirm || "\u00a0"}
                 </small>
               </label>
-              <button className={styles.submit} type="submit" disabled={isSubmitting}>
+              <button
+                className={styles.submit}
+                type="submit"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "재설정 중..." : "비밀번호 재설정"}
               </button>
             </form>
