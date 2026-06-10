@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import UiIcon from "../components/UiIcon";
@@ -295,7 +295,7 @@ export default function MeetingDetailPage() {
     }
   };
 
-  const handleShareMeeting = useCallback(async () => {
+  const handleShareMeeting = async () => {
     try {
       const meetingUrl = await copyMeetingShareUrl(meetingId);
       toast.success("링크가 복사되었습니다.", meetingUrl, {
@@ -308,7 +308,7 @@ export default function MeetingDetailPage() {
         { sourceId: `share-meeting-${meetingId}` },
       );
     }
-  }, [meetingId, toast]);
+  };
 
   return (
     <div className={styles.page}>
