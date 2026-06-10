@@ -43,7 +43,7 @@
   --tracking-body: 0;
   --font-hero: clamp(2.65rem, 4.7vw, 4.35rem);
   --font-page-title: clamp(2rem, 3vw, 3rem);
-  --font-section-title: clamp(1.55rem, 2vw, 2.15rem);
+  --font-section-title: clamp(1.55rem, 2vw, 2rem);
   --font-card-title: clamp(1.12rem, 1.35vw, 1.55rem);
   --font-panel-title: clamp(1rem, 1.05vw, 1.22rem);
   --font-home-hero: clamp(3rem, 5vw, 4.6rem);
@@ -110,9 +110,22 @@ body {
   line-height: 1.6;
   letter-spacing: var(--tracking-body);
   background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 32%),
-    radial-gradient(circle at left 14%, rgba(15, 118, 110, 0.06), transparent 26%),
-    linear-gradient(180deg, #f8fbff 0%, var(--color-bg) 22%, var(--color-bg) 100%);
+    radial-gradient(
+      circle at top right,
+      rgba(37, 99, 235, 0.08),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at left 14%,
+      rgba(15, 118, 110, 0.06),
+      transparent 26%
+    ),
+    linear-gradient(
+      180deg,
+      #f8fbff 0%,
+      var(--color-bg) 22%,
+      var(--color-bg) 100%
+    );
   overflow-x: hidden;
 }
 
