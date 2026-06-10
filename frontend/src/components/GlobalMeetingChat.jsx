@@ -40,10 +40,17 @@ const WEMOVE_STICKER_MESSAGE_PATTERN = /^::wemove-sticker:([^:]+)::$/;
 const wemoveStickers = Object.entries(stickerModules)
   .map(([path, src]) => {
     const fileName = path.split("/").pop();
+    const name = fileName.replace(/\.[^.]+$/, "");
 
     return {
-      id: encodeURIComponent(fileName),
-      name: fileName.replace(/\.[^.]+$/, ""),
+      id: encodeURIComponent(name),
+      aliases: [
+        encodeURIComponent(name),
+        encodeURIComponent(fileName),
+        name,
+        fileName,
+      ],
+      name,
       src,
     };
   })
@@ -54,7 +61,11 @@ const wemoveStickers = Object.entries(stickerModules)
     }),
   );
 
-const stickerMap = new Map(wemoveStickers.map((sticker) => [sticker.id, sticker]));
+const stickerMap = new Map(
+  wemoveStickers.flatMap((sticker) =>
+    sticker.aliases.map((alias) => [alias, sticker]),
+  ),
+);
 
 const createStickerContent = (sticker) => `::wemove-sticker:${sticker.id}::`;
 
