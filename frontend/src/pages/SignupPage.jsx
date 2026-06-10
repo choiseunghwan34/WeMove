@@ -672,7 +672,7 @@ export default function SignupPage() {
     }
   };
 
-  const { containerRef, bubbleData, bubblesRef, fireflyData } = useEcoEffects();
+  const { containerRef, bubbleData, bubblesRef } = useEcoEffects();
 
   return (
     <main ref={containerRef} className={styles.page}>
@@ -687,20 +687,6 @@ export default function SignupPage() {
           transition: "background-color 2s ease-in-out",
         }}
       />
-
-      {fireflyData &&
-        fireflyData.map((style, i) => (
-          <div
-            key={`firefly-${i}`}
-            className="firefly"
-            style={{
-              left: style.left,
-              top: style.top,
-              animationDuration: style.animationDuration,
-              animationDelay: style.animationDelay,
-            }}
-          />
-        ))}
 
       {bubbleData &&
         bubbleData.map((style, i) => (

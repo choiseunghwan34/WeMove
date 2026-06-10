@@ -268,7 +268,7 @@ export default function LoginPage() {
     }
   };
 
-  const {containerRef, bubbleData, bubblesRef, fireflyData} = useEcoEffects();
+  const {containerRef, bubbleData, bubblesRef} = useEcoEffects();
 
   return (
       <>
@@ -287,20 +287,6 @@ export default function LoginPage() {
                 transition: "background-color 2s ease-in-out" // 자연스러운 색상 전환 효과
               }}
           />
-
-          {/* 🌟 반딧불이 렌더링 */}
-          {fireflyData && fireflyData.map((style, i) => (
-              <div
-                  key={`firefly-${i}`}
-                  className="firefly"
-                  style={{
-                    left: style.left,
-                    top: style.top,
-                    animationDuration: style.animationDuration,
-                    animationDelay: style.animationDelay,
-                  }}
-              />
-          ))}
 
           {/* 🌟 비눗방울 렌더링 */}
           {bubbleData && bubbleData.map((style, i) => (
@@ -428,9 +414,9 @@ export default function LoginPage() {
         {/* 중복 로그인 모달 */}
         <AppModal
             open={duplicatePromptOpen}
-            title="중복 로그인 안내"
-            description="이미 로그인 중인 계정이 있습니다. 새 기기에서 계속 로그인하시겠습니까?"
-            confirmText="확인"
+            title="현재 로그인된 사용자가 있습니다"
+            description="강제로 로그인하면 기존에 로그인되어 있던 사용자는 자동으로 로그아웃됩니다. 계속 로그인하시겠습니까?"
+            confirmText="강제 로그인"
             cancelText="취소"
             onConfirm={confirmDuplicateLogin}
             onClose={() => setDuplicatePromptOpen(false)}

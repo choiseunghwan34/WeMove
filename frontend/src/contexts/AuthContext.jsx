@@ -16,7 +16,7 @@ const AuthContext =
   (globalThis.__WEMOVE_AUTH_CONTEXT__ = createContext(null));
 
 const DUPLICATE_LOGOUT_MESSAGE =
-  "다른 곳에서 로그인 요청이 있어 로그아웃되었습니다.";
+  "다른 곳에서 강제 로그인이 진행되어 자동으로 로그아웃되었습니다.";
 const SESSION_EXPIRED_MESSAGE =
   "로그인 시간이 만료되어 로그아웃되었습니다. 다시 로그인해주세요.";
 
@@ -189,9 +189,7 @@ export function AuthProvider({ children }) {
         const code = error?.response?.data?.code;
 
         if (code === "DUPLICATE_LOGIN_LOGOUT") {
-          handleRevokedSession(
-            error?.response?.data?.message || DUPLICATE_LOGOUT_MESSAGE,
-          );
+          handleRevokedSession(DUPLICATE_LOGOUT_MESSAGE);
           return;
         }
 
