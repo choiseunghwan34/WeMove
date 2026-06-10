@@ -23,6 +23,22 @@ const TYPE_LABELS = {
   [NOTIFICATION_TYPES.ACCOUNT_SUSPEND]: "계정 정지",
 };
 
+const STICKER_NOTIFICATION_PATTERN = /^(.*?)(?::\s*)?::wemove-sticker:[^:]+::$/;
+
+const formatNotificationMessage = (message) => {
+  const normalized = String(message || "").trim();
+  const stickerMatch = normalized.match(STICKER_NOTIFICATION_PATTERN);
+
+  if (!stickerMatch) {
+    return message;
+  }
+
+  const senderName = stickerMatch[1]?.trim();
+  return senderName
+    ? `${senderName}: 이모티콘을 보냈습니다.`
+    : "이모티콘을 보냈습니다.";
+};
+
 const formatTime = (value) => {
   if (!value) {
     return "";
@@ -103,7 +119,9 @@ export default function NotificationPanel() {
                 {TYPE_LABELS[notification.type] || TYPE_LABELS.info}
               </span>
               <strong>{notification.title}</strong>
-              {notification.message ? <p>{notification.message}</p> : null}
+              {notification.message ? (
+                <p>{formatNotificationMessage(notification.message)}</p>
+              ) : null}
               <time>{formatTime(notification.createdAt)}</time>
             </button>
           ))
