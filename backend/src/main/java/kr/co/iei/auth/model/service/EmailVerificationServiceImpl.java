@@ -1,6 +1,11 @@
 package kr.co.iei.auth.model.service;
 
 import jakarta.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.UUID;
 import kr.co.iei.auth.model.dao.AuthDao;
@@ -26,17 +31,22 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
   private static final String RESET_PASSWORD_PURPOSE = "RESET_PASSWORD";
   private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
   private static final Duration VERIFIED_TTL = Duration.ofMinutes(30);
+  private static final URI RESEND_EMAILS_URI = URI.create("https://api.resend.com/emails");
 
   private final AuthDao authDao;
   private final StringRedisTemplate stringRedisTemplate;
   private final WebSocketMessageBroadcaster webSocketMessageBroadcaster;
   private final ObjectProvider<JavaMailSender> mailSenderProvider;
+  private final HttpClient httpClient = HttpClient.newHttpClient();
 
   @Value("${wemove.email.verification-base-url:http://localhost:8456/api/auth/email/verify}")
   private String verificationBaseUrl;
 
   @Value("${wemove.email.from:no-reply@wemove.local}")
   private String fromEmail;
+
+  @Value("${resend.api.key:}")
+  private String resendApiKey;
 
   @Override
   public EmailVerificationSendResponse sendVerificationEmail(String email) {
@@ -111,6 +121,11 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
   }
 
   private void sendMailIfAvailable(String email, String verificationUrl) {
+    if (resendApiKey != null && !resendApiKey.isBlank()) {
+      sendMailWithResend(email, verificationUrl);
+      return;
+    }
+
     JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
     if (mailSender == null) {
       return;
@@ -125,9 +140,58 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
       helper.setText(buildMailHtml(verificationUrl), true);
       mailSender.send(message);
     } catch (Exception e) {
-      e.printStackTrace();
-      // SMTP 설정이 없는 개발 환경에서는 응답의 verificationUrl로 인증 흐름을 확인합니다.
+      throw new IllegalStateException("Email delivery failed. Check SMTP settings.", e);
     }
+  }
+
+  private void sendMailWithResend(String email, String verificationUrl) {
+    String body =
+        """
+        {
+          "from": "%s",
+          "to": ["%s"],
+          "subject": "WeMove email verification",
+          "html": "%s"
+        }
+        """
+            .formatted(
+                escapeJson(formatFromAddress()),
+                escapeJson(email),
+                escapeJson(buildMailHtml(verificationUrl)));
+
+    HttpRequest request =
+        HttpRequest.newBuilder(RESEND_EMAILS_URI)
+            .header("Authorization", "Bearer " + resendApiKey.trim())
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+    try {
+      HttpResponse<String> response =
+          httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+      if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        throw new IllegalStateException(
+            "Resend email delivery failed: HTTP "
+                + response.statusCode()
+                + " "
+                + response.body());
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException("Resend email delivery failed.", e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Resend email delivery was interrupted.", e);
+    }
+  }
+
+  private String formatFromAddress() {
+    String sender =
+        fromEmail == null || fromEmail.isBlank() ? "onboarding@resend.dev" : fromEmail.trim();
+    if (sender.contains("<")) {
+      return sender;
+    }
+    return "WeMove <" + sender + ">";
   }
 
   private String buildMailHtml(String verificationUrl) {
@@ -171,5 +235,27 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
   private String verifiedKey(String email, String purpose) {
     return VERIFIED_EMAIL_KEY_PREFIX + purpose + ":" + email;
+  }
+
+  private String escapeJson(String value) {
+    if (value == null) {
+      return "";
+    }
+
+    StringBuilder escaped = new StringBuilder();
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      switch (ch) {
+        case '\\' -> escaped.append("\\\\");
+        case '"' -> escaped.append("\\\"");
+        case '\b' -> escaped.append("\\b");
+        case '\f' -> escaped.append("\\f");
+        case '\n' -> escaped.append("\\n");
+        case '\r' -> escaped.append("\\r");
+        case '\t' -> escaped.append("\\t");
+        default -> escaped.append(ch);
+      }
+    }
+    return escaped.toString();
   }
 }
