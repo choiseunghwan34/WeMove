@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
@@ -6,6 +6,7 @@ import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { categoryItems, meetingImages } from "../data/dashboardData";
 import { getComments } from "../api/commentApi";
 import defaultImage from "../assets/image/bg1.jpg";
@@ -160,6 +161,7 @@ const defaultEmptyRegion = {regionId : null, sido: "", sigungu: "", dong: ""};
 
 export default function HomePage() {
   const { user } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const isAdmin = user?.role === "ADMIN";
   const sidebarInterestItems = useSidebarInterestItems();
@@ -225,6 +227,47 @@ export default function HomePage() {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
+
+  const handleShareMeeting = useCallback(
+    async (meetingId) => {
+      if (!meetingId || typeof window === "undefined") {
+        toast.error("링크 복사 실패", "공유할 모임 정보를 찾을 수 없습니다.");
+        return;
+      }
+
+      const meetingUrl = new URL(
+        `/meetings/${meetingId}`,
+        window.location.origin,
+      ).toString();
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(meetingUrl);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = meetingUrl;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.left = "-9999px";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+
+        toast.success("링크가 복사되었습니다.", meetingUrl, {
+          sourceId: `share-meeting-${meetingId}`,
+        });
+      } catch (error) {
+        toast.error(
+          "링크 복사 실패",
+          "브라우저에서 복사를 허용하지 않았습니다. 다시 시도해주세요.",
+          { sourceId: `share-meeting-${meetingId}` },
+        );
+      }
+    },
+    [toast],
+  );
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1025,7 +1068,10 @@ export default function HomePage() {
                         {meeting.commentCount}
                       </button>
 
-                      <button type="button">
+                      <button
+                        type="button"
+                        onClick={() => handleShareMeeting(meeting.meetingId)}
+                      >
                         <UiIcon
                           name="share"
                           className={styles.dashboardActionIcon}
