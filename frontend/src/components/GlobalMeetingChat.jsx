@@ -69,7 +69,7 @@ const getStickerFromContent = (content) => {
 };
 
 const getChatPreview = (content, fallback = "") =>
-  getStickerFromContent(content) ? "[스티커]" : content || fallback;
+  getStickerFromContent(content) ? "이모티콘을 보냈습니다." : content || fallback;
 
 const formatTime = (value) => {
   if (!value) {
