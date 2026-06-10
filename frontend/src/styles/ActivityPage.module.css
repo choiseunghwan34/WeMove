@@ -846,12 +846,51 @@
   gap: 16px;
 }
 
+.hostMeetingHeader > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hostMeetingCard .dashboardMeetingBadges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.hostMeetingCard .dashboardMeetingBadges > span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.hostMeetingCard .dashboardMeetingBadges > span:first-child {
+  color: #111827;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.hostMeetingCard .dashboardStatusBadge {
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
 .hostMeetingHeader strong {
   display: block;
   margin-top: 8px;
   color: #111827;
   font-size: 1rem;
   line-height: 1.35;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .hostMeetingHeader p {
@@ -862,6 +901,7 @@
 }
 
 .hostMeetingAction {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   min-height: 34px;
@@ -893,6 +933,9 @@
   color: #64748b;
   font-size: 0.8rem;
   font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .hostMeetingMeta b {
