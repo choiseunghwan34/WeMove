@@ -866,21 +866,6 @@ export default function AdminPage() {
           ))}
         </section>
 
-        <div className={styles.pageTabsShell}>
-          <div className={styles.pageTabs}>
-            {tabs.map((tab) => (
-                <button
-                    key={tab.id}
-                    type="button"
-                    className={cx("tabButton", activeTab === tab.id && "tabButtonCurrent")}
-                    onClick={() => changeTab(tab.id)}
-                >
-                  {tab.label}
-                </button>
-            ))}
-          </div>
-        </div>
-
         <section className={styles.filterPanel}>
           <div className={styles.filterHead}>
             <div>

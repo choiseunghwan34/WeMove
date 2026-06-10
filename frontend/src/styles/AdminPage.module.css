@@ -3480,3 +3480,452 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Admin dashboard visual pass: closer to the PPT reference layout. */
+.page {
+  width: min(1480px, calc(100% - 44px)) !important;
+  min-height: calc(100vh - 32px) !important;
+  padding: 24px 0 48px !important;
+  background:
+    linear-gradient(rgba(59, 130, 246, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.075) 1px, transparent 1px),
+    radial-gradient(circle at 16% 4%, rgba(96, 165, 250, 0.18), transparent 34%),
+    linear-gradient(180deg, #eff8ff 0%, #f8fbff 54%, #eef7ff 100%) !important;
+  background-size: 34px 34px, 34px 34px, auto, auto !important;
+}
+
+.adminShell {
+  grid-template-columns: 232px minmax(0, 1fr) !important;
+  gap: 0 !important;
+  min-height: 840px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid #bfd8ff !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow:
+    0 26px 58px rgba(37, 99, 235, 0.14),
+    0 2px 0 rgba(255, 255, 255, 0.8) inset !important;
+  backdrop-filter: blur(14px);
+}
+
+.adminSidebar {
+  position: relative !important;
+  top: auto !important;
+  align-self: stretch !important;
+  align-content: start;
+  min-height: 840px;
+  padding: 26px 18px !important;
+  border: 0 !important;
+  border-right: 1px solid #e5edf8 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.adminBrand {
+  gap: 10px !important;
+  padding: 0 10px 26px !important;
+  border-bottom: 0 !important;
+}
+
+.adminBrand > span {
+  width: 36px !important;
+  height: 30px !important;
+  border-radius: 9px !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #60a5fa 100%) !important;
+  color: #ffffff !important;
+  font-size: 1.18rem !important;
+  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.25);
+}
+
+.adminBrand strong {
+  color: #071633 !important;
+  font-size: 1.24rem !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em;
+}
+
+.adminBrand small {
+  display: none !important;
+}
+
+.adminNav {
+  gap: 8px !important;
+}
+
+.adminNavButton {
+  position: relative;
+  min-height: 46px !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #536179 !important;
+  font-size: 0.92rem !important;
+  font-weight: 850 !important;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.adminNavButton:hover {
+  transform: translateX(2px);
+  background: #f3f7ff !important;
+  color: #2563eb !important;
+}
+
+.adminNavButtonActive {
+  background: linear-gradient(135deg, #eef5ff 0%, #f7fbff 100%) !important;
+  color: #2563eb !important;
+  box-shadow: inset 3px 0 0 #2f7df6, 0 8px 20px rgba(37, 99, 235, 0.08);
+}
+
+.adminNavDot {
+  display: grid !important;
+  place-items: center;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 8px !important;
+  background: #f1f5fb !important;
+  opacity: 1 !important;
+}
+
+.adminNavDot::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: currentColor;
+}
+
+.adminNavButtonActive .adminNavDot {
+  background: #dbeafe !important;
+}
+
+.adminSidebarStatus {
+  align-self: end;
+  margin-top: 210px !important;
+  padding: 16px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.adminSidebarStatus span,
+.adminSidebarStatus small {
+  color: #64748b !important;
+  font-size: 0.76rem !important;
+}
+
+.adminSidebarStatus strong {
+  color: #ef4444 !important;
+  font-size: 2.15rem !important;
+}
+
+.adminWorkspace {
+  gap: 16px !important;
+  padding: 0 24px 24px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.pageTitle {
+  min-height: 86px;
+  margin: 0 -24px 8px !important;
+  padding: 20px 24px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e5edf8 !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: none !important;
+}
+
+.adminEyebrow {
+  display: none !important;
+}
+
+.pageTitle h1 {
+  margin: 0 0 6px !important;
+  color: #0f1f3d !important;
+  font-size: 1.45rem !important;
+  font-weight: 950 !important;
+}
+
+.pageTitle p {
+  color: #66758c !important;
+  font-size: 0.86rem !important;
+  line-height: 1.45 !important;
+}
+
+.adminTopMeta {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 230px;
+}
+
+.adminTopMeta::before {
+  content: "A";
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f58c7 0%, #0b3f9a 100%);
+  color: #ffffff;
+  font-weight: 950;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.adminTopMeta span {
+  color: #0f1f3d !important;
+  font-size: 0.86rem !important;
+  font-weight: 950 !important;
+}
+
+.adminTopMeta strong {
+  min-height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+}
+
+.statGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.summaryCardMembers,
+.summaryCardMeetings,
+.summaryCardReports,
+.summaryCardSports {
+  position: relative;
+  min-height: 118px !important;
+  padding: 20px 20px 16px 82px !important;
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06) !important;
+}
+
+.summaryCardMembers::before,
+.summaryCardMeetings::before,
+.summaryCardReports::before,
+.summaryCardSports::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 24px;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.18);
+}
+
+.summaryCardMembers::before {
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+}
+
+.summaryCardMeetings::before {
+  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+}
+
+.summaryCardReports::before {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+}
+
+.summaryCardSports::before {
+  background: linear-gradient(135deg, #22c55e 0%, #86efac 100%);
+}
+
+.summaryCardMembers::after,
+.summaryCardMeetings::after,
+.summaryCardReports::after,
+.summaryCardSports::after {
+  position: absolute !important;
+  left: 37px !important;
+  top: 35px !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 950;
+  box-shadow: none !important;
+}
+
+.summaryCardMembers::after {
+  content: "U" !important;
+}
+
+.summaryCardMeetings::after {
+  content: "M" !important;
+}
+
+.summaryCardReports::after {
+  content: "R" !important;
+}
+
+.summaryCardSports::after {
+  content: "S" !important;
+}
+
+.summaryEyebrow {
+  color: #475569 !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+}
+
+.summaryCardMembers strong,
+.summaryCardMeetings strong,
+.summaryCardReports strong,
+.summaryCardSports strong {
+  margin: 6px 0 8px !important;
+  color: #08142f !important;
+  font-size: 1.72rem !important;
+  font-weight: 950 !important;
+}
+
+.summaryCaption {
+  color: #64748b !important;
+  font-size: 0.76rem !important;
+}
+
+.filterPanel,
+.tableCard {
+  border: 1px solid #dfe7f2 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.055) !important;
+}
+
+.filterPanel {
+  gap: 12px !important;
+  padding: 14px 18px !important;
+}
+
+.filterHead h2,
+.tableHead h2 {
+  color: #0f1f3d !important;
+  font-size: 1.03rem !important;
+  font-weight: 950 !important;
+}
+
+.filterHead p,
+.tableHead p {
+  color: #6b778c !important;
+  font-size: 0.82rem !important;
+}
+
+.filterSummaryBar,
+.regionPickerRow,
+.categorySection,
+.filterMeta,
+.tableToolbar {
+  border: 1px solid #edf2f7 !important;
+  border-radius: 10px !important;
+  background: #f8fbff !important;
+}
+
+.tableHead {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #e5edf8 !important;
+  background: #ffffff !important;
+}
+
+.tableToolbar {
+  margin: 0 20px 12px !important;
+  padding: 12px !important;
+}
+
+.tableCard th {
+  height: 42px !important;
+  border-top: 1px solid #edf2f7 !important;
+  border-bottom: 1px solid #e5eaf2 !important;
+  background: #f8fafc !important;
+  color: #44546a !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+}
+
+.tableCard td {
+  height: 50px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  color: #253348 !important;
+  font-size: 0.84rem !important;
+}
+
+.tableCard tr:hover td {
+  background: #f8fbff !important;
+}
+
+.tableCard td button,
+.filterHead button,
+.regionPickerButton {
+  border-radius: 8px !important;
+  border-color: #d4e0ee !important;
+  background: #ffffff !important;
+  color: #37506f !important;
+  font-weight: 850 !important;
+}
+
+.tableCard td button:hover,
+.filterHead button:hover,
+.regionPickerButton:hover {
+  border-color: #93c5fd !important;
+  background: #eef6ff !important;
+  color: #2563eb !important;
+}
+
+@media (max-width: 1100px) {
+  .adminShell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .adminSidebar {
+    min-height: auto;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e5edf8 !important;
+  }
+
+  .adminSidebarStatus {
+    margin-top: 0 !important;
+  }
+
+  .adminWorkspace {
+    padding-top: 0 !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(100%, calc(100% - 16px)) !important;
+    padding-top: 10px !important;
+  }
+
+  .adminShell {
+    border-radius: 16px !important;
+  }
+
+  .adminWorkspace {
+    padding: 0 12px 16px !important;
+  }
+
+  .pageTitle {
+    margin-inline: -12px !important;
+    padding: 16px 12px !important;
+  }
+
+  .summaryCardMembers,
+  .summaryCardMeetings,
+  .summaryCardReports,
+  .summaryCardSports {
+    padding-left: 76px !important;
+  }
+}
