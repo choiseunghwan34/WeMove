@@ -4441,10 +4441,10 @@
   min-height: 40px !important;
   padding: 0 12px !important;
   border-radius: 14px !important;
-  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
-  color: #ffffff !important;
+  background: #ffffff !important;
+  color: #2563eb !important;
   border: 1px solid rgba(37, 99, 235, 0.18) !important;
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.16) !important;
+  box-shadow: none !important;
   cursor: pointer !important;
   pointer-events: auto !important;
   font-size: 0.86rem !important;
@@ -4454,10 +4454,10 @@
 .listCard aside .shareButton:hover,
 .listCard aside .shareButton:focus,
 .listCard aside .shareButton:active {
-  background: linear-gradient(180deg, #4b8eff 0%, #2563eb 100%) !important;
-  color: #ffffff !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
   border-color: #2563eb !important;
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2) !important;
+  box-shadow: none !important;
   opacity: 1 !important;
 }
 
@@ -4465,7 +4465,7 @@
 .listCard aside .shareButton:hover svg,
 .listCard aside .shareButton:focus svg,
 .listCard aside .shareButton:active svg {
-  color: #ffffff !important;
+  color: #2563eb !important;
   stroke: currentColor !important;
 }
 
@@ -4480,6 +4480,13 @@
   min-height: 42px !important;
   padding: 0 14px !important;
   border-radius: 14px !important;
+}
+
+.listCard aside button.actionOwned {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid rgba(3, 105, 161, 0.18) !important;
+  box-shadow: none !important;
 }
 
 

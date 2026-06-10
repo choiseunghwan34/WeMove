@@ -606,7 +606,38 @@ export default function MeetingListPage() {
     setIsSportModalOpen(false);
   };
 
+  const isMyHostedMeeting = (meeting) => {
+    if (!isAuthenticated || !user || !meeting) {
+      return false;
+    }
+
+    const currentUserId = Number(user.memberId);
+    const hostIds = [
+      meeting.hostUserId,
+      meeting.hostId,
+      meeting.meetingHostId,
+      meeting.userId,
+    ];
+
+    if (
+      Number.isFinite(currentUserId) &&
+      hostIds.some((hostId) => Number(hostId) === currentUserId)
+    ) {
+      return true;
+    }
+
+    return Boolean(
+      user.nickname &&
+        meeting.meetingHostName &&
+        user.nickname === meeting.meetingHostName,
+    );
+  };
+
   const getButtonText = (meeting) => {
+    if (isMyHostedMeeting(meeting)) {
+      return "내 모임";
+    }
+
     if (meeting.status !== "RECRUITING") {
       return STATUS_MAP[meeting.status] || "알 수 없음";
     }
@@ -628,6 +659,10 @@ export default function MeetingListPage() {
   };
 
   const getButtonClass = (meeting) => {
+    if (isMyHostedMeeting(meeting)) {
+      return styles.actionOwned;
+    }
+
     if (
       meeting.status !== "RECRUITING" ||
       (isAuthenticated && meeting.myParticipantStatus === "REJECTED")
