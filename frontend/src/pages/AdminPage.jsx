@@ -836,11 +836,6 @@ export default function AdminPage() {
               ))}
             </nav>
 
-            <div className={styles.adminSidebarStatus}>
-              <span>처리 대기 신고</span>
-              <strong>{summary.pendingReports}</strong>
-              <small>신속한 확인이 필요한 항목</small>
-            </div>
           </aside>
 
           <div className={styles.adminWorkspace}>
