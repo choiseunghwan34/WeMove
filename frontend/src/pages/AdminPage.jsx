@@ -812,10 +812,47 @@ export default function AdminPage() {
 
   return (
       <div className={styles.page}>
+        <div className={styles.adminShell}>
+          <aside className={styles.adminSidebar}>
+            <div className={styles.adminBrand}>
+              <span>W</span>
+              <div>
+                <strong>WeMove</strong>
+                <small>Admin Console</small>
+              </div>
+            </div>
+
+            <nav className={styles.adminNav} aria-label="관리자 메뉴">
+              {tabs.map((tab) => (
+                  <button
+                      key={tab.id}
+                      type="button"
+                      className={cx("adminNavButton", activeTab === tab.id && "adminNavButtonActive")}
+                      onClick={() => changeTab(tab.id)}
+                  >
+                    <span className={styles.adminNavDot} />
+                    {tab.label}
+                  </button>
+              ))}
+            </nav>
+
+            <div className={styles.adminSidebarStatus}>
+              <span>처리 대기 신고</span>
+              <strong>{summary.pendingReports}</strong>
+              <small>신속한 확인이 필요한 항목</small>
+            </div>
+          </aside>
+
+          <div className={styles.adminWorkspace}>
         <div className={styles.pageTitle}>
           <div>
+            <span className={styles.adminEyebrow}>ADMIN DASHBOARD</span>
             <h1>관리자 페이지</h1>
             <p>회원, 모임, 신고, 운동 종목 현황을 한 화면에서 관리합니다.</p>
+          </div>
+          <div className={styles.adminTopMeta}>
+            <span>운영 상태</span>
+            <strong>{isLoading ? "동기화 중" : "정상 운영"}</strong>
           </div>
         </div>
 
@@ -1201,6 +1238,9 @@ export default function AdminPage() {
               />
             </section>
         ) : null}
+
+          </div>
+        </div>
 
         {/* 모달 모음 */}
 

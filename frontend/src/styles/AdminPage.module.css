@@ -3097,3 +3097,386 @@
   background: currentColor;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }
+
+/* Admin console redesign: keep current features, present them as an operation tower. */
+.page {
+  width: min(1440px, calc(100% - 48px)) !important;
+  gap: 18px !important;
+  padding: 22px 0 42px !important;
+  background:
+    linear-gradient(rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, #f7fbff 0%, #eef6ff 42%, #f8fafc 100%) !important;
+  background-size: 42px 42px, 42px 42px, auto !important;
+}
+
+.adminShell {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  gap: 22px;
+  min-height: 760px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.adminSidebar {
+  position: sticky;
+  top: 18px;
+  align-self: start;
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid rgba(30, 64, 175, 0.16);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #0f3673 0%, #123d7d 56%, #0f2f64 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+}
+
+.adminBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.adminBrand > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #174ea6;
+  font-size: 1.25rem;
+  font-weight: 950;
+}
+
+.adminBrand strong,
+.adminBrand small {
+  display: block;
+}
+
+.adminBrand strong {
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.adminBrand small {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.adminNav {
+  display: grid;
+  gap: 8px;
+}
+
+.adminNavButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+  font-weight: 850;
+  text-align: left;
+}
+
+.adminNavButtonActive,
+.adminNavButton:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.adminNavDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.72;
+}
+
+.adminSidebarStatus {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.adminSidebarStatus span,
+.adminSidebarStatus small {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.adminSidebarStatus strong {
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.adminWorkspace {
+  display: grid;
+  min-width: 0;
+  gap: 18px;
+}
+
+.pageTitle {
+  align-items: center !important;
+  padding: 18px 20px !important;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.045);
+}
+
+.adminEyebrow {
+  display: inline-flex;
+  margin-bottom: 7px;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+.pageTitle h1 {
+  margin-bottom: 7px !important;
+  color: #12366d !important;
+  font-size: clamp(1.8rem, 3vw, 2.45rem) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.pageTitle p {
+  color: #53657c !important;
+  font-size: 0.96rem;
+  line-height: 1.65 !important;
+}
+
+.adminTopMeta {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  min-width: 132px;
+}
+
+.adminTopMeta span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.adminTopMeta strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.statGrid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.summaryCardMembers,
+.summaryCardMeetings,
+.summaryCardReports,
+.summaryCardSports {
+  min-height: 136px;
+  padding: 18px !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.045) !important;
+}
+
+.summaryEyebrow {
+  color: #64748b !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+}
+
+.summaryCardMembers strong,
+.summaryCardMeetings strong,
+.summaryCardReports strong,
+.summaryCardSports strong {
+  display: block;
+  margin: 10px 0 8px;
+  color: #0f3673 !important;
+  font-size: 2rem !important;
+  line-height: 1;
+}
+
+.summaryCaption {
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+  line-height: 1.5 !important;
+}
+
+.pageTabsShell {
+  width: 100%;
+  margin: 0 !important;
+  padding: 7px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+}
+
+.pageTabs {
+  width: 100%;
+}
+
+.pageTabs .tabButton {
+  min-height: 40px;
+  border-radius: 10px !important;
+}
+
+.filterPanel,
+.tableCard {
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05) !important;
+}
+
+.filterPanel {
+  display: grid;
+  gap: 14px;
+  padding: 16px !important;
+}
+
+.filterHead {
+  padding: 0 !important;
+}
+
+.filterHead h2,
+.tableHead h2 {
+  color: #12366d !important;
+  font-size: 1.14rem !important;
+}
+
+.filterSummaryBar,
+.regionPickerRow,
+.categorySection,
+.filterMeta,
+.tableToolbar {
+  border-radius: 12px !important;
+  background: #f8fbff !important;
+}
+
+.tableCard {
+  overflow: hidden;
+}
+
+.tableHead {
+  padding: 18px 20px !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tableToolbar {
+  margin: 0 20px 14px;
+  padding: 12px !important;
+}
+
+.tableCard table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tableCard th {
+  height: 46px;
+  background: #12366d !important;
+  color: #ffffff !important;
+  font-size: 0.78rem !important;
+}
+
+.tableCard td {
+  height: 58px;
+  border-bottom: 1px solid #edf2f7 !important;
+  color: #24364b !important;
+}
+
+.badge {
+  min-height: 28px;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 1100px) {
+  .adminShell {
+    grid-template-columns: 1fr;
+  }
+
+  .adminSidebar {
+    position: static;
+  }
+
+  .adminNav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .adminSidebarStatus {
+    display: none;
+  }
+
+  .statGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(100%, calc(100% - 18px)) !important;
+    padding-top: 10px !important;
+  }
+
+  .adminShell {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .adminNav {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pageTitle,
+  .filterHead,
+  .tableHead {
+    align-items: stretch !important;
+    flex-direction: column;
+  }
+
+  .adminTopMeta {
+    justify-items: start;
+  }
+
+  .statGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
