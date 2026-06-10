@@ -757,7 +757,7 @@ export default function SignupPage() {
                     name="loginId"
                     value={form.loginId}
                     onChange={handleChange}
-                    placeholder="영문 소문자와 숫자 5~20자"
+                    placeholder="영문자와 숫자 5~20자"
                     autoComplete="username"
                     maxLength={20}
                     readOnly={Boolean(checkedLoginId)}
@@ -766,14 +766,24 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={checkLoginId}
-                    disabled={isSubmitting || isCheckingLoginId || Boolean(checkedLoginId)}
+                    disabled={
+                      isSubmitting ||
+                      isCheckingLoginId ||
+                      Boolean(checkedLoginId)
+                    }
                   >
-                    {checkedLoginId ? "완료" : isCheckingLoginId ? "확인중" : "중복확인"}
+                    {checkedLoginId
+                      ? "완료"
+                      : isCheckingLoginId
+                        ? "확인중"
+                        : "중복확인"}
                   </button>
                 </div>
                 <small
                   className={
-                    loginIdCheckMessage ? styles.fieldSuccess : styles.fieldError
+                    loginIdCheckMessage
+                      ? styles.fieldSuccess
+                      : styles.fieldError
                   }
                 >
                   {fieldErrors.loginId || loginIdCheckMessage || "\u00a0"}
