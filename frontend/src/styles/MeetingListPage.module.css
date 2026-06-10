@@ -4425,4 +4425,28 @@
   }
 }
 
+/* Share button must stay clickable inside the full-card meeting link. */
+.listCard aside .shareButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(37, 99, 235, 0.18) !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+}
+
+.listCard aside .shareButton:hover {
+  background: #eff6ff !important;
+  opacity: 1 !important;
+}
+
 

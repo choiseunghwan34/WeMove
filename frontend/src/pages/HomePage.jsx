@@ -21,6 +21,7 @@ import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
 import useSidebarInterestItems from "../hooks/useSidebarInterestItems";
 import { getMeetingThumbnail } from "../utils/meetingVisuals";
+import { copyMeetingShareUrl } from "../utils/shareLink";
 import styles from "../styles/HomePage.module.css";
 // 기본 썸네일 이미지 import
 import defaultThumbnail from "../assets/image/bg1.jpg";
@@ -235,25 +236,8 @@ export default function HomePage() {
         return;
       }
 
-      const meetingUrl = new URL(
-        `/meetings/${meetingId}`,
-        window.location.origin,
-      ).toString();
-
       try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(meetingUrl);
-        } else {
-          const textarea = document.createElement("textarea");
-          textarea.value = meetingUrl;
-          textarea.setAttribute("readonly", "");
-          textarea.style.position = "fixed";
-          textarea.style.left = "-9999px";
-          document.body.appendChild(textarea);
-          textarea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textarea);
-        }
+        const meetingUrl = await copyMeetingShareUrl(meetingId);
 
         toast.success("링크가 복사되었습니다.", meetingUrl, {
           sourceId: `share-meeting-${meetingId}`,

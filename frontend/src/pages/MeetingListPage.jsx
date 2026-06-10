@@ -10,12 +10,14 @@ import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
 import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { getMeetings, getTopRegions } from "../api/meetingApi";
 import { getMember, getMyActivity } from "../api/memberApi";
 import { getRegions } from "../api/regionApi";
 import { getSports } from "../api/sportApi";
 import { meetingImages } from "../data/dashboardData";
 import useSidebarInterestItems from "../hooks/useSidebarInterestItems";
+import { copyMeetingShareUrl } from "../utils/shareLink";
 import styles from "../styles/MeetingListPage.module.css";
 
 const cx = (...names) =>
@@ -184,6 +186,7 @@ export default function MeetingListPage() {
   const [urlSearchParams, setSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const toast = useToast();
   const sidebarInterestItems = useSidebarInterestItems();
   
   // 1. URL 검색 파라미터 파싱
@@ -223,6 +226,27 @@ export default function MeetingListPage() {
   const [filterOptionsReady, setFilterOptionsReady] = useState(false);
   
   const [scheduleItems, setScheduleItems] = useState([]);
+
+  const handleShareMeeting = useCallback(
+    async (event, meetingId) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      try {
+        const meetingUrl = await copyMeetingShareUrl(meetingId);
+        toast.success("링크가 복사되었습니다.", meetingUrl, {
+          sourceId: `share-meeting-${meetingId}`,
+        });
+      } catch (error) {
+        toast.error(
+          "링크 복사 실패",
+          "브라우저에서 복사를 허용하지 않았습니다. 다시 시도해주세요.",
+          { sourceId: `share-meeting-${meetingId}` },
+        );
+      }
+    },
+    [toast],
+  );
 
   const loadActivity = useCallback(async () => {
     if (authLoading || !isAuthenticated || !user?.memberId) {
@@ -963,6 +987,21 @@ export default function MeetingListPage() {
                       : "-"}
                   </strong>
                 </div>
+
+                <button
+                  type="button"
+                  className={styles.shareButton}
+                  aria-label={`${meeting.title} 링크 공유`}
+                  onClick={(event) =>
+                    handleShareMeeting(event, meeting.meetingId)
+                  }
+                >
+                  <UiIcon
+                    name="share"
+                    className={styles.dashboardActionIcon}
+                  />
+                  공유
+                </button>
 
                 <button
                   type="button"

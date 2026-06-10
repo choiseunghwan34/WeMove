@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AppModal from "../components/AppModal";
+import UiIcon from "../components/UiIcon";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { getMeeting, recordMeetingView } from "../api/meetingApi";
 import {
   applyMeeting,
@@ -13,6 +15,7 @@ import bg1 from "../assets/image/bg1.jpg";
 import { meetingImages } from "../data/dashboardData";
 import defaultUserImage from "../assets/image/Default-user.png";
 import UserProfileDetailModal from "../components/UserProfileDetailModal";
+import { copyMeetingShareUrl } from "../utils/shareLink";
 import styles from "../styles/MeetingDetailPage.module.css";
 import Comment from "../components/Comment.jsx";
 
@@ -69,6 +72,7 @@ export default function MeetingDetailPage() {
   const [comments, setComments] = useState([]);
   const { meetingId } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const alertShown = useRef(false);
   const { user, isAuthenticated } = useAuth();
   const recordedViewKeysRef = useRef(new Set());
@@ -290,6 +294,21 @@ export default function MeetingDetailPage() {
       }
     }
   };
+
+  const handleShareMeeting = useCallback(async () => {
+    try {
+      const meetingUrl = await copyMeetingShareUrl(meetingId);
+      toast.success("링크가 복사되었습니다.", meetingUrl, {
+        sourceId: `share-meeting-${meetingId}`,
+      });
+    } catch (error) {
+      toast.error(
+        "링크 복사 실패",
+        "브라우저에서 복사를 허용하지 않았습니다. 다시 시도해주세요.",
+        { sourceId: `share-meeting-${meetingId}` },
+      );
+    }
+  }, [meetingId, toast]);
 
   return (
     <div className={styles.page}>
@@ -520,6 +539,15 @@ export default function MeetingDetailPage() {
               </div>
             </div>
             <div className={styles.stickyActions}>
+              <button
+                type="button"
+                className={styles.shareButton}
+                onClick={handleShareMeeting}
+              >
+                <UiIcon name="share" className={styles.shareButtonIcon} />
+                공유하기
+              </button>
+
               {meeting.status === "ONGOING" ||
               meeting.status === "COMPLETED" ||
               meeting.status === "CANCELLED" ? (
