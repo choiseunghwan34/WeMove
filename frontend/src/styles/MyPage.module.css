@@ -2857,3 +2857,77 @@
   overflow-y: auto;
   height: 100%;
 }
+
+@media (max-width: 720px) {
+  .profileCard {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    padding: 18px !important;
+  }
+
+  .profileLeft {
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .profileCopy {
+    min-width: 0;
+  }
+
+  .profileCopy h2,
+  .profileCopy p,
+  .profileCopy small {
+    overflow-wrap: anywhere;
+  }
+
+  .profileActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+
+  .profileActions button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .interestPanel,
+  .tabsPanel {
+    padding: 14px !important;
+  }
+
+  .interestPanelHead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .interestActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .interestActions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .profileLeft {
+    flex-direction: column;
+  }
+
+  .profileActions,
+  .interestActions {
+    grid-template-columns: 1fr;
+  }
+
+  .inlineField {
+    grid-template-columns: 1fr;
+  }
+
+  .inlineField button {
+    width: 100%;
+  }
+}

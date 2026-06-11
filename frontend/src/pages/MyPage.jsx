@@ -744,38 +744,16 @@ export default function MyPage() {
         icon: getSportIconName(sport),
       }))}
       aside={
-        <>
-          <section className={styles.dashboardPanel}>
-            <div className={styles.dashboardPanelHead}>
-              <h3>프로필 요약</h3>
-            </div>
-            <div className={styles.dashboardSimpleList}>
-              <div>
-                <span>이메일</span>
-                <strong>{member?.email || "-"}</strong>
-              </div>
-              <div>
-                <span>휴대폰 번호</span>
-                <strong>{member?.phone ? formatPhone(member.phone) : "미등록"}</strong>
-              </div>
-              <div>
-                <span>관심 지역</span>
-                <strong>{regionName}</strong>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.dashboardPanel}>
-            <div className={styles.dashboardPanelHead}>
-              <h3>바로가기</h3>
-            </div>
-            <div className={styles.dashboardQuickLinks}>
-              <Link to="/meetings/new">모임 만들기</Link>
-              <Link to="/activity">내 활동 보기</Link>
-              <Link to="/meetings">모임 찾기</Link>
-            </div>
-          </section>
-        </>
+        <section className={styles.dashboardPanel}>
+          <div className={styles.dashboardPanelHead}>
+            <h3>바로가기</h3>
+          </div>
+          <div className={styles.dashboardQuickLinks}>
+            <Link to="/meetings/new">모임 만들기</Link>
+            <Link to="/activity">내 활동 보기</Link>
+            <Link to="/meetings">모임 찾기</Link>
+          </div>
+        </section>
       }
     >
       {!isAuthenticated && !authLoading ? (

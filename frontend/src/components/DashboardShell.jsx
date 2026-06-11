@@ -17,6 +17,7 @@ export default function DashboardShell({
   onHeaderSearchChange,
   onHeaderSearchSubmit,
   headerSearchPlaceholder = "모임, 지역, 운동 종목을 검색해보세요",
+  showHeaderSearch = true,
   sidebarInterestItems,
   sidebarExtra = null,
   aside = null,
@@ -80,14 +81,18 @@ export default function DashboardShell({
           <WeMoveLogo tone="dark" size="md" />
         </Link>
 
-        <form className={styles.dashboardSearch} onSubmit={handleSearchSubmit}>
-          <UiIcon name="search" className={styles.dashboardSearchIcon} />
-          <input
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder={headerSearchPlaceholder}
-          />
-        </form>
+        {showHeaderSearch ? (
+          <form className={styles.dashboardSearch} onSubmit={handleSearchSubmit}>
+            <UiIcon name="search" className={styles.dashboardSearchIcon} />
+            <input
+              value={searchValue}
+              onChange={handleSearchChange}
+              placeholder={headerSearchPlaceholder}
+            />
+          </form>
+        ) : (
+          <div className={styles.dashboardSearchSpacer} aria-hidden="true" />
+        )}
 
         <div className={styles.dashboardActions}>
           <HeaderClock />

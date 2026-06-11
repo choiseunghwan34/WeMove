@@ -453,10 +453,7 @@ export default function SearchPage() {
     <DashboardShell
       title="통합 검색"
       description="모임, 지역, 운동 종목을 한 번에 찾아보고 바로 이동할 수 있습니다."
-      headerSearchValue={keyword}
-      onHeaderSearchChange={(event) => setKeyword(event.target.value)}
-      onHeaderSearchSubmit={submitSearch}
-      headerSearchPlaceholder="모임명, 지역명, 운동 종목을 검색해보세요"
+      showHeaderSearch={false}
     >
       <section className={styles.heroCard}>
         <div>

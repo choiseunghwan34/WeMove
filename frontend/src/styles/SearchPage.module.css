@@ -381,3 +381,44 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+@media (max-width: 560px) {
+  .heroCard,
+  .insightCard,
+  .sectionCard {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .heroCard h1 {
+    font-size: 1.65rem;
+    overflow-wrap: anywhere;
+  }
+
+  .searchForm input,
+  .searchForm button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .searchStats {
+    grid-template-columns: 1fr;
+  }
+
+  .searchStat,
+  .resultChip,
+  .linkButton {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .resultChip {
+    justify-content: space-between;
+    overflow-wrap: anywhere;
+  }
+
+  .chipList {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

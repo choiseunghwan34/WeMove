@@ -499,10 +499,19 @@ export default function MeetingListPage() {
 
     const fetchMeetings = async () => {
       try {
+        const {
+          regionId: _regionId,
+          sido: _sido,
+          sigungu: _sigungu,
+          dong: _dong,
+          baseRegionId: _baseRegionId,
+          ...mapSearchParams
+        } = searchParams;
+
         const [response, firstMapResponse] = await Promise.all([
           getMeetings(searchParams),
           getMeetings({
-            ...searchParams,
+            ...mapSearchParams,
             status: "RECRUITING",
             page: 1,
             size: MAP_RESULT_LIMIT,
@@ -527,7 +536,7 @@ export default function MeetingListPage() {
         const remainingMapResponses = await Promise.all(
           Array.from({ length: mapPageCount - 1 }, (_, index) =>
             getMeetings({
-              ...searchParams,
+              ...mapSearchParams,
               status: "RECRUITING",
               page: index + 2,
               size: MAP_RESULT_LIMIT,

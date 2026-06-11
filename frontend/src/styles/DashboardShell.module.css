@@ -2874,3 +2874,7 @@
 .dashboardNavItemActive span {
   color: #1747b8 !important;
 }
+
+.dashboardSearchSpacer {
+  min-width: 0;
+}
