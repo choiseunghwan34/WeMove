@@ -158,6 +158,11 @@ const createMarkerImage = async (kakao, meeting) => {
 const createPopup = (meeting, onSelectMeeting, onClose) => {
   const popup = document.createElement("article");
   popup.className = styles.popup;
+  ["click", "mousedown", "pointerdown", "touchstart", "wheel"].forEach(
+    (eventName) => {
+      popup.addEventListener(eventName, (event) => event.stopPropagation());
+    },
+  );
 
   const closeButton = document.createElement("button");
   closeButton.type = "button";
@@ -219,9 +224,11 @@ const createPopup = (meeting, onSelectMeeting, onClose) => {
   button.type = "button";
   button.className = styles.popupDetail;
   button.textContent = "상세 보기";
-  button.addEventListener("click", () =>
-    onSelectMeeting?.(meeting.meetingId),
-  );
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectMeeting?.(meeting.meetingId ?? meeting.id);
+  });
 
   head.append(sport, status);
   summaryBody.append(head, title, schedule, place);
@@ -230,7 +237,11 @@ const createPopup = (meeting, onSelectMeeting, onClose) => {
   return popup;
 };
 
-export default function MeetingMap({ meetings, onSelectMeeting }) {
+export default function MeetingMap({
+  meetings,
+  onSelectMeeting,
+  initialAddress,
+}) {
   const mapElementRef = useRef(null);
   const mapRef = useRef(null);
   const clustererRef = useRef(null);
@@ -378,6 +389,7 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
             xAnchor: 0.5,
             yAnchor: 1.35,
             zIndex: 10,
+            clickable: true,
           });
           mapRef.current.panTo(position);
         };
@@ -395,7 +407,23 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
       clustererRef.current.addMarkers(markers);
       setMappedCount(markers.length);
 
-      if (markers.length === 1) {
+      const initialCoordinate = initialAddress
+        ? await geocodeAddress(geocoder, [initialAddress])
+        : null;
+
+      if (!active || !mapRef.current) {
+        return;
+      }
+
+      if (initialCoordinate) {
+        mapRef.current.setCenter(
+          new kakao.maps.LatLng(
+            initialCoordinate.latitude,
+            initialCoordinate.longitude,
+          ),
+        );
+        mapRef.current.setLevel(6);
+      } else if (markers.length === 1) {
         mapRef.current.setCenter(markers[0].getPosition());
         mapRef.current.setLevel(5);
       } else if (markers.length > 1) {
@@ -413,7 +441,7 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
       kakao.maps.event.removeListener(map, "click", mapClickHandler);
       closeInfoOverlay();
     };
-  }, [mapStatus, meetings, onSelectMeeting]);
+  }, [initialAddress, mapStatus, meetings, onSelectMeeting]);
 
   return (
     <section className={styles.mapCard}>

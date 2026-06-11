@@ -574,6 +574,19 @@ export default function MeetingListPage() {
   }, [selectedRegion, regionLabelParam]);
 
   const displayedSportLabel = selectedSport?.name ?? ALL_SPORT;
+  const mapInitialAddress = useMemo(() => {
+    if (selectedRegion) {
+      return formatRegionLabel(selectedRegion);
+    }
+
+    if (memberRegion) {
+      return [memberRegion.sido, memberRegion.sigungu, memberRegion.dong]
+        .filter(Boolean)
+        .join(" ");
+    }
+
+    return "";
+  }, [memberRegion, selectedRegion]);
 
   const mobileSummary = `${displayedRegionLabel} · ${displayedSportLabel} · ${
     statusParam ? STATUS_MAP[statusParam] || statusParam : ALL_STATUS
@@ -903,52 +916,54 @@ export default function MeetingListPage() {
       <MeetingMap
         meetings={mapMeetingList}
         onSelectMeeting={handleSelectMeeting}
+        initialAddress={mapInitialAddress}
       />
 
-      <div className={styles.listHead}>
-        <div className={styles.listHeadCopy}>
-          <span className={styles.listEyebrow}>LIVE MEETINGS</span>
-          <h2>
-            {displayedRegionLabel === ALL_REGION
-              ? "전체 지역"
-              : displayedRegionLabel}{" "}
-            모임
-          </h2>
-          <p>
-            지금 열려 있는 모임을 한눈에 비교하고 바로 참여 요청까지 이어가세요.
-          </p>
-        </div>
-        <div className={styles.listHeadCount}>
-          <span className={styles.listCountLabel}>RESULT</span>
-          <strong>{totalCount}</strong>
-        </div>
-      </div>
-
-      <section className={styles.meetingList}>
-        {meetingList.length === 0 ? (
-          <div className={styles.emptyList}>
-            <div className={styles.emptyIconWrap}>
-              <UiIcon name="search" className={styles.emptyIcon} />
-            </div>
-            <span className={styles.emptyEyebrow}>NO MATCH FOUND</span>
-            <h3>조건에 맞는 모임이 없습니다</h3>
+      <section className={styles.meetingResultsCard}>
+        <div className={styles.listHead}>
+          <div className={styles.listHeadCopy}>
+            <span className={styles.listEyebrow}>LIVE MEETINGS</span>
+            <h2>
+              {displayedRegionLabel === ALL_REGION
+                ? "전체 지역"
+                : displayedRegionLabel}{" "}
+              모임
+            </h2>
             <p>
-              지역, 종목, 날짜를 조금만 넓혀보면 바로 참여할 수 있는 모임이 더
-              잘 보여요.
+              지금 열려 있는 모임을 한눈에 비교하고 바로 참여 요청까지 이어가세요.
             </p>
-            <div className={styles.emptyActions}>
-              <button type="button" onClick={resetFilters}>
-                <UiIcon name="refresh" className={styles.emptyButtonIcon} />
-                검색 조건 초기화
-              </button>
-              <Link to="/search" className={styles.emptyLink}>
-                <UiIcon name="spark" className={styles.emptyButtonIcon} />
-                통합 검색으로 둘러보기
-              </Link>
-            </div>
           </div>
-        ) : (
-          meetingList.map((meeting) => {
+          <div className={styles.listHeadCount}>
+            <span className={styles.listCountLabel}>RESULT</span>
+            <strong>{totalCount}</strong>
+          </div>
+        </div>
+
+        <div className={styles.meetingList}>
+          {meetingList.length === 0 ? (
+            <div className={styles.emptyList}>
+              <div className={styles.emptyIconWrap}>
+                <UiIcon name="search" className={styles.emptyIcon} />
+              </div>
+              <span className={styles.emptyEyebrow}>NO MATCH FOUND</span>
+              <h3>조건에 맞는 모임이 없습니다</h3>
+              <p>
+                지역, 종목, 날짜를 조금만 넓혀보면 바로 참여할 수 있는 모임이 더
+                잘 보여요.
+              </p>
+              <div className={styles.emptyActions}>
+                <button type="button" onClick={resetFilters}>
+                  <UiIcon name="refresh" className={styles.emptyButtonIcon} />
+                  검색 조건 초기화
+                </button>
+                <Link to="/search" className={styles.emptyLink}>
+                  <UiIcon name="spark" className={styles.emptyButtonIcon} />
+                  통합 검색으로 둘러보기
+                </Link>
+              </div>
+            </div>
+          ) : (
+            meetingList.map((meeting) => {
             const fallbackThumbnail =
               meetingImages[meeting.meetingId] ||
               meetingImages[meeting.id] ||
@@ -1095,22 +1110,23 @@ export default function MeetingListPage() {
               </aside>
               </Link>
             );
-          })
+            })
+          )}
+        </div>
+
+        {totalCount > 0 && (
+          <div className={styles.paginationWrapper}>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={PAGE_SIZE}
+              onPageChange={handlePageChange}
+              variant="centered"
+            />
+          </div>
         )}
       </section>
-
-      {totalCount > 0 && (
-        <div className={styles.paginationWrapper}>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalCount}
-            pageSize={PAGE_SIZE}
-            onPageChange={handlePageChange}
-            variant="centered"
-          />
-        </div>
-      )}
 
       <AppModal
         open={isFilterOpen}
