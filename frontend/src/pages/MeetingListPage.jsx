@@ -503,6 +503,7 @@ export default function MeetingListPage() {
           getMeetings(searchParams),
           getMeetings({
             ...searchParams,
+            status: "RECRUITING",
             page: 1,
             size: MAP_RESULT_LIMIT,
           }),
@@ -527,6 +528,7 @@ export default function MeetingListPage() {
           Array.from({ length: mapPageCount - 1 }, (_, index) =>
             getMeetings({
               ...searchParams,
+              status: "RECRUITING",
               page: index + 2,
               size: MAP_RESULT_LIMIT,
             }),

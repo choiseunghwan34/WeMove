@@ -6,24 +6,8 @@ import UiIcon from "./UiIcon";
 
 const SEOUL_CENTER = { latitude: 37.5665, longitude: 126.978 };
 const coordinateCache = new Map();
+const markerImageCache = new Map();
 const GEOCODING_CONCURRENCY = 6;
-
-const SPORT_MARKERS = [
-  { terms: ["축구", "풋살"], icon: "⚽", color: "#2563eb" },
-  { terms: ["농구"], icon: "🏀", color: "#f97316" },
-  { terms: ["야구"], icon: "⚾", color: "#dc2626" },
-  { terms: ["테니스", "배드민턴", "탁구"], icon: "🏸", color: "#7c3aed" },
-  { terms: ["러닝", "달리기", "걷기"], icon: "🏃", color: "#16a34a" },
-  { terms: ["헬스", "웨이트", "근력"], icon: "🏋", color: "#0f766e" },
-  { terms: ["수영", "서핑"], icon: "🏊", color: "#0284c7" },
-  { terms: ["등산", "클라이밍"], icon: "⛰", color: "#b45309" },
-  { terms: ["볼링"], icon: "🎳", color: "#db2777" },
-];
-
-const getMarkerTheme = (sportName = "") =>
-  SPORT_MARKERS.find(({ terms }) =>
-    terms.some((term) => String(sportName).includes(term)),
-  ) ?? { icon: "●", color: "#2563eb" };
 
 const getAddressCandidates = (meeting) =>
   [
@@ -78,23 +62,96 @@ const getCoordinate = async (meeting, geocoder) => {
   return geocodeAddress(geocoder, getAddressCandidates(meeting));
 };
 
-const createMarkerImage = (kakao, meeting) => {
-  const { icon, color } = getMarkerTheme(meeting.sportName);
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="58" viewBox="0 0 48 58">
-      <filter id="shadow" x="-30%" y="-20%" width="160%" height="170%">
-        <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity=".22"/>
-      </filter>
-      <path filter="url(#shadow)" fill="${color}" d="M24 2C11.85 2 2 11.85 2 24c0 16.5 22 32 22 32s22-15.5 22-32C46 11.85 36.15 2 24 2Z"/>
-      <circle cx="24" cy="23" r="15" fill="white"/>
-      <text x="24" y="29" text-anchor="middle" font-size="18" font-family="Arial, sans-serif">${icon}</text>
-    </svg>
-  `;
+const loadMarkerThumbnail = (source) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = source;
+  });
 
+const drawCoverImage = (context, image, size) => {
+  const scale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+
+  context.drawImage(
+    image,
+    (size - width) / 2,
+    (size - height) / 2,
+    width,
+    height,
+  );
+};
+
+const createMarkerImage = async (kakao, meeting) => {
+  const thumbnailSource = meeting.thumbnailImage || defaultThumbnail;
+
+  if (!markerImageCache.has(thumbnailSource)) {
+    markerImageCache.set(
+      thumbnailSource,
+      (async () => {
+        let image;
+
+        try {
+          image = await loadMarkerThumbnail(thumbnailSource);
+        } catch {
+          image = await loadMarkerThumbnail(defaultThumbnail);
+        }
+
+        const pixelRatio = 2;
+        const markerWidth = 58;
+        const markerHeight = 68;
+        const center = 29;
+        const imageSize = 44;
+        const canvas = document.createElement("canvas");
+        canvas.width = markerWidth * pixelRatio;
+        canvas.height = markerHeight * pixelRatio;
+
+        const context = canvas.getContext("2d");
+        context.scale(pixelRatio, pixelRatio);
+
+        context.save();
+        context.shadowColor = "rgba(15, 23, 42, 0.28)";
+        context.shadowBlur = 8;
+        context.shadowOffsetY = 4;
+        context.fillStyle = "#2563eb";
+        context.beginPath();
+        context.moveTo(center - 8, 51);
+        context.lineTo(center, 65);
+        context.lineTo(center + 8, 51);
+        context.closePath();
+        context.fill();
+        context.beginPath();
+        context.arc(center, center, 27, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+
+        context.save();
+        context.beginPath();
+        context.arc(center, center, imageSize / 2, 0, Math.PI * 2);
+        context.clip();
+        context.translate(center - imageSize / 2, center - imageSize / 2);
+        drawCoverImage(context, image, imageSize);
+        context.restore();
+
+        context.beginPath();
+        context.arc(center, center, imageSize / 2, 0, Math.PI * 2);
+        context.strokeStyle = "#fff";
+        context.lineWidth = 3;
+        context.stroke();
+
+        return canvas.toDataURL("image/png");
+      })(),
+    );
+  }
+
+  const markerSource = await markerImageCache.get(thumbnailSource);
   return new kakao.maps.MarkerImage(
-    `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    new kakao.maps.Size(48, 58),
-    { offset: new kakao.maps.Point(24, 56) },
+    markerSource,
+    new kakao.maps.Size(58, 68),
+    { offset: new kakao.maps.Point(29, 65) },
   );
 };
 
@@ -298,14 +355,14 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
       }
 
       const bounds = new kakao.maps.LatLngBounds();
-      const markers = positionedMeetings.map(({ meeting, coordinate }) => {
+      const markers = await Promise.all(positionedMeetings.map(async ({ meeting, coordinate }) => {
         const position = new kakao.maps.LatLng(
           coordinate.latitude,
           coordinate.longitude,
         );
         const marker = new kakao.maps.Marker({
           position,
-          image: createMarkerImage(kakao, meeting),
+          image: await createMarkerImage(kakao, meeting),
           title: meeting.title,
         });
         const clickHandler = () => {
@@ -329,7 +386,11 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
         eventListeners.push({ marker, clickHandler });
         bounds.extend(position);
         return marker;
-      });
+      }));
+
+      if (!active || !mapRef.current || !clustererRef.current) {
+        return;
+      }
 
       clustererRef.current.addMarkers(markers);
       setMappedCount(markers.length);
