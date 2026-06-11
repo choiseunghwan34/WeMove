@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login, signup } from "../api/authApi";
 import api from "../api/axiosInstance";
@@ -163,6 +163,7 @@ export default function SignupPage() {
   const [emailVerificationStatus, setEmailVerificationStatus] =
     useState("idle");
   const [verifiedEmail, setVerifiedEmail] = useState("");
+  const pendingVerificationEmailRef = useRef("");
 
   const backgroundImage = useMemo(
     () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
@@ -232,9 +233,12 @@ export default function SignupPage() {
           const payload = JSON.parse(event.data);
           const nextEmail = normalizeText(payload.email);
 
-          if (payload.verified && nextEmail) {
+          if (
+            payload.verified &&
+            nextEmail &&
+            nextEmail === pendingVerificationEmailRef.current
+          ) {
             setVerifiedEmail(nextEmail);
-            setForm((current) => ({ ...current, email: nextEmail }));
             setEmailVerificationStatus("verified");
             setFieldErrors((current) => ({
               ...current,
@@ -388,6 +392,7 @@ export default function SignupPage() {
     }
 
     if (name === "email") {
+      pendingVerificationEmailRef.current = "";
       setVerifiedEmail("");
       setEmailVerificationStatus("idle");
     }
@@ -545,6 +550,7 @@ export default function SignupPage() {
       return;
     }
 
+    pendingVerificationEmailRef.current = email;
     setIsCheckingEmail(true);
     setEmailVerificationStatus("pending");
 
@@ -558,6 +564,7 @@ export default function SignupPage() {
       }));
     } catch (error) {
       const status = error?.response?.status;
+      pendingVerificationEmailRef.current = "";
       setEmailVerificationStatus("idle");
       setFieldErrors((current) => ({
         ...current,

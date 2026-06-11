@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
@@ -53,6 +53,7 @@ export default function MyPage() {
   const [emailVerificationStatus, setEmailVerificationStatus] =
     useState("idle");
   const [verifiedEmail, setVerifiedEmail] = useState("");
+  const pendingVerificationEmailRef = useRef("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
@@ -171,9 +172,12 @@ export default function MyPage() {
           const payload = JSON.parse(event.data);
           const nextEmail = normalizeEmail(payload.email);
 
-          if (payload.verified && nextEmail) {
+          if (
+            payload.verified &&
+            nextEmail &&
+            nextEmail === pendingVerificationEmailRef.current
+          ) {
             setVerifiedEmail(nextEmail);
-            setForm((current) => ({ ...current, email: nextEmail }));
             setEmailVerificationStatus("verified");
             setFieldErrors((current) => ({
               ...current,
@@ -441,6 +445,7 @@ export default function MyPage() {
       nextValue = formatPhone(value);
     } else if (name === "email") {
       nextValue = normalizeEmail(value);
+      pendingVerificationEmailRef.current = "";
       setEmailVerificationStatus(
         nextValue && nextValue === normalizeEmail(member?.email)
           ? "verified"
@@ -530,6 +535,7 @@ export default function MyPage() {
       return;
     }
 
+    pendingVerificationEmailRef.current = email;
     setIsSendingEmail(true);
     setEmailVerificationStatus("pending");
 
@@ -541,6 +547,7 @@ export default function MyPage() {
         email: "인증 메일을 보냈습니다. 메일의 인증하기 버튼을 눌러주세요.",
       }));
     } catch (error) {
+      pendingVerificationEmailRef.current = "";
       setEmailVerificationStatus("idle");
       setFieldErrors((current) => ({
         ...current,

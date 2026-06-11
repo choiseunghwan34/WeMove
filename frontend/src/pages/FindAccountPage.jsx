@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   findLoginId,
@@ -41,6 +41,7 @@ export default function FindAccountPage() {
     useState("idle");
   const [verifiedEmail, setVerifiedEmail] = useState("");
   const [verifiedPurpose, setVerifiedPurpose] = useState("");
+  const pendingVerificationEmailRef = useRef("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const backgroundImage = useMemo(
@@ -76,10 +77,13 @@ export default function FindAccountPage() {
           const payload = JSON.parse(event.data);
           const nextEmail = normalizeEmail(payload.email);
 
-          if (payload.verified && nextEmail) {
+          if (
+            payload.verified &&
+            nextEmail &&
+            nextEmail === pendingVerificationEmailRef.current
+          ) {
             setVerifiedEmail(nextEmail);
             setVerifiedPurpose(EMAIL_PURPOSE_BY_MODE[mode]);
-            setForm((current) => ({ ...current, email: nextEmail }));
             setEmailVerificationStatus("verified");
             setFieldErrors((current) => ({ ...current, email: "" }));
           }
@@ -111,6 +115,7 @@ export default function FindAccountPage() {
     const nextValue = name === "email" ? normalizeEmail(value) : value;
 
     if (name === "email") {
+      pendingVerificationEmailRef.current = "";
       setVerifiedEmail("");
       setVerifiedPurpose("");
       setEmailVerificationStatus("idle");
@@ -135,6 +140,7 @@ export default function FindAccountPage() {
       return;
     }
 
+    pendingVerificationEmailRef.current = email;
     setIsSendingEmail(true);
     setEmailVerificationStatus("pending");
 
@@ -145,6 +151,7 @@ export default function FindAccountPage() {
         email: "인증 메일을 보냈습니다. 메일의 인증하기 버튼을 눌러주세요.",
       }));
     } catch (error) {
+      pendingVerificationEmailRef.current = "";
       setEmailVerificationStatus("idle");
       setFieldErrors((current) => ({
         ...current,
@@ -174,6 +181,7 @@ export default function FindAccountPage() {
   };
 
   const switchMode = (nextMode) => {
+    pendingVerificationEmailRef.current = "";
     setMode(nextMode);
     setResultMessage("");
     setFieldErrors({});

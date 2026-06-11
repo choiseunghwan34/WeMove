@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import defaultUserImage from "../assets/image/Default-user.png";
 import { useAuth } from "../contexts/AuthContext";
 import NotificationButton from "./NotificationButton";
+import HeaderClock from "./HeaderClock";
 import WeMoveLogo from "./WeMoveLogo";
 
 export default function Header() {
@@ -72,6 +73,7 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
+          <HeaderClock />
           {loading ? null : user ? (
             <>
               <NotificationButton />

@@ -5,6 +5,7 @@ import { interestItems, navItems } from "../data/dashboardData";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/DashboardShell.module.css";
 import NotificationButton from "./NotificationButton";
+import HeaderClock from "./HeaderClock";
 import UiIcon from "./UiIcon";
 import WeMoveLogo from "./WeMoveLogo";
 
@@ -89,6 +90,7 @@ export default function DashboardShell({
         </form>
 
         <div className={styles.dashboardActions}>
+          <HeaderClock />
           {loading ? null : user ? (
             <>
               <NotificationButton />
