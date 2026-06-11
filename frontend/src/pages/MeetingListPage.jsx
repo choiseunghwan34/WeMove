@@ -499,7 +499,7 @@ export default function MeetingListPage() {
 
     const fetchMeetings = async () => {
       try {
-        const [response, mapResponse] = await Promise.all([
+        const [response, firstMapResponse] = await Promise.all([
           getMeetings(searchParams),
           getMeetings({
             ...searchParams,
@@ -512,7 +512,31 @@ export default function MeetingListPage() {
           setMeetingList(response.data.list || []);
           setTotalCount(response.data.totalCount || 0);
         }
-        setMapMeetingList(mapResponse.data?.list || []);
+
+        const firstMapPage = firstMapResponse.data?.list || [];
+        const mapTotalCount =
+          firstMapResponse.data?.totalCount ?? firstMapPage.length;
+        const mapPageCount = Math.ceil(mapTotalCount / MAP_RESULT_LIMIT);
+
+        if (mapPageCount <= 1) {
+          setMapMeetingList(firstMapPage);
+          return;
+        }
+
+        const remainingMapResponses = await Promise.all(
+          Array.from({ length: mapPageCount - 1 }, (_, index) =>
+            getMeetings({
+              ...searchParams,
+              page: index + 2,
+              size: MAP_RESULT_LIMIT,
+            }),
+          ),
+        );
+        const remainingMeetings = remainingMapResponses.flatMap(
+          (mapResponse) => mapResponse.data?.list || [],
+        );
+
+        setMapMeetingList([...firstMapPage, ...remainingMeetings]);
       } catch (error) {
         console.error(error);
         setMeetingList([]);

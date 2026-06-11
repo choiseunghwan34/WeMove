@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { KAKAO_MAP_APP_KEY, loadKakaoMap } from "../utils/kakaoMap";
+import defaultThumbnail from "../assets/image/bg1.jpg";
 import styles from "../styles/MeetingMap.module.css";
 import UiIcon from "./UiIcon";
 
@@ -97,9 +98,37 @@ const createMarkerImage = (kakao, meeting) => {
   );
 };
 
-const createPopup = (meeting, onSelectMeeting) => {
+const createPopup = (meeting, onSelectMeeting, onClose) => {
   const popup = document.createElement("article");
   popup.className = styles.popup;
+
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.className = styles.popupClose;
+  closeButton.setAttribute("aria-label", "모임 정보창 닫기");
+  closeButton.textContent = "×";
+  closeButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    onClose?.();
+  });
+
+  const summary = document.createElement("div");
+  summary.className = styles.popupSummary;
+
+  const thumbnail = document.createElement("img");
+  thumbnail.className = styles.popupThumbnail;
+  thumbnail.src = meeting.thumbnailImage || defaultThumbnail;
+  thumbnail.alt = "";
+  thumbnail.addEventListener(
+    "error",
+    () => {
+      thumbnail.src = defaultThumbnail;
+    },
+    { once: true },
+  );
+
+  const summaryBody = document.createElement("div");
+  summaryBody.className = styles.popupSummaryBody;
 
   const head = document.createElement("div");
   head.className = styles.popupHead;
@@ -114,6 +143,7 @@ const createPopup = (meeting, onSelectMeeting) => {
     meeting.status === "RECRUITING" ? "모집중" : "일정 확인";
 
   const title = document.createElement("strong");
+  title.className = styles.popupTitle;
   title.textContent = meeting.title || "모임 상세";
 
   const schedule = document.createElement("p");
@@ -130,13 +160,16 @@ const createPopup = (meeting, onSelectMeeting) => {
 
   const button = document.createElement("button");
   button.type = "button";
+  button.className = styles.popupDetail;
   button.textContent = "상세 보기";
   button.addEventListener("click", () =>
     onSelectMeeting?.(meeting.meetingId),
   );
 
   head.append(sport, status);
-  popup.append(head, title, schedule, place, button);
+  summaryBody.append(head, title, schedule, place);
+  summary.append(thumbnail, summaryBody);
+  popup.append(closeButton, summary, button);
   return popup;
 };
 
@@ -216,7 +249,15 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
     let active = true;
     const eventListeners = [];
     const kakao = window.kakao;
+    const map = mapRef.current;
     const geocoder = new kakao.maps.services.Geocoder();
+    const closeInfoOverlay = () => {
+      infoOverlayRef.current?.setMap(null);
+      infoOverlayRef.current = null;
+    };
+    const mapClickHandler = () => closeInfoOverlay();
+
+    kakao.maps.event.addListener(map, "click", mapClickHandler);
 
     const renderMarkers = async () => {
       clustererRef.current.clear();
@@ -268,11 +309,15 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
           title: meeting.title,
         });
         const clickHandler = () => {
-          infoOverlayRef.current?.setMap(null);
+          closeInfoOverlay();
           infoOverlayRef.current = new kakao.maps.CustomOverlay({
             map: mapRef.current,
             position,
-            content: createPopup(meeting, onSelectMeeting),
+            content: createPopup(
+              meeting,
+              onSelectMeeting,
+              closeInfoOverlay,
+            ),
             xAnchor: 0.5,
             yAnchor: 1.35,
             zIndex: 10,
@@ -304,6 +349,8 @@ export default function MeetingMap({ meetings, onSelectMeeting }) {
       eventListeners.forEach(({ marker, clickHandler }) => {
         kakao.maps.event.removeListener(marker, "click", clickHandler);
       });
+      kakao.maps.event.removeListener(map, "click", mapClickHandler);
+      closeInfoOverlay();
     };
   }, [mapStatus, meetings, onSelectMeeting]);
 
