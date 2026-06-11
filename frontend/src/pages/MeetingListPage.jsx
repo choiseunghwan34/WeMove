@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import defaultUserImage from "../assets/image/Default-user.png";
 import defaultThumbnail from "../assets/image/bg1.jpg";
 import AppModal from "../components/AppModal";
 import DashboardShell from "../components/DashboardShell";
 import MeetingRegionPickerModal from "../components/MeetingRegionPickerModal";
+import MeetingMap from "../components/MeetingMap";
 import Pagination from "../components/Pagination";
 import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker";
 import SportPickerModal from "../components/SportPickerModal2";
@@ -30,6 +31,7 @@ const ALL_REGION = "전체 지역";
 const ALL_SPORT = "전체 종목";
 const ALL_STATUS = "전체 상태";
 const PAGE_SIZE = 10;
+const MAP_RESULT_LIMIT = 100;
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 const STATUS_MAP = {
@@ -183,6 +185,7 @@ const resolveRegionSelectionFromLabel = (regions, label) => {
 };
 
 export default function MeetingListPage() {
+  const navigate = useNavigate();
   const [urlSearchParams, setSearchParams] = useSearchParams();
   const listStartRef = useRef(null);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -219,6 +222,7 @@ export default function MeetingListPage() {
   const [memberRegionReady, setMemberRegionReady] = useState(false);
 
   const [meetingList, setMeetingList] = useState([]);
+  const [mapMeetingList, setMapMeetingList] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [topRegions, setTopRegions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
@@ -226,6 +230,10 @@ export default function MeetingListPage() {
   const [filterOptionsReady, setFilterOptionsReady] = useState(false);
   
   const [scheduleItems, setScheduleItems] = useState([]);
+  const handleSelectMeeting = useCallback(
+    (meetingId) => navigate(`/meetings/${meetingId}`),
+    [navigate],
+  );
 
   const handleShareMeeting = useCallback(
     async (event, meetingId) => {
@@ -491,15 +499,24 @@ export default function MeetingListPage() {
 
     const fetchMeetings = async () => {
       try {
-        const response = await getMeetings(searchParams);
+        const [response, mapResponse] = await Promise.all([
+          getMeetings(searchParams),
+          getMeetings({
+            ...searchParams,
+            page: 1,
+            size: MAP_RESULT_LIMIT,
+          }),
+        ]);
 
         if (response.data) {
           setMeetingList(response.data.list || []);
           setTotalCount(response.data.totalCount || 0);
         }
+        setMapMeetingList(mapResponse.data?.list || []);
       } catch (error) {
         console.error(error);
         setMeetingList([]);
+        setMapMeetingList([]);
         setTotalCount(0);
       }
     };
@@ -856,6 +873,11 @@ export default function MeetingListPage() {
           </button>
         </div>
       </section>
+
+      <MeetingMap
+        meetings={mapMeetingList}
+        onSelectMeeting={handleSelectMeeting}
+      />
 
       <div className={styles.listHead}>
         <div className={styles.listHeadCopy}>
