@@ -2441,3 +2441,41 @@
   font-size: 0.8rem;
   color: red;
 }
+.scheduleNotice {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid #fcd34d;
+  border-radius: 16px;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.scheduleNotice strong {
+  color: #78350f;
+  font-size: 14px;
+}
+
+.scheduleNotice p,
+.scheduleNotice small {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.scheduleNotice p {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scheduleNotice small {
+  color: #a16207;
+  font-size: 12px;
+}
+
+.nextDayHint {
+  display: block;
+  margin-top: 7px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+}

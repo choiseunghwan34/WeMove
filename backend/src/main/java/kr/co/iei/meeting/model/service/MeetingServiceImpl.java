@@ -77,11 +77,22 @@ public class MeetingServiceImpl implements MeetingService {
   }
 
   @Override
+  @Transactional
   public Long createMeeting(MeetingCreateRequest request, MultipartFile image, Long userId) {
+    if (request.getMeetingDate() == null
+        || request.getStartTime() == null
+        || request.getEndTime() == null
+        || request.getEndTime().isBlank()) {
+      throw new IllegalArgumentException("모임 날짜와 시작·종료 시간을 모두 입력해주세요.");
+    }
+
     LocalDate meetingDate = LocalDate.parse(request.getMeetingDate());
     LocalTime startTime = LocalTime.parse(request.getStartTime());
+    LocalTime endTime = LocalTime.parse(request.getEndTime());
 
-    validateMeetingTime(meetingDate, startTime);
+    validateMeetingTime(meetingDate, startTime, endTime);
+    meetingDao.lockUserSchedule(userId);
+    validateUserSchedule(userId, meetingDate, startTime, endTime, null);
 
     Meeting meeting = new Meeting();
     meeting.setHostUserId(userId);
@@ -95,6 +106,7 @@ public class MeetingServiceImpl implements MeetingService {
 
     meeting.setMeetingDate(meetingDate);
     meeting.setStartTime(startTime);
+    meeting.setEndTime(endTime);
     meeting.setMaxMembers(request.getMaxMembers());
     meeting.setMeetingType(request.getMeetingType());
     meeting.setRepeatType(request.getRepeatType());
@@ -123,8 +135,16 @@ public class MeetingServiceImpl implements MeetingService {
 
     LocalDate meetingDate = request.getMeetingDate();
     LocalTime startTime = request.getStartTime();
+    LocalTime endTime = request.getEndTime();
 
-    validateMeetingTime(meetingDate, startTime);
+    validateMeetingTime(meetingDate, startTime, endTime);
+    meetingDao.lockUserSchedule(currentMeeting.getHostUserId());
+    validateUserSchedule(
+        currentMeeting.getHostUserId(),
+        meetingDate,
+        startTime,
+        endTime,
+        meetingId);
 
     Integer approveCount = participantDao.countApprovedByMeetingId(meetingId);
 
@@ -269,12 +289,57 @@ public class MeetingServiceImpl implements MeetingService {
     return meetingDao.selectMainMeetingList(params);
   }
 
-  private void validateMeetingTime(LocalDate date, LocalTime time) {
-    if (date == null || time == null) return;
-    LocalDateTime meetingDateTime = LocalDateTime.of(date, time);
+  private void validateMeetingTime(LocalDate date, LocalTime startTime, LocalTime endTime) {
+    if (date == null || startTime == null || endTime == null) {
+      throw new IllegalArgumentException("모임 날짜와 시작·종료 시간을 모두 입력해주세요.");
+    }
+    if (endTime.equals(startTime)) {
+      throw new IllegalArgumentException("시작 시간과 종료 시간은 같을 수 없습니다.");
+    }
+    LocalDateTime meetingDateTime = LocalDateTime.of(date, startTime);
     if (meetingDateTime.isBefore(LocalDateTime.now())) {
       throw new IllegalArgumentException("과거 시간으로는 모임을 생성하거나 수정할 수 없습니다.");
     }
+  }
+
+  private void validateUserSchedule(
+      Long userId,
+      LocalDate meetingDate,
+      LocalTime startTime,
+      LocalTime endTime,
+      Long excludedMeetingId) {
+    LocalDateTime startDateTime = LocalDateTime.of(meetingDate, startTime);
+    LocalDateTime endDateTime = resolveEndDateTime(meetingDate, startTime, endTime);
+    List<MeetingDetailResponse> conflicts =
+        meetingDao.selectUserScheduleConflicts(
+            userId, startDateTime, endDateTime, excludedMeetingId);
+    if (conflicts.isEmpty()) {
+      return;
+    }
+
+    MeetingDetailResponse conflict = conflicts.get(0);
+    String conflictTime =
+        conflict.getStartTime() + " ~ "
+            + (isNextDay(conflict.getStartTime(), conflict.getEndTime()) ? "다음 날 " : "")
+            + (conflict.getEndTime() == null
+                ? conflict.getStartTime().plusHours(2)
+                : conflict.getEndTime());
+    throw new IllegalArgumentException(
+        "해당 시간대에 이미 '"
+            + conflict.getTitle()
+            + "' 모임이 있습니다. ("
+            + conflictTime
+            + ")");
+  }
+
+  private LocalDateTime resolveEndDateTime(
+      LocalDate meetingDate, LocalTime startTime, LocalTime endTime) {
+    LocalDate endDate = endTime.isAfter(startTime) ? meetingDate : meetingDate.plusDays(1);
+    return LocalDateTime.of(endDate, endTime);
+  }
+
+  private boolean isNextDay(LocalTime startTime, LocalTime endTime) {
+    return endTime != null && !endTime.isAfter(startTime);
   }
 
   private List<MeetingListResponse> getRankedRecruitingMeetings(
@@ -398,6 +463,7 @@ public class MeetingServiceImpl implements MeetingService {
   private boolean isScheduleOrPlaceChanged(MeetingDetailResponse current, MeetingUpdateRequest request) {
     return !Objects.equals(current.getMeetingDate(), request.getMeetingDate())
         || !Objects.equals(current.getStartTime(), request.getStartTime())
+        || !Objects.equals(current.getEndTime(), request.getEndTime())
         || !Objects.equals(normalizeText(current.getPlaceName()), normalizeText(request.getPlaceName()))
         || !Objects.equals(normalizeText(current.getAddress()), normalizeText(request.getAddress()));
   }

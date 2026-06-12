@@ -19,6 +19,7 @@ public class MeetingUpdateRequest {
   private String address;
   private LocalDate meetingDate;
   private LocalTime startTime;
+  private LocalTime endTime;
   private Integer maxMembers;
   private String status;
   private String guideText;

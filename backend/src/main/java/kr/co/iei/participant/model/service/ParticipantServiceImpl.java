@@ -1,6 +1,7 @@
 package kr.co.iei.participant.model.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import kr.co.iei.chat.model.service.ChatService;
 import kr.co.iei.meeting.model.dao.MeetingDao;
@@ -33,6 +34,45 @@ public class ParticipantServiceImpl implements ParticipantService {
     Long hostUserId = meetingDao.selectHostUserId(meetingId);
     if (hostUserId != null && hostUserId.equals(req.getUserId())) {
       throw new IllegalArgumentException("주최자는 자신의 모임에 참여 신청할 수 없습니다.");
+    }
+
+    meetingDao.lockUserSchedule(req.getUserId());
+    LocalTime targetEndTime =
+        meeting.getEndTime() == null
+            ? meeting.getStartTime().plusHours(2)
+            : meeting.getEndTime();
+    LocalDateTime targetStartDateTime =
+        LocalDateTime.of(meeting.getMeetingDate(), meeting.getStartTime());
+    LocalDateTime targetEndDateTime =
+        LocalDateTime.of(
+            targetEndTime.isAfter(meeting.getStartTime())
+                ? meeting.getMeetingDate()
+                : meeting.getMeetingDate().plusDays(1),
+            targetEndTime);
+    List<MeetingDetailResponse> conflicts =
+        meetingDao.selectUserScheduleConflicts(
+            req.getUserId(),
+            targetStartDateTime,
+            targetEndDateTime,
+            meetingId);
+    if (!conflicts.isEmpty()) {
+      MeetingDetailResponse conflict = conflicts.get(0);
+      LocalTime conflictEnd =
+          conflict.getEndTime() == null
+              ? conflict.getStartTime().plusHours(2)
+              : conflict.getEndTime();
+      throw new IllegalArgumentException(
+          "해당 시간대에 이미 '"
+              + conflict.getTitle()
+              + "' 모임이 있습니다. ("
+              + conflict.getStartTime()
+              + " ~ "
+              + (conflict.getEndTime() != null
+                      && !conflict.getEndTime().isAfter(conflict.getStartTime())
+                  ? "다음 날 "
+                  : "")
+              + conflictEnd
+              + ")");
     }
 
     MeetingParticipant existing = participantDao.selectParticipantByMeetingIdAndUserId(meetingId, req.getUserId());

@@ -1,5 +1,6 @@
 package kr.co.iei.meeting.model.dao;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import kr.co.iei.meeting.model.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,23 @@ public class MeetingDao {
 
   public int updateMeeting(MeetingUpdateRequest request) {
     return sqlSession.update("meeting.updateMeeting", request);
+  }
+
+  public Long lockUserSchedule(Long userId) {
+    return sqlSession.selectOne("meeting.lockUserSchedule", userId);
+  }
+
+  public List<MeetingDetailResponse> selectUserScheduleConflicts(
+      Long userId,
+      LocalDateTime startDateTime,
+      LocalDateTime endDateTime,
+      Long excludedMeetingId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("startDateTime", startDateTime);
+    params.put("endDateTime", endDateTime);
+    params.put("excludedMeetingId", excludedMeetingId);
+    return sqlSession.selectList("meeting.selectUserScheduleConflicts", params);
   }
 
   public int softDeleteMeeting(Long id) {

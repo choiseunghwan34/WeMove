@@ -145,7 +145,7 @@ const getRegionMatchScore = (candidate, keyword) => {
   return 5;
 };
 
-const formatMeetingSchedule = (meetingDate, startTime) => {
+const formatMeetingSchedule = (meetingDate, startTime, endTime) => {
   if (!meetingDate) {
     return "일정 정보 없음";
   }
@@ -155,8 +155,15 @@ const formatMeetingSchedule = (meetingDate, startTime) => {
     ? ""
     : weekdayLabels[date.getDay()];
   const timeText = String(startTime ?? "").slice(0, 5) || "--:--";
+  const endTimeText = String(endTime ?? "").slice(0, 5);
+  const nextDayText =
+    endTimeText && timeText !== "--:--" && endTimeText < timeText
+      ? "다음 날 "
+      : "";
 
-  return `${meetingDate}${weekday ? ` (${weekday})` : ""} ${timeText}`;
+  return `${meetingDate}${weekday ? ` (${weekday})` : ""} ${timeText}${
+    endTimeText ? ` ~ ${nextDayText}${endTimeText}` : ""
+  }`;
 };
 
 function SearchEmptyState({
@@ -633,6 +640,7 @@ export default function SearchPage() {
                       {formatMeetingSchedule(
                         meeting.meetingDate,
                         meeting.startTime,
+                        meeting.endTime,
                       )}
                     </small>
                   </Link>

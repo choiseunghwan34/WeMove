@@ -207,17 +207,25 @@ const createPopup = (meeting, onSelectMeeting, onClose) => {
   const title = document.createElement("strong");
   title.className = styles.popupTitle;
   title.textContent = meeting.title || "모임 상세";
+  title.title = meeting.title || "모임 상세";
 
   const schedule = document.createElement("p");
+  const startTime = String(meeting.startTime || "").slice(0, 5);
+  const endTime = String(meeting.endTime || "").slice(0, 5);
+  const nextDayText = endTime && endTime < startTime ? "다음 날 " : "";
   schedule.textContent = [
     meeting.meetingDate,
-    String(meeting.startTime || "").slice(0, 5),
+    startTime && endTime
+      ? `${startTime} ~ ${nextDayText}${endTime}`
+      : startTime || endTime,
   ]
     .filter(Boolean)
     .join(" ");
 
   const place = document.createElement("small");
   place.textContent =
+    meeting.placeName || meeting.address || meeting.regionName || "";
+  place.title =
     meeting.placeName || meeting.address || meeting.regionName || "";
 
   const button = document.createElement("button");

@@ -53,7 +53,7 @@ export default function MeetingEditPage() {
       alert("로그인이 만료되었습니다.");
       navigate("/login");
     }else{
-    alert("모임 수정 중 오류가 발생했습니다.")}
+    alert(err.response?.data?.message || "모임 수정 중 오류가 발생했습니다.")}
     });
   }
   //데이터를 가져오는 중일 때

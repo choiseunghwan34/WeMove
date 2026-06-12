@@ -1092,6 +1092,14 @@ export default function MeetingListPage() {
                     {meeting.startTime
                       ? String(meeting.startTime).slice(0, 5)
                       : "-"}
+                    {meeting.endTime
+                      ? ` ~ ${
+                          String(meeting.endTime).slice(0, 5) <
+                          String(meeting.startTime || "").slice(0, 5)
+                            ? "다음 날 "
+                            : ""
+                        }${String(meeting.endTime).slice(0, 5)}`
+                      : ""}
                   </strong>
                 </div>
 

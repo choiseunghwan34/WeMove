@@ -11,6 +11,7 @@ import {
   getParticipants,
 } from "../api/participantApi";
 import { getRegions } from "../api/regionApi";
+import { getMyActivity } from "../api/memberApi";
 import bg1 from "../assets/image/bg1.jpg";
 import { meetingImages } from "../data/dashboardData";
 import defaultUserImage from "../assets/image/Default-user.png";
@@ -59,6 +60,31 @@ const formatJoinDate = (dateStr) => {
 };
 
 const pad2 = (value) => String(value).padStart(2, "0");
+
+const intersectsCalendarDate = (item, targetDate) => {
+  if (!item?.meetingDate || !item?.startTime || !targetDate) return false;
+
+  const dayStart = new Date(`${targetDate}T00:00:00`);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  const start = new Date(
+    `${item.meetingDate}T${String(item.startTime).slice(0, 5)}:00`,
+  );
+  const rawEndTime = String(item.endTime || "").slice(0, 5);
+  const end = new Date(start);
+  if (rawEndTime) {
+    const [hour, minute] = rawEndTime.split(":").map(Number);
+    end.setHours(hour, minute, 0, 0);
+    if (rawEndTime <= String(item.startTime).slice(0, 5)) {
+      end.setDate(end.getDate() + 1);
+    }
+  } else {
+    end.setHours(end.getHours() + 2);
+  }
+
+  return start < dayEnd && end > dayStart;
+};
 
 const buildViewStorageKey = (meetingId, viewerKey = "guest") => {
   const now = new Date();
@@ -228,6 +254,8 @@ export default function MeetingDetailPage() {
         (serverMsg.includes("거절") || serverMsg.includes("REJECTED"))
       ) {
         alert("모임 참가에 거절 당해 신청하실 수 없습니다.");
+      } else if (serverMsg) {
+        alert(serverMsg);
       } else {
         alert("참가 신청에 실패했습니다.");
       }
@@ -270,12 +298,52 @@ export default function MeetingDetailPage() {
   const isHost =
     isAuthenticated && user && user.nickname === meeting.meetingHostName;
 
-  const handleApplyClick = () => {
+  const handleApplyClick = async () => {
     if (!isAuthenticated) {
       setModalType("loginRequired");
       return;
     }
     if (!isClosed && !isAdmin) {
+      try {
+        const response = await getMyActivity(user.memberId);
+        const payload = response.data || {};
+        const sameDayMeetings = [
+          ...(payload.hostedMeetings || []),
+          ...(payload.approvedMeetings || []),
+          ...(payload.pendingMeetings || []),
+        ]
+          .filter(
+            (item) =>
+              intersectsCalendarDate(item, meeting.meetingDate) &&
+              Number(item.meetingId) !== Number(meetingId) &&
+              !["CANCELLED", "COMPLETED"].includes(item.status),
+          )
+          .filter(
+            (item, index, array) =>
+              array.findIndex(
+                (candidate) =>
+                  Number(candidate.meetingId) === Number(item.meetingId),
+              ) === index,
+          );
+
+        if (sameDayMeetings.length > 0) {
+          const scheduleText = sameDayMeetings
+            .slice(0, 3)
+            .map((item) => {
+              const start = String(item.startTime || "").slice(0, 5);
+              const end = String(item.endTime || "").slice(0, 5);
+              const nextDay = end && end < start ? "다음 날 " : "";
+              return `${item.title} (${start}${end ? ` ~ ${nextDay}${end}` : ""})`;
+            })
+            .join("\n");
+          alert(
+            `선택한 날짜에 이미 일정이 있습니다.\n\n${scheduleText}\n\n시간이 겹치면 참가 신청이 제한됩니다.`,
+          );
+        }
+      } catch (error) {
+        console.error("Failed to check same-day meetings:", error);
+      }
+
       const userRegion = regions.find((r) => r.regionId === user?.regionId);
       const meetingParts = meeting.regionName
         ? meeting.regionName.split(" ")
@@ -360,6 +428,14 @@ export default function MeetingDetailPage() {
                   {meeting.meetingDate}{" "}
                   {meeting.startTime
                     ? String(meeting.startTime).slice(0, 5)
+                    : ""}
+                  {meeting.endTime
+                    ? ` ~ ${
+                        String(meeting.endTime).slice(0, 5) <
+                        String(meeting.startTime || "").slice(0, 5)
+                          ? "다음 날 "
+                          : ""
+                      }${String(meeting.endTime).slice(0, 5)}`
                     : ""}
                 </strong>
               </article>
@@ -726,6 +802,14 @@ export default function MeetingDetailPage() {
             <dd>
               {meeting.meetingDate}{" "}
               {meeting.startTime ? String(meeting.startTime).slice(0, 5) : ""}
+              {meeting.endTime
+                ? ` ~ ${
+                    String(meeting.endTime).slice(0, 5) <
+                    String(meeting.startTime || "").slice(0, 5)
+                      ? "다음 날 "
+                      : ""
+                  }${String(meeting.endTime).slice(0, 5)}`
+                : ""}
             </dd>
           </div>
           <div>

@@ -20,6 +20,7 @@ public class Meeting {
 
   private LocalDate meetingDate;
   private LocalTime startTime;
+  private LocalTime endTime;
 
   private Integer maxMembers;//
 

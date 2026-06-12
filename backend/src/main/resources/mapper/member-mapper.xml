@@ -91,6 +91,7 @@
             m.placeName AS placeName,
             m.meetingDate AS meetingDate,
             m.startTime AS startTime,
+            m.endTime AS endTime,
             m.status,
             s.name AS sportName,
             CONCAT(r.sido, ' ', r.sigungu, ' ', COALESCE(r.dong, '')) AS regionName
@@ -129,6 +130,7 @@
             m.placeName AS placeName,
             m.meetingDate AS meetingDate,
             m.startTime AS startTime,
+            m.endTime AS endTime,
             m.status,
             mp.status AS participationStatus,
             s.name AS sportName,

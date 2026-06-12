@@ -7,9 +7,35 @@ import ReactCalendarDatePicker from "../components/ReactCalendarDatePicker.jsx";
 import {useAuth} from "../contexts/AuthContext.jsx";
 import {getSports} from "../api/sportApi.js";
 import {getRegions} from "../api/regionApi.js";
+import {getMyActivity} from "../api/memberApi.js";
 import DeleteMeetingButton from "./DeleteMeetingButton.jsx";
 
 const normalizeText = (value = "") => String(value).trim();
+
+const intersectsCalendarDate = (meeting, targetDate) => {
+    if (!meeting?.meetingDate || !meeting?.startTime || !targetDate) return false;
+
+    const dayStart = new Date(`${targetDate}T00:00:00`);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    const start = new Date(
+        `${meeting.meetingDate}T${String(meeting.startTime).slice(0, 5)}:00`,
+    );
+    const rawEndTime = String(meeting.endTime || "").slice(0, 5);
+    const end = new Date(start);
+    if (rawEndTime) {
+        const [hour, minute] = rawEndTime.split(":").map(Number);
+        end.setHours(hour, minute, 0, 0);
+        if (rawEndTime <= String(meeting.startTime).slice(0, 5)) {
+            end.setDate(end.getDate() + 1);
+        }
+    } else {
+        end.setHours(end.getHours() + 2);
+    }
+
+    return start < dayEnd && end > dayStart;
+};
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024;
 
 export default function MeetingFormPage({initialData, onSubmit, title}) {
@@ -25,7 +51,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
 
     const initialFormValue = initialData || {
         sportId: null, regionId: null, title: "", content: "", placeName: "", address: "",
-        latitude: null, longitude: null, meetingDate: "", startTime: "", maxMembers: "",
+        latitude: null, longitude: null, meetingDate: "", startTime: "", endTime: "", maxMembers: "",
         meetingType: "ONE_TIME", repeatType: "NONE", supplies: "", guideText: "", status: "RECRUITING",
     };
 
@@ -39,6 +65,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
 
     const [selectedSportName, setSelectedSportName] = useState("");
     const [selectedRegion, setSelectedRegion] = useState({sido: "", sigungu: "", dong: ""});
+    const [sameDayMeetings, setSameDayMeetings] = useState([]);
 
 
     // 썸네일 미리보기
@@ -132,11 +159,13 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             `${r.sido} ${r.sigungu} ${r.dong}` === initialData.regionName);
 
         const formattedStartTime = initialData.startTime ? initialData.startTime.substring(0, 5) : "";
+        const formattedEndTime = initialData.endTime ? initialData.endTime.substring(0, 5) : "";
 
         setForm(prev => ({
             ...prev,
             ...initialData,
             startTime: formattedStartTime,
+            endTime: formattedEndTime,
             sportId: foundSport ? foundSport.sportId : prev.sportId,
             regionId: foundRegion ? foundRegion.regionId : prev.regionId,
         }));
@@ -157,6 +186,44 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             setFiles([{name: "기존 썸네일", url: initialData.thumbnailImage}]);
         }
     }, [initialData, sports, regions]);
+
+    useEffect(() => {
+        if (!user?.memberId || !form.meetingDate) {
+            setSameDayMeetings([]);
+            return;
+        }
+
+        let active = true;
+        getMyActivity(user.memberId)
+            .then((response) => {
+                if (!active) return;
+                const payload = response.data || {};
+                const meetings = [
+                    ...(payload.hostedMeetings || []),
+                    ...(payload.approvedMeetings || []),
+                    ...(payload.pendingMeetings || []),
+                ]
+                    .filter((meeting) =>
+                        intersectsCalendarDate(meeting, form.meetingDate) &&
+                        Number(meeting.meetingId) !== Number(meetingId) &&
+                        !["CANCELLED", "COMPLETED"].includes(meeting.status),
+                    )
+                    .filter(
+                        (meeting, index, array) =>
+                            array.findIndex(
+                                (item) => Number(item.meetingId) === Number(meeting.meetingId),
+                            ) === index,
+                    );
+                setSameDayMeetings(meetings);
+            })
+            .catch(() => {
+                if (active) setSameDayMeetings([]);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [form.meetingDate, meetingId, user?.memberId]);
 
 
     // ★ 5. 일반 핸들러 함수들
@@ -235,7 +302,16 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             setForm(p => ({...p, [name]: value.substring(0, limits[name])}));
             return;
         }
-        setForm(p => ({...p, [name]: ["sportId", "regionId", "maxMembers"].includes(name) ? Number(value) : value}));
+        setForm(p => {
+            const nextValue = ["sportId", "regionId", "maxMembers"].includes(name)
+                ? Number(value)
+                : value;
+            const nextForm = {...p, [name]: nextValue};
+            if (name === "startTime" && p.endTime && p.endTime === value) {
+                nextForm.endTime = "";
+            }
+            return nextForm;
+        });
     };
 
     const handleFileChange = (e) => {
@@ -316,6 +392,13 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                 return;
             }
         }
+
+        if (finalForm.startTime && finalForm.endTime &&
+            finalForm.endTime === finalForm.startTime) {
+            alert("시작 시간과 종료 시간은 같을 수 없습니다.");
+            inputRefs.current.endTime?.focus();
+            return;
+        }
         if (!finalForm.sportId && selectedSportName) {
             const s = sports.find(x => x.name === selectedSportName);
             if (s) finalForm.sportId = s.sportId;
@@ -336,6 +419,7 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
             {key: "placeName", label: "상세 주소", refKey: "placeName"},
             {key: "meetingDate", label: "날짜", refKey: "meetingDate"},
             {key: "startTime", label: "시작 시간", refKey: "startTime"},
+            {key: "endTime", label: "종료 시간", refKey: "endTime"},
             {key: "maxMembers", label: "모집 인원", refKey: "maxMembers"},
             {key: "supplies", label: "준비물", refKey: "supplies"},
             {key: "guideText", label: "진행 안내", refKey: "guideText"},
@@ -562,6 +646,61 @@ export default function MeetingFormPage({initialData, onSubmit, title}) {
                         ))}
                     </select>
                 </label>
+
+                <label>
+                    <span className={styles.requiredLabel}>종료 시간</span>
+                    <select
+                        ref={(el) => (inputRefs.current.endTime = el)}
+                        name="endTime"
+                        value={form.endTime}
+                        onChange={handleChange}
+                        className={`${styles.timeSelect} ${!form.endTime ? styles.placeholderText : styles.valueText}`}
+                    >
+                        <option value="" disabled hidden>
+                            종료 시간을 설정하세요.
+                        </option>
+                        {timeOptions
+                            .filter((time) => !form.startTime || time.value !== form.startTime)
+                            .map((time) => (
+                                <option
+                                    key={time.value}
+                                    value={time.value}
+                                    className={styles.timeOption}
+                                >
+                                    {time.label}
+                                    {form.startTime && time.value < form.startTime
+                                        ? " (다음 날)"
+                                        : ""}
+                                </option>
+                            ))}
+                    </select>
+                    {form.startTime && form.endTime && form.endTime < form.startTime ? (
+                        <small className={styles.nextDayHint}>
+                            종료 시간은 다음 날 {form.endTime}입니다.
+                        </small>
+                    ) : null}
+                </label>
+
+                {sameDayMeetings.length > 0 ? (
+                    <div className={`${styles.full} ${styles.scheduleNotice}`}>
+                        <strong>선택한 날짜에 이미 일정이 있습니다.</strong>
+                        <p>
+                            {sameDayMeetings
+                                .slice(0, 3)
+                                .map((meeting) => {
+                                    const start = String(meeting.startTime || "").slice(0, 5);
+                                    const end = String(meeting.endTime || "").slice(0, 5);
+                                    const nextDay = end && end < start ? " 다음 날" : "";
+                                    return `${meeting.title} (${start}${end ? ` ~${nextDay} ${end}` : ""})`;
+                                })
+                                .join(", ")}
+                            {sameDayMeetings.length > 3
+                                ? ` 외 ${sameDayMeetings.length - 3}개`
+                                : ""}
+                        </p>
+                        <small>시간이 겹치면 모임 생성 또는 수정이 제한됩니다.</small>
+                    </div>
+                ) : null}
 
                 <label>
                     <span className={styles.requiredLabel}>모집 인원 (본인 포함)</span>

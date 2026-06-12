@@ -4,7 +4,7 @@
 
     <select id="selectMainMeetingList" parameterType="map" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
         SELECT
-        m.meetingId, m.title, m.placeName, m.meetingDate, m.startTime,
+        m.meetingId, m.title, m.placeName, m.meetingDate, m.startTime, m.endTime,
         m.maxMembers, m.status, m.thumbnailImage, m.content,
         s.name as sportName,
         CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) as regionName,
@@ -28,7 +28,7 @@
 
     <select id="selectMainMeetingListByIds" resultType="kr.co.iei.meeting.model.vo.MeetingListResponse">
         SELECT
-            m.meetingId, m.title, m.placeName, m.meetingDate, m.startTime,
+            m.meetingId, m.title, m.placeName, m.meetingDate, m.startTime, m.endTime,
             m.maxMembers, m.status, m.thumbnailImage,
             s.name as sportName,
             CONCAT(r.sido, " ", r.sigungu, " ", COALESCE(r.dong, "")) as regionName,
@@ -55,6 +55,7 @@
             m.placeName as placeName,
             m.meetingDate as meetingDate,
             m.startTime as startTime,
+            m.endTime as endTime,
             m.maxMembers as maxMembers,
             m.status,
             m.content,
@@ -263,6 +264,7 @@
             m.address,
             m.meetingDate as meetingDate,
             m.startTime as startTime,
+            m.endTime as endTime,
             m.maxMembers as maxMembers,
             m.status,
             s.name AS sportName,
@@ -301,6 +303,7 @@
                              address,
                              meetingDate,
                              startTime,
+                             endTime,
                              maxMembers,
                              meetingType,
                              repeatType,
@@ -317,6 +320,7 @@
                 #{address},
                 #{meetingDate},
                 #{startTime},
+                #{endTime},
                 #{maxMembers},
                 #{meetingType},
                 #{repeatType},
@@ -336,6 +340,7 @@
             address = #{address},
             meetingDate = #{meetingDate},
             startTime = #{startTime},
+            endTime = #{endTime},
             maxMembers = #{maxMembers},
             status = #{status},
             supplies = #{supplies},
@@ -344,6 +349,49 @@
             updatedAt = NOW()
         WHERE meetingId = #{meetingId}
     </update>
+
+    <select id="lockUserSchedule" parameterType="long" resultType="long">
+        SELECT userId
+        FROM users
+        WHERE userId = #{userId}
+        FOR UPDATE
+    </select>
+
+    <select id="selectUserScheduleConflicts"
+            parameterType="map"
+            resultType="kr.co.iei.meeting.model.vo.MeetingDetailResponse">
+        SELECT DISTINCT
+            m.meetingId,
+            m.title,
+            m.meetingDate,
+            m.startTime,
+            m.endTime
+        FROM meetings m
+        LEFT JOIN meetingParticipants mp
+          ON mp.meetingId = m.meetingId
+         AND mp.userId = #{userId}
+         AND mp.status IN ('PENDING', 'APPROVED')
+        WHERE m.deletedAt IS NULL
+          AND m.status NOT IN ('COMPLETED', 'CANCELLED')
+          AND m.meetingDate BETWEEN DATE_SUB(DATE(#{startDateTime}), INTERVAL 1 DAY)
+                                AND DATE(#{endDateTime})
+          AND (
+              m.hostUserId = #{userId}
+              OR mp.participantId IS NOT NULL
+          )
+          <if test="excludedMeetingId != null">
+              AND m.meetingId != #{excludedMeetingId}
+          </if>
+          AND TIMESTAMP(m.meetingDate, m.startTime) &lt; #{endDateTime}
+          AND CASE
+                WHEN m.endTime IS NULL
+                  THEN DATE_ADD(TIMESTAMP(m.meetingDate, m.startTime), INTERVAL 2 HOUR)
+                WHEN m.endTime &lt;= m.startTime
+                  THEN TIMESTAMP(DATE_ADD(m.meetingDate, INTERVAL 1 DAY), m.endTime)
+                ELSE TIMESTAMP(m.meetingDate, m.endTime)
+              END &gt; #{startDateTime}
+        ORDER BY m.meetingDate ASC, m.startTime ASC
+    </select>
 
     <update id="softDeleteMeeting">
         UPDATE meetings
@@ -373,7 +421,13 @@
             updatedAt = NOW()
         WHERE deletedAt IS NULL
           AND status = 'ONGOING'
-          AND TIMESTAMP(meetingDate, startTime) &lt;= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+          AND CASE
+                WHEN endTime IS NULL
+                  THEN DATE_ADD(TIMESTAMP(meetingDate, startTime), INTERVAL 2 HOUR)
+                WHEN endTime &lt;= startTime
+                  THEN TIMESTAMP(DATE_ADD(meetingDate, INTERVAL 1 DAY), endTime)
+                ELSE TIMESTAMP(meetingDate, endTime)
+              END &lt;= NOW()
     </update>
 
     <select id="selectTodayReminderNotificationTargets" resultType="map">

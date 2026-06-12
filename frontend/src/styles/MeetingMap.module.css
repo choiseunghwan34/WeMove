@@ -114,6 +114,8 @@
   position: relative;
   display: grid;
   width: 286px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
   gap: 12px;
   padding: 15px;
   border: 1px solid rgba(37, 99, 235, 0.16);
@@ -153,6 +155,7 @@
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
+  min-width: 0;
   gap: 11px;
   padding-right: 20px;
 }
@@ -177,15 +180,20 @@
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
+  min-width: 0;
   gap: 8px;
 }
 
 .popupSport,
 .popupStatus {
+  max-width: 100%;
+  overflow: hidden;
   padding: 4px 7px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .popupSport {
@@ -199,18 +207,29 @@
 }
 
 .popupTitle {
+  display: -webkit-box;
   overflow: hidden;
+  min-width: 0;
   color: #0f172a;
   font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .popup p,
 .popup small {
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
   color: #64748b;
   font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .popupDetail {

@@ -15,6 +15,7 @@ public class MeetingDetailResponse {
   private String thumbnailImage;
   private LocalDate meetingDate;
   private LocalTime startTime;
+  private LocalTime endTime;
   private Integer maxMembers;
   private Integer approvedCount;
   private String status;

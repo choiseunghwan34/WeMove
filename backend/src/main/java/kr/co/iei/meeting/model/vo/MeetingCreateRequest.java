@@ -17,6 +17,7 @@ public class MeetingCreateRequest {
 
   private String meetingDate;
   private String startTime;
+  private String endTime;
 
   private Integer maxMembers;
 

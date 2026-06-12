@@ -33,7 +33,7 @@ export default function MeetingCreatePage() {
         alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
         navigate("/login");
       }else{
-        alert("모임 등록 중 오류가 발생했습니다.")
+        alert(err.response?.data?.message || "모임 등록 중 오류가 발생했습니다.")
       }
     });
   }

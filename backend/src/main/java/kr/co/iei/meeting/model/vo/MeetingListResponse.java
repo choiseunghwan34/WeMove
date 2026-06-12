@@ -10,6 +10,7 @@ public class MeetingListResponse {
   private String placeName;
   private LocalDate meetingDate;
   private LocalTime startTime;
+  private LocalTime endTime;
   private Integer maxMembers;
   private Integer approvedCount;
   private Integer viewCount;
