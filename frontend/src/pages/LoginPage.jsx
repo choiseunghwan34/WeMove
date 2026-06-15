@@ -52,7 +52,7 @@ const normalizeSuspensionText = (value, fallback) => {
   }
 
   const looksLikeCode = /[A-Z_]{3,}|ACCOUNT|SUSPEND|TOKEN|SESSION|ERROR/i.test(
-    text,
+      text,
   );
   const hasKorean = /[가-힣]/.test(text);
 
@@ -152,24 +152,22 @@ export default function LoginPage() {
     };
   }, []);
 
-  // 렌더링 시 랜덤으로 배경 이미지 선택
   const backgroundImage = useMemo(
       () => authBackgrounds[Math.floor(Math.random() * authBackgrounds.length)],
-      [],
+      []
   );
 
-  // 🌟 [추가됨] 접속한 기기의 현재 시간을 기반으로 오버레이 색상을 결정
   const timeOverlayColor = useMemo(() => {
     const hour = new Date().getHours();
 
     if (hour >= 6 && hour < 12) {
-      return "rgba(255, 255, 255, 0.1)"; // 아침 (6시~11시)
+      return "rgba(255, 255, 255, 0.1)";
     } else if (hour >= 12 && hour < 18) {
-      return "rgba(0, 0, 0, 0.1)"; // 낮 (12시~17시)
+      return "rgba(0, 0, 0, 0.1)";
     } else if (hour >= 18 && hour < 21) {
-      return "rgba(255, 94, 0, 0.15)"; // 저녁/노을 (18시~20시)
+      return "rgba(255, 94, 0, 0.15)";
     } else {
-      return "rgba(0, 0, 20, 0.6)"; // 밤 (21시~5시)
+      return "rgba(0, 0, 20, 0.6)";
     }
   }, []);
 
@@ -186,54 +184,24 @@ export default function LoginPage() {
     navigate(parsedUser?.role === "ADMIN" ? "/admin" : "/");
   };
 
-  const requestLogin = async ({ forceLogin = false } = {}) => {
-    const loginId = form.loginId.trim();
-    const password = form.password;
-    const { data } = await login({ loginId, password, autoLogin, forceLogin });
-    finishLogin(loginId, data?.accessToken);
-  };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    setForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const loginId = form.loginId.trim();
-    const password = form.password;
-
-    if (!loginId || !password) {
-      setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.");
-      return;
-    }
-
+  const executeLogin = async (targetId, targetPw, forceLogin = false) => {
     setIsSubmitting(true);
     setErrorMessage("");
 
     try {
-      await requestLogin();
+      const { data } = await login({ loginId: targetId, password: targetPw, autoLogin, forceLogin });
+      finishLogin(targetId, data?.accessToken);
     } catch (error) {
       const errData = error?.response?.data;
 
-      // 1. 중복 로그인 확인
       if (errData?.code === "DUPLICATE_LOGIN_REQUIRED") {
         setDuplicatePromptOpen(true);
-      }
-      // 2. 계정 정지 확인 (상태 코드 423 또는 에러 메시지/코드로 판별)
-      else if (
+      } else if (
           error?.response?.status === 423 ||
           errData?.code === "ACCOUNT_SUSPENDED" ||
           errData?.message?.includes("suspended") ||
           errData?.message?.includes("정지")
       ) {
-
-        // 💡 백엔드에서 내려온 ISO 일시 문자열 가공 ('T' 제거 및 포맷팅)
         const rawUntil = errData?.suspendedUntil || "";
         const formattedUntil = rawUntil.includes("T")
             ? rawUntil.replace("T", " ")
@@ -244,9 +212,7 @@ export default function LoginPage() {
           until: normalizeSuspensionText(formattedUntil, "관리자 문의 요망"),
         });
         setSuspendedModalOpen(true);
-      }
-      // 3. 그 외 일반 에러
-      else {
+      } else {
         setErrorMessage(getLoginErrorMessage(error));
       }
     } finally {
@@ -254,18 +220,36 @@ export default function LoginPage() {
     }
   };
 
-  const confirmDuplicateLogin = async () => {
-    setIsSubmitting(true);
-    setErrorMessage("");
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const loginId = form.loginId.trim();
+    const password = form.password;
 
-    try {
-      await requestLogin({ forceLogin: true });
-    } catch (error) {
-      setErrorMessage(getLoginErrorMessage(error));
-    } finally {
-      setDuplicatePromptOpen(false);
-      setIsSubmitting(false);
+    if (!loginId || !password) {
+      setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.");
+      return;
     }
+
+    await executeLogin(loginId, password, false);
+  };
+
+  // [추가됨] 테스트 계정 로그인 공통 핸들러 (파라미터로 계정 정보를 받음)
+  const handleTestLogin = async (testId, testPw) => {
+    setForm({ loginId: testId, password: testPw });
+    await executeLogin(testId, testPw, false);
+  };
+
+  const confirmDuplicateLogin = async () => {
+    setDuplicatePromptOpen(false);
+    await executeLogin(form.loginId.trim(), form.password, true);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
   };
 
   const {containerRef, bubbleData, bubblesRef} = useEcoEffects();
@@ -273,22 +257,19 @@ export default function LoginPage() {
   return (
       <>
         <main ref={containerRef} className={styles.page}>
-          {/* 줌인 애니메이션이 적용되는 배경 레이어 */}
           <div
               className={styles.backgroundLayer}
               style={{ backgroundImage: `url(${backgroundImage})` }}
           />
 
-          {/* 🌟 [수정됨] 시간에 따라 색상이 바뀌는 오버레이 */}
           <div
               className={styles.backgroundOverlay}
               style={{
                 backgroundColor: timeOverlayColor,
-                transition: "background-color 2s ease-in-out" // 자연스러운 색상 전환 효과
+                transition: "background-color 2s ease-in-out"
               }}
           />
 
-          {/* 🌟 비눗방울 렌더링 */}
           {bubbleData && bubbleData.map((style, i) => (
               <div
                   key={`bubble-${i}`}
@@ -304,7 +285,6 @@ export default function LoginPage() {
               />
           ))}
 
-          {/* 둥둥 떠다니는 빛 효과 (Ambient Orbs) */}
           <div className={styles.ambientEffects} aria-hidden="true">
             <div className={`${styles.ambientOrb} ${styles.orb1}`} />
             <div className={`${styles.ambientOrb} ${styles.orb2}`} />
@@ -402,6 +382,54 @@ export default function LoginPage() {
                 {isSubmitting ? "로그인 중..." : "로그인"}
               </button>
 
+              {/* [수정됨] 나란히 배치되는 체험 계정 로그인 버튼 영역 */}
+              <div style={{ display: "flex", gap: "8px", marginTop: "8px", width: "100%" }}>
+                <button
+                    type="button"
+                    //실제 유저용 테스트 아이디와 비밀번호
+                    onClick={() => handleTestLogin("user01", "1234")}
+                    disabled={isSubmitting}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      backgroundColor: "#f1f5f9",
+                      color: "#475569",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#e2e8f0"}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#f1f5f9"}
+                >
+                  🏃 일반 체험 계정
+                </button>
+                <button
+                    type="button"
+                    // 실제 관리자용 테스트 아이디와 비밀번호
+                    onClick={() => handleTestLogin("admin", "Admin123!")}
+                    disabled={isSubmitting}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      backgroundColor: "#f1f5f9",
+                      color: "#475569",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#e2e8f0"}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#f1f5f9"}
+                >
+                  🛠️ 관리자 체험 계정
+                </button>
+              </div>
+
               <div className={styles.links}>
                 <Link to="/signup">회원가입</Link>
                 <span>·</span>
@@ -411,7 +439,6 @@ export default function LoginPage() {
           </div>
         </main>
 
-        {/* 중복 로그인 모달 */}
         <AppModal
             open={duplicatePromptOpen}
             title="현재 로그인된 사용자가 있습니다"
@@ -422,13 +449,12 @@ export default function LoginPage() {
             onClose={() => setDuplicatePromptOpen(false)}
         />
 
-        {/* 정지 계정 안내 모달 */}
         <AppModal
             open={suspendedModalOpen}
             title="접속 제한 안내"
             description="운영원칙 위반으로 인해 계정 이용이 일시적으로 제한되었습니다."
             confirmText="확인"
-            hideCancel={true} // 닫기 버튼 하나만 보여줌
+            hideCancel={true}
             onConfirm={() => setSuspendedModalOpen(false)}
             onClose={() => setSuspendedModalOpen(false)}
         >
